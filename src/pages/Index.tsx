@@ -22,24 +22,26 @@ const Index = () => {
     <div className="min-h-screen bg-white">
       <Navbar />
       
-      {/* Hero Section */}
-      <section className="hero-gradient text-white py-20 nature-pattern">
+      {/* Hero Section - Fixed visibility and added animations */}
+      <section className="relative hero-gradient text-white py-24 nature-pattern overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8 fade-in">
-              <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
-                The Smartest Way to 
-                <span className="text-green-300"> Farm, Trade, </span>
-                and Grow
-              </h1>
-              <p className="text-xl text-green-100 leading-relaxed">
-                Transform your agricultural journey with AI-driven consultation, 
-                hyperlocal weather forecasts, and access to financing through 
-                our revolutionary FarmPartner Initiative.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+            <div className="space-y-8 animate-fade-in">
+              <div className="space-y-6">
+                <h1 className="text-5xl lg:text-7xl font-bold leading-tight text-white animate-slide-in-left">
+                  The Smartest Way to 
+                  <span className="block text-green-300 animate-pulse"> Farm, Trade, </span>
+                  <span className="block animate-bounce">and Grow</span>
+                </h1>
+                <p className="text-xl lg:text-2xl text-green-100 leading-relaxed max-w-2xl animate-fade-in-up">
+                  Transform your agricultural journey with AI-driven consultation, 
+                  hyperlocal weather forecasts, and access to financing through 
+                  our revolutionary FarmPartner Initiative.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4 animate-slide-in-up">
                 <Link to="/auth">
-                  <Button size="lg" className="bg-green-500 hover:bg-green-600 text-lg px-8 py-4">
+                  <Button size="lg" className="bg-green-500 hover:bg-green-600 text-lg px-8 py-4 transform hover:scale-105 transition-all duration-300 shadow-lg">
                     Join as a Farmer
                   </Button>
                 </Link>
@@ -47,7 +49,7 @@ const Index = () => {
                   <Button 
                     size="lg" 
                     variant="outline" 
-                    className="text-white border-white hover:bg-white hover:text-green-700 text-lg px-8 py-4"
+                    className="text-white border-white hover:bg-white hover:text-green-700 text-lg px-8 py-4 transform hover:scale-105 transition-all duration-300"
                   >
                     Become an Investor
                   </Button>
@@ -56,15 +58,15 @@ const Index = () => {
                   <Button 
                     size="lg" 
                     variant="secondary" 
-                    className="bg-purple-600 hover:bg-purple-700 text-white text-lg px-8 py-4"
+                    className="bg-purple-600 hover:bg-purple-700 text-white text-lg px-8 py-4 transform hover:scale-105 transition-all duration-300"
                   >
                     Explore As an Agent
                   </Button>
                 </Link>
               </div>
             </div>
-            <div className="relative">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+            <div className="relative animate-fade-in-right">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 transform hover:scale-105 transition-all duration-500">
                 <img
                   src="/placeholder.svg"
                   alt="African farmer using technology"
