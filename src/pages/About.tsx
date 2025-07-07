@@ -1,223 +1,142 @@
 
 import React from 'react';
+import { Leaf, Users, Target, Heart, MessageCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { MessageCircle, Target, Eye, Users } from 'lucide-react';
 
 const About = () => {
-  const teamMembers = [
-    {
-      name: "Kwame Nkrumah",
-      role: "Founder & CEO",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
-      quote: "Technology can revolutionize agriculture in Africa when applied with deep understanding of local needs."
-    },
-    {
-      name: "Akosua Mensah",
-      role: "Head of Agricultural Technology",
-      image: "https://images.unsplash.com/photo-1494790108755-2616b612b02c",
-      quote: "Every farmer deserves access to the same quality of agricultural insights as large commercial farms."
-    },
-    {
-      name: "Abdul Rahman",
-      role: "Director of Extension Services",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
-      quote: "Bridging the gap between traditional farming wisdom and modern agricultural science is our mission."
-    },
-    {
-      name: "Efua Asante",
-      role: "Chief Technology Officer",
-      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2",
-      quote: "AI should amplify human expertise, not replace it - especially in agriculture where context matters."
-    }
-  ];
-
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
       
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-green-600 to-blue-600 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl lg:text-6xl font-bold mb-6 animate-fade-in">
-            About AgriLync
-          </h1>
-          <p className="text-xl lg:text-2xl text-green-100 max-w-4xl mx-auto animate-fade-in-up">
-            We're on a mission to transform agriculture across Africa through innovative technology, 
-            local expertise, and sustainable farming practices.
-          </p>
-        </div>
-      </section>
-
-      {/* Vision & Mission */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <Card className="bg-white shadow-lg border-0 animate-fade-in">
-              <CardContent className="p-8">
-                <div className="flex items-center mb-6">
-                  <div className="bg-green-100 p-3 rounded-full mr-4">
-                    <Eye className="h-8 w-8 text-green-600" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-gray-900">Our Vision</h2>
-                </div>
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  To become Africa's leading agricultural technology platform, empowering every farmer 
-                  with the tools, knowledge, and partnerships needed to achieve sustainable prosperity 
-                  while contributing to food security across the continent.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white shadow-lg border-0 animate-fade-in">
-              <CardContent className="p-8">
-                <div className="flex items-center mb-6">
-                  <div className="bg-blue-100 p-3 rounded-full mr-4">
-                    <Target className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-gray-900">Our Mission</h2>
-                </div>
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  To democratize access to agricultural expertise, weather intelligence, and financial 
-                  resources through innovative technology solutions that bridge the gap between traditional 
-                  farming practices and modern agricultural science.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Core Team */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Meet Our Core Team
-            </h2>
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+              About AgriLync
+            </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Agricultural experts, technology innovators, and passionate advocates 
-              for sustainable farming across Ghana and beyond.
+              Transforming African agriculture through AI-driven consultation, 
+              hyperlocal weather services, and innovative financing solutions.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {teamMembers.map((member, index) => (
-              <Card key={index} className="bg-gray-50 border-0 shadow-lg hover:shadow-xl transition-shadow animate-fade-in">
-                <CardContent className="p-6 text-center">
-                  <img
-                    src={member.image}
-                    alt={member.name}
-                    className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
-                  />
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{member.name}</h3>
-                  <p className="text-green-600 font-semibold mb-4">{member.role}</p>
-                  <p className="text-gray-700 italic text-sm">"{member.quote}"</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+          {/* Vision & Mission - Removed gradient background */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
+            <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+              <Target className="h-12 w-12 text-green-600 mb-4" />
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Vision</h3>
+              <p className="text-gray-700 leading-relaxed">
+                To become Africa's leading agricultural technology platform, empowering 
+                smallholder farmers with AI-driven insights, connecting them with 
+                sustainable financing, and building resilient farming communities 
+                across the continent.
+              </p>
+            </div>
 
-      {/* What Our Team Says */}
-      <section className="py-20 bg-green-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
+            <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+              <Heart className="h-12 w-12 text-green-600 mb-4" />
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h3>
+              <p className="text-gray-700 leading-relaxed">
+                To revolutionize agriculture in Ghana and across Africa by providing 
+                farmers with accessible AI consultation, hyperlocal weather insights, 
+                and transparent investment partnerships that drive sustainable growth 
+                and food security.
+              </p>
+            </div>
+          </div>
+
+          {/* Core Team */}
+          <div className="mb-20">
+            <h2 className="text-4xl font-bold text-gray-900 text-center mb-12">
+              Our Core Team
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <img 
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+                  alt="CEO"
+                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover shadow-lg"
+                />
+                <h4 className="text-xl font-bold text-gray-900 mb-2">Kwame Osei</h4>
+                <p className="text-green-600 font-medium mb-2">CEO & Co-Founder</p>
+                <p className="text-gray-600 text-sm">
+                  Agricultural Engineer with 10+ years experience in sustainable farming solutions
+                </p>
+              </div>
+
+              <div className="text-center">
+                <img 
+                  src="https://images.unsplash.com/photo-1494790108755-2616c27b2e8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+                  alt="CTO"
+                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover shadow-lg"
+                />
+                <h4 className="text-xl font-bold text-gray-900 mb-2">Akosua Mensah</h4>
+                <p className="text-green-600 font-medium mb-2">CTO & Co-Founder</p>
+                <p className="text-gray-600 text-sm">
+                  AI/ML expert specializing in computer vision and agricultural applications
+                </p>
+              </div>
+
+              <div className="text-center">
+                <img 
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+                  alt="Head of Operations"
+                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover shadow-lg"
+                />
+                <h4 className="text-xl font-bold text-gray-900 mb-2">Yaw Asante</h4>
+                <p className="text-green-600 font-medium mb-2">Head of Operations</p>
+                <p className="text-gray-600 text-sm">
+                  Former extension agent with deep knowledge of Ghana's farming communities
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* What Our Team Says */}
+          <div className="bg-gray-50 rounded-3xl p-12 mb-20">
+            <h2 className="text-4xl font-bold text-gray-900 text-center mb-12">
               What Our Team Says
             </h2>
-            <p className="text-xl text-green-100">
-              Insights from the people building the future of African agriculture
-            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="bg-white p-6 rounded-xl shadow-md">
+                <p className="text-gray-700 italic mb-4">
+                  "Every day, we're not just building technology – we're building bridges 
+                  between traditional farming wisdom and cutting-edge innovation."
+                </p>
+                <p className="text-green-600 font-medium">- Kwame Osei, CEO</p>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl shadow-md">
+                <p className="text-gray-700 italic mb-4">
+                  "Our AI doesn't replace the farmer's expertise – it amplifies it. 
+                  We're creating tools that respect and enhance human knowledge."
+                </p>
+                <p className="text-green-600 font-medium">- Akosua Mensah, CTO</p>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                quote: "Every day, we see farmers increase their yields by 40-60% through our platform. That's not just technology - that's transformation.",
-                author: "Agricultural Success Team"
-              },
-              {
-                quote: "The weather alerts have prevented millions of cedis in crop losses. When farmers can plan ahead, everyone wins.",
-                author: "Weather Intelligence Team"
-              },
-              {
-                quote: "Connecting farmers with investors isn't just about funding - it's about building sustainable agricultural communities.",
-                author: "FarmPartner Initiative Team"
-              }
-            ].map((insight, index) => (
-              <Card key={index} className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
-                <CardContent className="p-6">
-                  <p className="text-lg italic mb-4">"{insight.quote}"</p>
-                  <p className="text-green-200 font-semibold">— {insight.author}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Values & Impact */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Our Values & Impact
+          {/* Join Community */}
+          <div className="text-center bg-green-50 rounded-3xl p-12">
+            <MessageCircle className="h-16 w-16 text-green-600 mx-auto mb-6" />
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Join Our Growing Community
             </h2>
+            <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+              Connect with fellow farmers, share experiences, and stay updated 
+              with the latest agricultural insights and opportunities.
+            </p>
+            <Button 
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg rounded-full shadow-lg"
+              onClick={() => window.open('#', '_blank')}
+            >
+              <MessageCircle className="mr-2 h-5 w-5" />
+              WhatsApp Community
+            </Button>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Users,
-                title: "Community First",
-                description: "We believe in empowering farming communities through collaborative technology and shared knowledge."
-              },
-              {
-                icon: Target,
-                title: "Innovation with Purpose",
-                description: "Every feature we build addresses real challenges faced by farmers in their daily agricultural activities."
-              },
-              {
-                icon: Eye,
-                title: "Transparency & Trust",
-                description: "From our AI recommendations to our investment partnerships, we maintain complete transparency in all our processes."
-              }
-            ].map((value, index) => (
-              <Card key={index} className="bg-white shadow-lg border-0 text-center">
-                <CardContent className="p-8">
-                  <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <value.icon className="h-8 w-8 text-green-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">{value.title}</h3>
-                  <p className="text-gray-600">{value.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Join Community CTA */}
-      <section className="py-20 bg-gray-900 text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-            Join Our Growing Community
-          </h2>
-          <p className="text-xl text-gray-300 mb-8">
-            Connect with fellow farmers, share experiences, and stay updated with the latest 
-            agricultural innovations and best practices.
-          </p>
-          <Button 
-            size="lg" 
-            className="bg-green-600 hover:bg-green-700 text-lg px-8 py-4 mr-4"
-          >
-            <MessageCircle className="mr-2 h-5 w-5" />
-            WhatsApp Community
-          </Button>
         </div>
       </section>
 

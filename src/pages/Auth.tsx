@@ -5,11 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Leaf, User, TrendingUp, Users } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [userRole, setUserRole] = useState('');
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -18,25 +21,60 @@ const Auth = () => {
     location: ''
   });
 
+  const { signUp, signIn } = useAuth();
+  const navigate = useNavigate();
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle authentication logic here
-    console.log('Form submitted:', { ...formData, role: userRole, isLogin });
-    
-    // Auto-redirect based on role
-    if (userRole === 'farmer') {
-      // Redirect to farmer dashboard
-      window.location.href = '/farmer-dashboard';
-    } else if (userRole === 'investor') {
-      // Redirect to investor dashboard
-      window.location.href = '/investor-dashboard';
-    } else if (userRole === 'agent') {
-      // Redirect to extension agent dashboard
-      window.location.href = '/agent-dashboard';
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        const { error } = await signIn(formData.email, formData.password);
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success('Successfully signed in!');
+          // Redirect will be handled by auth state change
+        }
+      } else {
+        if (!userRole) {
+          toast.error('Please select a role');
+          return;
+        }
+
+        const userData = {
+          role: userRole,
+          full_name: formData.name,
+          phone: formData.phone,
+          location: formData.location
+        };
+
+        const { error } = await signUp(formData.email, formData.password, userData);
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success('Account created successfully! Please check your email to verify your account.');
+          // Auto-redirect based on role after successful signup
+          setTimeout(() => {
+            if (userRole === 'farmer') {
+              navigate('/farmer-dashboard');
+            } else if (userRole === 'investor') {
+              navigate('/investor-dashboard');
+            } else if (userRole === 'extension_agent') {
+              navigate('/agent-dashboard');
+            }
+          }, 2000);
+        }
+      }
+    } catch (error) {
+      toast.error('An unexpected error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,8 +98,8 @@ const Auth = () => {
       desc: 'Partner with verified farmers for sustainable returns' 
     },
     { 
-      value: 'agent', 
-      label: 'Change Agent', 
+      value: 'extension_agent', 
+      label: 'Extension Agent', 
       icon: Users, 
       color: 'text-blue-600', 
       bgColor: 'bg-blue-50 hover:bg-blue-100',
@@ -76,13 +114,11 @@ const Auth = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center space-x-2">
-            <div className="bg-green-600 p-3 rounded-lg">
-              <img 
-                src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png" 
-                alt="AgriLync Logo" 
-                className="h-8 w-8"
-              />
-            </div>
+            <img 
+              src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png" 
+              alt="AgriLync Logo" 
+              className="h-8 w-8"
+            />
             <span className="font-bold text-2xl text-gray-900">AgriLync</span>
           </Link>
           <p className="text-gray-600 mt-2">
@@ -91,7 +127,7 @@ const Auth = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          {/* Role Selection - Now beside the form */}
+          {/* Role Selection - Beside the form */}
           {!isLogin && (
             <div className="space-y-6">
               <h3 className="text-2xl font-bold text-gray-900 text-center lg:text-left">
@@ -104,7 +140,7 @@ const Auth = () => {
                     onClick={() => setUserRole(role.value)}
                     className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${
                       userRole === role.value 
-                        ? `${role.bgColor} ${role.borderColor.replace('hover:', '')} ring-2 ring-offset-2 ring-${role.color.split('-')[1]}-500` 
+                        ? `${role.bgColor} ${role.borderColor.replace('hover:', '')} ring-2 ring-offset-2 ring-green-500` 
                         : `bg-white ${role.borderColor} hover:shadow-lg`
                     }`}
                   >
@@ -117,7 +153,7 @@ const Auth = () => {
                         <p className="text-gray-600 mt-1">{role.desc}</p>
                       </div>
                       {userRole === role.value && (
-                        <div className={`w-6 h-6 rounded-full bg-${role.color.split('-')[1]}-500 flex items-center justify-center`}>
+                        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
                           <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
@@ -212,9 +248,9 @@ const Auth = () => {
                   <Button 
                     type="submit" 
                     className="w-full bg-green-600 hover:bg-green-700 text-lg py-6 h-12"
-                    disabled={!isLogin && !userRole}
+                    disabled={(!isLogin && !userRole) || loading}
                   >
-                    {isLogin ? 'Sign In' : 'Create Account'}
+                    {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
                   </Button>
                 </form>
 
