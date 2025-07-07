@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Leaf, User, TrendingUp, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -27,22 +26,62 @@ const Auth = () => {
     e.preventDefault();
     // Handle authentication logic here
     console.log('Form submitted:', { ...formData, role: userRole, isLogin });
+    
+    // Auto-redirect based on role
+    if (userRole === 'farmer') {
+      // Redirect to farmer dashboard
+      window.location.href = '/farmer-dashboard';
+    } else if (userRole === 'investor') {
+      // Redirect to investor dashboard
+      window.location.href = '/investor-dashboard';
+    } else if (userRole === 'agent') {
+      // Redirect to extension agent dashboard
+      window.location.href = '/agent-dashboard';
+    }
   };
 
   const roleOptions = [
-    { value: 'farmer', label: 'Farmer', icon: Leaf, color: 'text-green-600', desc: 'Grow smarter with AI consultation' },
-    { value: 'investor', label: 'Investor', icon: TrendingUp, color: 'text-purple-600', desc: 'Partner with verified farmers' },
-    { value: 'agent', label: 'Extension Agent', icon: Users, color: 'text-blue-600', desc: 'Support farming communities' }
+    { 
+      value: 'farmer', 
+      label: 'Farmer', 
+      icon: Leaf, 
+      color: 'text-green-600', 
+      bgColor: 'bg-green-50 hover:bg-green-100',
+      borderColor: 'border-green-200 hover:border-green-300',
+      desc: 'Grow smarter with AI consultation and weather insights' 
+    },
+    { 
+      value: 'investor', 
+      label: 'Investor', 
+      icon: TrendingUp, 
+      color: 'text-purple-600', 
+      bgColor: 'bg-purple-50 hover:bg-purple-100',
+      borderColor: 'border-purple-200 hover:border-purple-300',
+      desc: 'Partner with verified farmers for sustainable returns' 
+    },
+    { 
+      value: 'agent', 
+      label: 'Change Agent', 
+      icon: Users, 
+      color: 'text-blue-600', 
+      bgColor: 'bg-blue-50 hover:bg-blue-100',
+      borderColor: 'border-blue-200 hover:border-blue-300',
+      desc: 'Support farming communities and drive agricultural growth' 
+    }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-6xl">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center space-x-2">
             <div className="bg-green-600 p-3 rounded-lg">
-              <Leaf className="h-8 w-8 text-white" />
+              <img 
+                src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png" 
+                alt="AgriLync Logo" 
+                className="h-8 w-8"
+              />
             </div>
             <span className="font-bold text-2xl text-gray-900">AgriLync</span>
           </Link>
@@ -51,148 +90,159 @@ const Auth = () => {
           </p>
         </div>
 
-        <Card className="shadow-xl border-0">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl font-bold text-gray-900">
-              {isLogin ? 'Sign In' : 'Create Account'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {!isLogin && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      required
-                    />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          {/* Role Selection - Now beside the form */}
+          {!isLogin && (
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-gray-900 text-center lg:text-left">
+                Choose Your Role
+              </h3>
+              <div className="space-y-4">
+                {roleOptions.map((role) => (
+                  <div
+                    key={role.value}
+                    onClick={() => setUserRole(role.value)}
+                    className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${
+                      userRole === role.value 
+                        ? `${role.bgColor} ${role.borderColor.replace('hover:', '')} ring-2 ring-offset-2 ring-${role.color.split('-')[1]}-500` 
+                        : `bg-white ${role.borderColor} hover:shadow-lg`
+                    }`}
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className={`p-3 rounded-xl ${role.bgColor}`}>
+                        <role.icon className={`h-8 w-8 ${role.color}`} />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-xl font-semibold text-gray-900">{role.label}</h4>
+                        <p className="text-gray-600 mt-1">{role.desc}</p>
+                      </div>
+                      {userRole === role.value && (
+                        <div className={`w-6 h-6 rounded-full bg-${role.color.split('-')[1]}-500 flex items-center justify-center`}>
+                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="+233 XX XXX XXXX"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="location">Location</Label>
-                    <Input
-                      id="location"
-                      type="text"
-                      placeholder="Your city/region"
-                      value={formData.location}
-                      onChange={(e) => handleInputChange('location', e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="role">I am a...</Label>
-                    <Select value={userRole} onValueChange={setUserRole} required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {roleOptions.map((role) => (
-                          <SelectItem key={role.value} value={role.value}>
-                            <div className="flex items-center space-x-2">
-                              <role.icon className={`h-4 w-4 ${role.color}`} />
-                              <div>
-                                <div className="font-medium">{role.label}</div>
-                                <div className="text-xs text-gray-500">{role.desc}</div>
-                              </div>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your.email@example.com"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  required
-                />
+                ))}
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
-                  required
-                />
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full bg-green-600 hover:bg-green-700 text-lg py-3"
-              >
-                {isLogin ? 'Sign In' : 'Create Account'}
-              </Button>
-            </form>
-
-            <div className="text-center space-y-4">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">or</span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-green-600 hover:text-green-700 font-medium"
-              >
-                {isLogin 
-                  ? "Don't have an account? Create one" 
-                  : "Already have an account? Sign in"
-                }
-              </button>
             </div>
-          </CardContent>
-        </Card>
+          )}
 
-        {/* Role Benefits */}
-        {!isLogin && (
-          <div className="mt-8 grid grid-cols-1 gap-4">
-            {roleOptions.map((role) => (
-              <div key={role.value} className="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
-                <div className="flex items-center space-x-3">
-                  <role.icon className={`h-6 w-6 ${role.color}`} />
-                  <div>
-                    <h4 className="font-semibold text-gray-900">{role.label}</h4>
-                    <p className="text-sm text-gray-600">{role.desc}</p>
+          {/* Auth Form */}
+          <div className={`${!isLogin ? '' : 'lg:col-span-2 max-w-md mx-auto w-full'}`}>
+            <Card className="shadow-2xl border-0">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-2xl font-bold text-gray-900">
+                  {isLogin ? 'Sign In' : 'Create Account'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {!isLogin && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Full Name</Label>
+                        <Input
+                          id="name"
+                          type="text"
+                          placeholder="Enter your full name"
+                          value={formData.name}
+                          onChange={(e) => handleInputChange('name', e.target.value)}
+                          required
+                          className="h-12"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="+233 XX XXX XXXX"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          required
+                          className="h-12"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="location">Location</Label>
+                        <Input
+                          id="location"
+                          type="text"
+                          placeholder="Your city/region in Ghana"
+                          value={formData.location}
+                          onChange={(e) => handleInputChange('location', e.target.value)}
+                          required
+                          className="h-12"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your.email@example.com"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      required
+                      className="h-12"
+                    />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Enter your password"
+                      value={formData.password}
+                      onChange={(e) => handleInputChange('password', e.target.value)}
+                      required
+                      className="h-12"
+                    />
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-green-600 hover:bg-green-700 text-lg py-6 h-12"
+                    disabled={!isLogin && !userRole}
+                  >
+                    {isLogin ? 'Sign In' : 'Create Account'}
+                  </Button>
+                </form>
+
+                <div className="text-center space-y-4">
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-300" />
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-white text-gray-500">or</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsLogin(!isLogin)}
+                    className="text-green-600 hover:text-green-700 font-medium"
+                  >
+                    {isLogin 
+                      ? "Don't have an account? Create one" 
+                      : "Already have an account? Sign in"
+                    }
+                  </button>
                 </div>
-              </div>
-            ))}
+              </CardContent>
+            </Card>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
