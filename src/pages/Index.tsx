@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -22,16 +23,31 @@ const Index = () => {
     <div className="min-h-screen bg-white">
       <Navbar />
       
-      {/* Hero Section - Updated heading and improved visibility */}
-      <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50">
-        <div className="absolute inset-0 bg-black/30"></div>
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')",
-          }}
-        ></div>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* Hero Section - Updated with video background */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-black/40 z-10"></div>
+        
+        {/* Video Background */}
+        <div className="absolute inset-0 w-full h-full">
+          <video 
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source src="https://www.pinterest.com/pin/104216178872541278/" type="video/mp4" />
+            {/* Fallback image */}
+            <div 
+              className="w-full h-full bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: "url('https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')",
+              }}
+            ></div>
+          </video>
+        </div>
+        
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="animate-fade-in-up">
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-2xl animate-slide-in-up">
               Transforming Agriculture
@@ -57,24 +73,11 @@ const Index = () => {
                 Watch Demo Video
               </Button>
             </div>
-            
-            {/* WhatsApp Community Button */}
-            <div className="mt-8">
-              <a 
-                href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-              >
-                <MessageCircle className="h-5 w-5" />
-                <span className="font-medium">Join Our WhatsApp Community</span>
-              </a>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Everything You Need to Succeed Section - Updated with new images and animations */}
+      {/* Everything You Need to Succeed Section - Updated with consistent purple theming */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -86,7 +89,7 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Feature 1 - Text Right, Image Left */}
+          {/* Feature 1 - AI Consultation with Purple Theme */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
             <div className="animate-slide-in-left">
               <img 
@@ -97,8 +100,8 @@ const Index = () => {
               />
             </div>
             <div className="animate-fade-in-right delay-200">
-              <Leaf className="h-12 w-12 text-green-600 mb-4" />
-              <h3 className="text-3xl font-bold text-gray-900 mb-4 cursor-pointer hover:text-green-600 transition-colors"
+              <Leaf className="h-12 w-12 text-purple-600 mb-4" />
+              <h3 className="text-3xl font-bold text-gray-900 mb-4 cursor-pointer hover:text-purple-600 transition-colors"
                   onClick={() => handleFeatureClick('/ai-consultation')}>
                 AI-Powered Crop Consultation
               </h3>
@@ -114,18 +117,18 @@ const Index = () => {
               </ul>
               <Button 
                 onClick={() => handleFeatureClick('/ai-consultation')}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-purple-600 hover:bg-purple-700"
               >
                 Try AI Consultation
               </Button>
             </div>
           </div>
 
-          {/* Feature 2 - Text Left, Image Right */}
+          {/* Feature 2 - Weather with Purple Theme */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
             <div className="animate-fade-in-left delay-400 lg:order-1">
-              <MapPin className="h-12 w-12 text-blue-600 mb-4" />
-              <h3 className="text-3xl font-bold text-gray-900 mb-4 cursor-pointer hover:text-blue-600 transition-colors"
+              <MapPin className="h-12 w-12 text-purple-600 mb-4" />
+              <h3 className="text-3xl font-bold text-gray-900 mb-4 cursor-pointer hover:text-purple-600 transition-colors"
                   onClick={() => handleFeatureClick('/weather')}>
                 Hyperlocal Weather Insights
               </h3>
@@ -141,7 +144,7 @@ const Index = () => {
               </ul>
               <Button 
                 onClick={() => handleFeatureClick('/weather')}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-purple-600 hover:bg-purple-700"
               >
                 View Weather Forecast
               </Button>
@@ -156,11 +159,11 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Feature 3 - Text Right, Image Left */}
+          {/* Feature 3 - FarmPartner with Updated Image */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="animate-slide-in-left delay-600">
               <img 
-                src="/lovable-uploads/78cc82b9-7fa6-4dd5-9cba-9498e9d21862.png"
+                src="/lovable-uploads/d5bee012-8bd6-4f66-bd49-d60d2468bcb3.png"
                 alt="FarmPartner Investment"
                 className="rounded-2xl shadow-2xl w-full h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
                 onClick={() => handleFeatureClick('/farm-partner')}
