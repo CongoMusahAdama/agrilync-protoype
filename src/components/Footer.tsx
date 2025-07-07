@@ -11,13 +11,11 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <div className="bg-green-600 p-2 rounded-lg">
-                <img 
-                  src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png" 
-                  alt="AgriLync Logo" 
-                  className="h-8 w-8"
-                />
-              </div>
+              <img 
+                src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png" 
+                alt="AgriLync Logo" 
+                className="h-8 w-8"
+              />
               <span className="font-bold text-2xl">AgriLync</span>
             </div>
             <p className="text-gray-300 mb-6 max-w-md">
@@ -71,8 +69,8 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-green-400" />
-                <a href="mailto:info.agrilync.gmail.com" className="text-gray-300 hover:text-green-400">
-                  info.agrilync.gmail.com
+                <a href="mailto:info.agrilync@gmail.com" className="text-gray-300 hover:text-green-400">
+                  info.agrilync@gmail.com
                 </a>
               </div>
             </div>
@@ -113,10 +111,10 @@ const Footer = () => {
                 Connect with fellow farmers and stay updated with the latest farming insights.
               </p>
               <a 
-                href="#" 
+                href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-colors"
+                className="inline-flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105"
               >
                 <MessageCircle className="h-4 w-4" />
                 <span>WhatsApp Community</span>

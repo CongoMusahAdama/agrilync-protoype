@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import About from "./pages/About";
@@ -29,12 +30,36 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/about" element={<About />} />
-            <Route path="/ai-consultation" element={<AIConsultation />} />
-            <Route path="/weather" element={<Weather />} />
-            <Route path="/farm-partner" element={<FarmPartner />} />
-            <Route path="/farmer-dashboard" element={<FarmerDashboard />} />
-            <Route path="/investor-dashboard" element={<InvestorDashboard />} />
-            <Route path="/agent-dashboard" element={<ExtensionAgentDashboard />} />
+            <Route path="/ai-consultation" element={
+              <ProtectedRoute>
+                <AIConsultation />
+              </ProtectedRoute>
+            } />
+            <Route path="/weather" element={
+              <ProtectedRoute>
+                <Weather />
+              </ProtectedRoute>
+            } />
+            <Route path="/farm-partner" element={
+              <ProtectedRoute>
+                <FarmPartner />
+              </ProtectedRoute>
+            } />
+            <Route path="/farmer-dashboard" element={
+              <ProtectedRoute>
+                <FarmerDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/investor-dashboard" element={
+              <ProtectedRoute>
+                <InvestorDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/agent-dashboard" element={
+              <ProtectedRoute>
+                <ExtensionAgentDashboard />
+              </ProtectedRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

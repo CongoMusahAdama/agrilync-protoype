@@ -1,11 +1,10 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Leaf, User, TrendingUp, Users } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -21,8 +20,17 @@ const Auth = () => {
     location: ''
   });
 
-  const { signUp, signIn } = useAuth();
+  const { signUp, signIn, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || '/';
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, from]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -39,11 +47,12 @@ const Auth = () => {
           toast.error(error.message);
         } else {
           toast.success('Successfully signed in!');
-          // Redirect will be handled by auth state change
+          navigate(from, { replace: true });
         }
       } else {
         if (!userRole) {
           toast.error('Please select a role');
+          setLoading(false);
           return;
         }
 
@@ -72,6 +81,7 @@ const Auth = () => {
         }
       }
     } catch (error) {
+      console.error('Auth error:', error);
       toast.error('An unexpected error occurred');
     } finally {
       setLoading(false);
