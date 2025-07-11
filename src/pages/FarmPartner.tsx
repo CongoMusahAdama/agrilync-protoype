@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -149,13 +150,13 @@ const FarmPartner = () => {
         <div 
           className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: "url('/lovable-uploads/14357fcc-a7a4-43b1-be69-c19ee08b2683.png')",
+            backgroundImage: "url('/lovable-uploads/f3ebb83b-5e8b-4d3d-ac22-d0fe7dd695b0.png')",
           }}
         ></div>
         
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="animate-fade-in-up">
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-2xl animate-slide-in-up font-['Playfair_Display']">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 drop-shadow-2xl animate-slide-in-up font-['Playfair_Display']">
               Transforming Agriculture
               <span className="block animate-fade-in delay-500">
                 <span className="text-white">through </span>
@@ -164,7 +165,7 @@ const FarmPartner = () => {
                 </span>
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-white/95 mb-8 max-w-4xl mx-auto drop-shadow-lg font-medium animate-fade-in delay-700">
+            <p className="text-lg md:text-xl text-white/95 mb-8 max-w-4xl mx-auto drop-shadow-lg font-medium animate-fade-in delay-700">
               Connect verified farmers with impact investors through our transparent 
               partnership platform. Secure funding, share profits, and build sustainable agricultural communities.
             </p>
