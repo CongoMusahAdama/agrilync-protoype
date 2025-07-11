@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useToast } from '@/hooks/use-toast';
 import { 
   MessageSquare, 
   Upload, 
@@ -21,6 +23,7 @@ import {
 } from 'lucide-react';
 
 const AIConsultation = () => {
+  const { toast } = useToast();
   const [chatMessages, setChatMessages] = useState([
     {
       type: 'ai',
@@ -30,6 +33,30 @@ const AIConsultation = () => {
   ]);
   const [newMessage, setNewMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  
+  // Form states
+  const [visitForm, setVisitForm] = useState({
+    name: '',
+    phone: '',
+    location: '',
+    challenge: '',
+    preferredDate: ''
+  });
+  
+  const [callForm, setCallForm] = useState({
+    name: '',
+    email: '',
+    date: '',
+    time: '',
+    topics: ''
+  });
+  
+  const [workshopRegistration, setWorkshopRegistration] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    workshopId: ''
+  });
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
@@ -65,6 +92,62 @@ const AIConsultation = () => {
       };
       setChatMessages(prev => [...prev, analysisMessage]);
     }
+  };
+
+  const handleVisitRequest = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!visitForm.name || !visitForm.phone || !visitForm.location) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    toast({
+      title: "Visit Requested Successfully!",
+      description: "An extension agent will contact you within 24 hours to confirm your visit.",
+    });
+    
+    setVisitForm({ name: '', phone: '', location: '', challenge: '', preferredDate: '' });
+  };
+
+  const handleScheduleCall = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!callForm.name || !callForm.email || !callForm.date || !callForm.time) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    toast({
+      title: "Call Scheduled Successfully!",
+      description: `Your virtual consultation is scheduled for ${callForm.date} at ${callForm.time}. Check your email for the meeting link.`,
+    });
+    
+    setCallForm({ name: '', email: '', date: '', time: '', topics: '' });
+  };
+
+  const handleWorkshopRegistration = (workshopTitle: string, workshopId: string) => {
+    if (!workshopRegistration.name || !workshopRegistration.email || !workshopRegistration.phone) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    toast({
+      title: "Registration Successful!",
+      description: `You've been registered for "${workshopTitle}". You'll receive a confirmation email shortly.`,
+    });
+    
+    setWorkshopRegistration({ name: '', email: '', phone: '', workshopId: '' });
   };
 
   return (
@@ -224,15 +307,40 @@ const AIConsultation = () => {
                   <p className="text-gray-600">
                     Book a visit from a local extension agent for hands-on support.
                   </p>
-                  <div className="space-y-3">
-                    <Input placeholder="Your Name" />
-                    <Input placeholder="Phone Number" />
-                    <Input placeholder="Farm Location" />
-                    <Textarea placeholder="Describe your farming challenge..." />
-                    <Button className="w-full bg-green-600 hover:bg-green-700">
+                  <form onSubmit={handleVisitRequest} className="space-y-3">
+                    <Input 
+                      placeholder="Your Name *" 
+                      value={visitForm.name}
+                      onChange={(e) => setVisitForm({...visitForm, name: e.target.value})}
+                      required
+                    />
+                    <Input 
+                      placeholder="Phone Number *" 
+                      value={visitForm.phone}
+                      onChange={(e) => setVisitForm({...visitForm, phone: e.target.value})}
+                      required
+                    />
+                    <Input 
+                      placeholder="Farm Location *" 
+                      value={visitForm.location}
+                      onChange={(e) => setVisitForm({...visitForm, location: e.target.value})}
+                      required
+                    />
+                    <Input 
+                      type="date" 
+                      placeholder="Preferred Date"
+                      value={visitForm.preferredDate}
+                      onChange={(e) => setVisitForm({...visitForm, preferredDate: e.target.value})}
+                    />
+                    <Textarea 
+                      placeholder="Describe your farming challenge..." 
+                      value={visitForm.challenge}
+                      onChange={(e) => setVisitForm({...visitForm, challenge: e.target.value})}
+                    />
+                    <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">
                       Request Visit
                     </Button>
-                  </div>
+                  </form>
                 </CardContent>
               </Card>
 
@@ -247,16 +355,41 @@ const AIConsultation = () => {
                   <p className="text-gray-600">
                     Schedule a video call with agricultural experts.
                   </p>
-                  <div className="space-y-3">
-                    <Input placeholder="Your Name" />
-                    <Input placeholder="Email Address" />
-                    <Input type="date" />
-                    <Input type="time" />
-                    <Textarea placeholder="Topics to discuss..." />
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                  <form onSubmit={handleScheduleCall} className="space-y-3">
+                    <Input 
+                      placeholder="Your Name *" 
+                      value={callForm.name}
+                      onChange={(e) => setCallForm({...callForm, name: e.target.value})}
+                      required
+                    />
+                    <Input 
+                      placeholder="Email Address *" 
+                      type="email"
+                      value={callForm.email}
+                      onChange={(e) => setCallForm({...callForm, email: e.target.value})}
+                      required
+                    />
+                    <Input 
+                      type="date" 
+                      value={callForm.date}
+                      onChange={(e) => setCallForm({...callForm, date: e.target.value})}
+                      required
+                    />
+                    <Input 
+                      type="time" 
+                      value={callForm.time}
+                      onChange={(e) => setCallForm({...callForm, time: e.target.value})}
+                      required
+                    />
+                    <Textarea 
+                      placeholder="Topics to discuss..." 
+                      value={callForm.topics}
+                      onChange={(e) => setCallForm({...callForm, topics: e.target.value})}
+                    />
+                    <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
                       Schedule Call
                     </Button>
-                  </div>
+                  </form>
                 </CardContent>
               </Card>
             </div>
@@ -276,6 +409,7 @@ const AIConsultation = () => {
                   <div className="space-y-4">
                     {[
                       {
+                        id: '1',
                         title: "Organic Pest Control Methods",
                         date: "March 15, 2024",
                         time: "2:00 PM - 4:00 PM",
@@ -283,6 +417,7 @@ const AIConsultation = () => {
                         spots: "12 spots remaining"
                       },
                       {
+                        id: '2',
                         title: "Modern Irrigation Techniques",
                         date: "March 22, 2024",
                         time: "10:00 AM - 12:00 PM",
@@ -290,23 +425,58 @@ const AIConsultation = () => {
                         spots: "8 spots remaining"
                       },
                       {
+                        id: '3',
                         title: "Crop Rotation and Soil Health",
                         date: "March 29, 2024",
                         time: "1:00 PM - 3:00 PM",
                         location: "Accra Farming Hub",
                         spots: "15 spots remaining"
                       }
-                    ].map((workshop, index) => (
-                      <div key={index} className="border rounded-lg p-4 hover:border-green-500 transition-colors">
+                    ].map((workshop) => (
+                      <div key={workshop.id} className="border rounded-lg p-4 hover:border-green-500 transition-colors">
                         <div className="flex justify-between items-start mb-2">
                           <h4 className="font-semibold text-gray-900">{workshop.title}</h4>
                           <span className="text-sm text-green-600 font-medium">{workshop.spots}</span>
                         </div>
                         <p className="text-gray-600 text-sm mb-1">{workshop.date} • {workshop.time}</p>
                         <p className="text-gray-600 text-sm mb-3">{workshop.location}</p>
-                        <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
-                          Register Now
-                        </Button>
+                        
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                              Register Now
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Register for {workshop.title}</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <Input
+                                placeholder="Your Name *"
+                                value={workshopRegistration.name}
+                                onChange={(e) => setWorkshopRegistration({...workshopRegistration, name: e.target.value})}
+                              />
+                              <Input
+                                placeholder="Email Address *"
+                                type="email"
+                                value={workshopRegistration.email}
+                                onChange={(e) => setWorkshopRegistration({...workshopRegistration, email: e.target.value})}
+                              />
+                              <Input
+                                placeholder="Phone Number *"
+                                value={workshopRegistration.phone}
+                                onChange={(e) => setWorkshopRegistration({...workshopRegistration, phone: e.target.value})}
+                              />
+                              <Button 
+                                onClick={() => handleWorkshopRegistration(workshop.title, workshop.id)}
+                                className="w-full bg-purple-600 hover:bg-purple-700"
+                              >
+                                Confirm Registration
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     ))}
                   </div>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -18,15 +19,15 @@ const Index = () => {
     <div className="min-h-screen bg-white">
       <Navbar />
       
-      {/* Hero Section - Updated with static background image */}
+      {/* Hero Section - Updated with new heading animation and background */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-black/40 z-10"></div>
         
-        {/* Static Background Image */}
+        {/* Background Image */}
         <div 
           className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')",
+            backgroundImage: "url('/lovable-uploads/1e7901ec-5ccd-46fc-9de5-bbe6b01e6e6b.png')",
           }}
         ></div>
         
@@ -34,15 +35,16 @@ const Index = () => {
           <div className="animate-fade-in-up">
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-2xl animate-slide-in-up">
               Transforming Agriculture
-              <span className="block text-green-300 animate-fade-in delay-500">
-                through AI and Easy Access to Finance
+              <span className="block animate-fade-in delay-500">
+                <span className="text-white">through </span>
+                <span className="text-purple-400 font-extrabold">AI and Easy Access to Finance</span>
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-white/95 mb-8 max-w-3xl mx-auto drop-shadow-lg font-medium">
+            <p className="text-xl md:text-2xl text-white/95 mb-8 max-w-3xl mx-auto drop-shadow-lg font-medium animate-fade-in delay-700">
               Connect with AI-powered consultation, hyperlocal weather insights, 
               and innovative financing solutions for sustainable farming success.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in delay-1000">
               <Link to="/auth">
                 <Button className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
                   Get Started
@@ -60,10 +62,10 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Everything You Need to Succeed Section - Updated with consistent purple theming */}
+      {/* Everything You Need to Succeed Section - Updated with staggered animations */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               Everything You Need to Succeed
             </h2>
@@ -72,8 +74,8 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Feature 1 - AI Consultation with Purple Theme */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
+          {/* Feature 1 - AI Consultation with staggered animation */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20 animate-slide-down delay-200">
             <div className="animate-slide-in-left">
               <img 
                 src="/lovable-uploads/a27f20d9-60db-490a-9d3f-a0d3d0e362c9.png"
@@ -82,7 +84,7 @@ const Index = () => {
                 onClick={() => handleFeatureClick('/ai-consultation')}
               />
             </div>
-            <div className="animate-fade-in-right delay-200">
+            <div className="animate-fade-in-right delay-400">
               <Leaf className="h-12 w-12 text-purple-600 mb-4" />
               <h3 className="text-3xl font-bold text-gray-900 mb-4 cursor-pointer hover:text-purple-600 transition-colors"
                   onClick={() => handleFeatureClick('/ai-consultation')}>
@@ -107,9 +109,9 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Feature 2 - Weather with Purple Theme */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
-            <div className="animate-fade-in-left delay-400 lg:order-1">
+          {/* Feature 2 - Weather with staggered animation */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20 animate-slide-down delay-400">
+            <div className="animate-fade-in-left delay-600 lg:order-1">
               <MapPin className="h-12 w-12 text-purple-600 mb-4" />
               <h3 className="text-3xl font-bold text-gray-900 mb-4 cursor-pointer hover:text-purple-600 transition-colors"
                   onClick={() => handleFeatureClick('/weather')}>
@@ -132,7 +134,7 @@ const Index = () => {
                 View Weather Forecast
               </Button>
             </div>
-            <div className="animate-slide-in-right delay-400 lg:order-2">
+            <div className="animate-slide-in-right delay-600 lg:order-2">
               <img 
                 src="/lovable-uploads/3e19a1d1-e890-436d-ba69-4227c2a1c8b1.png"
                 alt="Weather Forecast"
@@ -142,9 +144,9 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Feature 3 - FarmPartner with Updated Image */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="animate-slide-in-left delay-600">
+          {/* Feature 3 - FarmPartner with staggered animation */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center animate-slide-down delay-600">
+            <div className="animate-slide-in-left delay-800">
               <img 
                 src="/lovable-uploads/d5bee012-8bd6-4f66-bd49-d60d2468bcb3.png"
                 alt="FarmPartner Investment"
@@ -152,7 +154,7 @@ const Index = () => {
                 onClick={() => handleFeatureClick('/farm-partner')}
               />
             </div>
-            <div className="animate-fade-in-right delay-600">
+            <div className="animate-fade-in-right delay-800">
               <TrendingUp className="h-12 w-12 text-purple-600 mb-4" />
               <h3 className="text-3xl font-bold text-gray-900 mb-4 cursor-pointer hover:text-purple-600 transition-colors"
                   onClick={() => handleFeatureClick('/farm-partner')}>
