@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -18,15 +19,15 @@ const Index = () => {
     <div className="min-h-screen bg-white">
       <Navbar />
       
-      {/* Hero Section - Updated with new heading animation and background */}
+      {/* Hero Section - Updated with new attached image */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-black/40 z-10"></div>
         
-        {/* Background Image */}
+        {/* Background Image - Updated to use attached image */}
         <div 
           className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: "url('/lovable-uploads/1e7901ec-5ccd-46fc-9de5-bbe6b01e6e6b.png')",
+            backgroundImage: "url('/lovable-uploads/274984cf-71a9-43bd-a0c6-d4d26c45ec19.png')",
           }}
         ></div>
         
@@ -36,7 +37,7 @@ const Index = () => {
               Transforming Agriculture
               <span className="block animate-fade-in delay-500">
                 <span className="text-white">through </span> 
-                <span className="text-purple-400 font-extrabold">AI and Easy Access to Finance</span>
+                <span className="text-purple-400 font-extrabold animate-continuous-pulse">AI and Easy Access to Finance</span>
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-white/95 mb-8 max-w-3xl mx-auto drop-shadow-lg font-medium animate-fade-in delay-700">
