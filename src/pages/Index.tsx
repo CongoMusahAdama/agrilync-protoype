@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -12,40 +11,24 @@ const Index = () => {
   const navigate = useNavigate();
 
   const handleFeatureClick = (path: string) => {
-    if (!user) {
-      navigate('/auth', { state: { from: path } });
-    } else {
-      navigate(path);
-    }
+    navigate(path);
   };
 
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
       
-      {/* Hero Section - Updated with video background */}
+      {/* Hero Section - Updated with static background image */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-black/40 z-10"></div>
         
-        {/* Video Background */}
-        <div className="absolute inset-0 w-full h-full">
-          <video 
-            autoPlay 
-            muted 
-            loop 
-            playsInline
-            className="w-full h-full object-cover"
-          >
-            <source src="https://www.pinterest.com/pin/104216178872541278/" type="video/mp4" />
-            {/* Fallback image */}
-            <div 
-              className="w-full h-full bg-cover bg-center bg-no-repeat"
-              style={{
-                backgroundImage: "url('https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')",
-              }}
-            ></div>
-          </video>
-        </div>
+        {/* Static Background Image */}
+        <div 
+          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: "url('https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')",
+          }}
+        ></div>
         
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="animate-fade-in-up">
