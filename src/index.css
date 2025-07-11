@@ -1,4 +1,6 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -52,7 +54,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
   }
 
   .hero-gradient {
@@ -201,22 +203,57 @@
   }
 }
 
+/* Enhanced Purple Text Animation */
+@keyframes purpleGlow {
+  0%, 100% { 
+    color: #921573; 
+    text-shadow: 0 0 10px rgba(146, 21, 115, 0.3);
+  }
+  50% { 
+    color: #b91c8c; 
+    text-shadow: 0 0 20px rgba(146, 21, 115, 0.5);
+  }
+}
+
+.animate-purple-glow {
+  animation: purpleGlow 3s ease-in-out infinite;
+}
+
+/* Typewriter Effect */
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.typewriter {
+  overflow: hidden;
+  border-right: 3px solid #921573;
+  white-space: nowrap;
+  animation: typewriter 4s steps(40) 1s 1 normal both;
+}
+
+/* Continuous pulse for hero purple text */
+@keyframes continuousPulse {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scale(1.02);
+  }
+}
+
+.animate-continuous-pulse {
+  animation: continuousPulse 2s ease-in-out infinite;
+}
+
 .hover-scale {
   transition: transform 0.3s ease;
 }
 
 .hover-scale:hover {
   transform: scale(1.05);
-}
-
-/* Pulse animation for hero text */
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.8; }
-}
-
-.animate-pulse {
-  animation: pulse 2s ease-in-out infinite;
 }
 
 /* Bounce animation */
@@ -230,3 +267,31 @@
 .animate-bounce {
   animation: bounce 2s ease-in-out infinite;
 }
+
+/* Custom font families */
+.font-playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Professional button hover effects */
+.btn-hover-scale {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-hover-scale:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Staggered animation for features */
+.stagger-animation {
+  animation-fill-mode: both;
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.3s; }
+.stagger-3 { animation-delay: 0.5s; }

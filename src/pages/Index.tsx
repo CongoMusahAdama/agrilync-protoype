@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -36,7 +35,7 @@ const Index = () => {
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-2xl animate-slide-in-up">
               Transforming Agriculture
               <span className="block animate-fade-in delay-500">
-                <span className="text-white">through </span>
+                <span className="text-white">through </span> 
                 <span className="text-purple-400 font-extrabold">AI and Easy Access to Finance</span>
               </span>
             </h1>
@@ -78,7 +77,7 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20 animate-slide-down delay-200">
             <div className="animate-slide-in-left">
               <img 
-                src="/lovable-uploads/a27f20d9-60db-490a-9d3f-a0d3d0e362c9.png"
+                src="/lovable-uploads/889a4eaa-0299-4896-8399-849a40f5565a.png"
                 alt="AI Consultation"
                 className="rounded-2xl shadow-2xl w-full h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
                 onClick={() => handleFeatureClick('/ai-consultation')}

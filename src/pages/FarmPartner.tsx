@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { 
   Users, 
   TrendingUp, 
@@ -20,11 +22,54 @@ import {
   Handshake,
   PieChart,
   Target,
-  Award
+  Award,
+  Play
 } from 'lucide-react';
 
 const FarmPartner = () => {
   const [selectedRole, setSelectedRole] = useState('');
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    if (!user) {
+      toast.error('Please sign in to get started');
+      navigate('/auth');
+      return;
+    }
+    // Navigate based on user role or default to application form
+    navigate('/auth');
+  };
+
+  const handleInvestNow = (farmerId: number) => {
+    if (!user) {
+      toast.error('Please sign in to invest');
+      navigate('/auth');
+      return;
+    }
+    toast.success('Investment process initiated!');
+    // Handle investment logic
+  };
+
+  const handlePartnerNow = (farmerId: number) => {
+    if (!user) {
+      toast.error('Please sign in to partner');
+      navigate('/auth');
+      return;
+    }
+    toast.success('Partnership request sent!');
+    // Handle partnership logic
+  };
+
+  const handleTrackProgress = () => {
+    if (!user) {
+      toast.error('Please sign in to track progress');
+      navigate('/auth');
+      return;
+    }
+    // Navigate to dashboard or progress page
+    toast.success('Opening progress dashboard...');
+  };
 
   const farmers = [
     {
@@ -96,39 +141,53 @@ const FarmPartner = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            FarmPartner Initiative
-          </h1>
-          <p className="text-xl text-gray-600 max-w-4xl mx-auto mb-8">
-            Connect with verified investors for seeds, fertilizer, and equipment. 
-            Share profits and grow together with transparent partnerships powered by smart contracts.
-          </p>
-          
-          <div className="flex justify-center space-x-4 mb-8">
-            <Button 
-              onClick={() => setSelectedRole('farmer')}
-              className={`px-8 py-3 ${selectedRole === 'farmer' ? 'bg-green-600' : 'bg-gray-200 text-gray-700'}`}
-            >
-              Join as Farmer
-            </Button>
-            <Button 
-              onClick={() => setSelectedRole('investor')}
-              className={`px-8 py-3 ${selectedRole === 'investor' ? 'bg-purple-600' : 'bg-gray-200 text-gray-700'}`}
-            >
-              Become Investor
-            </Button>
-            <Button 
-              onClick={() => setSelectedRole('association')}
-              className={`px-8 py-3 ${selectedRole === 'association' ? 'bg-blue-600' : 'bg-gray-200 text-gray-700'}`}
-            >
-              Join as Association
-            </Button>
+      {/* Hero Section with New Background */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-black/50 z-10"></div>
+        
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: "url('/lovable-uploads/14357fcc-a7a4-43b1-be69-c19ee08b2683.png')",
+          }}
+        ></div>
+        
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="animate-fade-in-up">
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-2xl animate-slide-in-up font-['Playfair_Display']">
+              Transforming Agriculture
+              <span className="block animate-fade-in delay-500">
+                <span className="text-white">through </span>
+                <span className="text-purple-400 font-extrabold animate-pulse" style={{ color: '#921573' }}>
+                  AI and Easy Access to Finance
+                </span>
+              </span>
+            </h1>
+            <p className="text-xl md:text-2xl text-white/95 mb-8 max-w-4xl mx-auto drop-shadow-lg font-medium animate-fade-in delay-700">
+              Connect verified farmers with impact investors through our transparent 
+              partnership platform. Secure funding, share profits, and build sustainable agricultural communities.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in delay-1000">
+              <Button 
+                onClick={handleGetStarted}
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+              >
+                Get Started
+              </Button>
+              <Button 
+                variant="outline" 
+                className="bg-white/20 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 text-lg font-semibold rounded-full shadow-xl backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
+              >
+                <Play className="mr-2 h-5 w-5" />
+                Watch Demo Video
+              </Button>
+            </div>
           </div>
         </div>
+      </section>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="browse" className="space-y-8">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="browse">Browse Partners</TabsTrigger>
@@ -145,13 +204,16 @@ const FarmPartner = () => {
                 <h2 className="text-2xl font-bold text-gray-900">Verified Farmers Seeking Investment</h2>
                 <div className="flex space-x-2">
                   <Input placeholder="Search by crop or location..." className="w-64" />
-                  <Button className="bg-green-600 hover:bg-green-700">Search</Button>
+                  <Button className="bg-green-600 hover:bg-green-700 transform hover:scale-105 transition-all duration-200">
+                    Search
+                  </Button>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {farmers.map((farmer) => (
-                  <Card key={farmer.id} className="hover:shadow-lg transition-shadow">
+                  <Card key={farmer.id} className="hover:shadow-lg transition-shadow transform hover:scale-105 duration-300">
+                    
                     <CardHeader className="pb-4">
                       <div className="flex items-center space-x-3">
                         <img
@@ -211,11 +273,17 @@ const FarmPartner = () => {
                       </div>
 
                       <div className="flex space-x-2">
-                        <Button className="flex-1 bg-purple-600 hover:bg-purple-700">
+                        <Button 
+                          onClick={() => handlePartnerNow(farmer.id)}
+                          className="flex-1 bg-purple-600 hover:bg-purple-700 transform hover:scale-105 transition-all duration-200"
+                        >
                           <Handshake className="h-4 w-4 mr-2" />
                           Partner Now
                         </Button>
-                        <Button variant="outline" className="flex-1">
+                        <Button 
+                          variant="outline" 
+                          className="flex-1 transform hover:scale-105 transition-all duration-200"
+                        >
                           View Details
                         </Button>
                       </div>
@@ -228,6 +296,7 @@ const FarmPartner = () => {
 
           {/* How It Works */}
           <TabsContent value="how-it-works">
+            
             <div className="space-y-12">
               <div className="text-center">
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">How FarmPartner Works</h2>
@@ -278,6 +347,7 @@ const FarmPartner = () => {
                 ))}
               </div>
 
+              
               <div className="bg-green-50 rounded-2xl p-8">
                 <h3 className="text-2xl font-bold text-center text-gray-900 mb-8">Partnership Benefits</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -322,6 +392,7 @@ const FarmPartner = () => {
 
           {/* Success Stories */}
           <TabsContent value="success-stories">
+            
             <div className="space-y-8">
               <div className="text-center">
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Partnership Success Stories</h2>
@@ -401,6 +472,7 @@ const FarmPartner = () => {
 
           {/* Apply Now */}
           <TabsContent value="apply">
+            
             <div className="max-w-2xl mx-auto">
               <Card>
                 <CardHeader>
@@ -411,7 +483,7 @@ const FarmPartner = () => {
                     <Button 
                       variant={selectedRole === 'farmer' ? 'default' : 'outline'}
                       onClick={() => setSelectedRole('farmer')}
-                      className="h-20 flex flex-col"
+                      className="h-20 flex flex-col transform hover:scale-105 transition-all duration-200"
                     >
                       <Users className="h-6 w-6 mb-2" />
                       Farmer
@@ -419,7 +491,7 @@ const FarmPartner = () => {
                     <Button 
                       variant={selectedRole === 'investor' ? 'default' : 'outline'}
                       onClick={() => setSelectedRole('investor')}
-                      className="h-20 flex flex-col"
+                      className="h-20 flex flex-col transform hover:scale-105 transition-all duration-200"
                     >
                       <TrendingUp className="h-6 w-6 mb-2" />
                       Investor
@@ -427,7 +499,7 @@ const FarmPartner = () => {
                     <Button 
                       variant={selectedRole === 'association' ? 'default' : 'outline'}
                       onClick={() => setSelectedRole('association')}
-                      className="h-20 flex flex-col"
+                      className="h-20 flex flex-col transform hover:scale-105 transition-all duration-200"
                     >
                       <Handshake className="h-6 w-6 mb-2" />
                       Association
@@ -447,7 +519,7 @@ const FarmPartner = () => {
                       </div>
                       <Input placeholder="Funding Amount Needed ($)" />
                       <Textarea placeholder="Describe what you need funding for and your farming plans..." />
-                      <Button className="w-full bg-green-600 hover:bg-green-700">
+                      <Button className="w-full bg-green-600 hover:bg-green-700 transform hover:scale-105 transition-all duration-200">
                         Submit Farmer Application
                       </Button>
                     </div>
@@ -464,7 +536,7 @@ const FarmPartner = () => {
                       </div>
                       <Input placeholder="Preferred Investment Range ($)" />
                       <Textarea placeholder="Investment preferences and criteria..." />
-                      <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                      <Button className="w-full bg-purple-600 hover:bg-purple-700 transform hover:scale-105 transition-all duration-200">
                         Submit Investor Application
                       </Button>
                     </div>
@@ -483,7 +555,7 @@ const FarmPartner = () => {
                       </div>
                       <Input placeholder="Primary Location/Region" />
                       <Textarea placeholder="Describe your association and how you support farmers..." />
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                      <Button className="w-full bg-blue-600 hover:bg-blue-700 transform hover:scale-105 transition-all duration-200">
                         Submit Association Application
                       </Button>
                     </div>
@@ -518,9 +590,18 @@ const FarmPartner = () => {
                       <div className="text-gray-600">Projected ROI</div>
                     </div>
                   </div>
+                  <div className="mt-6 flex justify-center">
+                    <Button 
+                      onClick={handleTrackProgress}
+                      className="bg-green-600 hover:bg-green-700 transform hover:scale-105 transition-all duration-200"
+                    >
+                      View Detailed Progress
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
 
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <Card>
                   <CardHeader>
