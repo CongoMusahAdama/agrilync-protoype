@@ -149,20 +149,14 @@ const FarmPartner = () => {
         <div 
           className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: "url('/lovable-uploads/14357fcc-a7a4-43b1-be69-c19ee08b2683.png')",
+            backgroundImage: "url('/lovable-uploads/d5bee012-8bd6-4f66-bd49-d60d2468bcb3.png')",
           }}
         ></div>
         
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="animate-fade-in-up">
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-2xl animate-slide-in-up font-['Playfair_Display']">
-              Transforming Agriculture
-              <span className="block animate-fade-in delay-500">
-                <span className="text-white">through </span>
-                <span className="text-purple-400 font-extrabold animate-pulse" style={{ color: '#921573' }}>
-                  AI and Easy Access to Finance
-                </span>
-              </span>
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-2xl">
+              Transform Your Farm with Smart Investment
             </h1>
             <p className="text-xl md:text-2xl text-white/95 mb-8 max-w-4xl mx-auto drop-shadow-lg font-medium animate-fade-in delay-700">
               Connect verified farmers with impact investors through our transparent 
