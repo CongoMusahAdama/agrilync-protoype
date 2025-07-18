@@ -55,39 +55,33 @@ const About = () => {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center">
-                <img 
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
-                  alt="CEO"
-                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover shadow-lg"
-                />
-                <h4 className="text-xl font-bold text-gray-900 mb-2">Kwame Osei</h4>
-                <p className="text-green-600 font-medium mb-2">CEO & Co-Founder</p>
+                <div className="w-32 h-32 rounded-full mx-auto mb-4 bg-green-100 flex items-center justify-center shadow-lg">
+                  <Users className="h-16 w-16 text-green-600" />
+                </div>
+                <h4 className="text-xl font-bold text-gray-900 mb-2">Congo Musah Adama</h4>
+                <p className="text-green-600 font-medium mb-2">CEO and Founder</p>
                 <p className="text-gray-600 text-sm">
                   Agricultural Engineer with 10+ years experience in sustainable farming solutions
                 </p>
               </div>
 
               <div className="text-center">
-                <img 
-                  src="https://images.unsplash.com/photo-1494790108755-2616c27b2e8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
-                  alt="CTO"
-                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover shadow-lg"
-                />
-                <h4 className="text-xl font-bold text-gray-900 mb-2">Akosua Mensah</h4>
-                <p className="text-green-600 font-medium mb-2">CTO & Co-Founder</p>
+                <div className="w-32 h-32 rounded-full mx-auto mb-4 bg-green-100 flex items-center justify-center shadow-lg">
+                  <Target className="h-16 w-16 text-green-600" />
+                </div>
+                <h4 className="text-xl font-bold text-gray-900 mb-2">Prince Sedem</h4>
+                <p className="text-green-600 font-medium mb-2">Co-founder and CTO</p>
                 <p className="text-gray-600 text-sm">
                   AI/ML expert specializing in computer vision and agricultural applications
                 </p>
               </div>
 
               <div className="text-center">
-                <img 
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
-                  alt="Head of Operations"
-                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover shadow-lg"
-                />
-                <h4 className="text-xl font-bold text-gray-900 mb-2">Yaw Asante</h4>
-                <p className="text-green-600 font-medium mb-2">Head of Operations</p>
+                <div className="w-32 h-32 rounded-full mx-auto mb-4 bg-green-100 flex items-center justify-center shadow-lg">
+                  <Heart className="h-16 w-16 text-green-600" />
+                </div>
+                <h4 className="text-xl font-bold text-gray-900 mb-2">Robert</h4>
+                <p className="text-green-600 font-medium mb-2">Co-founder and Business Communication</p>
                 <p className="text-gray-600 text-sm">
                   Former extension agent with deep knowledge of Ghana's farming communities
                 </p>

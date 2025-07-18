@@ -141,42 +141,29 @@ const FarmPartner = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      {/* Hero Section with New Background */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-black/50 z-10"></div>
-        
-        {/* Background Image */}
-        <div 
-          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: "url('/lovable-uploads/ae9e441e-1cf2-44f6-a5c2-e250ded91d23.png')",
-          }}
-        ></div>
-        
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="animate-fade-in-up">
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-2xl">
-              Transform Your Farm with Smart Investment
-            </h1>
-            <p className="text-xl md:text-2xl text-white/95 mb-8 max-w-4xl mx-auto drop-shadow-lg font-medium animate-fade-in delay-700">
-              Connect verified farmers with impact investors through our transparent 
-              partnership platform. Secure funding, share profits, and build sustainable agricultural communities.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in delay-1000">
-              <Button 
-                onClick={handleGetStarted}
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
-              >
-                Get Started
-              </Button>
-              <Button 
-                variant="outline" 
-                className="bg-white/20 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 text-lg font-semibold rounded-full shadow-xl backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
-              >
-                <Play className="mr-2 h-5 w-5" />
-                Watch Demo Video
-              </Button>
-            </div>
+      {/* Header Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            FarmPartner Investment Initiative
+          </h1>
+          <p className="text-xl text-gray-600 max-w-4xl mx-auto mb-8">
+            Connect verified farmers with impact investors through our transparent 
+            partnership platform. Secure funding, share profits, and build sustainable agricultural communities.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              onClick={handleGetStarted}
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+            >
+              Get Started
+            </Button>
+            <Button 
+              variant="outline" 
+              className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white px-8 py-4 text-lg font-semibold rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+            >
+              Learn More
+            </Button>
           </div>
         </div>
       </section>
