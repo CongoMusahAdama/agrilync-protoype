@@ -23,9 +23,9 @@ const About = () => {
             </p>
           </div>
 
-          {/* Vision & Mission - Removed gradient background */}
+          {/* Vision & Mission */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
-            <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+            <div className="bg-white p-8">
               <Target className="h-12 w-12 text-green-600 mb-4" />
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Vision</h3>
               <p className="text-gray-700 leading-relaxed">
@@ -36,7 +36,7 @@ const About = () => {
               </p>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+            <div className="bg-white p-8">
               <Heart className="h-12 w-12 text-green-600 mb-4" />
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h3>
               <p className="text-gray-700 leading-relaxed">
@@ -90,31 +90,31 @@ const About = () => {
           </div>
 
           {/* What Our Team Says */}
-          <div className="bg-gray-50 rounded-3xl p-12 mb-20">
+          <div className="bg-gray-50 p-12 mb-20">
             <h2 className="text-4xl font-bold text-gray-900 text-center mb-12">
               What Our Team Says
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-white p-6 rounded-xl shadow-md">
+              <div className="bg-white p-6">
                 <p className="text-gray-700 italic mb-4">
                   "Every day, we're not just building technology – we're building bridges 
                   between traditional farming wisdom and cutting-edge innovation."
                 </p>
-                <p className="text-green-600 font-medium">- Kwame Osei, CEO</p>
+                <p className="text-green-600 font-medium">- Congo Musah Adama, CEO</p>
               </div>
 
-              <div className="bg-white p-6 rounded-xl shadow-md">
+              <div className="bg-white p-6">
                 <p className="text-gray-700 italic mb-4">
                   "Our AI doesn't replace the farmer's expertise – it amplifies it. 
                   We're creating tools that respect and enhance human knowledge."
                 </p>
-                <p className="text-green-600 font-medium">- Akosua Mensah, CTO</p>
+                <p className="text-green-600 font-medium">- Prince Sedem, CTO</p>
               </div>
             </div>
           </div>
 
           {/* Join Community */}
-          <div className="text-center bg-green-50 rounded-3xl p-12">
+          <div className="text-center bg-green-50 p-12">
             <MessageCircle className="h-16 w-16 text-green-600 mx-auto mb-6" />
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Join Our Growing Community
@@ -124,7 +124,7 @@ const About = () => {
               with the latest agricultural insights and opportunities.
             </p>
             <Button 
-              className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg rounded-full shadow-lg"
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg"
               onClick={() => window.open('#', '_blank')}
             >
               <MessageCircle className="mr-2 h-5 w-5" />

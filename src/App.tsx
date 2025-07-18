@@ -33,21 +33,9 @@ const App = () => (
             <Route path="/ai-consultation" element={<AIConsultation />} />
             <Route path="/weather" element={<Weather />} />
             <Route path="/farm-partner" element={<FarmPartner />} />
-            <Route path="/farmer-dashboard" element={
-              <ProtectedRoute>
-                <FarmerDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/investor-dashboard" element={
-              <ProtectedRoute>
-                <InvestorDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/agent-dashboard" element={
-              <ProtectedRoute>
-                <ExtensionAgentDashboard />
-              </ProtectedRoute>
-            } />
+            <Route path="/farmer-dashboard" element={<FarmerDashboard />} />
+            <Route path="/investor-dashboard" element={<InvestorDashboard />} />
+            <Route path="/agent-dashboard" element={<ExtensionAgentDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -16,13 +16,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
-      
-      {/* Hero Section - Updated with new heading animation and background */}
+      {/* Hero Section - Extended to cover navbar */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-black/40 z-10"></div>
         
-        {/* Background Image */}
+        {/* Background Image - Extended to cover full viewport */}
         <div 
           className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
           style={{
@@ -30,13 +28,18 @@ const Index = () => {
           }}
         ></div>
         
+        {/* Navbar overlay */}
+        <div className="absolute top-0 left-0 right-0 z-30">
+          <Navbar />
+        </div>
+        
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="animate-fade-in-up">
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 drop-shadow-2xl animate-slide-in-up">
               Transforming Agriculture
-              <span className="block animate-fade-in delay-500">
+              <span className="block animate-pulse">
                 <span className="text-white">through </span> 
-                <span className="font-extrabold" style={{ color: '#921573' }}>AI and Easy Access to Finance</span>
+                <span className="font-extrabold animate-pulse" style={{ color: '#921573' }}>AI and Easy Access to Finance</span>
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-white/95 mb-8 max-w-3xl mx-auto drop-shadow-lg font-medium animate-fade-in delay-700">
@@ -65,7 +68,7 @@ const Index = () => {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 animate-fade-in">
               Everything You Need to Succeed
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -85,7 +88,7 @@ const Index = () => {
             </div>
             <div className="animate-fade-in-right delay-400">
               <Leaf className="h-12 w-12 text-purple-600 mb-4" />
-              <h3 className="text-3xl font-bold text-gray-900 mb-4 cursor-pointer hover:text-purple-600 transition-colors"
+              <h3 className="text-3xl font-bold text-gray-900 mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in"
                   onClick={() => handleFeatureClick('/ai-consultation')}>
                 AI-Powered Crop Consultation
               </h3>
@@ -112,7 +115,7 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20 animate-slide-down delay-400">
             <div className="animate-fade-in-left delay-600 lg:order-1">
               <MapPin className="h-12 w-12 text-purple-600 mb-4" />
-              <h3 className="text-3xl font-bold text-gray-900 mb-4 cursor-pointer hover:text-purple-600 transition-colors"
+              <h3 className="text-3xl font-bold text-gray-900 mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in"
                   onClick={() => handleFeatureClick('/weather')}>
                 Hyperlocal Weather Insights
               </h3>
@@ -155,7 +158,7 @@ const Index = () => {
             </div>
             <div className="animate-fade-in-right delay-800">
               <TrendingUp className="h-12 w-12 text-purple-600 mb-4" />
-              <h3 className="text-3xl font-bold text-gray-900 mb-4 cursor-pointer hover:text-purple-600 transition-colors"
+              <h3 className="text-3xl font-bold text-gray-900 mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in"
                   onClick={() => handleFeatureClick('/farm-partner')}>
                 FarmPartner Investment Initiative
               </h3>
@@ -184,7 +187,7 @@ const Index = () => {
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 animate-fade-in">
               Success Stories from Ghana
             </h2>
             <p className="text-xl text-gray-600">
@@ -194,7 +197,7 @@ const Index = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Farmer 1 */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-shadow duration-300">
+            <div className="bg-white p-8 hover:shadow-2xl transition-shadow duration-300">
               <div className="flex items-center mb-6">
                 <img 
                   src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
@@ -223,7 +226,7 @@ const Index = () => {
             </div>
 
             {/* Farmer 2 */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-shadow duration-300">
+            <div className="bg-white p-8 hover:shadow-2xl transition-shadow duration-300">
               <div className="flex items-center mb-6">
                 <img 
                   src="https://images.unsplash.com/photo-1494790108755-2616c27b2e8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
@@ -252,7 +255,7 @@ const Index = () => {
             </div>
 
             {/* Farmer 3 */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-shadow duration-300">
+            <div className="bg-white p-8 hover:shadow-2xl transition-shadow duration-300">
               <div className="flex items-center mb-6">
                 <img 
                   src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
@@ -284,17 +287,17 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-green-600">
+      <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 animate-fade-in">
             Ready to Transform Your Farm?
           </h2>
-          <p className="text-xl text-green-100 mb-8">
+          <p className="text-xl text-gray-600 mb-8">
             Join thousands of Ghanaian farmers already growing smarter with AgriLync
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link to="/auth">
-              <Button className="bg-white text-green-600 hover:bg-gray-100 px-8 py-4 text-lg font-semibold rounded-full shadow-xl">
+              <Button className="bg-green-600 text-white hover:bg-green-700 px-8 py-4 text-lg font-semibold rounded-full shadow-xl">
                 Start Your Journey Today
               </Button>
             </Link>
@@ -304,7 +307,7 @@ const Index = () => {
               href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-2 bg-white/20 hover:bg-white/30 text-white px-6 py-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border border-white/30"
+              className="inline-flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-900 px-6 py-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border border-gray-200"
             >
               <MessageCircle className="h-5 w-5" />
               <span className="font-medium">Join WhatsApp Community</span>
