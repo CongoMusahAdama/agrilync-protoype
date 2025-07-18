@@ -149,7 +149,7 @@ const FarmPartner = () => {
         <div 
           className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: "url('/lovable-uploads/d5bee012-8bd6-4f66-bd49-d60d2468bcb3.png')",
+            backgroundImage: "url('/lovable-uploads/ae9e441e-1cf2-44f6-a5c2-e250ded91d23.png')",
           }}
         ></div>
         
