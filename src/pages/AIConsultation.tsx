@@ -151,106 +151,61 @@ const AIConsultation = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       <Navbar />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
         {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            AI & Human Consultation
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+        <div className="text-center mb-4 sm:mb-8">
+          <h1 className="text-base sm:text-lg md:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">AI & Human Consultation</h1>
+          <p className="text-xs sm:text-base text-gray-600 max-w-xs sm:max-w-md md:max-w-3xl mx-auto">
             Get instant AI-powered advice or connect with local extension agents. 
             Upload crop images for 95% accurate disease detection.
           </p>
         </div>
-
-        <Tabs defaultValue="ai-chat" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-4">
+        <Tabs defaultValue="ai-chat" className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 text-xs sm:text-base">
             <TabsTrigger value="ai-chat">AI Assistant</TabsTrigger>
             <TabsTrigger value="image-analysis">Image Analysis</TabsTrigger>
             <TabsTrigger value="human-consultation">Book Consultation</TabsTrigger>
             <TabsTrigger value="workshops">Workshops</TabsTrigger>
           </TabsList>
-
           {/* AI Chat Interface */}
           <TabsContent value="ai-chat">
-            <Card className="h-[600px] flex flex-col">
-              <CardHeader className="bg-green-50 border-b">
-                <CardTitle className="flex items-center space-x-2">
-                  <Bot className="h-6 w-6 text-green-600" />
-                  <span>AI Farming Assistant</span>
-                  <span className="text-sm text-gray-500 ml-auto">Available 24/7</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col p-0">
-                {/* Chat Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {chatMessages.map((msg, index) => (
-                    <div key={index} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-xs lg:max-w-md flex space-x-2 ${msg.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${msg.type === 'user' ? 'bg-blue-500' : 'bg-green-500'}`}>
-                          {msg.type === 'user' ? <User className="h-4 w-4 text-white" /> : <Bot className="h-4 w-4 text-white" />}
-                        </div>
-                        <div className={`p-3 rounded-lg ${msg.type === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-900'}`}>
-                          <p className="text-sm">{msg.message}</p>
-                          <p className={`text-xs mt-1 ${msg.type === 'user' ? 'text-blue-100' : 'text-gray-500'}`}>
-                            {msg.timestamp.toLocaleTimeString()}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Chat Input */}
-                <div className="border-t p-4">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => setIsRecording(!isRecording)}
-                      className={`p-2 rounded-lg ${isRecording ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600'}`}
-                    >
-                      {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                    </button>
-                    <Input
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Ask about crops, diseases, planting schedules..."
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                      className="flex-1"
-                    />
-                    <Button onClick={handleSendMessage} className="bg-green-600 hover:bg-green-700">
-                      <Send className="h-4 w-4" />
-                    </Button>
+            <Card className="h-[400px] sm:h-[600px] flex flex-col">
+              <CardContent className="flex-1 overflow-y-auto px-2 sm:px-4 py-2 sm:py-4 space-y-2 sm:space-y-3 text-xs sm:text-base">
+                {chatMessages.map((msg, idx) => (
+                  <div key={idx} className={`flex ${msg.type === 'ai' ? 'justify-start' : 'justify-end'}`}> 
+                    <div className={`rounded-lg px-3 py-2 max-w-[80%] ${msg.type === 'ai' ? 'bg-green-100 text-gray-900' : 'bg-blue-100 text-gray-900'} text-xs sm:text-base`}>{msg.message}</div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Available in English, Twi, Ewe, and Dagbani
-                  </p>
-                </div>
+                ))}
               </CardContent>
+              <div className="flex items-center gap-2 px-2 sm:px-4 py-2 border-t bg-white">
+                <Input
+                  className="flex-1 text-xs sm:text-base px-2 py-2"
+                  placeholder="Type your message..."
+                  value={newMessage}
+                  onChange={e => setNewMessage(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
+                />
+                <Button className="text-xs sm:text-base px-3 py-2" onClick={handleSendMessage}>Send</Button>
+              </div>
             </Card>
           </TabsContent>
-
           {/* Image Analysis */}
           <TabsContent value="image-analysis">
-            <Card>
+            <Card className="flex flex-col">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Camera className="h-6 w-6 text-green-600" />
+                <CardTitle className="flex items-center space-x-2 text-xs sm:text-base">
+                  <Camera className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                   <span>Crop Disease Detection</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 sm:space-y-6">
                 <div className="text-center">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 hover:border-green-500 transition-colors">
-                    <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      Upload Crop Image
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                      Take a clear photo of affected leaves or crops for instant analysis
-                    </p>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-12 hover:border-green-500 transition-colors">
+                    <Upload className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-2 sm:mb-4" />
+                    <h3 className="text-xs sm:text-lg font-medium text-gray-900 mb-2">Upload Crop Image</h3>
+                    <p className="text-xs sm:text-base text-gray-600 mb-2 sm:mb-4">Take a clear photo of affected leaves or crops for instant analysis</p>
                     <input
                       type="file"
                       accept="image/*"
@@ -259,234 +214,54 @@ const AIConsultation = () => {
                       id="image-upload"
                     />
                     <label htmlFor="image-upload">
-                      <Button className="bg-green-600 hover:bg-green-700">
-                        Choose Image
-                      </Button>
+                      <Button className="bg-green-600 hover:bg-green-700 text-xs sm:text-base px-4 py-2 mt-2">Choose Image</Button>
                     </label>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <div className="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <span className="text-green-600 font-bold">95%</span>
-                    </div>
-                    <h4 className="font-medium text-gray-900">Accuracy Rate</h4>
-                    <p className="text-sm text-gray-600">Disease detection accuracy</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <span className="text-blue-600 font-bold">&lt;30s</span>
-                    </div>
-                    <h4 className="font-medium text-gray-900">Instant Results</h4>
-                    <p className="text-sm text-gray-600">Get analysis in seconds</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <span className="text-purple-600 font-bold">24/7</span>
-                    </div>
-                    <h4 className="font-medium text-gray-900">Always Available</h4>
-                    <p className="text-sm text-gray-600">Anytime, anywhere</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
-
           {/* Human Consultation */}
           <TabsContent value="human-consultation">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Users className="h-6 w-6 text-green-600" />
-                    <span>In-Person Consultation</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-600">
-                    Book a visit from a local extension agent for hands-on support.
-                  </p>
-                  <form onSubmit={handleVisitRequest} className="space-y-3">
-                    <Input 
-                      placeholder="Your Name *" 
-                      value={visitForm.name}
-                      onChange={(e) => setVisitForm({...visitForm, name: e.target.value})}
-                      required
-                    />
-                    <Input 
-                      placeholder="Phone Number *" 
-                      value={visitForm.phone}
-                      onChange={(e) => setVisitForm({...visitForm, phone: e.target.value})}
-                      required
-                    />
-                    <Input 
-                      placeholder="Farm Location *" 
-                      value={visitForm.location}
-                      onChange={(e) => setVisitForm({...visitForm, location: e.target.value})}
-                      required
-                    />
-                    <Input 
-                      type="date" 
-                      placeholder="Preferred Date"
-                      value={visitForm.preferredDate}
-                      onChange={(e) => setVisitForm({...visitForm, preferredDate: e.target.value})}
-                    />
-                    <Textarea 
-                      placeholder="Describe your farming challenge..." 
-                      value={visitForm.challenge}
-                      onChange={(e) => setVisitForm({...visitForm, challenge: e.target.value})}
-                    />
-                    <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">
-                      Request Visit
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <MessageSquare className="h-6 w-6 text-blue-600" />
-                    <span>Virtual Consultation</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-600">
-                    Schedule a video call with agricultural experts.
-                  </p>
-                  <form onSubmit={handleScheduleCall} className="space-y-3">
-                    <Input 
-                      placeholder="Your Name *" 
-                      value={callForm.name}
-                      onChange={(e) => setCallForm({...callForm, name: e.target.value})}
-                      required
-                    />
-                    <Input 
-                      placeholder="Email Address *" 
-                      type="email"
-                      value={callForm.email}
-                      onChange={(e) => setCallForm({...callForm, email: e.target.value})}
-                      required
-                    />
-                    <Input 
-                      type="date" 
-                      value={callForm.date}
-                      onChange={(e) => setCallForm({...callForm, date: e.target.value})}
-                      required
-                    />
-                    <Input 
-                      type="time" 
-                      value={callForm.time}
-                      onChange={(e) => setCallForm({...callForm, time: e.target.value})}
-                      required
-                    />
-                    <Textarea 
-                      placeholder="Topics to discuss..." 
-                      value={callForm.topics}
-                      onChange={(e) => setCallForm({...callForm, topics: e.target.value})}
-                    />
-                    <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-                      Schedule Call
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
+            <Card className="flex flex-col">
+              <CardHeader>
+                <CardTitle className="text-xs sm:text-base">Book a Consultation</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 sm:space-y-5">
+                <form onSubmit={handleVisitRequest} className="space-y-2 sm:space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                    <Input className="text-xs sm:text-base px-2 py-2" placeholder="Full Name" value={visitForm.name} onChange={e => setVisitForm(v => ({ ...v, name: e.target.value }))} />
+                    <Input className="text-xs sm:text-base px-2 py-2" placeholder="Phone Number" value={visitForm.phone} onChange={e => setVisitForm(v => ({ ...v, phone: e.target.value }))} />
+                  </div>
+                  <Input className="text-xs sm:text-base px-2 py-2" placeholder="Location" value={visitForm.location} onChange={e => setVisitForm(v => ({ ...v, location: e.target.value }))} />
+                  <Textarea className="text-xs sm:text-base px-2 py-2" placeholder="Describe your challenge" value={visitForm.challenge} onChange={e => setVisitForm(v => ({ ...v, challenge: e.target.value }))} />
+                  <Input className="text-xs sm:text-base px-2 py-2" placeholder="Preferred Date" value={visitForm.preferredDate} onChange={e => setVisitForm(v => ({ ...v, preferredDate: e.target.value }))} />
+                  <Button className="w-full text-xs sm:text-base py-2">Request Visit</Button>
+                </form>
+              </CardContent>
+            </Card>
           </TabsContent>
-
           {/* Workshops */}
           <TabsContent value="workshops">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Calendar className="h-6 w-6 text-purple-600" />
-                    <span>Upcoming Community Workshops</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      {
-                        id: '1',
-                        title: "Organic Pest Control Methods",
-                        date: "March 15, 2024",
-                        time: "2:00 PM - 4:00 PM",
-                        location: "Kumasi Community Center",
-                        spots: "12 spots remaining"
-                      },
-                      {
-                        id: '2',
-                        title: "Modern Irrigation Techniques",
-                        date: "March 22, 2024",
-                        time: "10:00 AM - 12:00 PM",
-                        location: "Tamale Agricultural Center",
-                        spots: "8 spots remaining"
-                      },
-                      {
-                        id: '3',
-                        title: "Crop Rotation and Soil Health",
-                        date: "March 29, 2024",
-                        time: "1:00 PM - 3:00 PM",
-                        location: "Accra Farming Hub",
-                        spots: "15 spots remaining"
-                      }
-                    ].map((workshop) => (
-                      <div key={workshop.id} className="border rounded-lg p-4 hover:border-green-500 transition-colors">
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-semibold text-gray-900">{workshop.title}</h4>
-                          <span className="text-sm text-green-600 font-medium">{workshop.spots}</span>
-                        </div>
-                        <p className="text-gray-600 text-sm mb-1">{workshop.date} • {workshop.time}</p>
-                        <p className="text-gray-600 text-sm mb-3">{workshop.location}</p>
-                        
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
-                              Register Now
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Register for {workshop.title}</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <Input
-                                placeholder="Your Name *"
-                                value={workshopRegistration.name}
-                                onChange={(e) => setWorkshopRegistration({...workshopRegistration, name: e.target.value})}
-                              />
-                              <Input
-                                placeholder="Email Address *"
-                                type="email"
-                                value={workshopRegistration.email}
-                                onChange={(e) => setWorkshopRegistration({...workshopRegistration, email: e.target.value})}
-                              />
-                              <Input
-                                placeholder="Phone Number *"
-                                value={workshopRegistration.phone}
-                                onChange={(e) => setWorkshopRegistration({...workshopRegistration, phone: e.target.value})}
-                              />
-                              <Button 
-                                onClick={() => handleWorkshopRegistration(workshop.title, workshop.id)}
-                                className="w-full bg-purple-600 hover:bg-purple-700"
-                              >
-                                Confirm Registration
-                              </Button>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    ))}
+            <Card className="flex flex-col">
+              <CardHeader>
+                <CardTitle className="text-xs sm:text-base">Workshops</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 sm:space-y-5">
+                <form className="space-y-2 sm:space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                    <Input className="text-xs sm:text-base px-2 py-2" placeholder="Full Name" value={workshopRegistration.name} onChange={e => setWorkshopRegistration(v => ({ ...v, name: e.target.value }))} />
+                    <Input className="text-xs sm:text-base px-2 py-2" placeholder="Email" value={workshopRegistration.email} onChange={e => setWorkshopRegistration(v => ({ ...v, email: e.target.value }))} />
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <Input className="text-xs sm:text-base px-2 py-2" placeholder="Phone Number" value={workshopRegistration.phone} onChange={e => setWorkshopRegistration(v => ({ ...v, phone: e.target.value }))} />
+                  <Input className="text-xs sm:text-base px-2 py-2" placeholder="Workshop ID" value={workshopRegistration.workshopId} onChange={e => setWorkshopRegistration(v => ({ ...v, workshopId: e.target.value }))} />
+                  <Button className="w-full text-xs sm:text-base py-2">Register</Button>
+                </form>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
-
       <Footer />
     </div>
   );

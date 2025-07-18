@@ -25,9 +25,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-x-hidden">
       {/* Hero Section - Image covers navbar from behind */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden p-0 m-0">
+      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden p-0 m-0">
         {/* Background Image - covers the entire hero including behind navbar */}
         <div 
           className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-0"
@@ -41,63 +41,57 @@ const Index = () => {
         <div className="absolute top-0 left-0 right-0 z-30">
           <Navbar variant="transparent" />
         </div>
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="animate-fade-in-up">
-            <h1 ref={heroHeadingRef} className={"text-3xl md:text-5xl font-bold text-white mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") }>
-              Transforming Agriculture
-              <span className="block text-white">
-                through <span className="font-extrabold animate-purple-glow typewriter" style={{ color: '#7ede56', display: 'inline-block', maxWidth: '100%' }}>
-                  AI and Easy Access to Finance
-                </span>
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center mt-12 sm:mt-20">
+          <div className="animate-fade-in-up w-full">
+            <h1 ref={heroHeadingRef} className={"text-lg sm:text-xl md:text-3xl font-bold text-white mb-2 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") }>
+              Transforming Agriculture through <span className="font-extrabold animate-purple-glow typewriter align-middle" style={{ color: '#921573', display: 'inline-block', maxWidth: '100%', verticalAlign: 'middle' }}>
+                AI and Easy Access to Finance
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-white/95 mb-6 max-w-3xl mx-auto drop-shadow-lg font-medium animate-fade-in delay-700 transition-all duration-700 ease-in-out">
-              Connect with AI-powered consultation, hyperlocal weather insights, 
-              and innovative financing solutions for sustainable farming success.
+            <p className="text-xs sm:text-sm md:text-base text-white/95 mb-4 max-w-xs sm:max-w-md md:max-w-3xl mx-auto drop-shadow-lg font-medium animate-fade-in delay-700 transition-all duration-700 ease-in-out">
+              We dey for you. at AgriLync, we empowers agricultural stakeholders with AI-driven advisory, localized weather insights, and innovative financing to enhance productivity and drive sustainable growth.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in delay-1000">
-              <Link to="/auth">
-                <Button className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300" style={{ color: '#002f37', backgroundColor: '#fff', border: '2px solid #002f37' }}>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center animate-fade-in delay-1000 w-full">
+              <Link to="/auth" className="w-full sm:w-auto max-w-xs">
+                <Button className="w-full sm:w-auto max-w-xs bg-white/100 border-2 border-[#002f37] text-[#002f37] hover:bg-gray-100 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
                   Get Started
                 </Button>
               </Link>
-              <Button 
-                variant="outline" 
-                className="bg-white/20 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 text-lg font-semibold rounded-full shadow-xl backdrop-blur-sm"
+              <a
+                href="https://www.youtube.com/watch?v=-gOZgTW00GY"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto max-w-xs"
               >
-                <Play className="mr-2 h-5 w-5" />
-                Watch Demo Video
-              </Button>
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto max-w-xs bg-white/20 border-white text-white hover:bg-white hover:text-gray-900 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold rounded-full shadow-xl backdrop-blur-sm"
+                >
+                  Watch Demo Video
+                </Button>
+              </a>
             </div>
           </div>
         </div>
       </section>
 
       {/* Everything You Need to Succeed Section - Updated with staggered animations */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
-            <h2 ref={succeedHeadingRef} className={"text-2xl md:text-4xl font-bold mb-3 transition-all duration-700 ease-in-out " + (succeedHeadingVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: '#002f37' }}>
+      <section className="py-10 sm:py-16 md:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+          <div className="text-center mb-10 sm:mb-14 md:mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
+            <h2 ref={succeedHeadingRef} className={"text-base sm:text-lg md:text-2xl font-bold mb-2 sm:mb-3 transition-all duration-700 ease-in-out " + (succeedHeadingVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: '#002f37' }}>
               Everything You Need to Succeed
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xs sm:text-sm text-gray-600 max-w-xs sm:max-w-md md:max-w-3xl mx-auto">
               From AI-powered consultation to investment opportunities, we provide comprehensive tools for modern farming.
             </p>
           </div>
 
           {/* Feature 1 - AI Consultation with scroll-triggered slide-in */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
-            <div ref={feature1Ref} className={feature1Visible ? "animate-slide-in-left" : "opacity-0"}>
-              <img 
-                src="/lovable-uploads/889a4eaa-0299-4896-8399-849a40f5565a.png"
-                alt="AI Consultation"
-                className="rounded-2xl shadow-2xl w-full h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
-                onClick={() => handleFeatureClick('/ai-consultation')}
-              />
-            </div>
-            <div className="animate-fade-in-right delay-400">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center mb-10 sm:mb-16 md:mb-20">
+            <div className="order-2 lg:order-1 animate-fade-in-right delay-400 mt-6 sm:mt-0 lg:col-start-1">
               <Leaf className="h-12 w-12 text-purple-600 mb-4" />
-              <h3 className="text-3xl font-bold mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in transition-all duration-700 ease-in-out" style={{ color: '#002f37' }}
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in transition-all duration-700 ease-in-out" style={{ color: '#002f37' }}
                   onClick={() => handleFeatureClick('/ai-consultation')}>
                 AI-Powered Crop Consultation
               </h3>
@@ -118,13 +112,29 @@ const Index = () => {
                 Try AI Consultation
               </Button>
             </div>
+            <div ref={feature1Ref} className={(feature1Visible ? "animate-slide-in-left" : "opacity-0") + " order-1 lg:order-2 lg:col-start-2"}>
+              <img 
+                src="/lovable-uploads/889a4eaa-0299-4896-8399-849a40f5565a.png"
+                alt="AI Consultation"
+                className="rounded-2xl shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                onClick={() => handleFeatureClick('/ai-consultation')}
+              />
+            </div>
           </div>
 
           {/* Feature 2 - Weather with scroll-triggered slide-in */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
-            <div className="animate-fade-in-left delay-600 lg:order-1">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center mb-10 sm:mb-16 md:mb-20">
+            <div ref={feature2Ref} className={(feature2Visible ? "animate-slide-in-left" : "opacity-0") + " order-1 lg:order-1 lg:col-start-1"}>
+              <img 
+                src="/lovable-uploads/3e19a1d1-e890-436d-ba69-4227c2a1c8b1.png"
+                alt="Weather Forecast"
+                className="rounded-2xl shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                onClick={() => handleFeatureClick('/weather')}
+              />
+            </div>
+            <div className="order-2 lg:order-2 animate-fade-in-left delay-600 lg:col-start-2 mt-6 sm:mt-0">
               <MapPin className="h-12 w-12 text-purple-600 mb-4" />
-              <h3 className="text-3xl font-bold mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in transition-all duration-700 ease-in-out" style={{ color: '#002f37' }}
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in transition-all duration-700 ease-in-out" style={{ color: '#002f37' }}
                   onClick={() => handleFeatureClick('/weather')}>
                 Hyperlocal Weather Insights
               </h3>
@@ -145,29 +155,13 @@ const Index = () => {
                 View Weather Forecast
               </Button>
             </div>
-            <div ref={feature2Ref} className={feature2Visible ? "animate-slide-in-right delay-600 lg:order-2" : "opacity-0 lg:order-2"}>
-              <img 
-                src="/lovable-uploads/3e19a1d1-e890-436d-ba69-4227c2a1c8b1.png"
-                alt="Weather Forecast"
-                className="rounded-2xl shadow-2xl w-full h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
-                onClick={() => handleFeatureClick('/weather')}
-              />
-            </div>
           </div>
 
           {/* Feature 3 - FarmPartner with scroll-triggered slide-in */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div ref={feature3Ref} className={feature3Visible ? "animate-slide-in-left delay-800" : "opacity-0"}>
-              <img 
-                src="/lovable-uploads/d5bee012-8bd6-4f66-bd49-d60d2468bcb3.png"
-                alt="FarmPartner Investment"
-                className="rounded-2xl shadow-2xl w-full h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
-                onClick={() => handleFeatureClick('/farm-partner')}
-              />
-            </div>
-            <div className="animate-fade-in-right delay-800">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+            <div className="order-2 lg:order-1 animate-fade-in-right delay-800 mt-6 sm:mt-0">
               <TrendingUp className="h-12 w-12 text-purple-600 mb-4" />
-              <h3 className="text-3xl font-bold mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in transition-all duration-700 ease-in-out" style={{ color: '#002f37' }}
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in transition-all duration-700 ease-in-out" style={{ color: '#002f37' }}
                   onClick={() => handleFeatureClick('/farm-partner')}>
                 FarmPartner Investment Initiative
               </h3>
@@ -188,28 +182,36 @@ const Index = () => {
                 Explore FarmPartner
               </Button>
             </div>
+            <div ref={feature3Ref} className={(feature3Visible ? "animate-slide-in-left delay-800" : "opacity-0") + " order-1 lg:order-2 lg:col-start-2"}>
+              <img 
+                src="/lovable-uploads/d5bee012-8bd6-4f66-bd49-d60d2468bcb3.png"
+                alt="FarmPartner Investment"
+                className="rounded-2xl shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                onClick={() => handleFeatureClick('/farm-partner')}
+              />
+            </div>
           </div>
         </div>
       </section>
 
       {/* Success Stories Section - Ghana Focus */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 ref={storiesHeadingRef} className={"text-2xl md:text-4xl font-bold mb-3 transition-all duration-700 ease-in-out " + (storiesHeadingVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: '#002f37' }}>
+      <section className="py-10 sm:py-16 md:py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+          <div className="text-center mb-10 sm:mb-14 md:mb-16">
+            <h2 ref={storiesHeadingRef} className={"text-base sm:text-lg md:text-2xl font-bold mb-2 sm:mb-3 transition-all duration-700 ease-in-out " + (storiesHeadingVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: '#002f37' }}>
               Success Stories from Ghana
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-xs sm:text-sm text-gray-600">
               Real farmers, real results across Ghana's agricultural regions
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {/* Farmer 1 */}
-            <div className="bg-white p-8 hover:shadow-2xl transition-shadow duration-300">
+            <div className="bg-white p-5 sm:p-8 hover:shadow-2xl transition-shadow duration-300">
               <div className="flex items-center mb-6">
                 {/* Removed farmer image */}
                 <div>
-                  <h4 className="text-xl font-bold" style={{ color: '#002f37' }}>Kwame Asante</h4>
+                  <h4 className="text-sm sm:text-base md:text-lg font-bold" style={{ color: '#002f37' }}>Kwame Asante</h4>
                   <p className="text-gray-600">Ashanti Region</p>
                 </div>
               </div>
@@ -229,11 +231,11 @@ const Index = () => {
               </div>
             </div>
             {/* Farmer 2 */}
-            <div className="bg-white p-8 hover:shadow-2xl transition-shadow duration-300">
+            <div className="bg-white p-5 sm:p-8 hover:shadow-2xl transition-shadow duration-300">
               <div className="flex items-center mb-6">
                 {/* Removed farmer image */}
                 <div>
-                  <h4 className="text-xl font-bold" style={{ color: '#002f37' }}>Akosua Mensah</h4>
+                  <h4 className="text-sm sm:text-base md:text-lg font-bold" style={{ color: '#002f37' }}>Akosua Mensah</h4>
                   <p className="text-gray-600">Northern Region</p>
                 </div>
               </div>
@@ -253,11 +255,11 @@ const Index = () => {
               </div>
             </div>
             {/* Farmer 3 */}
-            <div className="bg-white p-8 hover:shadow-2xl transition-shadow duration-300">
+            <div className="bg-white p-5 sm:p-8 hover:shadow-2xl transition-shadow duration-300">
               <div className="flex items-center mb-6">
                 {/* Removed farmer image */}
                 <div>
-                  <h4 className="text-xl font-bold" style={{ color: '#002f37' }}>Kofi Osei</h4>
+                  <h4 className="text-sm sm:text-base md:text-lg font-bold" style={{ color: '#002f37' }}>Kofi Osei</h4>
                   <p className="text-gray-600">Eastern Region</p>
                 </div>
               </div>
@@ -281,12 +283,12 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 animate-fade-in">
+      <section className="py-10 sm:py-16 md:py-20 bg-white">
+        <div className="max-w-4xl mx-auto text-center px-2 sm:px-4 md:px-6 lg:px-8">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 animate-fade-in">
             Ready to Transform Your Farm?
           </h2>
-          <p className="text-xl text-gray-600 mb-8">
+          <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8">
             Join thousands of Ghanaian farmers already growing smarter with AgriLync
           </p>
           <div className="flex justify-center">
@@ -295,11 +297,11 @@ const Index = () => {
               href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white w-12 h-12 rounded-lg shadow-lg transition-all duration-300 border border-green-600"
+              className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white w-10 h-10 sm:w-12 sm:h-12 rounded-lg shadow-lg transition-all duration-300 border border-green-600"
               title="Join WhatsApp Community"
             >
               {/* WhatsApp SVG Icon */}
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" className="w-6 h-6">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
                 <path d="M16 3C9.373 3 4 8.373 4 15c0 2.385.832 4.584 2.236 6.393L4 29l7.828-2.205C13.416 27.168 14.684 27.5 16 27.5c6.627 0 12-5.373 12-12S22.627 3 16 3zm0 22c-1.18 0-2.336-.207-3.428-.613l-.244-.09-4.652 1.31 1.244-4.41-.16-.253C7.23 18.13 6.5 16.6 6.5 15c0-5.238 4.262-9.5 9.5-9.5s9.5 4.262 9.5 9.5-4.262 9.5-9.5 9.5zm5.09-6.41c-.277-.139-1.637-.807-1.89-.899-.253-.093-.437-.139-.62.139-.184.277-.713.899-.874 1.084-.16.184-.32.208-.597.07-.277-.139-1.17-.431-2.23-1.374-.824-.735-1.38-1.64-1.542-1.917-.16-.277-.017-.427.122-.565.126-.125.277-.32.416-.48.139-.16.184-.277.277-.462.093-.184.046-.347-.023-.486-.07-.139-.62-1.497-.85-2.05-.224-.539-.453-.466-.62-.475l-.527-.009c-.17 0-.446.064-.68.298-.233.233-.89.87-.89 2.122s.911 2.465 1.038 2.637c.126.17 1.793 2.736 4.35 3.73.608.209 1.082.334 1.452.427.61.155 1.165.133 1.604.081.489-.058 1.637-.668 1.87-1.312.232-.645.232-1.197.162-1.312-.07-.116-.253-.184-.53-.323z"/>
               </svg>
             </a>

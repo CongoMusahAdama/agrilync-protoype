@@ -74,6 +74,7 @@ const Auth = () => {
           phone: formData.phone,
           location: formData.location
         };
+        console.log('Signup payload:', formData.email, formData.password, userData); // <-- Added for debugging
 
         const { error } = await signUp(formData.email, formData.password, userData);
         if (error) {
@@ -131,19 +132,19 @@ const Auth = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center px-2 sm:px-4 py-6 sm:py-8 overflow-x-hidden">
       <div className="w-full max-w-6xl">
         {/* Logo */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-4 sm:mb-6">
           <Link to="/" className="inline-flex items-center space-x-2">
             <img 
               src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png" 
               alt="AgriLync Logo" 
               className="h-8 w-8"
             />
-            <span className="font-bold text-2xl text-gray-900">AgriLync</span>
+            <span className="font-bold text-xs sm:text-base text-gray-900">AgriLync</span>
           </Link>
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-600 mt-1 sm:mt-2 text-xs sm:text-base">
             {isLogin ? 'Welcome back to your farming journey' : 'Start your smart farming journey today'}
           </p>
         </div>

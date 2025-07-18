@@ -19,8 +19,15 @@ import {
   Settings,
   BarChart3,
   Clock,
-  Shield
+  Shield,
+  User,
+  Upload,
+  Award
 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useNavigate } from 'react-router-dom';
 
 const ExtensionAgentDashboard = () => {
   const { user } = useAuth();
@@ -30,10 +37,29 @@ const ExtensionAgentDashboard = () => {
   const [consultations, setConsultations] = useState([]);
   const [associations, setAssociations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [profileData, setProfileData] = useState({
+    specialization: '',
+    region: '',
+    location: '',
+    expertise_areas: [] as string[],
+  });
+  const [updating, setUpdating] = useState(false);
+  // Certificate upload state
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [certificates, setCertificates] = useState([]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
       fetchDashboardData();
+      fetchCertificates();
+    } else {
+      setProfile(null);
+      setAgentProfile(null);
+      setCertificates([]);
+      setLoading(false);
     }
   }, [user]);
 
@@ -58,6 +84,13 @@ const ExtensionAgentDashboard = () => {
 
       if (agentData) {
         setAgentProfile(agentData);
+        setProfileData(prev => ({
+          ...prev,
+          specialization: agentData.specialization || '',
+          region: agentData.region || '',
+          location: agentData.location || '',
+          expertise_areas: agentData.expertise_areas || [],
+        }));
       }
 
       // Fetch consultations
@@ -130,6 +163,74 @@ const ExtensionAgentDashboard = () => {
     }
   };
 
+  const handleUpdateProfile = async () => {
+    setUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('extension_agent_profiles')
+        .update({
+          specialization: profileData.specialization,
+          region: profileData.region,
+          location: profileData.location,
+          expertise_areas: profileData.expertise_areas,
+        })
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+      toast.success('Profile updated successfully!');
+      await fetchDashboardData();
+    } catch (error) {
+      toast.error('Error updating profile');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleExpertiseChange = (area: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      expertise_areas: prev.expertise_areas.includes(area)
+        ? prev.expertise_areas.filter(a => a !== area)
+        : [...prev.expertise_areas, area],
+    }));
+  };
+
+  // Fetch certificates from Supabase storage (or set empty if not configured)
+  const fetchCertificates = async () => {
+    try {
+      // Example: fetch from Supabase storage bucket 'certificates'
+      // const { data, error } = await supabase.storage.from('certificates').list(user?.id + '/');
+      // if (error) throw error;
+      // setCertificates(data || []);
+      setCertificates([]); // Placeholder for now
+    } catch (error) {
+      setCertificates([]);
+    }
+  };
+
+  // Handle certificate upload
+  const handleCertificateUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadError('');
+    try {
+      // Example: upload to Supabase storage bucket 'certificates'
+      // const { data, error } = await supabase.storage.from('certificates').upload(`${user?.id}/${file.name}`, file);
+      // if (error) throw error;
+      // await fetchCertificates();
+      // toast.success('Certificate uploaded!');
+      // For now, just simulate success
+      setTimeout(() => {
+        setUploading(false);
+        toast.success('Certificate uploaded! (Demo)');
+      }, 1000);
+    } catch (error) {
+      setUploadError('Failed to upload certificate');
+      setUploading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -142,25 +243,206 @@ const ExtensionAgentDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
+            <div className="flex items-center space-x-3 sm:space-x-4">
               <div className="bg-blue-100 p-2 rounded-full">
-                <Users className="h-8 w-8 text-blue-600" />
+                <Users className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Extension Agent Dashboard</h1>
-                <p className="text-gray-600">Welcome back, {profile?.full_name}!</p>
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Extension Agent Dashboard</h1>
+                <p className="text-gray-600 text-xs sm:text-base">Welcome back, {profile?.full_name}!</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 mt-2 sm:mt-0">
               <Badge className="bg-blue-100 text-blue-800">
                 Farmers Managed: {agentProfile?.farmers_managed || 0}
               </Badge>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
+          {/* Profile Completion */}
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+            <Card className="shadow-md rounded-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center text-xs sm:text-base">
+                  <User className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  Profile Completion
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 sm:space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4">
+                  <div>
+                    <Label htmlFor="specialization" className="text-xs sm:text-sm">Specialization</Label>
+                    <Input
+                      id="specialization"
+                      placeholder="e.g., Crop Science"
+                      value={profileData.specialization}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, specialization: e.target.value }))}
+                      className="text-xs sm:text-base px-3 py-2"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="region" className="text-xs sm:text-sm">Region</Label>
+                    <Select value={profileData.region} onValueChange={(value) => setProfileData(prev => ({ ...prev, region: value }))}>
+                      <SelectTrigger className="text-xs sm:text-base px-3 py-2">
+                        <SelectValue placeholder="Select region" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ashanti">Ashanti</SelectItem>
+                        <SelectItem value="northern">Northern</SelectItem>
+                        <SelectItem value="eastern">Eastern</SelectItem>
+                        <SelectItem value="western">Western</SelectItem>
+                        <SelectItem value="central">Central</SelectItem>
+                        <SelectItem value="volta">Volta</SelectItem>
+                        <SelectItem value="upper_east">Upper East</SelectItem>
+                        <SelectItem value="upper_west">Upper West</SelectItem>
+                        <SelectItem value="greater_accra">Greater Accra</SelectItem>
+                        <SelectItem value="brong_ahafo">Brong Ahafo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs sm:text-sm">Expertise Areas</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                    {['Crop Science', 'Soil Science', 'Irrigation', 'Pest Control', 'Agroforestry', 'Extension Training'].map(area => (
+                      <button
+                        key={area}
+                        type="button"
+                        onClick={() => handleExpertiseChange(area)}
+                        className={`p-2 text-xs sm:text-sm rounded-lg border transition-colors flex items-center gap-1 ${
+                          profileData.expertise_areas.includes(area)
+                            ? 'bg-blue-100 border-blue-300 text-blue-800 font-semibold'
+                            : 'bg-white border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        <Award className="h-4 w-4" /> {area}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="location" className="text-xs sm:text-sm">Location</Label>
+                  <Input
+                    id="location"
+                    placeholder="e.g., Tamale, Northern Region"
+                    value={profileData.location}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
+                    className="text-xs sm:text-base px-3 py-2"
+                  />
+                </div>
+                <Button onClick={handleUpdateProfile} disabled={updating} className="w-full bg-blue-600 hover:bg-blue-700 text-xs sm:text-base py-2 sm:py-3">
+                  {updating ? 'Updating...' : 'Update Profile'}
+                </Button>
+              </CardContent>
+            </Card>
+            {/* Certification Upload */}
+            <Card className="shadow-md rounded-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center text-xs sm:text-base">
+                  <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  Upload Certifications
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 sm:p-8 text-center">
+                  <Upload className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-2 sm:mb-4" />
+                  <p className="text-gray-600 text-xs sm:text-base">Drag and drop certificates or click to browse</p>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2">Supports: PDF, PNG, JPG (Max 5MB each)</p>
+                  <input type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden" id="certificate-upload" onChange={handleCertificateUpload} disabled={uploading} />
+                  <label htmlFor="certificate-upload">
+                    <Button variant="outline" className="mt-3 sm:mt-4 text-xs sm:text-base" disabled={uploading}>
+                      <Upload className="h-4 w-4 mr-2" />
+                      {uploading ? 'Uploading...' : 'Choose Certificates'}
+                    </Button>
+                  </label>
+                  {uploadError && <p className="text-xs text-red-500 mt-2">{uploadError}</p>}
+                  {/* Show uploaded certificates if any */}
+                  {certificates.length > 0 ? (
+                    <div className="flex flex-wrap gap-2 mt-4 justify-center">
+                      {certificates.map((cert, idx) => (
+                        <a key={idx} href={cert.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline">{cert.name}</a>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 mt-2">No certificates uploaded yet.</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          {/* Dashboard Features */}
+          <div className="space-y-4 sm:space-y-6">
+            {/* Verification Status */}
+            <Card className="shadow-md rounded-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center text-xs sm:text-base">
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  Verification Status
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center space-y-3 sm:space-y-4">
+                  {agentProfile?.is_verified ? (
+                    <div className="text-green-600">
+                      <CheckCircle className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-1 sm:mb-2" />
+                      <p className="font-semibold text-xs sm:text-base">Verified Extension Agent</p>
+                      <p className="text-xs sm:text-sm text-gray-600">You can now access all features</p>
+                    </div>
+                  ) : (
+                    <div className="text-yellow-600">
+                      <Award className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-1 sm:mb-2" />
+                      <p className="font-semibold text-xs sm:text-base">Pending Verification</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Complete your profile to get verified</p>
+                    </div>
+                  )}
+                  <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                    <div className="flex justify-between items-center mb-1 sm:mb-2">
+                      <span className="text-xs sm:text-sm text-gray-600">Credibility Score</span>
+                      <span className="font-bold text-base sm:text-lg">{agentProfile?.credibility_score || 0}/100</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-600 h-2 rounded-full" 
+                        style={{ width: `${agentProfile?.credibility_score || 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            {/* Quick Actions */}
+            <Card className="shadow-md rounded-xl">
+              <CardHeader>
+                <CardTitle className="text-xs sm:text-base">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 sm:space-y-3">
+                <Button className="w-full justify-start text-xs sm:text-base py-2 sm:py-3" variant="outline" onClick={() => navigate('/ai-consultation')}>
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  AI Consultation
+                </Button>
+                <Button className="w-full justify-start text-xs sm:text-base py-2 sm:py-3" variant="outline" onClick={() => navigate('/farmer-outreach')}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Farmer Outreach
+                </Button>
+                <Button className="w-full justify-start text-xs sm:text-base py-2 sm:py-3" variant="outline" onClick={() => navigate('/training-sessions')}>
+                  <Award className="h-4 w-4 mr-2" />
+                  Training Sessions
+                </Button>
+                <Button className="w-full justify-start text-xs sm:text-base py-2 sm:py-3" variant="outline" onClick={() => navigate('/disease-detection')}>
+                  <Eye className="h-4 w-4 mr-2" />
+                  Disease Detection
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
