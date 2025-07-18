@@ -50,15 +50,27 @@ const Auth = () => {
           navigate(from, { replace: true });
         }
       } else {
-        if (!userRole) {
-          toast.error('Please select a role');
+        // Robust validation for signup
+        const allowedRoles = ['farmer', 'investor', 'extension_agent'];
+        if (!userRole || !allowedRoles.includes(userRole)) {
+          toast.error('Please select a valid role.');
+          setLoading(false);
+          return;
+        }
+        if (!formData.name || formData.name.trim().length < 2) {
+          toast.error('Please enter your full name.');
+          setLoading(false);
+          return;
+        }
+        if (!formData.email || !formData.password) {
+          toast.error('Email and password are required.');
           setLoading(false);
           return;
         }
 
         const userData = {
           role: userRole,
-          full_name: formData.name,
+          full_name: formData.name.trim(),
           phone: formData.phone,
           location: formData.location
         };

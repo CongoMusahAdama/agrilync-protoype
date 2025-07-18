@@ -55,13 +55,13 @@ const About = () => {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center">
-                <div className="w-32 h-32 rounded-full mx-auto mb-4 bg-green-100 flex items-center justify-center shadow-lg">
-                  <Users className="h-16 w-16 text-green-600" />
+                <div className="w-32 h-32 rounded-full mx-auto mb-4 bg-green-100 flex items-center justify-center shadow-lg overflow-hidden">
+                  <img src="/lovable-uploads/musa.png" alt="Congo Musah Adama" className="w-full h-full object-cover" />
                 </div>
                 <h4 className="text-xl font-bold text-gray-900 mb-2">Congo Musah Adama</h4>
                 <p className="text-green-600 font-medium mb-2">CEO and Founder</p>
                 <p className="text-gray-600 text-sm">
-                  Agricultural Engineer with 10+ years experience in sustainable farming solutions
+                  Agricultural Innovator, Software engineer and prduct strategist thinker
                 </p>
               </div>
 
@@ -72,7 +72,7 @@ const About = () => {
                 <h4 className="text-xl font-bold text-gray-900 mb-2">Prince Sedem</h4>
                 <p className="text-green-600 font-medium mb-2">Co-founder and CTO</p>
                 <p className="text-gray-600 text-sm">
-                  AI/ML expert specializing in computer vision and agricultural applications
+                  Software developement expert, trading and chief technology officer
                 </p>
               </div>
 
@@ -83,7 +83,7 @@ const About = () => {
                 <h4 className="text-xl font-bold text-gray-900 mb-2">Robert</h4>
                 <p className="text-green-600 font-medium mb-2">Co-founder and Business Communication</p>
                 <p className="text-gray-600 text-sm">
-                  Former extension agent with deep knowledge of Ghana's farming communities
+                Drives clear, impactful communication that build trust, engagement, and growth
                 </p>
               </div>
             </div>
