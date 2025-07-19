@@ -140,6 +140,14 @@ const FarmPartner = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 overflow-x-hidden">
       <Navbar />
+      <section className="relative flex flex-col items-center justify-center min-h-[220px] sm:min-h-[320px] md:min-h-[400px] lg:min-h-[480px] w-full overflow-hidden mb-4 sm:mb-8">
+        <div className="text-center mb-4 sm:mb-8">
+          <h1 className="text-base sm:text-lg md:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">FarmPartner Investment Initiative</h1>
+          <p className="text-xs sm:text-base text-gray-600 max-w-xs sm:max-w-2xl mx-auto">
+            Connect verified farmers with impact investors through our transparent partnership platform. Secure funding, share profits, and build sustainable agricultural communities.
+          </p>
+        </div>
+      </section>
       <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <div className="text-center mb-4 sm:mb-8">
           <h1 className="text-base sm:text-lg md:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">FarmPartner Investment Initiative</h1>

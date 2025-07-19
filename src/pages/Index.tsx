@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Leaf, Users, TrendingUp, MapPin, Calendar, Shield, Award, Play, MessageCircle } from 'lucide-react';
@@ -6,6 +6,11 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+
+const heroImages = [
+  '/lovable-uploads/image.png',
+  '/lovable-uploads/image1.jpg',
+];
 
 const Index = () => {
   const { user } = useAuth();
@@ -20,21 +25,71 @@ const Index = () => {
   const [succeedHeadingRef, succeedHeadingVisible] = useScrollReveal();
   const [storiesHeadingRef, storiesHeadingVisible] = useScrollReveal();
 
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [showSplash, setShowSplash] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+    }, 6000); // 6 seconds per slide
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    // Only show splash on mobile devices
+    if (window.innerWidth <= 640) {
+      setShowSplash(true);
+      setTimeout(() => setShowSplash(false), 2000);
+    }
+  }, []);
+
+  if (showSplash) {
+    return (
+      <div className="fixed inset-0 flex flex-col items-center justify-center z-[9999] sm:hidden" style={{ background: '#7ede56' }}>
+        <img
+          src="/lovable-uploads/logo.png"
+          alt="Logo"
+          className="w-24 h-24 animate-spin-slower"
+          style={{ animation: 'spin 2s linear' }}
+        />
+        <div className="mt-4 text-center text-base font-semibold text-[#002f37] drop-shadow-sm tracking-wide">
+          Join the AgriLync movement
+        </div>
+        <style>{`
+          @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+          .animate-spin-slower { animation: spin 2s linear; }
+        `}</style>
+      </div>
+    );
+  }
+
   const handleFeatureClick = (path: string) => {
     navigate(path);
   };
 
   return (
     <div className="min-h-screen overflow-x-hidden">
-      {/* Hero Section - Image covers navbar from behind */}
+      {/* Hero Section - Slideshow */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden p-0 m-0">
-        {/* Background Image - covers the entire hero including behind navbar */}
-        <div 
-          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-0"
-          style={{
-            backgroundImage: "url('/lovable-uploads/image.png')",
-          }}
-        ></div>
+        {/* Slideshow Images */}
+        {heroImages.map((img, idx) => (
+          <img
+            key={img}
+            src={img}
+            alt={`Hero slide ${idx + 1}`}
+            className={
+              `w-full h-full object-cover absolute inset-0 transition-opacity duration-1500 ease-in-out ` +
+              (currentSlide === idx ? 'opacity-100 z-0' : 'opacity-0 z-0')
+            }
+            style={{
+              zIndex: 0,
+              transition: 'opacity 1.5s cubic-bezier(0.4,0,0.2,1)',
+              pointerEvents: 'none',
+            }}
+            loading={idx === 0 ? 'eager' : 'lazy'}
+            fetchPriority={idx === 0 ? 'high' : undefined}
+          />
+        ))}
         {/* Overlay for darkening */}
         <div className="absolute inset-0 bg-black/40 z-10"></div>
         {/* Navbar overlayed above image */}

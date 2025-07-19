@@ -74,7 +74,7 @@ const Weather = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 overflow-x-hidden">
       <Navbar />
-      <div className="max-w-2xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
+      <div className="relative flex flex-col items-center justify-center min-h-[220px] sm:min-h-[320px] md:min-h-[400px] lg:min-h-[480px] w-full overflow-hidden mb-4 sm:mb-8">
         <div className="text-center mb-4 sm:mb-8">
           <h1 className="text-base sm:text-lg md:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">Weather Forecast</h1>
           <p className="text-xs sm:text-base text-gray-600 max-w-xs sm:max-w-md md:max-w-2xl mx-auto">

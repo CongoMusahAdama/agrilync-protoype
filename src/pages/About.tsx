@@ -9,7 +9,6 @@ const About = () => {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       <Navbar />
-      
       {/* Hero Section */}
       <section className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
@@ -20,7 +19,6 @@ const About = () => {
               hyperlocal weather services, and innovative financing solutions.
             </p>
           </div>
-
           {/* Vision & Mission */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 mb-10 sm:mb-20">
             <div className="bg-white p-5 sm:p-8">
@@ -33,7 +31,6 @@ const About = () => {
                 across the continent.
               </p>
             </div>
-
             <div className="bg-white p-5 sm:p-8">
               <Heart className="h-10 w-10 sm:h-12 sm:w-12 text-green-600 mb-3 sm:mb-4" />
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-4">Our Mission</h3>
@@ -45,7 +42,6 @@ const About = () => {
               </p>
             </div>
           </div>
-
           {/* Core Team */}
           <div className="mb-10 sm:mb-20">
             <h2 className="text-base sm:text-lg md:text-2xl font-bold text-gray-900 text-center mb-4 sm:mb-6">Our Core Team</h2>
@@ -60,7 +56,6 @@ const About = () => {
                   Agricultural Innovator, Software engineer and prduct strategist thinker
                 </p>
               </div>
-
               <div className="text-center">
                 <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto mb-3 sm:mb-4 bg-green-100 flex items-center justify-center shadow-lg">
                   <Target className="h-10 w-10 sm:h-16 sm:w-16 text-green-600" />
@@ -71,7 +66,6 @@ const About = () => {
                   Software developement expert, trading and chief technology officer
                 </p>
               </div>
-
               <div className="text-center">
                 <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto mb-3 sm:mb-4 bg-green-100 flex items-center justify-center shadow-lg">
                   <Heart className="h-10 w-10 sm:h-16 sm:w-16 text-green-600" />
@@ -84,7 +78,6 @@ const About = () => {
               </div>
             </div>
           </div>
-
           {/* What Our Team Says */}
           <div className="bg-gray-50 p-6 sm:p-12 mb-10 sm:mb-20">
             <h2 className="text-base sm:text-lg md:text-2xl font-bold text-gray-900 text-center mb-4 sm:mb-6">What Our Team Says</h2>
@@ -96,7 +89,6 @@ const About = () => {
                 </p>
                 <p className="text-green-600 font-medium text-xs sm:text-base">- Congo Musah Adama, CEO</p>
               </div>
-
               <div className="bg-white p-4 sm:p-6">
                 <p className="text-xs sm:text-base text-gray-700 italic mb-3 sm:mb-4">
                   "Our AI doesn't replace the farmer's expertise – it amplifies it. 
@@ -106,7 +98,6 @@ const About = () => {
               </div>
             </div>
           </div>
-
           {/* Join Community */}
           <div className="text-center bg-green-50 p-6 sm:p-12">
             <MessageCircle className="h-10 w-10 sm:h-16 sm:w-16 text-green-600 mx-auto mb-4 sm:mb-6" />
@@ -125,7 +116,6 @@ const About = () => {
           </div>
         </div>
       </section>
-
       <Footer />
     </div>
   );
