@@ -27,6 +27,7 @@ const Index = () => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showSplash, setShowSplash] = useState(false);
+  const [splashTimeout, setSplashTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -36,10 +37,23 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    // Only show splash on mobile devices
-    if (window.innerWidth <= 640) {
+    // Only show splash on mobile devices and only on first visit
+    const hasSeenSplash = window.sessionStorage.getItem('agrilync_splash_seen');
+    if (window.innerWidth <= 640 && !hasSeenSplash) {
       setShowSplash(true);
-      setTimeout(() => setShowSplash(false), 2000);
+      const timeout = setTimeout(() => {
+        setShowSplash(false);
+        window.sessionStorage.setItem('agrilync_splash_seen', 'true');
+      }, 2000);
+      setSplashTimeout(timeout);
+      // Failsafe: hide splash after 3s no matter what
+      const failsafe = setTimeout(() => setShowSplash(false), 3000);
+      return () => {
+        clearTimeout(timeout);
+        clearTimeout(failsafe);
+      };
+    } else {
+      setShowSplash(false);
     }
   }, []);
 
@@ -98,13 +112,13 @@ const Index = () => {
         </div>
         <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center mt-12 sm:mt-20">
           <div className="animate-fade-in-up w-full">
-            <h1 ref={heroHeadingRef} className={"text-lg sm:text-xl md:text-3xl font-bold text-white mb-2 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") }>
-              Transforming Agriculture through <span className="font-extrabold animate-purple-glow typewriter align-middle" style={{ color: '#921573', display: 'inline-block', maxWidth: '100%', verticalAlign: 'middle' }}>
-                AI and Easy Access to Finance
+            <h1 ref={heroHeadingRef} className={"text-xl sm:text-2xl md:text-4xl font-extrabold text-white mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") }>
+              Empowering Africa's Agriculture with <span className="font-extrabold animate-purple-glow typewriter align-middle" style={{ color: '#921573', display: 'inline-block', maxWidth: '100%', verticalAlign: 'middle' }}>
+                AI Innovation & Financial Access
               </span>
             </h1>
-            <p className="text-xs sm:text-sm md:text-base text-white/95 mb-4 max-w-xs sm:max-w-md md:max-w-3xl mx-auto drop-shadow-lg font-medium animate-fade-in delay-700 transition-all duration-700 ease-in-out">
-              We dey for you. at AgriLync, we empowers agricultural stakeholders with AI-driven advisory, localized weather insights, and innovative financing to enhance productivity and drive sustainable growth.
+            <p className="text-sm sm:text-base md:text-lg text-white/95 mb-6 max-w-xs sm:max-w-md md:max-w-2xl mx-auto drop-shadow-lg font-medium animate-fade-in delay-700 transition-all duration-700 ease-in-out">
+              We put you first—building solutions tailored to your needs, not ours. Empowering African agriculture with AI-driven advice, local weather insights, and innovative financing for a more productive, sustainable future.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center animate-fade-in delay-1000 w-full">
               <Link to="/auth" className="w-full sm:w-auto max-w-xs">
