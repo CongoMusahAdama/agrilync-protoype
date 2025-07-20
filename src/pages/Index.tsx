@@ -113,7 +113,7 @@ const Index = () => {
         <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center mt-12 sm:mt-20">
           <div className="animate-fade-in-up w-full">
             <h1 ref={heroHeadingRef} className={"text-xl sm:text-2xl md:text-4xl font-extrabold text-white mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") }>
-              Transforming African Agricultue Through <span className="font-extrabold animate-purple-glow typewriter align-middle" style={{ color: '#921573', display: 'inline-block', maxWidth: '100%', verticalAlign: 'middle' }}>
+              Transforming African Agriculture Through <span className="font-extrabold animate-purple-glow typewriter align-middle" style={{ color: '#921573', display: 'inline-block', maxWidth: '100%', verticalAlign: 'middle' }}>
                 AI and Easy Access To Finace
               </span>
             </h1>
