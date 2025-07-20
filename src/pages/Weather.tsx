@@ -223,12 +223,11 @@ const Weather = () => {
           <Map size={24} />
           Ghana Regional Weather Patterns
         </h2>
-        <div className="bg-white rounded-xl shadow-lg border-2 border-[#921573] p-6">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {ghanaRegions.map((region, idx) => (
               <div
                 key={region.name}
-                className="bg-gradient-to-br from-blue-50 to-green-50 rounded-lg p-4 hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-200"
+                className="bg-gradient-to-br from-blue-50 to-green-50 rounded-lg p-4 hover:shadow-md transition-all duration-300 cursor-pointer"
                 style={{ animationDelay: `${idx * 100}ms` }}
               >
                 <h4 className="font-bold text-sm mb-2" style={{ color: BRAND_MAGENTA }}>{region.name}</h4>
@@ -241,7 +240,6 @@ const Weather = () => {
               </div>
             ))}
           </div>
-        </div>
       </section>
 
       {/* Daily & Weekly Recommendations Section */}
@@ -261,8 +259,7 @@ const Weather = () => {
               {farmRecommendations.map((rec, idx) => (
                 <div
                   key={rec.activity}
-                  className="bg-white rounded-xl shadow-md border-2 p-6"
-                  style={{ borderColor: rec.urgency === 'high' ? BRAND_MAGENTA : rec.urgency === 'medium' ? BRAND_PURPLE : BRAND_GREEN }}
+                  className="bg-white rounded-xl shadow-md p-6"
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <Badge variant={rec.urgency === 'high' ? 'destructive' : 'secondary'}>
@@ -284,8 +281,7 @@ const Weather = () => {
               {weeklyForecast.map((day, idx) => (
                 <div
                   key={day.day}
-                  className="min-w-[200px] bg-white rounded-xl shadow-md border-2 flex flex-col items-center p-4"
-                  style={{ borderColor: idx % 2 === 0 ? BRAND_MAGENTA : BRAND_PURPLE }}
+                  className="min-w-[200px] bg-white rounded-xl shadow-md flex flex-col items-center p-4"
                 >
                   <day.icon color={BRAND_GREEN} size={32} />
                   <div className="font-bold text-lg mt-2" style={{ color: BRAND_MAGENTA }}>{day.day}</div>
@@ -307,7 +303,7 @@ const Weather = () => {
         </h2>
         <div className="grid md:grid-cols-2 gap-6">
           {/* Push Notifications */}
-          <div className="bg-white rounded-xl shadow-lg border-2 border-[#921573] p-6">
+          <div className="bg-white rounded-xl shadow-lg p-6">
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: BRAND_MAGENTA }}>
               <Smartphone size={20} />
               Push Notifications
@@ -333,7 +329,7 @@ const Weather = () => {
           </div>
 
           {/* SMS & Offline Alerts */}
-          <div className="bg-white rounded-xl shadow-lg border-2 border-[#7ede56] p-6">
+          <div className="bg-white rounded-xl shadow-lg p-6">
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: BRAND_GREEN }}>
               <MessageSquare size={20} />
               SMS & Offline Alerts
@@ -369,7 +365,7 @@ const Weather = () => {
       <section className="w-full max-w-5xl mx-auto px-2 sm:px-6 mb-12">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Farming Calendar */}
-          <div className="flex-1 bg-white rounded-xl shadow-md border-2 border-[#7ede56] p-6">
+          <div className="flex-1 bg-white rounded-xl shadow-md p-6">
             <div className="flex items-center gap-2 mb-3">
               <Calendar color={BRAND_GREEN} size={22} />
               <h3 className="text-lg font-bold" style={{ color: BRAND_GREEN }}>Farming Calendar</h3>
@@ -382,7 +378,7 @@ const Weather = () => {
             </ul>
           </div>
           {/* AI Suggestions */}
-          <div className="flex-1 bg-gradient-to-br from-[#f8f6ff] via-[#f3e6f7] to-[#e6fbe6] rounded-xl shadow-md border-2 border-[#921573] p-6">
+          <div className="flex-1 bg-gradient-to-br from-[#f8f6ff] via-[#f3e6f7] to-[#e6fbe6] rounded-xl shadow-md p-6">
             <div className="flex items-center gap-2 mb-3">
               <Sun color={BRAND_MAGENTA} size={22} />
               <h3 className="text-lg font-bold" style={{ color: BRAND_MAGENTA }}>Personalized AI Suggestions</h3>

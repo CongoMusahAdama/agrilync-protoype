@@ -180,7 +180,7 @@ const FarmPartner = () => {
           Intelligent Matchmaking Engine
         </h2>
         <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div className="bg-white rounded-xl shadow-lg border-2 border-[#921573] p-8">
+          <div className="bg-white rounded-xl shadow-lg p-8">
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2" style={{ color: BRAND_MAGENTA }}>
               <Target size={24} />
               How It Works
@@ -243,7 +243,7 @@ const FarmPartner = () => {
           Investor Verification & Transparency Measures
         </h2>
         <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl shadow-lg border-2 border-[#921573] p-6 text-center">
+          <div className="bg-white rounded-xl shadow-lg p-6 text-center">
             <Shield color={BRAND_MAGENTA} size={48} className="mx-auto mb-4" />
             <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_MAGENTA }}>Strict Verification</h3>
             <p className="text-sm text-gray-600">
@@ -251,7 +251,7 @@ const FarmPartner = () => {
               agricultural experience validation, and reference verification.
             </p>
           </div>
-          <div className="bg-white rounded-xl shadow-lg border-2 border-[#7ede56] p-6 text-center">
+          <div className="bg-white rounded-xl shadow-lg p-6 text-center">
             <TrendingUp color={BRAND_GREEN} size={48} className="mx-auto mb-4" />
             <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_GREEN }}>Real-time Tracking</h3>
             <p className="text-sm text-gray-600">
@@ -259,7 +259,7 @@ const FarmPartner = () => {
               our transparent dashboard system.
             </p>
           </div>
-          <div className="bg-white rounded-xl shadow-lg border-2 border-[#002F37] p-6 text-center">
+          <div className="bg-white rounded-xl shadow-lg p-6 text-center">
             <CheckCircle color={BRAND_TEAL} size={48} className="mx-auto mb-4" />
             <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Accountability</h3>
             <p className="text-sm text-gray-600">
@@ -273,19 +273,19 @@ const FarmPartner = () => {
       <section className="w-full max-w-5xl mx-auto px-2 sm:px-6 mb-8">
         <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: BRAND_GREEN }}>Resource Support</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="flex flex-col items-center bg-white rounded-xl shadow p-4 border-2 border-[#921573]">
+          <div className="flex flex-col items-center bg-white rounded-xl shadow p-4">
             <img src="/lovable-uploads/58a418db-b2d5-4bcb-94c1-d230345ec90b.png" alt="Inputs" className="w-10 h-10 mb-2" />
             <span className="font-semibold" style={{ color: BRAND_MAGENTA }}>Inputs</span>
           </div>
-          <div className="flex flex-col items-center bg-white rounded-xl shadow p-4 border-2 border-[#7ede56]">
+          <div className="flex flex-col items-center bg-white rounded-xl shadow p-4">
             <img src="/lovable-uploads/3e19a1d1-e890-436d-ba69-4227c2a1c8b1.png" alt="Seeds" className="w-10 h-10 mb-2" />
             <span className="font-semibold" style={{ color: BRAND_GREEN }}>Seeds</span>
           </div>
-          <div className="flex flex-col items-center bg-white rounded-xl shadow p-4 border-2 border-[#002F37]">
+          <div className="flex flex-col items-center bg-white rounded-xl shadow p-4">
             <img src="/lovable-uploads/78cc82b9-7fa6-4dd5-9cba-9498e9d21862.png" alt="Fertilizer" className="w-10 h-10 mb-2" />
             <span className="font-semibold" style={{ color: BRAND_TEAL }}>Fertilizer</span>
           </div>
-          <div className="flex flex-col items-center bg-white rounded-xl shadow p-4 border-2 border-[#921573]">
+          <div className="flex flex-col items-center bg-white rounded-xl shadow p-4">
             <img src="/lovable-uploads/512cd931-d1b6-4a18-8b57-63786de9ffb8.png" alt="Equipment" className="w-10 h-10 mb-2" />
             <span className="font-semibold" style={{ color: BRAND_MAGENTA }}>Equipment</span>
           </div>
@@ -294,7 +294,7 @@ const FarmPartner = () => {
       {/* Change Agents Section */}
       <section className="w-full max-w-4xl mx-auto px-2 sm:px-6 mb-8">
         <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: BRAND_TEAL }}>Role of Change Agents</h2>
-        <div className="flex items-center gap-4 bg-[#f8f6ff] rounded-xl shadow border-2 border-[#002F37] p-6 animate-fade-in-up">
+        <div className="flex items-center gap-4 bg-[#f8f6ff] rounded-xl shadow p-6 animate-fade-in-up">
           <Award color={BRAND_MAGENTA} size={32} />
           <div className="flex-1 text-base text-gray-800">
             <p>
@@ -306,7 +306,7 @@ const FarmPartner = () => {
       {/* Profit Sharing Diagram */}
       <section className="w-full max-w-3xl mx-auto px-2 sm:px-6 mb-8">
         <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: BRAND_MAGENTA }}>Profit Sharing</h2>
-        <div className="flex flex-col items-center bg-white rounded-xl shadow border-2 border-[#921573] p-6 animate-fade-in-up">
+        <div className="flex flex-col items-center bg-white rounded-xl shadow p-6 animate-fade-in-up">
           <PieChart color={BRAND_GREEN} size={40} />
           <div className="w-full flex flex-col sm:flex-row justify-center items-center gap-4 mt-4">
             <div className="flex flex-col items-center">
@@ -331,7 +331,7 @@ const FarmPartner = () => {
       <section className="w-full max-w-5xl mx-auto px-2 sm:px-6 mb-8">
         <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: BRAND_TEAL }}>Benefits</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-[#f8f6ff] rounded-xl shadow border-2 border-[#921573] p-6 animate-fade-in-up">
+          <div className="bg-[#f8f6ff] rounded-xl shadow p-6 animate-fade-in-up">
             <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_MAGENTA }}>For Farmers</h3>
             <ul className="list-disc pl-5 space-y-1 text-base text-gray-800">
               <li>Access to verified investors</li>
@@ -341,7 +341,7 @@ const FarmPartner = () => {
               <li>Improved yields and income</li>
             </ul>
           </div>
-          <div className="bg-[#e6fbe6] rounded-xl shadow border-2 border-[#7ede56] p-6 animate-fade-in-up">
+          <div className="bg-[#e6fbe6] rounded-xl shadow p-6 animate-fade-in-up">
             <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_GREEN }}>For Investors</h3>
             <ul className="list-disc pl-5 space-y-1 text-base text-gray-800">
               <li>Partner with credible farmers</li>
@@ -358,7 +358,7 @@ const FarmPartner = () => {
         <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: BRAND_MAGENTA }}>Success Stories & Impact</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Success Story Card Example */}
-          <div className="bg-white rounded-xl shadow border-2 border-[#921573] p-6 animate-fade-in-up">
+          <div className="bg-white rounded-xl shadow p-6 animate-fade-in-up">
             <div className="flex items-center gap-3 mb-2">
               <img src="/lovable-uploads/hero-farmer-highquality.png" alt="Success Farmer" className="w-10 h-10 rounded-full object-cover" />
               <div>
@@ -372,7 +372,7 @@ const FarmPartner = () => {
               <span className="text-xs text-gray-600">Investor: GreenGrow Investments</span>
             </div>
           </div>
-          <div className="bg-white rounded-xl shadow border-2 border-[#7ede56] p-6 animate-fade-in-up">
+          <div className="bg-white rounded-xl shadow p-6 animate-fade-in-up">
             <div className="flex items-center gap-3 mb-2">
               <img src="/lovable-uploads/musa.png" alt="Success Farmer" className="w-10 h-10 rounded-full object-cover" />
               <div>
