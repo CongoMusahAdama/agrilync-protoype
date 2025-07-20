@@ -26,6 +26,12 @@ import {
   Play
 } from 'lucide-react';
 
+// Brand colors
+const BRAND_MAGENTA = '#921573';
+const BRAND_GREEN = '#7ede56';
+const BRAND_TEAL = '#002F37';
+const BRAND_WHITE = '#FFFFFF';
+
 const FarmPartner = () => {
   const [selectedRole, setSelectedRole] = useState('');
   const { user } = useAuth();
@@ -138,75 +144,188 @@ const FarmPartner = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 overflow-x-hidden">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       <Navbar />
-      <section className="relative flex flex-col items-center justify-center min-h-[220px] sm:min-h-[320px] md:min-h-[400px] lg:min-h-[480px] w-full overflow-hidden mb-4 sm:mb-8">
+      {/* Hero Section */}
+      <section className="relative flex flex-col items-center justify-center min-h-[220px] sm:min-h-[320px] md:min-h-[400px] lg:min-h-[480px] w-full overflow-hidden mb-4 sm:mb-8 bg-white">
         <div className="text-center mb-4 sm:mb-8">
-          <h1 className="text-base sm:text-lg md:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">FarmPartner Investment Initiative</h1>
-          <p className="text-xs sm:text-base text-gray-600 max-w-xs sm:max-w-2xl mx-auto">
-            Connect verified farmers with impact investors through our transparent partnership platform. Secure funding, share profits, and build sustainable agricultural communities.
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-2 sm:mb-3 animate-fade-in-down" style={{ color: BRAND_MAGENTA }}>
+            FarmPartner Initiative
+          </h1>
+          <p className="text-sm sm:text-lg text-gray-700 max-w-xs sm:max-w-md md:max-w-2xl mx-auto">
+            Empowering farmers and investors through transparent, impactful partnerships. Grow together, succeed together.
           </p>
         </div>
       </section>
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        <div className="text-center mb-4 sm:mb-8">
-          <h1 className="text-base sm:text-lg md:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">FarmPartner Investment Initiative</h1>
-          <p className="text-xs sm:text-base text-gray-600 max-w-xs sm:max-w-2xl mx-auto">
-            Connect verified farmers with impact investors through our transparent partnership platform. Secure funding, share profits, and build sustainable agricultural communities.
-          </p>
+      {/* Matchmaking Engine Section */}
+      <section className="w-full max-w-5xl mx-auto px-2 sm:px-6 mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: BRAND_TEAL }}>Matchmaking Engine</h2>
+        <div className="flex flex-col md:flex-row gap-6 items-center bg-[#f8f6ff] rounded-xl shadow-md border-2 border-[#921573] p-6 animate-fade-in-up">
+          <div className="flex-1 text-base text-gray-800">
+            <p>
+              Our intelligent engine connects <span style={{ color: BRAND_MAGENTA, fontWeight: 'bold' }}>verified farmers</span> with <span style={{ color: BRAND_GREEN, fontWeight: 'bold' }}>impact investors</span> based on needs, goals, and location. 
+              Enjoy a seamless, transparent partnership journey.
+            </p>
+            <ul className="list-disc pl-5 mt-3 space-y-1">
+              <li>Smart matching based on farm profile & investment goals</li>
+              <li>Real-time status updates</li>
+              <li>Secure, transparent communication</li>
+            </ul>
+          </div>
+          {/* Simple visual flow */}
+          <div className="flex flex-col items-center gap-2">
+            <Users color={BRAND_MAGENTA} size={36} />
+            <span className="text-2xl">⇄</span>
+            <TrendingUp color={BRAND_GREEN} size={36} />
+          </div>
         </div>
-        {/* Main Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
-          {/* Left: Info/Features */}
-          <div className="space-y-4 sm:space-y-6">
-            {/* Features List */}
-            <Card className="shadow-md rounded-xl">
-              <CardHeader>
-                <CardTitle className="text-xs sm:text-base">How It Works</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 sm:space-y-4 text-xs sm:text-base">
-                <ul className="list-disc pl-5">
-                  <li>Verified farmer profiles</li>
-                  <li>Transparent profit sharing</li>
-                  <li>Extension agent monitoring</li>
-                  <li>Impact tracking dashboard</li>
-                </ul>
-              </CardContent>
-            </Card>
-            {/* Search Bar */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-center">
-              <Input placeholder="Search by crop or location..." className="w-full sm:w-64 text-xs sm:text-base px-2 py-2" />
-              <Button className="text-xs sm:text-base px-3 py-2 bg-green-600 hover:bg-green-700">Search</Button>
+      </section>
+      {/* Investor Verification & Transparency */}
+      <section className="w-full max-w-4xl mx-auto px-2 sm:px-6 mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: BRAND_MAGENTA }}>Investor Verification & Transparency</h2>
+        <div className="flex items-center gap-4 bg-[#e6fbe6] rounded-xl shadow border-2 border-[#7ede56] p-6 animate-fade-in-up">
+          <Shield color={BRAND_TEAL} size={32} />
+          <div className="flex-1 text-base text-gray-800">
+            <p>
+              All investors undergo a <span style={{ color: BRAND_TEAL, fontWeight: 'bold' }}>strict verification process</span> to ensure trust and transparency. Track every transaction and partnership milestone in real time.
+            </p>
+          </div>
+        </div>
+      </section>
+      {/* Resource Support Section */}
+      <section className="w-full max-w-5xl mx-auto px-2 sm:px-6 mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: BRAND_GREEN }}>Resource Support</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="flex flex-col items-center bg-white rounded-xl shadow p-4 border-2 border-[#921573]">
+            <img src="/lovable-uploads/58a418db-b2d5-4bcb-94c1-d230345ec90b.png" alt="Inputs" className="w-10 h-10 mb-2" />
+            <span className="font-semibold" style={{ color: BRAND_MAGENTA }}>Inputs</span>
+          </div>
+          <div className="flex flex-col items-center bg-white rounded-xl shadow p-4 border-2 border-[#7ede56]">
+            <img src="/lovable-uploads/3e19a1d1-e890-436d-ba69-4227c2a1c8b1.png" alt="Seeds" className="w-10 h-10 mb-2" />
+            <span className="font-semibold" style={{ color: BRAND_GREEN }}>Seeds</span>
+          </div>
+          <div className="flex flex-col items-center bg-white rounded-xl shadow p-4 border-2 border-[#002F37]">
+            <img src="/lovable-uploads/78cc82b9-7fa6-4dd5-9cba-9498e9d21862.png" alt="Fertilizer" className="w-10 h-10 mb-2" />
+            <span className="font-semibold" style={{ color: BRAND_TEAL }}>Fertilizer</span>
+          </div>
+          <div className="flex flex-col items-center bg-white rounded-xl shadow p-4 border-2 border-[#921573]">
+            <img src="/lovable-uploads/512cd931-d1b6-4a18-8b57-63786de9ffb8.png" alt="Equipment" className="w-10 h-10 mb-2" />
+            <span className="font-semibold" style={{ color: BRAND_MAGENTA }}>Equipment</span>
+          </div>
+        </div>
+      </section>
+      {/* Change Agents Section */}
+      <section className="w-full max-w-4xl mx-auto px-2 sm:px-6 mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: BRAND_TEAL }}>Role of Change Agents</h2>
+        <div className="flex items-center gap-4 bg-[#f8f6ff] rounded-xl shadow border-2 border-[#002F37] p-6 animate-fade-in-up">
+          <Award color={BRAND_MAGENTA} size={32} />
+          <div className="flex-1 text-base text-gray-800">
+            <p>
+              <span style={{ color: BRAND_MAGENTA, fontWeight: 'bold' }}>Change Agents</span> monitor project progress, provide expert advice, and ensure accountability for all stakeholders.
+            </p>
+          </div>
+        </div>
+      </section>
+      {/* Profit Sharing Diagram */}
+      <section className="w-full max-w-3xl mx-auto px-2 sm:px-6 mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: BRAND_MAGENTA }}>Profit Sharing</h2>
+        <div className="flex flex-col items-center bg-white rounded-xl shadow border-2 border-[#921573] p-6 animate-fade-in-up">
+          <PieChart color={BRAND_GREEN} size={40} />
+          <div className="w-full flex flex-col sm:flex-row justify-center items-center gap-4 mt-4">
+            <div className="flex flex-col items-center">
+              <span className="font-bold text-lg" style={{ color: BRAND_MAGENTA }}>Farmer</span>
+              <span className="text-base font-semibold">60%</span>
+            </div>
+            <span className="text-2xl font-bold" style={{ color: BRAND_TEAL }}>+</span>
+            <div className="flex flex-col items-center">
+              <span className="font-bold text-lg" style={{ color: BRAND_GREEN }}>Investor</span>
+              <span className="text-base font-semibold">35%</span>
+            </div>
+            <span className="text-2xl font-bold" style={{ color: BRAND_TEAL }}>+</span>
+            <div className="flex flex-col items-center">
+              <span className="font-bold text-lg" style={{ color: BRAND_TEAL }}>Change Agent</span>
+              <span className="text-base font-semibold">5%</span>
             </div>
           </div>
-          {/* Right: Farmer Cards */}
-          <div className="space-y-4 sm:space-y-6">
-            {/* Example Farmer Card */}
-            {/* Map over farmers array here in real app */}
-            <Card className="hover:shadow-lg transition-shadow transform hover:scale-105 duration-300 rounded-xl">
-              <CardHeader className="pb-4">
-                <div className="flex items-center space-x-3">
-                  <img
-                    src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png"
-                    alt="Farmer"
-                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"
-                  />
-                  <div className="flex-1">
-                    <CardTitle className="text-xs sm:text-base">Kwame Asante</CardTitle>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs sm:text-sm text-gray-500">Ashanti Region</span>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="text-xs sm:text-base">
-                <p className="mb-2">Maize, Cassava</p>
-                <p className="text-gray-600">"FarmPartner helped me scale my farm and connect with investors!"</p>
-              </CardContent>
-            </Card>
+          <div className="mt-2 text-xs text-gray-600">*Example split. Actual terms may vary by partnership.</div>
+        </div>
+      </section>
+      {/* Benefits Section */}
+      <section className="w-full max-w-5xl mx-auto px-2 sm:px-6 mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: BRAND_TEAL }}>Benefits</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-[#f8f6ff] rounded-xl shadow border-2 border-[#921573] p-6 animate-fade-in-up">
+            <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_MAGENTA }}>For Farmers</h3>
+            <ul className="list-disc pl-5 space-y-1 text-base text-gray-800">
+              <li>Access to verified investors</li>
+              <li>Resource support (inputs, seeds, equipment)</li>
+              <li>Expert monitoring and advice</li>
+              <li>Transparent profit sharing</li>
+              <li>Improved yields and income</li>
+            </ul>
+          </div>
+          <div className="bg-[#e6fbe6] rounded-xl shadow border-2 border-[#7ede56] p-6 animate-fade-in-up">
+            <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_GREEN }}>For Investors</h3>
+            <ul className="list-disc pl-5 space-y-1 text-base text-gray-800">
+              <li>Partner with credible farmers</li>
+              <li>Transparent investment process</li>
+              <li>Impact tracking and reporting</li>
+              <li>Attractive ROI and shared success</li>
+              <li>Support sustainable agriculture</li>
+            </ul>
           </div>
         </div>
-      </div>
+      </section>
+      {/* Success Stories & Impact Metrics */}
+      <section className="w-full max-w-5xl mx-auto px-2 sm:px-6 mb-12">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: BRAND_MAGENTA }}>Success Stories & Impact</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Success Story Card Example */}
+          <div className="bg-white rounded-xl shadow border-2 border-[#921573] p-6 animate-fade-in-up">
+            <div className="flex items-center gap-3 mb-2">
+              <img src="/lovable-uploads/hero-farmer-highquality.png" alt="Success Farmer" className="w-10 h-10 rounded-full object-cover" />
+              <div>
+                <div className="font-bold text-base" style={{ color: BRAND_MAGENTA }}>Isaac Mensah</div>
+                <div className="text-xs text-gray-600">Tomatoes | 8 months | ROI: 30%</div>
+              </div>
+            </div>
+            <div className="text-gray-700 mb-2">"Partnering with AgriLync helped me expand my farm and increase my profits. The process was transparent and supportive."</div>
+            <div className="flex items-center gap-2 mt-2">
+              <Star color={BRAND_GREEN} size={18} />
+              <span className="text-xs text-gray-600">Investor: GreenGrow Investments</span>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow border-2 border-[#7ede56] p-6 animate-fade-in-up">
+            <div className="flex items-center gap-3 mb-2">
+              <img src="/lovable-uploads/musa.png" alt="Success Farmer" className="w-10 h-10 rounded-full object-cover" />
+              <div>
+                <div className="font-bold text-base" style={{ color: BRAND_GREEN }}>Fatima Al-Hassan</div>
+                <div className="text-xs text-gray-600">Onions | 6 months | ROI: 30%</div>
+              </div>
+            </div>
+            <div className="text-gray-700 mb-2">"The investor partnership enabled me to upgrade my irrigation and boost my harvest. Highly recommended!"</div>
+            <div className="flex items-center gap-2 mt-2">
+              <Star color={BRAND_MAGENTA} size={18} />
+              <span className="text-xs text-gray-600">Investor: AgriVest Partners</span>
+            </div>
+          </div>
+        </div>
+        {/* Impact Metrics */}
+        <div className="mt-8 flex flex-wrap gap-6 justify-center">
+          <div className="flex flex-col items-center">
+            <div className="text-2xl font-bold" style={{ color: BRAND_MAGENTA }}>120+</div>
+            <div className="text-xs text-gray-600">Successful Partnerships</div>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="text-2xl font-bold" style={{ color: BRAND_GREEN }}>98%</div>
+            <div className="text-xs text-gray-600">On-Time Project Delivery</div>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="text-2xl font-bold" style={{ color: BRAND_TEAL }}>15%</div>
+            <div className="text-xs text-gray-600">Average ROI</div>
+          </div>
+        </div>
+      </section>
       <Footer />
     </div>
   );
