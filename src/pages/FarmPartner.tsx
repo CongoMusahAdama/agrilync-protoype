@@ -147,47 +147,124 @@ const FarmPartner = () => {
     <div className="min-h-screen bg-white overflow-x-hidden">
       <Navbar />
       {/* Hero Section */}
-      <section className="relative flex flex-col items-center justify-center min-h-[220px] sm:min-h-[320px] md:min-h-[400px] lg:min-h-[480px] w-full overflow-hidden mb-4 sm:mb-8 bg-white">
-        <div className="text-center mb-4 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-2 sm:mb-3 animate-fade-in-down" style={{ color: BRAND_MAGENTA }}>
+      <section className="relative flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] w-full overflow-hidden mb-8 bg-gradient-to-br from-purple-50 via-green-50 to-blue-50">
+        <div className="text-center mb-8 px-4">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 animate-fade-in-down" style={{ color: BRAND_MAGENTA }}>
             FarmPartner Initiative
           </h1>
-          <p className="text-sm sm:text-lg text-gray-700 max-w-xs sm:max-w-md md:max-w-2xl mx-auto">
-            Empowering farmers and investors through transparent, impactful partnerships. Grow together, succeed together.
+          <p className="text-lg sm:text-xl text-gray-700 max-w-4xl mx-auto mb-8">
+            Revolutionizing agriculture through intelligent farmer-investor partnerships. 
+            <span className="block mt-2 font-semibold" style={{ color: BRAND_TEAL }}>
+              Transparent collaboration. Verified investors. Shared success.
+            </span>
           </p>
+          <div className="flex flex-wrap justify-center gap-4 text-sm">
+            <Badge variant="secondary" className="px-4 py-2">
+              <Shield className="mr-2 h-4 w-4" />
+              Verified Partners
+            </Badge>
+            <Badge variant="secondary" className="px-4 py-2">
+              <TrendingUp className="mr-2 h-4 w-4" />
+              25% Average ROI
+            </Badge>
+            <Badge variant="secondary" className="px-4 py-2">
+              <Users className="mr-2 h-4 w-4" />
+              500+ Successful Partnerships
+            </Badge>
+          </div>
         </div>
       </section>
       {/* Matchmaking Engine Section */}
-      <section className="w-full max-w-5xl mx-auto px-2 sm:px-6 mb-8">
-        <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: BRAND_TEAL }}>Matchmaking Engine</h2>
-        <div className="flex flex-col md:flex-row gap-6 items-center bg-[#f8f6ff] rounded-xl shadow-md border-2 border-[#921573] p-6 animate-fade-in-up">
-          <div className="flex-1 text-base text-gray-800">
-            <p>
-              Our intelligent engine connects <span style={{ color: BRAND_MAGENTA, fontWeight: 'bold' }}>verified farmers</span> with <span style={{ color: BRAND_GREEN, fontWeight: 'bold' }}>impact investors</span> based on needs, goals, and location. 
-              Enjoy a seamless, transparent partnership journey.
-            </p>
-            <ul className="list-disc pl-5 mt-3 space-y-1">
-              <li>Smart matching based on farm profile & investment goals</li>
-              <li>Real-time status updates</li>
-              <li>Secure, transparent communication</li>
-            </ul>
+      <section className="w-full max-w-6xl mx-auto px-4 sm:px-6 mb-12">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center" style={{ color: BRAND_TEAL }}>
+          Intelligent Matchmaking Engine
+        </h2>
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          <div className="bg-white rounded-xl shadow-lg border-2 border-[#921573] p-8">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2" style={{ color: BRAND_MAGENTA }}>
+              <Target size={24} />
+              How It Works
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: BRAND_MAGENTA }}>1</div>
+                <div>
+                  <h4 className="font-semibold">Farm Profile Analysis</h4>
+                  <p className="text-sm text-gray-600">AI analyzes crop type, farm size, location, and financial needs</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: BRAND_GREEN }}>2</div>
+                <div>
+                  <h4 className="font-semibold">Investor Matching</h4>
+                  <p className="text-sm text-gray-600">Connect with verified investors aligned with your goals</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: BRAND_TEAL }}>3</div>
+                <div>
+                  <h4 className="font-semibold">Partnership Management</h4>
+                  <p className="text-sm text-gray-600">Real-time tracking and transparent communication</p>
+                </div>
+              </div>
+            </div>
           </div>
-          {/* Simple visual flow */}
-          <div className="flex flex-col items-center gap-2">
-            <Users color={BRAND_MAGENTA} size={36} />
-            <span className="text-2xl">⇄</span>
-            <TrendingUp color={BRAND_GREEN} size={36} />
+          
+          <div className="bg-gradient-to-br from-purple-50 to-green-50 rounded-xl shadow-lg p-8">
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-bold mb-4" style={{ color: BRAND_TEAL }}>Partnership Flow</h3>
+            </div>
+            <div className="flex flex-col items-center space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="bg-white p-4 rounded-full shadow-md">
+                  <Users color={BRAND_MAGENTA} size={32} />
+                </div>
+                <span className="text-2xl font-bold" style={{ color: BRAND_TEAL }}>⇄</span>
+                <div className="bg-white p-4 rounded-full shadow-md">
+                  <DollarSign color={BRAND_GREEN} size={32} />
+                </div>
+              </div>
+              <div className="text-center">
+                <p className="font-semibold" style={{ color: BRAND_MAGENTA }}>Farmers</p>
+                <p className="text-sm text-gray-600">Verified profiles with credibility scores</p>
+              </div>
+              <span className="text-2xl">↕</span>
+              <div className="text-center">
+                <p className="font-semibold" style={{ color: BRAND_GREEN }}>Investors</p>
+                <p className="text-sm text-gray-600">Impact-focused with transparent verification</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
       {/* Investor Verification & Transparency */}
-      <section className="w-full max-w-4xl mx-auto px-2 sm:px-6 mb-8">
-        <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: BRAND_MAGENTA }}>Investor Verification & Transparency</h2>
-        <div className="flex items-center gap-4 bg-[#e6fbe6] rounded-xl shadow border-2 border-[#7ede56] p-6 animate-fade-in-up">
-          <Shield color={BRAND_TEAL} size={32} />
-          <div className="flex-1 text-base text-gray-800">
-            <p>
-              All investors undergo a <span style={{ color: BRAND_TEAL, fontWeight: 'bold' }}>strict verification process</span> to ensure trust and transparency. Track every transaction and partnership milestone in real time.
+      <section className="w-full max-w-6xl mx-auto px-4 sm:px-6 mb-12">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center" style={{ color: BRAND_MAGENTA }}>
+          Investor Verification & Transparency Measures
+        </h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-xl shadow-lg border-2 border-[#921573] p-6 text-center">
+            <Shield color={BRAND_MAGENTA} size={48} className="mx-auto mb-4" />
+            <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_MAGENTA }}>Strict Verification</h3>
+            <p className="text-sm text-gray-600">
+              Multi-step verification process including financial background checks, 
+              agricultural experience validation, and reference verification.
+            </p>
+          </div>
+          <div className="bg-white rounded-xl shadow-lg border-2 border-[#7ede56] p-6 text-center">
+            <TrendingUp color={BRAND_GREEN} size={48} className="mx-auto mb-4" />
+            <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_GREEN }}>Real-time Tracking</h3>
+            <p className="text-sm text-gray-600">
+              Track every transaction, milestone, and partnership progress through 
+              our transparent dashboard system.
+            </p>
+          </div>
+          <div className="bg-white rounded-xl shadow-lg border-2 border-[#002F37] p-6 text-center">
+            <CheckCircle color={BRAND_TEAL} size={48} className="mx-auto mb-4" />
+            <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Accountability</h3>
+            <p className="text-sm text-gray-600">
+              Regular audits, performance reviews, and farmer feedback ensure 
+              continuous accountability and quality partnerships.
             </p>
           </div>
         </div>
