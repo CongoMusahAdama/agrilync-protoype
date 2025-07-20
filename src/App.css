@@ -85,3 +85,23 @@
     }
   }
 }
+
+/* Animated stroke draw for SVG segments */
+.animate-stroke-draw {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: strokeDraw 1s ease forwards;
+}
+@keyframes strokeDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-flow-arrow {
+  animation: flowArrow 1.2s linear infinite alternate;
+}
+@keyframes flowArrow {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
+}

@@ -148,17 +148,21 @@ const Weather = () => {
     <div className="min-h-screen bg-white overflow-x-hidden">
       <Navbar />
       {/* Header Section */}
-      <div className="relative flex flex-col items-center justify-center min-h-[220px] sm:min-h-[320px] md:min-h-[400px] lg:min-h-[480px] w-full overflow-hidden mb-4 sm:mb-8 bg-gradient-to-br from-blue-50 via-green-50 to-blue-100">
+      <div className="relative flex flex-col items-center justify-center min-h-[220px] sm:min-h-[320px] md:min-h-[400px] lg:min-h-[480px] w-full overflow-hidden mb-4 sm:mb-8 bg-white animate-fade-in-down">
         <div className="text-center mb-4 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-2 sm:mb-3 animate-fade-in-down" style={{ color: BRAND_MAGENTA }}>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-2 sm:mb-3 animate-slide-in-left" style={{ color: BRAND_MAGENTA }}>
             Hyperlocal Weather Intelligence
           </h1>
-          <p className="text-sm sm:text-lg text-gray-700 max-w-xs sm:max-w-md md:max-w-2xl mx-auto">
-            Data-rich, farm-location-based forecasts with AI-powered recommendations for optimal farming decisions.
+          <p className="text-sm sm:text-lg text-gray-700 max-w-xs sm:max-w-md md:max-w-2xl mx-auto animate-fade-in-up">
+            {getDynamicWeatherMessage(currentWeather)}
           </p>
         </div>
+        {/* Animated Weather Icon */}
+        <div className="flex justify-center items-center mb-4 animate-fade-in-up">
+          <img src={currentWeather.icon} alt="Weather Icon" className="w-24 h-24 animate-weather-bounce" />
+        </div>
         {/* Location Input */}
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4 sm:mb-8 w-full max-w-xl justify-center">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4 sm:mb-8 w-full max-w-xl justify-center animate-fade-in-up">
           <Input
             className="flex-1 text-base px-4 py-3 border-2 border-[#921573] focus:border-[#7ede56] rounded-lg shadow-sm"
             placeholder="Enter farm location (e.g., Kumasi Central)"
@@ -171,13 +175,13 @@ const Weather = () => {
           </Button>
         </form>
         {/* Current Weather Card */}
-        <div className="w-full max-w-xl">
+        <div className="w-full max-w-xl animate-fade-in-up">
           {loading ? (
             <div className="flex justify-center items-center py-8">
               <div className="animate-spin rounded-full h-10 w-10 border-b-4 border-[#921573]"></div>
             </div>
           ) : forecast ? (
-            <div className="mt-4 sm:mt-8 bg-white/90 backdrop-blur-sm rounded-xl shadow-xl border-2 border-[#7ede56] p-6">
+            <div className="mt-4 sm:mt-8 bg-white/90 backdrop-blur-sm rounded-xl shadow-xl border-2 border-[#7ede56] p-6 animate-fade-in-up">
               <div className="flex items-center gap-2 mb-4">
                 <MapPin color={BRAND_MAGENTA} size={22} />
                 <h3 className="text-lg font-bold" style={{ color: BRAND_MAGENTA }}>
@@ -199,23 +203,53 @@ const Weather = () => {
                     {forecast.wind} km/h
                   </p>
                 </div>
-                <div className="flex flex-col items-center">
-                  <img src={forecast.icon} alt="Weather Icon" className="w-16 h-16" />
-                  <span className="text-sm text-gray-600">{forecast.condition}</span>
+                <div className="flex-shrink-0 flex flex-col items-center">
+                  <img src={forecast.icon} alt="Weather Icon" className="w-20 h-20 sm:w-28 sm:h-28 mx-auto animate-weather-bounce" />
+                  <span className="text-xs text-gray-500 mt-2">{forecast.condition}</span>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-600 flex items-center gap-2">
-                  <Zap size={14} />
-                  Last updated: {forecast.lastUpdated}
-                </p>
+              <div className="mt-2 sm:mt-4">
+                <p className="text-sm text-gray-600">Last updated: {forecast.lastUpdated}</p>
               </div>
             </div>
           ) : (
-            <div className="text-center text-base text-gray-500 mt-8">Enter your farm location to get detailed forecasts</div>
+            <div className="text-center text-base text-gray-500 mt-8">No forecast data available.</div>
           )}
         </div>
       </div>
+      {/* Forecast Tracking Section */}
+      <section className="w-full max-w-5xl mx-auto px-2 sm:px-6 mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 animate-slide-in-left" style={{ color: BRAND_PURPLE }}>7-Day Forecast & Recommendations</h2>
+        <div className="flex gap-4 overflow-x-auto pb-2">
+          {weeklyForecast.map((day, idx) => (
+            <div
+              key={day.day}
+              className="min-w-[180px] bg-white rounded-xl shadow-md border-2 flex flex-col items-center p-4 animate-fade-in-up transition-transform duration-300 hover:scale-105 hover:shadow-xl cursor-pointer"
+              style={{ borderColor: idx % 2 === 0 ? BRAND_MAGENTA : BRAND_PURPLE, animationDelay: `${idx * 120}ms` }}
+            >
+              <day.icon color={BRAND_GREEN} size={32} className="animate-weather-icon" />
+              <div className="font-bold text-lg mt-2" style={{ color: BRAND_MAGENTA }}>{day.day}</div>
+              <div className="text-base font-semibold">{day.high} / {day.low}</div>
+              <div className="text-sm text-gray-600 mb-2">{day.condition}</div>
+              <div className="text-xs text-center text-gray-700 italic">{day.recommendation}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+      {/* Responsive Farming Calendar */}
+      <section className="w-full max-w-5xl mx-auto px-2 sm:px-6 mb-12 animate-fade-in-up">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 animate-slide-in-left" style={{ color: BRAND_GREEN }}>Farming Calendar</h2>
+        <div className="flex gap-4 overflow-x-auto pb-2">
+          {farmRecommendations.map((rec, idx) => (
+            <div key={rec.activity} className={`min-w-[220px] bg-gradient-to-br from-green-50 to-blue-50 rounded-xl shadow-md border-2 border-[#921573] p-4 animate-fade-in-up transition-transform duration-300 hover:scale-105 ${rec.urgency === 'high' ? 'ring-2 ring-[#921573]' : ''}` } style={{ animationDelay: `${idx * 120}ms` }}>
+              <div className="font-bold text-base mb-1" style={{ color: BRAND_MAGENTA }}>{rec.activity}</div>
+              <div className="text-xs text-gray-600 mb-1">Best: {rec.bestTime}</div>
+              <div className="text-xs text-gray-700 mb-2">{rec.reason}</div>
+              <Badge className={`px-2 py-1 ${rec.urgency === 'high' ? 'bg-[#921573] text-white' : 'bg-[#7ede56] text-[#002F37]'}`}>{rec.urgency === 'high' ? 'High Priority' : rec.urgency === 'medium' ? 'Medium' : 'Low'}</Badge>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Interactive Ghana Map Section */}
       <section className="w-full max-w-6xl mx-auto px-2 sm:px-6 mb-8">
@@ -399,3 +433,20 @@ const Weather = () => {
 };
 
 export default Weather;
+
+// Add helper for dynamic weather message
+function getDynamicWeatherMessage(weather) {
+  if (!weather) return 'Data-rich, farm-location-based forecasts with AI-powered recommendations for optimal farming decisions.';
+  if (weather.condition.includes('Rain')) return 'Rainy day ahead! Plan indoor activities or protect your crops.';
+  if (weather.condition.includes('Sunny')) return 'Sunny skies! Great for harvesting and drying crops.';
+  if (weather.condition.includes('Cloud')) return 'Cloudy weather. Monitor humidity and plan accordingly.';
+  return 'Stay updated with the latest weather insights for your farm.';
+}
+
+// Add CSS animations in App.css:
+// .animate-weather-bounce { animation: bounce 2s infinite alternate; }
+// .animate-weather-icon { animation: float 3s ease-in-out infinite; }
+// .animate-slide-in-left { animation: slideInLeft 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+// @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-10px); } }
+// @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0); } }
+// @keyframes slideInLeft { 0% { opacity: 0; transform: translateX(-32px); } 100% { opacity: 1; transform: translateX(0); } }

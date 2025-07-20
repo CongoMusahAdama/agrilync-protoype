@@ -26,6 +26,10 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 import { format } from 'date-fns';
 
 const AI_BUTTON_COLOR = '#921573';
+const BRAND_MAGENTA = '#921573';
+const BRAND_GREEN = '#7ede56';
+const BRAND_TEAL = '#002F37';
+const BRAND_WHITE = '#FFFFFF';
 
 const mockWorkshops = [
   { id: 'w1', title: 'AI for Crop Disease Detection', date: '2024-08-10', location: 'Accra', spots: 20, image: '/lovable-uploads/webinar.jpg', type: 'webinar' },
@@ -205,240 +209,242 @@ const AIConsultation = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       <Navbar />
-      {/* Hero Section */}
-      <div className="text-center mb-4 sm:mb-8">
-        <h1 className="text-base sm:text-lg md:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">AI & Human Consultation</h1>
-        <p className="text-xs sm:text-base text-gray-600 max-w-xs sm:max-w-md md:max-w-3xl mx-auto">
-          Get instant AI-powered advice or connect with local extension agents. 
-          Upload crop images for 95% accurate disease detection.
-        </p>
-      </div>
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
-        <Tabs defaultValue="ai-chat" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 text-xs sm:text-base">
-            <TabsTrigger value="ai-chat">AI Assistant</TabsTrigger>
-            <TabsTrigger value="image-analysis">Image Analysis</TabsTrigger>
-            <TabsTrigger value="human-consultation">Book Consultation</TabsTrigger>
-            <TabsTrigger value="workshops">Workshops</TabsTrigger>
-          </TabsList>
-          {/* AI Chat Interface */}
-          <TabsContent value="ai-chat">
-            <Card className="h-[400px] sm:h-[600px] flex flex-col">
-              <CardContent className="flex-1 overflow-y-auto px-2 sm:px-4 py-2 sm:py-4 space-y-2 sm:space-y-3 text-xs sm:text-base">
-                {chatMessages.map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.type === 'ai' ? 'justify-start' : 'justify-end'}`}> 
-                    <div className={`rounded-lg px-3 py-2 max-w-[80%] ${msg.type === 'ai' ? 'bg-green-100 text-gray-900' : 'bg-blue-100 text-gray-900'} text-xs sm:text-base`}>{msg.message}</div>
-                  </div>
-                ))}
-              </CardContent>
-              <div className="flex items-center gap-2 px-2 sm:px-4 py-2 border-t bg-white">
-                <Input
-                  className="flex-1 text-xs sm:text-base px-2 py-2"
-                  placeholder="Type your message..."
-                  value={newMessage}
-                  onChange={e => setNewMessage(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
-                />
-                <Button
-                  type="button"
-                  style={{ backgroundColor: AI_BUTTON_COLOR, color: '#fff' }}
-                  className={`text-xs sm:text-base px-3 py-2 flex items-center justify-center ${isListening ? 'animate-pulse' : ''}`}
-                  onClick={handleVoiceInput}
-                  aria-label="Voice input"
-                >
-                  {isListening ? <MicOff className="w-4 h-4 mr-1" /> : <Mic className="w-4 h-4 mr-1" />}
-                  {isListening ? 'Listening...' : 'Voice'}
-                </Button>
-                <Button
-                  className="text-xs sm:text-base px-3 py-2"
-                  style={{ backgroundColor: AI_BUTTON_COLOR, color: '#fff' }}
-                  onClick={handleSendMessage}
-                >
-                  <Send className="w-4 h-4 mr-1" />Send
-                </Button>
-              </div>
-            </Card>
-          </TabsContent>
-          {/* Image Analysis */}
-          <TabsContent value="image-analysis">
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-xs sm:text-base">
-                  <LucideCalendar className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
-                  <span>Crop Disease Detection</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 sm:space-y-6">
-                <div className="text-center">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-12 hover:border-green-500 transition-colors">
-                    <Upload className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-2 sm:mb-4" />
-                    <h3 className="text-xs sm:text-lg font-medium text-gray-900 mb-2">Upload Crop Image</h3>
-                    <p className="text-xs sm:text-base text-gray-600 mb-2 sm:mb-4">Take a clear photo of affected leaves or crops for instant analysis</p>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      id="image-upload"
-                    />
-                    <label htmlFor="image-upload">
-                      <Button style={{ backgroundColor: AI_BUTTON_COLOR, color: '#fff' }} className="text-xs sm:text-base px-4 py-2 mt-2">Choose Image</Button>
-                    </label>
-                    {uploadedImage && (
-                      <div className="mt-4 flex flex-col items-center">
-                        <img src={uploadedImage} alt="Uploaded crop" className="max-h-48 rounded-lg border" />
-                        <Button style={{ backgroundColor: AI_BUTTON_COLOR, color: '#fff' }} className="mt-2 text-xs sm:text-base px-3 py-1" onClick={() => setUploadedImage(null)}>Upload New Image</Button>
-                      </div>
-                    )}
-                  </div>
-                  {/* Remedy suggestion visually highlighted */}
-                  <div className="mt-6 bg-purple-50 border-l-4 border-[#921573] p-4 rounded-lg text-left max-w-xl mx-auto">
-                    <div className="font-semibold text-[#921573] mb-1">AI Remedy Suggestion:</div>
-                    <div className="text-xs sm:text-base text-gray-700">After analysis, the AI will suggest remedies here (e.g., Remove affected leaves, apply organic fungicide, ensure proper spacing).</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          {/* Human Consultation */}
-          <TabsContent value="human-consultation">
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle className="text-xs sm:text-base">Book a Consultation</CardTitle>
-                <div className="flex gap-2 mt-2">
-                  <Button
-                    type="button"
-                    style={{ backgroundColor: bookingTab === 'inperson' ? AI_BUTTON_COLOR : '#e5e7eb', color: bookingTab === 'inperson' ? '#fff' : '#333' }}
-                    className="text-xs sm:text-base px-3 py-2 rounded-full"
-                    onClick={() => setBookingTab('inperson')}
-                  >In-Person</Button>
-                  <Button
-                    type="button"
-                    style={{ backgroundColor: bookingTab === 'virtual' ? AI_BUTTON_COLOR : '#e5e7eb', color: bookingTab === 'virtual' ? '#fff' : '#333' }}
-                    className="text-xs sm:text-base px-3 py-2 rounded-full"
-                    onClick={() => setBookingTab('virtual')}
-                  >Virtual</Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3 sm:space-y-5">
-                {bookingTab === 'inperson' ? (
-                  <form onSubmit={handleVisitRequest} className="space-y-2 sm:space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-                      <Input className="text-xs sm:text-base px-2 py-2" placeholder="Full Name" value={visitForm.name} onChange={e => setVisitForm(v => ({ ...v, name: e.target.value }))} />
-                      <Input className="text-xs sm:text-base px-2 py-2" placeholder="Phone Number" value={visitForm.phone} onChange={e => setVisitForm(v => ({ ...v, phone: e.target.value }))} />
-                    </div>
-                    <Input className="text-xs sm:text-base px-2 py-2" placeholder="Location" value={visitForm.location} onChange={e => setVisitForm(v => ({ ...v, location: e.target.value }))} />
-                    <Textarea className="text-xs sm:text-base px-2 py-2" placeholder="Describe your challenge" value={visitForm.challenge} onChange={e => setVisitForm(v => ({ ...v, challenge: e.target.value }))} />
-                    {/* Date Picker Field with Label for In-Person */}
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1">Choose date</label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Input
-                            className="text-xs sm:text-base px-2 py-2 cursor-pointer bg-white"
-                            placeholder="Choose date"
-                            value={visitDate ? format(visitDate, 'yyyy-MM-dd') : ''}
-                            readOnly
-                          />
-                        </PopoverTrigger>
-                        <PopoverContent align="start">
-                          <Calendar
-                            mode="single"
-                            selected={visitDate}
-                            onSelect={setVisitDate}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    <Button style={{ backgroundColor: AI_BUTTON_COLOR, color: '#fff' }} className="w-full text-xs sm:text-base py-2">Request Visit</Button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleScheduleCall} className="space-y-2 sm:space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-                      <Input className="text-xs sm:text-base px-2 py-2" placeholder="Full Name" value={callForm.name} onChange={e => setCallForm(v => ({ ...v, name: e.target.value }))} />
-                      <Input className="text-xs sm:text-base px-2 py-2" placeholder="Email" value={callForm.email} onChange={e => setCallForm(v => ({ ...v, email: e.target.value }))} />
-                    </div>
-                    {/* Date Picker Field with Label for Virtual */}
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1">Choose date</label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Input
-                            className="text-xs sm:text-base px-2 py-2 cursor-pointer bg-white"
-                            placeholder="Choose date"
-                            value={callDate ? format(callDate, 'yyyy-MM-dd') : ''}
-                            readOnly
-                          />
-                        </PopoverTrigger>
-                        <PopoverContent align="start">
-                          <Calendar
-                            mode="single"
-                            selected={callDate}
-                            onSelect={setCallDate}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    <Input className="text-xs sm:text-base px-2 py-2" placeholder="Preferred Time" value={callForm.time} onChange={e => setCallForm(v => ({ ...v, time: e.target.value }))} />
-                    <Textarea className="text-xs sm:text-base px-2 py-2" placeholder="Topics to discuss" value={callForm.topics} onChange={e => setCallForm(v => ({ ...v, topics: e.target.value }))} />
-                    <Button style={{ backgroundColor: AI_BUTTON_COLOR, color: '#fff' }} className="w-full text-xs sm:text-base py-2">Schedule Virtual Call</Button>
-                  </form>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          {/* Workshops */}
-          <TabsContent value="workshops">
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle className="text-xs sm:text-base">Upcoming Workshops & Webinars</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {mockWorkshops.map(w => (
-                    <div key={w.id} className="border rounded-lg p-4 bg-white shadow-sm flex flex-col justify-between">
-                      <div>
-                        <img
-                          src={w.image}
-                          alt={w.title + ' image'}
-                          className="w-full h-40 object-cover rounded-md mb-3 bg-gray-100 cursor-pointer"
-                          onClick={() => setModalImage(w.image)}
-                        />
-                        <div className="font-bold text-[#921573] text-base mb-1">{w.title} <span className="ml-2 px-2 py-0.5 rounded-full text-xs" style={{ background: w.type === 'webinar' ? '#f3e8ff' : '#e0f2fe', color: w.type === 'webinar' ? '#921573' : '#0369a1' }}>{w.type.charAt(0).toUpperCase() + w.type.slice(1)}</span></div>
-                        <div className="text-xs sm:text-sm text-gray-700 mb-2">{w.date} &bull; {w.location}</div>
-                        <div className="text-xs sm:text-sm text-gray-500 mb-2">Spots left: {w.spots}</div>
-                      </div>
-                      <form onSubmit={e => { e.preventDefault(); handleWorkshopRegistration(w.title, w.id); }} className="mt-2 flex flex-col gap-2">
-                        <Input className="text-xs sm:text-base px-2 py-2" placeholder="Full Name" value={workshopRegistration.name} onChange={e => setWorkshopRegistration(v => ({ ...v, name: e.target.value }))} />
-                        <Input className="text-xs sm:text-base px-2 py-2" placeholder="Email" value={workshopRegistration.email} onChange={e => setWorkshopRegistration(v => ({ ...v, email: e.target.value }))} />
-                        <Input className="text-xs sm:text-base px-2 py-2" placeholder="Phone Number" value={workshopRegistration.phone} onChange={e => setWorkshopRegistration(v => ({ ...v, phone: e.target.value }))} />
-                        <Button style={{ backgroundColor: AI_BUTTON_COLOR, color: '#fff' }} className="w-full text-xs sm:text-base py-2">Register</Button>
-                      </form>
+      <section className="py-10 sm:py-16 md:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+          <div className="text-center mb-10 sm:mb-14 md:mb-16 animate-fade-in-down transition-all duration-700 ease-in-out">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-2 sm:mb-3 animate-slide-in-left" style={{ color: BRAND_MAGENTA }}>
+              AI Consultation
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-600 max-w-xs sm:max-w-md md:max-w-3xl mx-auto">
+              Get expert advice powered by AI for your farm. Book a session or join a workshop to boost your productivity.
+            </p>
+          </div>
+          <Tabs defaultValue="ai-chat" className="space-y-4 sm:space-y-6">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 text-xs sm:text-base">
+              <TabsTrigger value="ai-chat">AI Assistant</TabsTrigger>
+              <TabsTrigger value="image-analysis">Image Analysis</TabsTrigger>
+              <TabsTrigger value="human-consultation">Book Consultation</TabsTrigger>
+              <TabsTrigger value="workshops">Workshops</TabsTrigger>
+            </TabsList>
+            {/* AI Chat Interface */}
+            <TabsContent value="ai-chat">
+              <Card className="h-[400px] sm:h-[600px] flex flex-col">
+                <CardContent className="flex-1 overflow-y-auto px-2 sm:px-4 py-2 sm:py-4 space-y-2 sm:space-y-3 text-xs sm:text-base">
+                  {chatMessages.map((msg, idx) => (
+                    <div key={idx} className={`flex ${msg.type === 'ai' ? 'justify-start' : 'justify-end'}`}> 
+                      <div className={`rounded-lg px-3 py-2 max-w-[80%] ${msg.type === 'ai' ? 'bg-green-100 text-gray-900' : 'bg-blue-100 text-gray-900'} text-xs sm:text-base`}>{msg.message}</div>
                     </div>
                   ))}
+                </CardContent>
+                <div className="flex items-center gap-2 px-2 sm:px-4 py-2 border-t bg-white">
+                  <Input
+                    className="flex-1 text-xs sm:text-base px-2 py-2"
+                    placeholder="Type your message..."
+                    value={newMessage}
+                    onChange={e => setNewMessage(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
+                  />
+                  <Button
+                    type="button"
+                    style={{ backgroundColor: AI_BUTTON_COLOR, color: '#fff' }}
+                    className={`text-xs sm:text-base px-3 py-2 flex items-center justify-center ${isListening ? 'animate-pulse' : ''}`}
+                    onClick={handleVoiceInput}
+                    aria-label="Voice input"
+                  >
+                    {isListening ? <MicOff className="w-4 h-4 mr-1" /> : <Mic className="w-4 h-4 mr-1" />}
+                    {isListening ? 'Listening...' : 'Voice'}
+                  </Button>
+                  <Button
+                    className="text-xs sm:text-base px-3 py-2"
+                    style={{ backgroundColor: AI_BUTTON_COLOR, color: '#fff' }}
+                    onClick={handleSendMessage}
+                  >
+                    <Send className="w-4 h-4 mr-1" />Send
+                  </Button>
                 </div>
-                {/* Modal for full image view */}
-                <Dialog open={!!modalImage} onOpenChange={() => setModalImage(null)}>
-                  <DialogContent className="max-w-2xl w-full flex flex-col items-center bg-white">
-                    {modalImage && (
-                      <img
-                        src={modalImage}
-                        alt="Full flyer"
-                        className="w-full max-h-[80vh] object-contain rounded-lg transition-all duration-500 ease-in-out transform scale-95 opacity-0 data-[state=open]:scale-100 data-[state=open]:opacity-100"
-                        data-state={modalImage ? 'open' : 'closed'}
+              </Card>
+            </TabsContent>
+            {/* Image Analysis */}
+            <TabsContent value="image-analysis">
+              <Card className="flex flex-col">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2 text-xs sm:text-base">
+                    <LucideCalendar className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+                    <span>Crop Disease Detection</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 sm:space-y-6">
+                  <div className="text-center">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-12 hover:border-green-500 transition-colors">
+                      <Upload className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-2 sm:mb-4" />
+                      <h3 className="text-xs sm:text-lg font-medium text-gray-900 mb-2">Upload Crop Image</h3>
+                      <p className="text-xs sm:text-base text-gray-600 mb-2 sm:mb-4">Take a clear photo of affected leaves or crops for instant analysis</p>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="image-upload"
                       />
-                    )}
-                  </DialogContent>
-                </Dialog>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+                      <label htmlFor="image-upload">
+                        <Button style={{ backgroundColor: AI_BUTTON_COLOR, color: '#fff' }} className="text-xs sm:text-base px-4 py-2 mt-2">Choose Image</Button>
+                      </label>
+                      {uploadedImage && (
+                        <div className="mt-4 flex flex-col items-center">
+                          <img src={uploadedImage} alt="Uploaded crop" className="max-h-48 rounded-lg border" />
+                          <Button style={{ backgroundColor: AI_BUTTON_COLOR, color: '#fff' }} className="mt-2 text-xs sm:text-base px-3 py-1" onClick={() => setUploadedImage(null)}>Upload New Image</Button>
+                        </div>
+                      )}
+                    </div>
+                    {/* Remedy suggestion visually highlighted */}
+                    <div className="mt-6 bg-purple-50 border-l-4 border-[#921573] p-4 rounded-lg text-left max-w-xl mx-auto">
+                      <div className="font-semibold text-[#921573] mb-1">AI Remedy Suggestion:</div>
+                      <div className="text-xs sm:text-base text-gray-700">After analysis, the AI will suggest remedies here (e.g., Remove affected leaves, apply organic fungicide, ensure proper spacing).</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            {/* Human Consultation */}
+            <TabsContent value="human-consultation">
+              <Card className="flex flex-col">
+                <CardHeader>
+                  <CardTitle className="text-xs sm:text-base">Book a Consultation</CardTitle>
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      type="button"
+                      style={{ backgroundColor: bookingTab === 'inperson' ? AI_BUTTON_COLOR : '#e5e7eb', color: bookingTab === 'inperson' ? '#fff' : '#333' }}
+                      className="text-xs sm:text-base px-3 py-2 rounded-full"
+                      onClick={() => setBookingTab('inperson')}
+                    >In-Person</Button>
+                    <Button
+                      type="button"
+                      style={{ backgroundColor: bookingTab === 'virtual' ? AI_BUTTON_COLOR : '#e5e7eb', color: bookingTab === 'virtual' ? '#fff' : '#333' }}
+                      className="text-xs sm:text-base px-3 py-2 rounded-full"
+                      onClick={() => setBookingTab('virtual')}
+                    >Virtual</Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3 sm:space-y-5">
+                  {bookingTab === 'inperson' ? (
+                    <form onSubmit={handleVisitRequest} className="space-y-2 sm:space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                        <Input className="text-xs sm:text-base px-2 py-2" placeholder="Full Name" value={visitForm.name} onChange={e => setVisitForm(v => ({ ...v, name: e.target.value }))} />
+                        <Input className="text-xs sm:text-base px-2 py-2" placeholder="Phone Number" value={visitForm.phone} onChange={e => setVisitForm(v => ({ ...v, phone: e.target.value }))} />
+                      </div>
+                      <Input className="text-xs sm:text-base px-2 py-2" placeholder="Location" value={visitForm.location} onChange={e => setVisitForm(v => ({ ...v, location: e.target.value }))} />
+                      <Textarea className="text-xs sm:text-base px-2 py-2" placeholder="Describe your challenge" value={visitForm.challenge} onChange={e => setVisitForm(v => ({ ...v, challenge: e.target.value }))} />
+                      {/* Date Picker Field with Label for In-Person */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1">Choose date</label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Input
+                              className="text-xs sm:text-base px-2 py-2 cursor-pointer bg-white"
+                              placeholder="Choose date"
+                              value={visitDate ? format(visitDate, 'yyyy-MM-dd') : ''}
+                              readOnly
+                            />
+                          </PopoverTrigger>
+                          <PopoverContent align="start">
+                            <Calendar
+                              mode="single"
+                              selected={visitDate}
+                              onSelect={setVisitDate}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <Button style={{ backgroundColor: AI_BUTTON_COLOR, color: '#fff' }} className="w-full text-xs sm:text-base py-2">Request Visit</Button>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleScheduleCall} className="space-y-2 sm:space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                        <Input className="text-xs sm:text-base px-2 py-2" placeholder="Full Name" value={callForm.name} onChange={e => setCallForm(v => ({ ...v, name: e.target.value }))} />
+                        <Input className="text-xs sm:text-base px-2 py-2" placeholder="Email" value={callForm.email} onChange={e => setCallForm(v => ({ ...v, email: e.target.value }))} />
+                      </div>
+                      {/* Date Picker Field with Label for Virtual */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1">Choose date</label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Input
+                              className="text-xs sm:text-base px-2 py-2 cursor-pointer bg-white"
+                              placeholder="Choose date"
+                              value={callDate ? format(callDate, 'yyyy-MM-dd') : ''}
+                              readOnly
+                            />
+                          </PopoverTrigger>
+                          <PopoverContent align="start">
+                            <Calendar
+                              mode="single"
+                              selected={callDate}
+                              onSelect={setCallDate}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <Input className="text-xs sm:text-base px-2 py-2" placeholder="Preferred Time" value={callForm.time} onChange={e => setCallForm(v => ({ ...v, time: e.target.value }))} />
+                      <Textarea className="text-xs sm:text-base px-2 py-2" placeholder="Topics to discuss" value={callForm.topics} onChange={e => setCallForm(v => ({ ...v, topics: e.target.value }))} />
+                      <Button style={{ backgroundColor: AI_BUTTON_COLOR, color: '#fff' }} className="w-full text-xs sm:text-base py-2">Schedule Virtual Call</Button>
+                    </form>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+            {/* Workshops */}
+            <TabsContent value="workshops">
+              <Card className="flex flex-col">
+                <CardHeader>
+                  <CardTitle className="text-xs sm:text-base">Upcoming Workshops & Webinars</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {mockWorkshops.map(w => (
+                      <div key={w.id} className="border rounded-lg p-4 bg-white shadow-sm flex flex-col justify-between">
+                        <div>
+                          <img
+                            src={w.image}
+                            alt={w.title + ' image'}
+                            className="w-full h-40 object-cover rounded-md mb-3 bg-gray-100 cursor-pointer"
+                            onClick={() => setModalImage(w.image)}
+                          />
+                          <div className="font-bold text-[#921573] text-base mb-1">{w.title} <span className="ml-2 px-2 py-0.5 rounded-full text-xs" style={{ background: w.type === 'webinar' ? '#f3e8ff' : '#e0f2fe', color: w.type === 'webinar' ? '#921573' : '#0369a1' }}>{w.type.charAt(0).toUpperCase() + w.type.slice(1)}</span></div>
+                          <div className="text-xs sm:text-sm text-gray-700 mb-2">{w.date} &bull; {w.location}</div>
+                          <div className="text-xs sm:text-sm text-gray-500 mb-2">Spots left: {w.spots}</div>
+                        </div>
+                        <form onSubmit={e => { e.preventDefault(); handleWorkshopRegistration(w.title, w.id); }} className="mt-2 flex flex-col gap-2">
+                          <Input className="text-xs sm:text-base px-2 py-2" placeholder="Full Name" value={workshopRegistration.name} onChange={e => setWorkshopRegistration(v => ({ ...v, name: e.target.value }))} />
+                          <Input className="text-xs sm:text-base px-2 py-2" placeholder="Email" value={workshopRegistration.email} onChange={e => setWorkshopRegistration(v => ({ ...v, email: e.target.value }))} />
+                          <Input className="text-xs sm:text-base px-2 py-2" placeholder="Phone Number" value={workshopRegistration.phone} onChange={e => setWorkshopRegistration(v => ({ ...v, phone: e.target.value }))} />
+                          <Button style={{ backgroundColor: AI_BUTTON_COLOR, color: '#fff' }} className="w-full text-xs sm:text-base py-2">Register</Button>
+                        </form>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Modal for full image view */}
+                  <Dialog open={!!modalImage} onOpenChange={() => setModalImage(null)}>
+                    <DialogContent className="max-w-2xl w-full flex flex-col items-center bg-white">
+                      {modalImage && (
+                        <img
+                          src={modalImage}
+                          alt="Full flyer"
+                          className="w-full max-h-[80vh] object-contain rounded-lg transition-all duration-500 ease-in-out transform scale-95 opacity-0 data-[state=open]:scale-100 data-[state=open]:opacity-100"
+                          data-state={modalImage ? 'open' : 'closed'}
+                        />
+                      )}
+                    </DialogContent>
+                  </Dialog>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </section>
       <Footer />
     </div>
   );

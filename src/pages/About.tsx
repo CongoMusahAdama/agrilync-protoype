@@ -5,6 +5,11 @@ import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
+const BRAND_MAGENTA = '#921573';
+const BRAND_GREEN = '#7ede56';
+const BRAND_TEAL = '#002F37';
+const BRAND_WHITE = '#FFFFFF';
+
 const About = () => {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
@@ -12,8 +17,10 @@ const About = () => {
       {/* Hero Section */}
       <section className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-          <div className="text-center mb-6 sm:mb-10">
-            <h1 className="text-base sm:text-lg md:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">About AgriLync</h1>
+          <div className="text-center mb-6 sm:mb-10 animate-fade-in-down transition-all duration-700 ease-in-out">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-2 sm:mb-3 animate-slide-in-left" style={{ color: BRAND_MAGENTA }}>
+              About AgriLync
+            </h1>
             <p className="text-xs sm:text-base text-gray-600 max-w-xs sm:max-w-md md:max-w-3xl mx-auto">
               Transforming African agriculture through AI-driven consultation, 
               hyperlocal weather services, and innovative financing solutions.
