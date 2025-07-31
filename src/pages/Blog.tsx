@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +48,18 @@ const Blog = () => {
   const [webinarSectionRef, webinarSectionVisible] = useScrollReveal();
   const [completedSectionRef, completedSectionVisible] = useScrollReveal();
   const [registrationSectionRef, registrationSectionVisible] = useScrollReveal();
+
+  // Handle direct navigation to webinar section
+  useEffect(() => {
+    if (window.location.hash === '#upcoming-webinars') {
+      const element = document.getElementById('upcoming-webinars');
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 500); // Small delay to ensure page is loaded
+      }
+    }
+  }, []);
 
   // Enhanced blog posts with categories and tags
   const blogPosts = [
@@ -163,13 +175,13 @@ const Blog = () => {
       id: 3,
       title: "Post-Harvest Losses and Market Access for Smallholder Farmers",
       date: "2025-08-09",
-      time: "15:00 GMT",
-      location: "Virtual",
+      time: "6:00 PM - 7:30 PM",
+      location: "Virtual (Google Meet)",
       spots: 100,
       registered: 45,
-      image: "/lovable-uploads/webinar2.jpg",
+      image: "/lovable-uploads/webinar4.jpg",
       description: "Comprehensive strategies to reduce post-harvest losses and improve market access for smallholder farmers in Ghana.",
-      speaker: "Agricultural Expert Team",
+      speaker: "Mrs Erica Adjoa Appaih",
       status: "upcoming"
     }
   ];
@@ -186,8 +198,13 @@ const Blog = () => {
   ];
 
   const handleWebinarRegistration = (webinar: any) => {
-    setSelectedWebinar(webinar);
-    setShowRegistration(true);
+    // For the post-harvest losses webinar, redirect to the registration link
+    if (webinar.id === 3) {
+      window.open('https://is.gd/agrilyncwebinar', '_blank');
+    } else {
+      setSelectedWebinar(webinar);
+      setShowRegistration(true);
+    }
   };
 
   const handleRegistrationSubmit = (e: React.FormEvent) => {
@@ -445,7 +462,7 @@ const Blog = () => {
       </section>
 
       {/* Upcoming Webinars Section */}
-      <section className="py-16 sm:py-20 bg-white">
+      <section id="upcoming-webinars" className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
             <h2 ref={webinarSectionRef} className={"text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (webinarSectionVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
@@ -465,6 +482,7 @@ const Blog = () => {
                     src={webinar.image} 
                     alt={webinar.title}
                     className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                    style={{ objectPosition: webinar.id === 3 ? 'center 25%' : 'center' }}
                   />
                   <div className="absolute top-4 right-4">
                     <Badge className="bg-green-500 text-white">
