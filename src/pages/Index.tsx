@@ -130,6 +130,7 @@ const Index = () => {
             </div>
           </div>
         </div>
+
       </section>
 
       {/* Who We Are Section */}

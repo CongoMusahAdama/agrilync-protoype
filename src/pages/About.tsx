@@ -54,6 +54,7 @@ const About = () => {
             </h1>
           </div>
         </div>
+
       </section>
 
       {/* Who Are We Section */}
