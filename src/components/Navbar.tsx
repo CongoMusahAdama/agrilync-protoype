@@ -33,28 +33,27 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid' }) => {
             <span className={`font-bold text-xl ${textClass}`}>AgriLync</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className={`${textClass} ${hoverClass} transition-colors`}>
-              Home
-            </Link>
-            <Link to="/ai-consultation" className={`${textClass} ${hoverClass} transition-colors`}>
-              AI Consultation
-            </Link>
-            <Link to="/weather" className={`${textClass} ${hoverClass} transition-colors`}>
-              Weather
-            </Link>
-            <Link to="/farm-partner" className={`${textClass} ${hoverClass} transition-colors`}>
-              FarmPartner
-            </Link>
-            <Link to="/about" className={`${textClass} ${hoverClass} transition-colors`}>
-              About
-            </Link>
-            <Link to="/auth">
-              <Button className={btnClass}>
-                Get Started
-              </Button>
-            </Link>
+          {/* Desktop Navigation - Centered */}
+          <div className="hidden md:flex items-center justify-center flex-1">
+            <div className="flex items-center space-x-6">
+              <Link to="/" className={`${textClass} ${hoverClass} transition-colors text-sm font-medium`}>
+                Home
+              </Link>
+              <Link to="/about" className={`${textClass} ${hoverClass} transition-colors text-sm font-medium`}>
+                About
+              </Link>
+              <Link to="/blog" className={`${textClass} ${hoverClass} transition-colors text-sm font-medium`}>
+                Blog
+              </Link>
+              <Link to="/contact" className={`${textClass} ${hoverClass} transition-colors text-sm font-medium`}>
+                Contact
+              </Link>
+            </div>
+          </div>
+
+          {/* Spacer for centering */}
+          <div className="hidden md:block w-32">
+            {/* This div helps center the navigation items */}
           </div>
 
           {/* Mobile menu button */}
@@ -74,47 +73,31 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid' }) => {
             <div className={`px-2 pt-2 pb-3 space-y-1 ${bgClass}`}>
               <Link 
                 to="/" 
-                className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors`}
+                className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors text-sm font-medium`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
               </Link>
               <Link 
-                to="/ai-consultation" 
-                className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                AI Consultation
-              </Link>
-              <Link 
-                to="/weather" 
-                className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Weather
-              </Link>
-              <Link 
-                to="/farm-partner" 
-                className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                FarmPartner
-              </Link>
-              <Link 
                 to="/about" 
-                className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors`}
+                className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors text-sm font-medium`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 About
               </Link>
               <Link 
-                to="/auth" 
-                className="block px-3 py-2"
+                to="/blog" 
+                className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors text-sm font-medium`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                <Button className={btnClass + ' w-full'}>
-                  Get Started
-                </Button>
+                Blog
+              </Link>
+              <Link 
+                to="/contact" 
+                className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors text-sm font-medium`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Contact
               </Link>
             </div>
           </div>
