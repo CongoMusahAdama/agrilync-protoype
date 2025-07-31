@@ -97,7 +97,7 @@ const Index = () => {
         <div className="absolute top-0 left-0 right-0 z-30">
           <Navbar variant="transparent" />
         </div>
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-end h-full pb-8 sm:pb-12 md:pb-16">
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-end h-full pb-4 sm:pb-6 md:pb-8">
           <div className="animate-fade-in-up w-full max-w-4xl mx-auto">
             <h1 ref={heroHeadingRef} className={"text-lg sm:text-xl md:text-3xl lg:text-4xl font-extrabold text-white mb-3 sm:mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight px-2 " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") }>
               Transforming African Agriculture Through <span className="font-extrabold animate-purple-glow typewriter align-middle block sm:inline mt-1 sm:mt-0" style={{ color: '#921573', maxWidth: '100%', verticalAlign: 'middle' }}>

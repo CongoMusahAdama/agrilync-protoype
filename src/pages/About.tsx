@@ -22,6 +22,11 @@ const About = () => {
   const [value3Ref, value3Visible] = useScrollReveal();
   const [value4Ref, value4Visible] = useScrollReveal();
   const [value5Ref, value5Visible] = useScrollReveal();
+  // Team section hooks
+  const [teamRef, teamVisible] = useScrollReveal();
+  const [leadershipRef, leadershipVisible] = useScrollReveal();
+  const [productRef, productVisible] = useScrollReveal();
+  const [marketingRef, marketingVisible] = useScrollReveal();
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
@@ -173,6 +178,261 @@ const About = () => {
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                 Maintaining open, honest communication and clear processes in all our partnerships and operations.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Meet the Team Section */}
+      <section className="py-10 sm:py-16 md:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+          <div className="text-center mb-10 sm:mb-14 md:mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
+            <h2 ref={teamRef} className={"text-base sm:text-lg md:text-2xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (teamVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
+              Meet the Team Behind AgriLync
+            </h2>
+            <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3 mx-auto"></div>
+            <p className="text-xs sm:text-sm text-gray-600 max-w-xs sm:max-w-md md:max-w-3xl mx-auto">
+              We are a diverse and passionate team of innovators, strategists, designers, developers, and agricultural experts committed to transforming African agriculture through AI-driven solutions.
+            </p>
+          </div>
+
+          {/* Organizational Chart */}
+          <div className="relative">
+            {/* Top Level - CEO */}
+            <div ref={leadershipRef} className={"text-center mb-16 sm:mb-20 transition-all duration-1000 ease-out " + (leadershipVisible ? " animate-fade-in-up opacity-100 translate-y-0" : " opacity-0 translate-y-8")}>
+              <div className="inline-block group hover:scale-105 transition-all duration-300">
+                <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-purple-100">
+                  <img
+                    src="/lovable-uploads/musa.png"
+                    alt="Congo Musah Adama"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      target.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center"><span class="text-white font-bold text-2xl">CA</span></div>';
+                    }}
+                  />
+                </div>
+                <h4 className="text-xl sm:text-2xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Congo Musah Adama</h4>
+                <p className="text-lg sm:text-xl font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>CEO and Founder</p>
+                <p className="text-sm text-gray-600 leading-relaxed max-w-md mx-auto">
+                  Provides technical leadership, project oversight, backend development, and ensures alignment with agricultural operations.
+                </p>
+              </div>
+            </div>
+
+            {/* Connecting Lines from CEO to Co-Founders */}
+            <div className={"hidden lg:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-32 pointer-events-none transition-all duration-1000 delay-500 " + (leadershipVisible ? " opacity-100" : " opacity-0")}>
+              <div className="w-px h-16 bg-purple-300 mx-auto"></div>
+              <div className="flex justify-between px-8">
+                <div className="w-px h-16 bg-purple-300"></div>
+                <div className="w-px h-16 bg-purple-300"></div>
+              </div>
+            </div>
+
+            {/* Second Level - Co-Founders */}
+            <div className={"grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 mb-16 sm:mb-20 transition-all duration-1000 ease-out delay-300 " + (leadershipVisible ? " animate-fade-in-up opacity-100 translate-y-0" : " opacity-0 translate-y-8")}>
+              {/* Takyi Robert - Strategy */}
+              <div className="text-center">
+                <div className="inline-block group hover:scale-105 transition-all duration-300">
+                  <div className="w-28 h-28 sm:w-32 sm:h-32 bg-gradient-to-br from-green-500 to-blue-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-green-100">
+                    <span className="text-white font-bold text-2xl">TR</span>
+                  </div>
+                  <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Takyi Robert</h4>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Co-Founder (Strategy)</p>
+                  <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
+                    Leads business strategy, stakeholder engagement, and partnership development.
+                  </p>
+                </div>
+              </div>
+
+              {/* Agbenyenu Sedem Prince - Product Design */}
+              <div className="text-center group hover:scale-105 transition-all duration-300">
+                <div className="inline-block group hover:scale-105 transition-all duration-300">
+                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-orange-100">
+                    <img
+                      src="/lovable-uploads/prince-sedem.jpg"
+                      alt="Agbenyenu Sedem Prince"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center"><span class="text-white font-bold text-2xl">AP</span></div>';
+                      }}
+                    />
+                  </div>
+                  <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Agbenyenu Sedem Prince</h4>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Co-Founder (Product Design)</p>
+                  <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
+                    Manages frontend product development, quality assurance, and design consistency.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Hierarchy Divider */}
+            <div className={"lg:hidden w-16 h-px bg-purple-300 mx-auto mb-8 transition-all duration-1000 delay-700 " + (leadershipVisible ? " opacity-100" : " opacity-0")}></div>
+
+            {/* Third Level - Product & Design Team */}
+            <div ref={productRef} className={"mb-16 sm:mb-20 transition-all duration-1000 ease-out delay-600 " + (productVisible ? " animate-fade-in-up opacity-100 translate-y-0" : " opacity-0 translate-y-8")}>
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-8 sm:mb-10 text-center" style={{ color: BRAND_MAGENTA }}>
+                Product & Design Team
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+                {/* Osei Prince */}
+                <div className="text-center group hover:scale-105 transition-all duration-300">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <span className="text-white font-bold text-lg">OP</span>
+                  </div>
+                  <h4 className="text-base sm:text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Osei Prince</h4>
+                  <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Brand Design Lead</p>
+                  <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
+                    Guides brand identity and overall design direction across UX and UI.
+                  </p>
+                </div>
+
+                {/* Cecil Odonkor */}
+                <div className="text-center group hover:scale-105 transition-all duration-300">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <span className="text-white font-bold text-lg">CO</span>
+                  </div>
+                  <h4 className="text-base sm:text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Cecil Odonkor</h4>
+                  <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>UI/UX Designer & Frontend Developer</p>
+                  <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
+                    Builds user-centric interfaces, ensuring functional and interactive frontend design.
+                  </p>
+                </div>
+
+                {/* Boah Samuel */}
+                <div className="text-center group hover:scale-105 transition-all duration-300">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <span className="text-white font-bold text-lg">BS</span>
+                  </div>
+                  <h4 className="text-base sm:text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Boah Samuel</h4>
+                  <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>CTO / Frontend Developer</p>
+                  <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
+                    Supports frontend and backend development, ensuring seamless UI/UX collaboration.
+                  </p>
+                </div>
+
+                {/* Kwaku Essah */}
+                <div className="text-center group hover:scale-105 transition-all duration-300">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <span className="text-white font-bold text-lg">KE</span>
+                  </div>
+                  <h4 className="text-base sm:text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Kwaku Essah</h4>
+                  <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Backend Developer</p>
+                  <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
+                    Assists in frontend tasks and contributes to backend system development.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Hierarchy Divider */}
+            <div className={"lg:hidden w-16 h-px bg-purple-300 mx-auto mb-8 transition-all duration-1000 delay-900 " + (productVisible ? " opacity-100" : " opacity-0")}></div>
+
+            {/* Fourth Level - Strategy & Marketing Team */}
+            <div ref={marketingRef} className={"mb-16 sm:mb-20 transition-all duration-1000 ease-out delay-900 " + (marketingVisible ? " animate-fade-in-up opacity-100 translate-y-0" : " opacity-0 translate-y-8")}>
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-8 sm:mb-10 text-center" style={{ color: BRAND_MAGENTA }}>
+                Strategy & Marketing Team
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8 sm:gap-12">
+                {/* Kwagbedzi Dela */}
+                <div className="text-center group hover:scale-105 transition-all duration-300">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <img
+                      src="/lovable-uploads/dela.jpg"
+                      alt="Kwagbedzi Dela"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-emerald-500 to-green-500 rounded-full flex items-center justify-center"><span class="text-white font-bold text-xl">KD</span></div>';
+                      }}
+                    />
+                  </div>
+                  <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Kwagbedzi Dela</h4>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Business & Partnership Lead</p>
+                  <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
+                    Supports business growth through investor and partnership engagement.
+                  </p>
+                </div>
+
+                {/* Vorlashie Raphael */}
+                <div className="text-center group hover:scale-105 transition-all duration-300">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <img
+                      src="/lovable-uploads/mawuli.jpg"
+                      alt="Vorlashie Raphael"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center"><span class="text-white font-bold text-xl">VR</span></div>';
+                      }}
+                    />
+                  </div>
+                  <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Vorlashie Raphael</h4>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Digital Marketing & Media</p>
+                  <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
+                    Leads digital campaigns, media content creation, and brand presence.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Hierarchy Divider */}
+            <div className={"lg:hidden w-16 h-px bg-purple-300 mx-auto mb-8 transition-all duration-1000 delay-1100 " + (marketingVisible ? " opacity-100" : " opacity-0")}></div>
+
+            {/* Bottom Level - Community & Operations */}
+            <div className={"text-center transition-all duration-1000 ease-out delay-1200 " + (marketingVisible ? " animate-fade-in-up opacity-100 translate-y-0" : " opacity-0 translate-y-8")}>
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-8 sm:mb-10 text-center" style={{ color: BRAND_MAGENTA }}>
+                Community & Operations
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8 sm:gap-12">
+                {/* Wontumi Gabriel */}
+                <div className="text-center group hover:scale-105 transition-all duration-300">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <img
+                      src="/lovable-uploads/wontumi.jpg"
+                      alt="Wontumi Gabriel"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-violet-500 to-purple-500 rounded-full flex items-center justify-center"><span class="text-white font-bold text-xl">WG</span></div>';
+                      }}
+                    />
+                  </div>
+                  <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Wontumi Gabriel Oti</h4>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Operational Lead (Community & Extension Operations)</p>
+                  <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
+                    Leads field engagement, drives tech adoption, and connects farmers with digital tools.
+                  </p>
+                </div>
+
+                {/* Simons Justice */}
+                <div className="text-center group hover:scale-105 transition-all duration-300">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <img
+                      src="/lovable-uploads/simons.jpg"
+                      alt="Simons Justice"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-amber-500 to-yellow-500 rounded-full flex items-center justify-center"><span class="text-white font-bold text-xl">SJ</span></div>';
+                      }}
+                    />
+                  </div>
+                  <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Simons Justice</h4>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Farmer Outreach & Engagement Specialist</p>
+                  <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
+                    Champions webinars and outreach strategies to engage farmers across communities.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
