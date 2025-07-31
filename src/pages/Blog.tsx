@@ -489,6 +489,7 @@ const Blog = () => {
                       {webinar.registered}/{webinar.spots} spots
                     </Badge>
                   </div>
+                  
                 </div>
                 <CardHeader>
                   <CardTitle className="text-xl font-bold group-hover:text-green-600 transition-colors duration-300" style={{ color: BRAND_MAGENTA }}>
@@ -524,6 +525,28 @@ const Blog = () => {
                   >
                     {webinar.registered >= webinar.spots ? 'Fully Booked' : 'Register Now'}
                   </Button>
+                  
+                                     {/* QR Code section for direct registration */}
+                   {webinar.id === 3 && (
+                     <div className="mt-4 text-center">
+                       <div className="inline-block bg-white rounded-lg p-4 shadow-lg border-2 border-gray-200">
+                         <div className="mb-3">
+                           <img 
+                             src="/lovable-uploads/webinar-qr.jpg" 
+                             alt="QR Code for Registration"
+                             className="w-28 h-28 rounded-lg"
+                             style={{ minWidth: '112px', minHeight: '112px' }}
+                             onError={(e) => {
+                               console.error('QR code image failed to load');
+                               e.currentTarget.style.display = 'none';
+                             }}
+                           />
+                         </div>
+                         <p className="text-sm text-gray-700 font-semibold mb-1">Scan to Register</p>
+                         <p className="text-xs text-gray-500">Direct Registration Link</p>
+                       </div>
+                     </div>
+                   )}
                 </CardContent>
               </Card>
             ))}
