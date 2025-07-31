@@ -26,7 +26,7 @@ const About = () => {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Hero Section with Professional Background Image */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden p-0 m-0">
+      <section className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] flex flex-col items-center justify-center overflow-hidden p-0 m-0">
         {/* Hero Image */}
         <img
           src="/lovable-uploads/ab.jpg"
@@ -34,7 +34,8 @@ const About = () => {
           className="w-full h-full object-cover absolute inset-0 z-0"
           loading="eager"
           fetchPriority="high"
-          style={{ objectPosition: 'center 40%', objectFit: 'cover' }}
+
+          style={{ objectPosition: 'center 60%', objectFit: 'cover' }}
           onError={(e) => {
             console.log('Image failed to load, trying fallback');
             const target = e.target as HTMLImageElement;
@@ -42,14 +43,14 @@ const About = () => {
           }}
         />
         {/* Enhanced overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/15 to-black/25 z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/50 z-10"></div>
         {/* Navbar overlayed above image */}
         <div className="absolute top-0 left-0 right-0 z-30">
           <Navbar variant="transparent" />
         </div>
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center mt-12 sm:mt-20">
-          <div className="animate-fade-in-up w-full">
-            <h1 ref={heroHeadingRef} className={"text-xl sm:text-2xl md:text-4xl font-extrabold text-white mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") } style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-end h-full pb-8 sm:pb-12 md:pb-16">
+          <div className="animate-fade-in-up w-full max-w-4xl mx-auto">
+            <h1 ref={heroHeadingRef} className={"text-lg sm:text-xl md:text-3xl lg:text-4xl font-extrabold text-white mb-3 sm:mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight px-2 " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") } style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
               About Us
             </h1>
           </div>
@@ -83,47 +84,47 @@ const About = () => {
         </div>
       </section>
 
-             {/* Vision & Mission Section */}
-        <section className="py-10 sm:py-16 md:py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-                         {/* Vision Section - Content on left, heading on right */}
-             <div className="flex flex-col lg:flex-row items-start gap-2 sm:gap-4 mb-16 sm:mb-20">
-               {/* Content on the left */}
-               <div className="animate-fade-in-right transition-all duration-700 ease-in-out">
-                 <div className="text-left max-w-4xl">
-                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                     To become Africa's leading agricultural technology platform, empowering
-                     smallholder farmers with AI-driven insights, connecting them with
-                     sustainable financing, and building resilient farming communities
-                     across the continent.
-                   </p>
-                 </div>
-               </div>
-               {/* Heading on the right */}
-               <div className="animate-fade-in-left transition-all duration-700 ease-in-out">
-                 <h3 ref={visionRef} className={"text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 text-right transition-all duration-700 ease-in-out " + (visionVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>Our Vision</h3>
-                 <div className="w-16 h-0.5 bg-purple-600 mb-1 sm:mb-2 ml-auto"></div>
-               </div>
-             </div>
-
-            {/* Mission Section - Heading on left, content on right */}
-            <div className="flex flex-col lg:flex-row items-start gap-2 sm:gap-4">
-              {/* Heading on the left */}
-              <div className="animate-fade-in-right transition-all duration-700 ease-in-out">
-                <h3 ref={missionRef} className={"text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 text-left transition-all duration-700 ease-in-out " + (missionVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>Our Mission</h3>
-                <div className="w-16 h-0.5 bg-purple-600 mb-1 sm:mb-2"></div>
-              </div>
-              {/* Content on the right */}
-              <div className="animate-fade-in-left transition-all duration-700 ease-in-out flex-1">
-                <div className="text-left max-w-4xl">
-                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    To bridge finance, knowledge, and market access gaps for African farmers and agri-entrepreneurs through accessible AI-driven solutions, driving sustainable agricultural growth and improved livelihoods.
-                  </p>
-                </div>
+      {/* Vision & Mission Section */}
+      <section className="py-10 sm:py-16 md:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+          {/* Vision Section - Heading on left, content on right (like Mission section) */}
+          <div className="flex flex-col lg:flex-row items-start gap-2 sm:gap-4 mb-16 sm:mb-20">
+            {/* Heading on the left */}
+            <div className="animate-fade-in-right transition-all duration-700 ease-in-out">
+              <h3 ref={visionRef} className={"text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 text-left transition-all duration-700 ease-in-out " + (visionVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>Our Vision</h3>
+              <div className="w-16 h-0.5 bg-purple-600 mb-1 sm:mb-2"></div>
+            </div>
+            {/* Content on the right */}
+            <div className="animate-fade-in-left transition-all duration-700 ease-in-out flex-1">
+              <div className="text-left max-w-4xl">
+                <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
+                  To become Africa's leading agricultural technology platform, empowering
+                  smallholder farmers with AI-driven insights, connecting them with
+                  sustainable financing, and building resilient farming communities
+                  across the continent.
+                </p>
               </div>
             </div>
           </div>
-        </section>
+
+          {/* Mission Section - Heading on left, content on right */}
+          <div className="flex flex-col lg:flex-row items-start gap-2 sm:gap-4">
+            {/* Heading on the left */}
+            <div className="animate-fade-in-right transition-all duration-700 ease-in-out">
+              <h3 ref={missionRef} className={"text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 text-left transition-all duration-700 ease-in-out " + (missionVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>Our Mission</h3>
+              <div className="w-16 h-0.5 bg-purple-600 mb-1 sm:mb-2"></div>
+            </div>
+            {/* Content on the right */}
+            <div className="animate-fade-in-left transition-all duration-700 ease-in-out flex-1">
+              <div className="text-left max-w-4xl">
+                <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
+                  To bridge finance, knowledge, and market access gaps for African farmers and agri-entrepreneurs through accessible AI-driven solutions, driving sustainable agricultural growth and improved livelihoods.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Core Values Section */}
       <section className="py-10 sm:py-16 md:py-20 bg-white">

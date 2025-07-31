@@ -81,36 +81,37 @@ const Index = () => {
   return (
     <div className="min-h-screen overflow-x-hidden">
       {/* Hero Section - Single Image */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden p-0 m-0">
+      <section className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] flex flex-col items-center justify-center overflow-hidden p-0 m-0">
         {/* Single Hero Image */}
         <img
-          src="/lovable-uploads/image.png"
+          src="/lovable-uploads/b.jpg"
           alt="Hero background"
           className="w-full h-full object-cover absolute inset-0 z-0"
+          style={{ objectPosition: 'center 40%' }}
           loading="eager"
           fetchPriority="high"
         />
-        {/* Overlay for darkening */}
-        <div className="absolute inset-0 bg-black/40 z-10"></div>
+        {/* Lighter overlay for better image visibility */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/30 z-10"></div>
         {/* Navbar overlayed above image */}
         <div className="absolute top-0 left-0 right-0 z-30">
           <Navbar variant="transparent" />
         </div>
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center mt-12 sm:mt-20">
-          <div className="animate-fade-in-up w-full">
-            <h1 ref={heroHeadingRef} className={"text-xl sm:text-2xl md:text-4xl font-extrabold text-white mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") }>
-              Transforming African Agriculture Through <span className="font-extrabold animate-purple-glow typewriter align-middle" style={{ color: '#921573', display: 'inline-block', maxWidth: '100%', verticalAlign: 'middle' }}>
-                AI and Easy Access To Finace
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-end h-full pb-8 sm:pb-12 md:pb-16">
+          <div className="animate-fade-in-up w-full max-w-4xl mx-auto">
+            <h1 ref={heroHeadingRef} className={"text-lg sm:text-xl md:text-3xl lg:text-4xl font-extrabold text-white mb-3 sm:mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight px-2 " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") }>
+              Transforming African Agriculture Through <span className="font-extrabold animate-purple-glow typewriter align-middle block sm:inline mt-1 sm:mt-0" style={{ color: '#921573', maxWidth: '100%', verticalAlign: 'middle' }}>
+                AI and Easy Access To Finance
               </span>
             </h1>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center animate-fade-in delay-1000 w-full">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center animate-fade-in delay-1000 w-full px-2">
               <a 
                 href="https://agrilync.netlify.app" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto max-w-xs"
               >
-                <Button className="w-full sm:w-auto max-w-xs bg-white/100 border-2 border-[#002f37] text-[#002f37] hover:bg-gray-100 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
+                <Button className="w-full sm:w-auto max-w-xs bg-white/100 border-2 border-[#002f37] text-[#002f37] hover:bg-gray-100 px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
                   Join the Waitlist
                 </Button>
               </a>
@@ -122,7 +123,7 @@ const Index = () => {
               >
                 <Button
                   variant="outline"
-                  className="w-full sm:w-auto max-w-xs bg-white/20 border-white text-white hover:bg-white hover:text-gray-900 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold rounded-full shadow-xl backdrop-blur-sm"
+                  className="w-full sm:w-auto max-w-xs bg-white/20 border-white text-white hover:bg-white hover:text-gray-900 px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold rounded-full shadow-xl backdrop-blur-sm"
                 >
                   Watch Demo Video
                 </Button>
@@ -137,14 +138,14 @@ const Index = () => {
       <section className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row items-start gap-2 sm:gap-4">
-            {/* Title - very close to content */}
+            {/* Title - closer to content */}
             <div className="animate-fade-in-right transition-all duration-700 ease-in-out">
               <h2 ref={whoWeAreRef} className={"text-base sm:text-lg md:text-2xl font-bold mb-1 sm:mb-2 text-left transition-all duration-700 ease-in-out " + (whoWeAreVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: '#002f37' }}>
                 Who We Are
               </h2>
               <div className="w-16 h-0.5 bg-purple-600 mb-1 sm:mb-2"></div>
             </div>
-            {/* Content - very close to title */}
+            {/* Content - closer to title */}
             <div className="animate-fade-in-left transition-all duration-700 ease-in-out flex-1">
               <div className="max-w-4xl">
                 <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed mb-6">
