@@ -152,7 +152,7 @@ const Index = () => {
                   We are Agrilync. We're focused on revolutionizing agriculture in Africa through AI and digital technologies. Our AI-powered platform connects key actors along the value chain with various stakeholders, providing access to financing, market opportunities, and farming intelligence.
                 </p>
                 <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed">
-                  Agrilync empowers farmers with tools for sustainable growth, higher yields, and improved market access.
+                  Agrilync empowers farmers with tools for sustainable growth, higher yields, and improved market access. We have over <span className="font-bold">200</span> farmers and stakeholders in our WhatsApp community dry run.
                 </p>
               </div>
             </div>

@@ -308,7 +308,7 @@ const Blog = () => {
       </section>
 
       {/* Blog Posts with Categories */}
-      <section className="py-16 sm:py-20 bg-gray-50">
+      <section className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2" style={{ color: BRAND_TEAL }}>
@@ -335,6 +335,18 @@ const Blog = () => {
               </TabsList>
 
               <TabsContent value={activeTab} className="mt-8">
+                {/* Search Results Counter */}
+                {searchTerm && (
+                  <div className="text-center mb-6 animate-fade-in-up">
+                    <p className="text-gray-600">
+                      {filteredPosts.length === 1 
+                        ? `Found 1 article for "${searchTerm}"`
+                        : `Found ${filteredPosts.length} articles for "${searchTerm}"`
+                      }
+                    </p>
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredPosts.map((post, index) => (
                     <article key={post.id} className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden group animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
@@ -388,12 +400,42 @@ const Blog = () => {
                 </div>
                 
                 {filteredPosts.length === 0 && (
-                  <div className="text-center py-12">
+                  <div className="text-center py-12 animate-fade-in-up">
                     <div className="text-gray-400 mb-4">
                       <Search className="h-16 w-16 mx-auto" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-600 mb-2">No articles found</h3>
-                    <p className="text-gray-500">Try adjusting your search terms or category filter.</p>
+                    <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                      {searchTerm ? `No articles found for "${searchTerm}"` : "No articles found"}
+                    </h3>
+                    <p className="text-gray-500 mb-4">
+                      {searchTerm 
+                        ? `We couldn't find any articles matching "${searchTerm}". Try different keywords or check your spelling.`
+                        : "Try adjusting your search terms or category filter."
+                      }
+                    </p>
+                    {searchTerm && (
+                      <div className="flex flex-wrap gap-2 justify-center mb-4">
+                        <span className="text-sm text-gray-500">Suggestions:</span>
+                        {['agriculture', 'technology', 'farming', 'AI', 'finance'].map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            onClick={() => setSearchTerm(suggestion)}
+                            className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors duration-200"
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <Button 
+                      onClick={() => {
+                        setSearchTerm('');
+                        setActiveTab('all');
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full transition-all duration-300"
+                    >
+                      Clear Search
+                    </Button>
                   </div>
                 )}
               </TabsContent>

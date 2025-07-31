@@ -455,7 +455,7 @@ const About = () => {
                       }}
                     />
                   </div>
-                  <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Simons Justice</h4>
+                  <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Simmons Justice</h4>
                   <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Farmer Outreach & Engagement Specialist</p>
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
                     Champions webinars and outreach strategies to engage farmers across communities.
