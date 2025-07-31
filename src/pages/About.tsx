@@ -206,6 +206,7 @@ const About = () => {
                     src="/lovable-uploads/musa.png"
                     alt="Congo Musah Adama"
                     className="w-full h-full object-cover"
+                    style={{ objectPosition: 'center 20%' }}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
@@ -293,8 +294,17 @@ const About = () => {
 
                 {/* Cecil Odonkor */}
                 <div className="text-center group hover:scale-105 transition-all duration-300">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                    <span className="text-white font-bold text-lg">CO</span>
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <img
+                      src="/lovable-uploads/cecilodonkoh.jpg"
+                      alt="Cecil Odonkor"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-teal-500 to-cyan-500 rounded-full flex items-center justify-center"><span class="text-white font-bold text-lg">CO</span></div>';
+                      }}
+                    />
                   </div>
                   <h4 className="text-base sm:text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Cecil Odonkor</h4>
                   <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>UI/UX Designer & Frontend Developer</p>
@@ -305,8 +315,17 @@ const About = () => {
 
                 {/* Boah Samuel */}
                 <div className="text-center group hover:scale-105 transition-all duration-300">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                    <span className="text-white font-bold text-lg">BS</span>
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <img
+                      src="/lovable-uploads/boahsamuel.jpg"
+                      alt="Boah Samuel"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center"><span class="text-white font-bold text-lg">BS</span></div>';
+                      }}
+                    />
                   </div>
                   <h4 className="text-base sm:text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Boah Samuel</h4>
                   <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>CTO / Frontend Developer</p>
@@ -317,8 +336,18 @@ const About = () => {
 
                 {/* Kwaku Essah */}
                 <div className="text-center group hover:scale-105 transition-all duration-300">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                    <span className="text-white font-bold text-lg">KE</span>
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <img
+                      src="/lovable-uploads/kwakuessah.jpg"
+                      alt="Kwaku Essah"
+                      className="w-full h-full object-cover"
+                      style={{ objectPosition: 'center 25%' }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center"><span class="text-white font-bold text-lg">KE</span></div>';
+                      }}
+                    />
                   </div>
                   <h4 className="text-base sm:text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Kwaku Essah</h4>
                   <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Backend Developer</p>
