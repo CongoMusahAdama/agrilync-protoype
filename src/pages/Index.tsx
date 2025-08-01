@@ -100,11 +100,13 @@ const Index = () => {
         </div>
         <div className="relative z-20 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-end h-full pb-4 sm:pb-6 md:pb-8">
           <div className="animate-fade-in-up w-full max-w-4xl mx-auto">
-            <h1 ref={heroHeadingRef} className={"text-lg sm:text-xl md:text-3xl lg:text-4xl font-extrabold text-white mb-3 sm:mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight px-2 " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") }>
-              Transforming African Agriculture Through <span className="font-extrabold animate-purple-glow typewriter align-middle block sm:inline mt-1 sm:mt-0" style={{ color: '#921573', maxWidth: '100%', verticalAlign: 'middle' }}>
-                AI and Easy Access To Finance
-              </span>
-            </h1>
+                          <h1 ref={heroHeadingRef} className={"text-lg sm:text-xl md:text-3xl lg:text-4xl font-extrabold text-white mb-3 sm:mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight px-2 " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") }>
+                Transforming African Agriculture Through
+                <br />
+                <span className="font-extrabold block mt-2 sm:mt-3" style={{ color: '#002f37', maxWidth: '100%', animationDelay: '1s', animationDuration: '3s', animationIterationCount: 'infinite', animationDirection: 'alternate', animationName: 'fadeInOut' }}>
+                  AI and Easy Access To Finance
+                </span>
+              </h1>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center animate-fade-in delay-1000 w-full px-2">
               <a 
                 href="https://agrilync.netlify.app" 
