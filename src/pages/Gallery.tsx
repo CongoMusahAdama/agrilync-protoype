@@ -493,101 +493,123 @@ const Gallery = () => {
         </div>
       </section>
 
-      {/* Lightbox Modal */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-4xl w-[95vw] h-[90vh] p-0 bg-black/95 border-0">
-          <div className="relative w-full h-full flex items-center justify-center">
-            {/* Close button */}
-            <Button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 z-50 bg-black/50 hover:bg-black/70 text-white border-0"
-              size="icon"
-            >
-              <X className="w-5 h-5" />
-            </Button>
+             {/* Lightbox Modal */}
+       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+         <DialogContent className="max-w-4xl w-[95vw] h-[95vh] sm:h-[90vh] p-0 bg-black/95 border-0 rounded-none sm:rounded-lg">
+           <div className="relative w-full h-full flex flex-col lg:flex-row">
+             {/* Close button */}
+             <Button
+               onClick={() => setIsModalOpen(false)}
+               className="absolute top-2 right-2 sm:top-4 sm:right-4 z-50 bg-black/70 hover:bg-black/90 text-white border-0 rounded-full w-8 h-8 sm:w-10 sm:h-10"
+               size="icon"
+             >
+               <X className="w-4 h-4 sm:w-5 sm:h-5" />
+             </Button>
 
-            {/* Navigation buttons */}
-            <Button
-              onClick={() => navigateImage('prev')}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 z-50 bg-black/50 hover:bg-black/70 text-white border-0"
-              size="icon"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <Button
-              onClick={() => navigateImage('next')}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 z-50 bg-black/50 hover:bg-black/70 text-white border-0"
-              size="icon"
-            >
-              <ArrowRight className="w-5 h-5" />
-            </Button>
+             {/* Navigation buttons - Hidden on mobile, visible on desktop */}
+             <Button
+               onClick={() => navigateImage('prev')}
+               className="hidden lg:flex absolute left-4 top-1/2 transform -translate-y-1/2 z-50 bg-black/50 hover:bg-black/70 text-white border-0"
+               size="icon"
+             >
+               <ArrowLeft className="w-5 h-5" />
+             </Button>
+             <Button
+               onClick={() => navigateImage('next')}
+               className="hidden lg:flex absolute right-4 top-1/2 transform -translate-y-1/2 z-50 bg-black/50 hover:bg-black/70 text-white border-0"
+               size="icon"
+             >
+               <ArrowRight className="w-5 h-5" />
+             </Button>
 
-            {/* Image and content */}
-            {selectedImage && (
-              <div className="w-full h-full flex flex-col lg:flex-row">
-                {/* Image */}
-                <div className="flex-1 flex items-center justify-center p-4">
-                  <img
-                    src={selectedImage.image}
-                    alt={selectedImage.title}
-                    className="max-w-full max-h-full object-contain rounded-lg"
-                  />
-                </div>
+             {/* Image and content */}
+             {selectedImage && (
+               <>
+                 {/* Image Section */}
+                 <div className="flex-1 flex items-center justify-center p-2 sm:p-4 bg-black/95">
+                   <img
+                     src={selectedImage.image}
+                     alt={selectedImage.title}
+                     className="max-w-full max-h-full object-contain rounded-lg"
+                   />
+                 </div>
 
-                {/* Content */}
-                <div className="w-full lg:w-80 bg-white p-6 overflow-y-auto">
-                  <div className="space-y-4">
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-900 mb-2">
-                        {selectedImage.title}
-                      </h2>
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        <Badge className="bg-green-600 text-white">
-                          {selectedImage.category}
-                        </Badge>
-                        <Badge variant="secondary" className="bg-gray-100 text-gray-700">
-                          {selectedImage.region}
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-2">Description</h3>
-                      <p className="text-gray-600 leading-relaxed">
-                        {selectedImage.description}
-                      </p>
-                    </div>
+                 {/* Content Section - Full width on mobile, sidebar on desktop */}
+                 <div className="w-full lg:w-80 bg-white p-4 sm:p-6 overflow-y-auto max-h-[40vh] lg:max-h-full">
+                   <div className="space-y-3 sm:space-y-4">
+                     {/* Mobile Navigation - Only visible on mobile */}
+                     <div className="flex justify-between items-center lg:hidden mb-2">
+                       <Button
+                         onClick={() => navigateImage('prev')}
+                         className="bg-green-600 hover:bg-green-700 text-white border-0 rounded-full w-8 h-8"
+                         size="icon"
+                       >
+                         <ArrowLeft className="w-4 h-4" />
+                       </Button>
+                       <span className="text-sm text-gray-500 font-medium">
+                         {currentImageIndex + 1} of {farmVisits.length}
+                       </span>
+                       <Button
+                         onClick={() => navigateImage('next')}
+                         className="bg-green-600 hover:bg-green-700 text-white border-0 rounded-full w-8 h-8"
+                         size="icon"
+                       >
+                         <ArrowRight className="w-4 h-4" />
+                       </Button>
+                     </div>
 
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-2">Engagement Details</h3>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center text-gray-600">
-                          <MapPin className="w-4 h-4 mr-2 text-green-600" />
-                          {selectedImage.region}
-                        </div>
-                        <div className="flex items-center text-gray-600">
-                          <Leaf className="w-4 h-4 mr-2 text-green-600" />
-                          {selectedImage.category}
-                        </div>
-                        <div className="flex items-center text-gray-600">
-                          <Calendar className="w-4 h-4 mr-2 text-green-600" />
-                          {selectedImage.date}
-                        </div>
-                      </div>
-                    </div>
+                     <div>
+                       <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
+                         {selectedImage.title}
+                       </h2>
+                       <div className="flex flex-wrap gap-2 mb-3">
+                         <Badge className="bg-green-600 text-white text-xs">
+                           {selectedImage.category}
+                         </Badge>
+                         <Badge variant="secondary" className="bg-gray-100 text-gray-700 text-xs">
+                           {selectedImage.region}
+                         </Badge>
+                       </div>
+                     </div>
+                     
+                     <div>
+                       <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Description</h3>
+                       <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
+                         {selectedImage.description}
+                       </p>
+                     </div>
 
-                    <div className="pt-4 border-t border-gray-200">
-                      <p className="text-xs text-gray-500">
-                        Image {currentImageIndex + 1} of {farmVisits.length}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+                     <div>
+                       <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Engagement Details</h3>
+                       <div className="space-y-2 text-xs sm:text-sm">
+                         <div className="flex items-center text-gray-600">
+                           <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-green-600 flex-shrink-0" />
+                           <span className="truncate">{selectedImage.region}</span>
+                         </div>
+                         <div className="flex items-center text-gray-600">
+                           <Leaf className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-green-600 flex-shrink-0" />
+                           <span className="truncate">{selectedImage.category}</span>
+                         </div>
+                         <div className="flex items-center text-gray-600">
+                           <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-green-600 flex-shrink-0" />
+                           <span className="truncate">{selectedImage.date}</span>
+                         </div>
+                       </div>
+                     </div>
+
+                     {/* Desktop Image counter - Only visible on desktop */}
+                     <div className="hidden lg:block pt-4 border-t border-gray-200">
+                       <p className="text-xs text-gray-500">
+                         Image {currentImageIndex + 1} of {farmVisits.length}
+                       </p>
+                     </div>
+                   </div>
+                 </div>
+               </>
+             )}
+           </div>
+         </DialogContent>
+       </Dialog>
 
       {/* Footer */}
       <Footer />
