@@ -260,11 +260,23 @@ const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState<typeof farmVisits[0] | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Scroll animation hooks
   const [heroRef, heroVisible] = useScrollReveal();
   const [galleryRef, galleryVisible] = useScrollReveal();
   const [filterRef, filterVisible] = useScrollReveal();
+
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Filter farm visits based on selected region and category
   const filteredVisits = farmVisits.filter(visit => {
@@ -420,7 +432,7 @@ const Gallery = () => {
                                      {filteredVisits.map((visit, index) => (
                      <div
                        key={visit.id}
-                       className={`group relative overflow-hidden rounded-2xl cursor-pointer transform transition-all duration-1000 ease-out hover:scale-[1.02] hover:shadow-2xl ${galleryVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                       className={`group relative overflow-hidden rounded-2xl cursor-pointer transform transition-all duration-1000 ease-out hover:scale-[1.02] hover:shadow-2xl ${isMobile ? 'opacity-100 translate-y-0' : (galleryVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8')}`}
                        style={{ 
                          animationDelay: `${index * 150}ms`,
                          animationFillMode: 'both'
