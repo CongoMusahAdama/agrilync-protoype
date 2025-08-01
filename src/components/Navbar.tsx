@@ -45,6 +45,9 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid' }) => {
               <Link to="/blog" className={`${textClass} ${hoverClass} transition-colors text-sm font-medium`}>
                 Blog
               </Link>
+              <Link to="/gallery" className={`${textClass} ${hoverClass} transition-colors text-sm font-medium`}>
+                Gallery
+              </Link>
               <Link to="/contact" className={`${textClass} ${hoverClass} transition-colors text-sm font-medium`}>
                 Contact
               </Link>
@@ -91,6 +94,13 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid' }) => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Blog
+              </Link>
+              <Link 
+                to="/gallery" 
+                className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors text-sm font-medium`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Gallery
               </Link>
               <Link 
                 to="/contact" 
