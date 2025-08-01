@@ -12,9 +12,9 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid' }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Color logic
-  const bgClass = variant === 'transparent' ? 'bg-transparent' : 'bg-white';
-  const textClass = variant === 'transparent' ? 'text-white' : 'text-[#002f37]';
-  const hoverClass = variant === 'transparent' ? 'hover:text-green-300' : 'hover:text-green-700';
+  const bgClass = variant === 'transparent' ? 'bg-transparent' : 'bg-gray-800';
+  const textClass = variant === 'transparent' ? 'text-white' : 'text-white';
+  const hoverClass = variant === 'transparent' ? 'hover:text-green-300' : 'hover:text-green-300';
   const btnClass = variant === 'transparent'
     ? 'bg-white text-[#002f37] border-2 border-[#002f37] hover:bg-gray-100 px-5 py-2 text-sm font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300'
     : 'bg-white text-[#002f37] border-2 border-[#002f37] hover:bg-gray-100 px-5 py-2 text-sm font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300';

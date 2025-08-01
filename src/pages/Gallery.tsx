@@ -420,7 +420,7 @@ const Gallery = () => {
       {/* Gallery Grid */}
       <section ref={galleryRef} className="py-12 sm:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className={`transition-all duration-1000 ease-out delay-300 ${galleryVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+                     <div className="transition-all duration-1000 ease-out delay-300 opacity-100 translate-y-0">
             {filteredVisits.length === 0 ? (
               <div className="text-center py-16">
                 <Leaf className="w-16 h-16 text-gray-300 mx-auto mb-4" />
