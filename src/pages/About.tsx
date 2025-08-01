@@ -22,6 +22,9 @@ const About = () => {
   const [value3Ref, value3Visible] = useScrollReveal();
   const [value4Ref, value4Visible] = useScrollReveal();
   const [value5Ref, value5Visible] = useScrollReveal();
+  // Mobile app development section hooks
+  const [mobileAppRef, mobileAppVisible] = useScrollReveal();
+  const [uiDesignsRef, uiDesignsVisible] = useScrollReveal();
   // Team section hooks
   const [teamRef, teamVisible] = useScrollReveal();
   const [leadershipRef, leadershipVisible] = useScrollReveal();
@@ -81,7 +84,7 @@ const About = () => {
                   We are Agrilync. We're focused on revolutionizing agriculture in Africa through AI and digital technologies. Our AI-powered platform connects key actors across the value chain with various stakeholders, offering access to financing, market opportunities, and farming intelligence.
                 </p>
                 <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed">
-                  We connect 9–5 workers with verified farmers who have proven track records, enabling shared profit models. An assigned extension agent monitors all on-farm and off-farm activities, ensuring productivity and connecting harvests to market.
+                  We connect 9–5 workers with verified farmers who have proven track records, enabling shared profit models. An assigned extension agent monitors all on-farm and off-farm activities, ensuring productivity and connecting harvests to market. We take a <span className="font-bold">mobile-first approach</span> enabling inclusivity and accessibility for all farmers across Africa.
                 </p>
               </div>
             </div>
@@ -203,7 +206,7 @@ const About = () => {
               <div className="inline-block group hover:scale-105 transition-all duration-300">
                 <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-purple-100">
                   <img
-                    src="/lovable-uploads/musa.png"
+                    src="/lovable-uploads/congo.jpg"
                     alt="Congo Musah Adama"
                     className="w-full h-full object-cover"
                     style={{ objectPosition: 'center 20%' }}
@@ -472,6 +475,59 @@ const About = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Mobile App Development Section */}
+      <section className="py-10 sm:py-16 md:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+          <div className="text-center mb-10 sm:mb-14 md:mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
+            <h2 ref={mobileAppRef} className={"text-base sm:text-lg md:text-2xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
+              Mobile App Development
+            </h2>
+            <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3 mx-auto"></div>
+            <p className="text-xs sm:text-sm text-gray-600 max-w-xs sm:max-w-md md:max-w-3xl mx-auto mb-8">
+              Bringing AgriLync to Your Pocket
+            </p>
+            <p className="text-xs sm:text-sm text-gray-600 max-w-xs sm:max-w-md md:max-w-4xl mx-auto">
+              Our mobile app is currently under development, designed to bring our AI-powered agricultural solutions directly to farmers' smartphones. This represents the next step in our mission to transform African agriculture through accessible, mobile-first technology.
+            </p>
+          </div>
+
+          {/* UI Interface Image */}
+          <div ref={uiDesignsRef} className={"text-center mb-10 transition-all duration-1000 ease-out " + (uiDesignsVisible ? " animate-fade-in-up opacity-100 translate-y-0" : " opacity-0 translate-y-8")}>
+            <div className="max-w-2xl mx-auto">
+              <img
+                src="/lovable-uploads/ui.jpg"
+                alt="AgriLync Mobile App UI Interface"
+                className="w-full h-auto rounded-lg shadow-lg"
+                onError={(e) => {
+                  console.log('UI image failed to load');
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Coming Soon CTA */}
+          <div className="text-center mt-10 sm:mt-12">
+            <a 
+              href="https://agrilync.netlify.app" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-6 py-3 text-white rounded-full font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer" 
+              style={{ backgroundColor: BRAND_TEAL }}
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              Coming Soon - Join the Waitlist
+            </a>
+            <p className="text-xs text-gray-500 mt-3">
+              Be among the first to experience the future of farming
+            </p>
           </div>
         </div>
       </section>
