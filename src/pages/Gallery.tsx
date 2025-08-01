@@ -364,9 +364,9 @@ const Gallery = () => {
       <section ref={filterRef} className="py-8 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`transition-all duration-1000 ease-out delay-200 ${filterVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-end">
-               <div className="flex flex-col sm:flex-row gap-3">
-                 <div className="flex flex-col">
+                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center sm:items-end">
+               <div className="flex flex-col sm:flex-row gap-3 items-center sm:items-start">
+                 <div className="flex flex-col items-center sm:items-start">
                    <label htmlFor="region-filter" className="text-sm font-medium text-gray-700 mb-1">
                      Filter by Region
                    </label>
@@ -374,14 +374,14 @@ const Gallery = () => {
                      id="region-filter"
                      value={selectedRegion}
                      onChange={(e) => setSelectedRegion(e.target.value)}
-                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-gray-700"
+                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-gray-700 text-center sm:text-left"
                    >
                      {regions.map(region => (
                        <option key={region} value={region}>{region}</option>
                      ))}
                    </select>
                  </div>
-                 <div className="flex flex-col">
+                 <div className="flex flex-col items-center sm:items-start">
                    <label htmlFor="category-filter" className="text-sm font-medium text-gray-700 mb-1">
                      Filter by Category
                    </label>
@@ -389,7 +389,7 @@ const Gallery = () => {
                      id="category-filter"
                      value={selectedCategory}
                      onChange={(e) => setSelectedCategory(e.target.value)}
-                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-gray-700"
+                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-gray-700 text-center sm:text-left"
                    >
                      {categories.map(category => (
                        <option key={category} value={category}>{category}</option>
@@ -397,7 +397,7 @@ const Gallery = () => {
                    </select>
                  </div>
                </div>
-               <div className="flex flex-col">
+               <div className="flex flex-col items-center sm:items-start">
                  <label className="text-sm font-medium text-gray-700 mb-1 opacity-0">
                    Clear
                  </label>
