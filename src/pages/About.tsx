@@ -1,8 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { X, ExternalLink } from 'lucide-react';
 
 // Brand colors
 const BRAND_MAGENTA = '#921573';
@@ -11,6 +13,9 @@ const BRAND_TEAL = '#002F37';
 const BRAND_WHITE = '#FFFFFF';
 
 const About = () => {
+  // Modal state
+  const [isCEOModalOpen, setIsCEOModalOpen] = useState(false);
+
   // Scroll-triggered animation hooks
   const [heroHeadingRef, heroHeadingVisible] = useScrollReveal();
   const [whoWeAreRef, whoWeAreVisible] = useScrollReveal();
@@ -203,7 +208,7 @@ const About = () => {
           <div className="relative">
             {/* Top Level - CEO */}
             <div ref={leadershipRef} className={"text-center mb-16 sm:mb-20 transition-all duration-1000 ease-out " + (leadershipVisible ? " animate-fade-in-up opacity-100 translate-y-0" : " opacity-0 translate-y-8")}>
-              <div className="inline-block group hover:scale-105 transition-all duration-300">
+              <div className="inline-block group hover:scale-105 transition-all duration-300 cursor-pointer" onClick={() => setIsCEOModalOpen(true)}>
                 <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-purple-100">
                   <img
                     src="/lovable-uploads/congo.jpg"
@@ -533,6 +538,95 @@ const About = () => {
       </section>
 
       <Footer />
+
+      {/* CEO Modal */}
+      <Dialog open={isCEOModalOpen} onOpenChange={setIsCEOModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="relative">
+            <button
+              onClick={() => setIsCEOModalOpen(false)}
+              className="absolute top-0 right-0 p-2 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Close modal"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <DialogTitle className="text-2xl font-bold text-center mb-4" style={{ color: BRAND_TEAL }}>
+              Congo Musah Adama
+            </DialogTitle>
+            <div className="text-center mb-6">
+              <p className="text-lg font-semibold" style={{ color: BRAND_MAGENTA }}>CEO and Founder</p>
+            </div>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Profile Image */}
+            <div className="text-center">
+              <div className="w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg">
+                <img
+                  src="/lovable-uploads/congo.jpg"
+                  alt="Congo Musah Adama"
+                  className="w-full h-full object-cover"
+                  style={{ objectPosition: 'center 20%' }}
+                />
+              </div>
+            </div>
+
+            {/* About Content */}
+            <div className="space-y-4">
+              <p className="text-gray-700 leading-relaxed">
+                Technology and agriculture may seem like unlikely allies, but I've dedicated my career to proving just how powerful their partnership can be. As a full-stack developer with specialized expertise in the MERN stack, I architect digital solutions that modernize agricultural practices and drive economic empowerment across emerging markets.
+              </p>
+
+              <p className="text-gray-700 leading-relaxed">
+                With three years of hands-on experience, I've:
+              </p>
+              
+              <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                <li>Engineered backend systems that process agricultural data at scale</li>
+                <li>Built intuitive interfaces that bridge the digital divide for rural users</li>
+                <li>Optimized platforms that have demonstrably improved operational efficiencies</li>
+              </ul>
+
+              <p className="text-gray-700 leading-relaxed">
+                My technical toolkit spans from database design to API development, but what truly sets me apart is my dual background in agricultural science and software engineering. This unique perspective allows me to:
+              </p>
+
+              <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                <li>Translate complex agricultural challenges into technical requirements</li>
+                <li>Design systems with real-world usability at their core</li>
+                <li>Measure success through both technical performance and social impact</li>
+              </ul>
+
+              <p className="text-gray-700 leading-relaxed">
+                I'm particularly interested in collaborating with:
+              </p>
+
+              <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                <li>Agritech startups scaling their technology</li>
+                <li>Development organizations modernizing their systems</li>
+                <li>Research institutions working on food security solutions</li>
+              </ul>
+
+              <p className="text-gray-700 leading-relaxed font-semibold">
+                The future of agriculture is digital - let's build it together.
+              </p>
+            </div>
+
+            {/* Website Link */}
+            <div className="text-center pt-4 border-t border-gray-200">
+              <a
+                href="https://congodev.netlify.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Visit My Website
+              </a>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
