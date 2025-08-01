@@ -21,6 +21,7 @@ const Index = () => {
   const [heroHeadingRef, heroHeadingVisible] = useScrollReveal();
   const [succeedHeadingRef, succeedHeadingVisible] = useScrollReveal();
   const [whoWeAreRef, whoWeAreVisible] = useScrollReveal();
+  const [farmersCryingRef, farmersCryingVisible] = useScrollReveal();
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showSplash, setShowSplash] = useState(false);
@@ -153,6 +154,29 @@ const Index = () => {
                 </p>
                 <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed">
                   Agrilync empowers farmers with tools for sustainable growth, higher yields, and improved market access. We have over <span className="font-bold">200</span> farmers and stakeholders in our WhatsApp community dry run.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Farmers Are Crying Section */}
+      <section className="py-10 sm:py-16 md:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row items-start gap-2 sm:gap-4">
+            {/* Title - closer to content */}
+            <div className="animate-fade-in-right transition-all duration-700 ease-in-out">
+              <h2 ref={farmersCryingRef} className={"text-base sm:text-lg md:text-2xl font-bold mb-1 sm:mb-2 text-left transition-all duration-700 ease-in-out " + (farmersCryingVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: '#002f37' }}>
+                The Challenge
+              </h2>
+              <div className="w-16 h-0.5 bg-purple-600 mb-1 sm:mb-2"></div>
+            </div>
+            {/* Content - closer to title */}
+            <div className="animate-fade-in-left transition-all duration-700 ease-in-out flex-1">
+              <div className="max-w-4xl">
+                <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed">
+                  Farmers are not crying without reason. They need timely access to the right information to boost productivity, ready markets immediately after harvest to reduce post-harvest losses, and most importantly, flexible financing and investor partnerships to scale and improve yield.
                 </p>
               </div>
             </div>
