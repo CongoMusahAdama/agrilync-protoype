@@ -542,14 +542,7 @@ const About = () => {
       {/* CEO Modal */}
       <Dialog open={isCEOModalOpen} onOpenChange={setIsCEOModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="relative">
-            <button
-              onClick={() => setIsCEOModalOpen(false)}
-              className="absolute top-0 right-0 p-2 hover:bg-gray-100 rounded-full transition-colors"
-              aria-label="Close modal"
-            >
-              <X className="h-5 w-5" />
-            </button>
+          <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-center mb-4" style={{ color: BRAND_TEAL }}>
               Congo Musah Adama
             </DialogTitle>

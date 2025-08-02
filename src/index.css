@@ -70,6 +70,33 @@
   }
 }
 
+/* Enhanced Background Patterns */
+.leaf-pattern-bg {
+  background-color: #ffffff;
+}
+
+.leaf-pattern-bg-alt {
+  background-color: #ffffff;
+}
+
+.leaf-pattern-bg-gallery {
+  background-color: #ffffff;
+}
+
+/* Subtle animated leaf pattern */
+.leaf-pattern-animated {
+  background-color: #ffffff;
+}
+
+@keyframes leafFloat {
+  0%, 100% { 
+    background-position: 0 0, 60px 60px; 
+  }
+  50% { 
+    background-position: 10px 5px, 70px 65px; 
+  }
+}
+
 /* Enhanced Animations */
 .fade-in {
   animation: fadeIn 0.6s ease-in-out;
@@ -366,4 +393,42 @@
   0% { opacity: 0.3; }
   50% { opacity: 1; }
   100% { opacity: 0.3; }
+}
+
+/* Professional typewriter animation for hero text */
+@keyframes typewriter {
+  0% {
+    width: 0;
+  }
+  50% {
+    width: 100%;
+  }
+  100% {
+    width: 0;
+  }
+}
+
+.typewriter-text {
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+  display: inline-block;
+  animation: typewriter 6s steps(40, end) 0.5s infinite;
+  width: 0;
+}
+
+.typewriter-text::after {
+  content: '';
+  position: absolute;
+  right: -3px;
+  top: 0;
+  height: 100%;
+  width: 3px;
+  background-color: #002f37;
+  animation: blink-caret 1s step-end infinite;
+}
+
+@keyframes blink-caret {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }

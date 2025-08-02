@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Leaf, Users, TrendingUp, MapPin, Calendar, Shield, Award, Play, MessageCircle } from 'lucide-react';
+import { Leaf, Users, TrendingUp, MapPin, Calendar, Shield, Award, Play, MessageCircle, X } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
@@ -12,6 +12,8 @@ const heroImages = [
 
 const Index = () => {
   const navigate = useNavigate();
+
+
 
   // Scroll-triggered animation hooks (must be at the top level)
   const [feature1Ref, feature1Visible] = useScrollReveal();
@@ -101,11 +103,14 @@ const Index = () => {
         <div className="relative z-20 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-end h-full pb-4 sm:pb-6 md:pb-8">
           <div className="animate-fade-in-up w-full max-w-4xl mx-auto">
                           <h1 ref={heroHeadingRef} className={"text-lg sm:text-xl md:text-3xl lg:text-4xl font-extrabold text-white mb-3 sm:mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight px-2 " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") }>
-                Transforming African Agriculture Through
-                <br />
-                <span className="font-extrabold block mt-2 sm:mt-3" style={{ color: '#002f37', maxWidth: '100%', animationDelay: '1s', animationDuration: '3s', animationIterationCount: 'infinite', animationDirection: 'alternate', animationName: 'fadeInOut' }}>
-                  AI and Easy Access To Finance
-                </span>
+                <div className="text-center">
+                  <div className="mb-2 sm:mb-3">
+                    Transforming African Agriculture Through
+                  </div>
+                  <div className="typewriter-text text-center" style={{ color: '#002f37' }}>
+                    AI and Easy Access To Finance
+                  </div>
+                </div>
               </h1>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center animate-fade-in delay-1000 w-full px-2">
               <a 
@@ -118,27 +123,21 @@ const Index = () => {
                   Join the Waitlist
                 </Button>
               </a>
-              <a
-                href="https://www.youtube.com/watch?v=-gOZgTW00GY"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto max-w-xs"
-              >
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto max-w-xs bg-white/20 border-white text-white hover:bg-white hover:text-gray-900 px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold rounded-full shadow-xl backdrop-blur-sm"
-                >
-                  Watch Demo Video
-                </Button>
-              </a>
+                             <Button
+                 variant="outline"
+                 className="w-full sm:w-auto max-w-xs bg-white/20 border-white text-white hover:bg-white hover:text-gray-900 px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold rounded-full shadow-xl backdrop-blur-sm"
+                 onClick={() => window.open('https://www.youtube.com/watch?v=-gOZgTW00GY', '_blank')}
+               >
+                 Watch Demo Video
+               </Button>
             </div>
           </div>
         </div>
 
       </section>
 
-      {/* Who We Are Section */}
-      <section className="py-10 sm:py-16 md:py-20 bg-white">
+             {/* Who We Are Section */}
+               <section className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row items-start gap-2 sm:gap-4">
             {/* Title - closer to content */}
@@ -163,8 +162,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Why Farmers Are Crying Section */}
-      <section className="py-10 sm:py-16 md:py-20 bg-white">
+             {/* Why Farmers Are Crying Section */}
+               <section className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row items-start gap-2 sm:gap-4">
             {/* Title - closer to content */}
@@ -186,8 +185,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Everything You Need to Succeed Section - Updated with staggered animations */}
-      <section className="py-10 sm:py-16 md:py-20 bg-white">
+             {/* Everything You Need to Succeed Section - Updated with staggered animations */}
+               <section className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-14 md:mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
             <h2 ref={succeedHeadingRef} className={"text-base sm:text-lg md:text-2xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (succeedHeadingVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: '#002f37' }}>
@@ -315,9 +314,9 @@ const Index = () => {
         </div>
       </section>
 
-      <Footer />
-    </div>
-  );
-};
+             <Footer />
+     </div>
+   );
+ };
 
 export default Index;
