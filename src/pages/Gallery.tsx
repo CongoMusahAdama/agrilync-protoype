@@ -228,6 +228,17 @@ const farmVisits = [
     category: "Training",
     date: "2024",
     description: "Training session for cocoa farmers on pollination techniques and fertilizer application in Asunafo North, Ahafo Region."
+  },
+
+  // 🥬 Cape Coast Farm Fresh Foods Visit
+  {
+    id: 24,
+    title: "Cape Coast Farm Fresh Foods",
+    image: "/lovable-uploads/gallery24.jpg",
+    region: "Central Region",
+    category: "Community Outreach",
+    date: "2024",
+    description: "Visit to Cape Coast with Ghanaian farmers to explore farm fresh foods and sustainable agricultural practices."
   }
 ];
 

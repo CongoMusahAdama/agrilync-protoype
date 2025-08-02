@@ -367,7 +367,7 @@ const About = () => {
                     />
                   </div>
                   <h4 className="text-base sm:text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Kwaku Essah</h4>
-                  <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Backend Developer</p>
+                  <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Backend Developer & Quality Assurance</p>
                   <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
                     Assists in frontend tasks and contributes to backend system development.
                   </p>
