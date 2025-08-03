@@ -244,8 +244,18 @@ const About = () => {
               {/* Takyi Robert - Strategy */}
               <div className="text-center">
                 <div className="inline-block group hover:scale-105 transition-all duration-300">
-                  <div className="w-28 h-28 sm:w-32 sm:h-32 bg-gradient-to-br from-green-500 to-blue-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-green-100">
-                    <span className="text-white font-bold text-2xl">TR</span>
+                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-green-100">
+                    <img
+                      src="/lovable-uploads/robert.jpg"
+                      alt="Takyi Robert"
+                      className="w-full h-full object-cover object-center"
+                      style={{ objectPosition: 'center 35%' }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center"><span class="text-white font-bold text-2xl">TR</span></div>';
+                      }}
+                    />
                   </div>
                   <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Takyi Robert</h4>
                   <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Co-Founder (Strategy)</p>
@@ -383,7 +393,7 @@ const About = () => {
               <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-8 sm:mb-10 text-center" style={{ color: BRAND_MAGENTA }}>
                 Strategy & Marketing Team
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8 sm:gap-12">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12">
                 {/* Kwagbedzi Dela */}
                 <div className="text-center group hover:scale-105 transition-all duration-300">
                   <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
@@ -402,6 +412,28 @@ const About = () => {
                   <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Business & Partnership Lead</p>
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
                     Supports business growth through investor and partnership engagement.
+                  </p>
+                </div>
+
+                {/* Adzah Isabella */}
+                <div className="text-center group hover:scale-105 transition-all duration-300">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <img
+                      src="/lovable-uploads/isabel.jpg"
+                      alt="Adzah Isabella"
+                      className="w-full h-full object-cover object-center"
+                      style={{ objectPosition: 'center 30%' }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center"><span class="text-white font-bold text-xl">AI</span></div>';
+                      }}
+                    />
+                  </div>
+                  <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Adzah Isabella</h4>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Digital Marketing & Sales</p>
+                  <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
+                    Identifies and engages cooperatives, NGOs, agribusiness stakeholders and government bodies while driving early sales and B2B partnerships.
                   </p>
                 </div>
 
