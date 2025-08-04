@@ -265,7 +265,7 @@ const About = () => {
                 </div>
               </div>
 
-              {/* Agbenyenu Sedem Prince - Product Design */}
+              {/* Agbenyenu Sedem Prince - Product Manager */}
               <div className="text-center group hover:scale-105 transition-all duration-300">
                 <div className="inline-block group hover:scale-105 transition-all duration-300">
                   <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-orange-100">
@@ -281,9 +281,9 @@ const About = () => {
                     />
                   </div>
                   <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Agbenyenu Sedem Prince</h4>
-                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Co-Founder (Product Design)</p>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Co-Founder (Product Manager)</p>
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
-                    Manages frontend product development, quality assurance, and design consistency.
+                    Manages frontend development and product.
                   </p>
                 </div>
               </div>
