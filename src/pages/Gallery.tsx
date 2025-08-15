@@ -342,7 +342,7 @@ const Gallery = () => {
       <Navbar />
 
              {/* Hero Section */}
-       <section ref={heroRef} className="relative pt-24 pb-16 sm:pt-28 sm:pb-20 bg-white">
+               <section ref={heroRef} className="relative pt-24 pb-16 sm:pt-28 sm:pb-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className={`transition-all duration-1000 ease-out ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
                          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>

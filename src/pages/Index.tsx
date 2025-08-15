@@ -84,7 +84,7 @@ const Index = () => {
   return (
     <div className="min-h-screen overflow-x-hidden">
       {/* Hero Section - Single Image */}
-      <section className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] flex flex-col items-center justify-center overflow-hidden p-0 m-0">
+              <section className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] flex flex-col items-center justify-center overflow-hidden p-0 m-0">
         {/* Single Hero Image */}
         <img
           src="/lovable-uploads/b.jpg"

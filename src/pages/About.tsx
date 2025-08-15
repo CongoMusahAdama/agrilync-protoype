@@ -39,7 +39,7 @@ const About = () => {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Hero Section with Professional Background Image */}
-      <section className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] flex flex-col items-center justify-center overflow-hidden p-0 m-0">
+              <section className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] flex flex-col items-center justify-center overflow-hidden p-0 m-0">
         {/* Hero Image */}
         <img
           src="/lovable-uploads/ab.jpg"

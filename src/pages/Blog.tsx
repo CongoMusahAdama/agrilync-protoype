@@ -49,6 +49,8 @@ const Blog = () => {
   const [completedSectionRef, completedSectionVisible] = useScrollReveal();
   const [registrationSectionRef, registrationSectionVisible] = useScrollReveal();
 
+
+
   // Handle direct navigation to webinar section
   useEffect(() => {
     if (window.location.hash === '#upcoming-webinars') {
@@ -182,7 +184,8 @@ const Blog = () => {
       image: "/lovable-uploads/webinar4.jpg",
       description: "Comprehensive strategies to reduce post-harvest losses and improve market access for smallholder farmers in Ghana.",
       speaker: "Mrs Erica Adjoa Appaih",
-      status: "upcoming"
+      status: "completed",
+      recordingLink: "https://drive.google.com/file/d/1kqJWei0rrOflXEF1DzfKnoD-s5ElcMEw/view?usp=sharing"
     }
   ];
 
@@ -608,9 +611,10 @@ const Blog = () => {
                   <Button 
                     variant="outline" 
                     className="w-full border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white py-3 rounded-full transition-all duration-300 transform hover:scale-105"
+                    onClick={() => webinar.recordingLink && window.open(webinar.recordingLink, '_blank')}
                   >
                     <Play className="mr-2 h-4 w-4" />
-                    Watch Recording
+                    {webinar.recordingLink ? 'Watch Recording' : 'Recording Coming Soon'}
                   </Button>
                 </CardContent>
               </Card>
@@ -672,6 +676,8 @@ const Blog = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+
 
       <Footer />
     </div>
