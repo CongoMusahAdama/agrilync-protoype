@@ -22,7 +22,8 @@ import {
   BookOpen,
   TrendingUp,
   Leaf,
-  Zap
+  Zap,
+  ArrowUp
 } from 'lucide-react';
 
 // Brand colors
@@ -41,6 +42,7 @@ const Blog = () => {
   });
   const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Scroll-triggered animation hooks
   const [heroHeadingRef, heroHeadingVisible] = useScrollReveal();
@@ -49,7 +51,23 @@ const Blog = () => {
   const [completedSectionRef, completedSectionVisible] = useScrollReveal();
   const [registrationSectionRef, registrationSectionVisible] = useScrollReveal();
 
+  // Handle scroll to top button visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
 
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
   // Handle direct navigation to webinar section
   useEffect(() => {
@@ -289,7 +307,7 @@ const Blog = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
             {featuredPosts.slice(0, 2).map((post, index) => (
               <div key={post.id} className="group cursor-pointer animate-fade-in-up" style={{ animationDelay: `${index * 200}ms` }}>
                 <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500">
@@ -367,7 +385,7 @@ const Blog = () => {
                   </div>
                 )}
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
                   {filteredPosts.map((post, index) => (
                     <article key={post.id} className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden group animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
                       <div className="relative overflow-hidden">
@@ -477,7 +495,7 @@ const Blog = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
             {webinars.filter(w => w.status === 'upcoming').map((webinar, index) => (
               <Card key={webinar.id} className="group hover:shadow-2xl transition-all duration-500 animate-fade-in-up overflow-hidden" style={{ animationDelay: `${index * 200}ms` }}>
                 <div className="relative overflow-hidden">
@@ -570,7 +588,7 @@ const Blog = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {webinars.filter(w => w.status === 'completed').map((webinar, index) => (
               <Card key={webinar.id} className="group hover:shadow-2xl transition-all duration-500 animate-fade-in-up overflow-hidden" style={{ animationDelay: `${index * 200}ms` }}>
                 <div className="relative overflow-hidden">
@@ -677,7 +695,17 @@ const Blog = () => {
         </DialogContent>
       </Dialog>
 
-
+      {/* Scroll to Top Button - Mobile Optimized */}
+      {showScrollTop && (
+        <Button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-4 z-50 bg-green-600 hover:bg-green-700 text-white p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 md:bottom-8 md:right-6"
+          aria-label="Scroll to top"
+          size="lg"
+        >
+          <ArrowUp className="h-5 w-5 md:h-6 md:w-6" />
+        </Button>
+      )}
 
       <Footer />
     </div>

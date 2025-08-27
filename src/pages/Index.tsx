@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Leaf, Users, TrendingUp, MapPin, Calendar, Shield, Award, Play, MessageCircle, X } from 'lucide-react';
+import { Leaf, Users, TrendingUp, MapPin, Calendar, Shield, Award, Play, MessageCircle, X, ArrowUp } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
@@ -28,6 +28,7 @@ const Index = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showSplash, setShowSplash] = useState(false);
   const [splashTimeout, setSplashTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -35,6 +36,24 @@ const Index = () => {
     }, 6000); // 6 seconds per slide
     return () => clearInterval(interval);
   }, []);
+
+  // Handle scroll to top button visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
   useEffect(() => {
     // Only show splash on mobile devices and only on first visit
@@ -137,24 +156,25 @@ const Index = () => {
       </section>
 
              {/* Who We Are Section */}
-               <section className="py-10 sm:py-16 md:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row items-start gap-2 sm:gap-4">
-            {/* Title - closer to content */}
+      <section className="py-10 sm:py-16 md:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-start">
+            {/* Left Column - Title */}
             <div className="animate-fade-in-right transition-all duration-700 ease-in-out">
-              <h2 ref={whoWeAreRef} className={"text-base sm:text-lg md:text-2xl font-bold mb-1 sm:mb-2 text-left transition-all duration-700 ease-in-out " + (whoWeAreVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: '#002f37' }}>
+              <div className="flex items-center mb-3 sm:mb-4">
+                <div className="w-2 h-2" style={{ backgroundColor: '#002f37' }}></div>
+                <span className="text-gray-500 text-xs sm:text-sm uppercase tracking-wider ml-3">WHO WE ARE</span>
+              </div>
+              <h2 ref={whoWeAreRef} className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3 transition-all duration-700 ease-in-out " + (whoWeAreVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: '#002f37' }}>
                 Who We Are
               </h2>
-              <div className="w-16 h-0.5 bg-purple-600 mb-1 sm:mb-2"></div>
             </div>
-            {/* Content - closer to title */}
-            <div className="animate-fade-in-left transition-all duration-700 ease-in-out flex-1">
+
+            {/* Right Column - Content */}
+            <div className="animate-fade-in-left transition-all duration-700 ease-in-out">
               <div className="max-w-4xl">
-                <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed mb-6">
-                  We are Agrilync. We're focused on revolutionizing agriculture in Africa through AI and digital technologies. Our AI-powered platform connects key actors along the value chain with various stakeholders, providing access to financing, market opportunities, and farming intelligence.
-                </p>
-                <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed">
-                  Agrilync empowers farmers with tools for sustainable growth, higher yields, and improved market access. We have over <span className="font-bold">200</span> farmers and stakeholders in our WhatsApp community dry run.
+                <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
+                  We are Agrilync, revolutionizing African agriculture through AI and digital technologies. Our platform connects farmers with investors, markets, and intelligent farming solutions.
                 </p>
               </div>
             </div>
@@ -162,21 +182,25 @@ const Index = () => {
         </div>
       </section>
 
-             {/* Why Farmers Are Crying Section */}
-               <section className="py-10 sm:py-16 md:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row items-start gap-2 sm:gap-4">
-            {/* Title - closer to content */}
+      {/* Why Farmers Are Crying Section */}
+      <section className="py-10 sm:py-16 md:py-20" style={{ backgroundColor: '#002f37' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-start">
+            {/* Left Column - Title */}
             <div className="animate-fade-in-right transition-all duration-700 ease-in-out">
-              <h2 ref={farmersCryingRef} className={"text-base sm:text-lg md:text-2xl font-bold mb-1 sm:mb-2 text-left transition-all duration-700 ease-in-out " + (farmersCryingVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: '#002f37' }}>
+              <div className="flex items-center mb-3 sm:mb-4">
+                <div className="w-2 h-2" style={{ backgroundColor: '#7ede56' }}></div>
+                <span className="text-gray-300 text-xs sm:text-sm uppercase tracking-wider ml-3">THE CHALLENGE</span>
+              </div>
+              <h2 ref={farmersCryingRef} className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3 transition-all duration-700 ease-in-out " + (farmersCryingVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: 'white' }}>
                 The Challenge
               </h2>
-              <div className="w-16 h-0.5 bg-purple-600 mb-1 sm:mb-2"></div>
             </div>
-            {/* Content - closer to title */}
-            <div className="animate-fade-in-left transition-all duration-700 ease-in-out flex-1">
+
+            {/* Right Column - Content */}
+            <div className="animate-fade-in-left transition-all duration-700 ease-in-out">
               <div className="max-w-4xl">
-                <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed">
+                <p className="text-gray-300 leading-relaxed text-sm sm:text-base">
                   Farmers are not crying without reason. They need timely access to the right information to boost productivity, ready markets immediately after harvest to reduce post-harvest losses, and most importantly, flexible financing and investor partnerships to scale and improve yield.
                 </p>
               </div>
@@ -206,7 +230,7 @@ const Index = () => {
                 <Leaf className="h-12 w-12 text-purple-600" />
               </div>
               <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in transition-all duration-700 ease-in-out" style={{ color: '#002f37' }}
-                  onClick={() => handleFeatureClick('/about')}>
+                  onClick={() => handleFeatureClick('/who-we-are')}>
                 AI-Powered Crop Consultation
               </h3>
               <p className="text-lg text-gray-600 mb-6">
@@ -220,7 +244,7 @@ const Index = () => {
                 <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>• Track crop health over time</li>
               </ul>
               <Button 
-                onClick={() => handleFeatureClick('/about')}
+                onClick={() => handleFeatureClick('/who-we-are')}
                 className="bg-purple-600 hover:bg-purple-700"
               >
                 Learn More
@@ -230,8 +254,8 @@ const Index = () => {
               <img 
                 src="/lovable-uploads/889a4eaa-0299-4896-8399-849a40f5565a.png"
                 alt="AI Consultation"
-                className="rounded-2xl shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
-                onClick={() => handleFeatureClick('/about')}
+                className="shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                onClick={() => handleFeatureClick('/who-we-are')}
               />
             </div>
           </div>
@@ -242,8 +266,8 @@ const Index = () => {
               <img 
                 src="/lovable-uploads/3e19a1d1-e890-436d-ba69-4227c2a1c8b1.png"
                 alt="Weather Forecast"
-                className="rounded-2xl shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
-                onClick={() => handleFeatureClick('/about')}
+                className="shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                onClick={() => handleFeatureClick('/who-we-are')}
               />
             </div>
             <div className="order-2 lg:order-2 animate-fade-in-left delay-600 lg:col-start-2 mt-6 sm:mt-0">
@@ -252,7 +276,7 @@ const Index = () => {
                 <MapPin className="h-12 w-12 text-purple-600" />
               </div>
               <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in transition-all duration-700 ease-in-out" style={{ color: '#002f37' }}
-                  onClick={() => handleFeatureClick('/about')}>
+                  onClick={() => handleFeatureClick('/who-we-are')}>
                 Hyperlocal Weather Insights
               </h3>
               <p className="text-lg text-gray-600 mb-6">
@@ -266,7 +290,7 @@ const Index = () => {
                 <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>• AI-driven recommendations</li>
               </ul>
               <Button 
-                onClick={() => handleFeatureClick('/about')}
+                onClick={() => handleFeatureClick('/who-we-are')}
                 className="bg-purple-600 hover:bg-purple-700"
               >
                 Learn More
@@ -282,7 +306,7 @@ const Index = () => {
                 <TrendingUp className="h-12 w-12 text-purple-600" />
               </div>
               <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in transition-all duration-700 ease-in-out" style={{ color: '#002f37' }}
-                  onClick={() => handleFeatureClick('/about')}>
+                  onClick={() => handleFeatureClick('/who-we-are')}>
                 FarmPartner Investment Initiative
               </h3>
               <p className="text-lg text-gray-600 mb-6">
@@ -296,7 +320,7 @@ const Index = () => {
                 <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>• Impact tracking dashboard</li>
               </ul>
               <Button 
-                onClick={() => handleFeatureClick('/about')}
+                onClick={() => handleFeatureClick('/who-we-are')}
                 className="bg-purple-600 hover:bg-purple-700"
               >
                 Learn More
@@ -306,15 +330,27 @@ const Index = () => {
               <img 
                 src="/lovable-uploads/d5bee012-8bd6-4f66-bd49-d60d2468bcb3.png"
                 alt="FarmPartner Investment"
-                className="rounded-2xl shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
-                onClick={() => handleFeatureClick('/about')}
+                className="shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                onClick={() => handleFeatureClick('/who-we-are')}
               />
             </div>
           </div>
         </div>
       </section>
 
-             <Footer />
+      {/* Scroll to Top Button - Mobile Optimized */}
+      {showScrollTop && (
+        <Button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-4 z-50 bg-green-600 hover:bg-green-700 text-white p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 md:bottom-8 md:right-6"
+          aria-label="Scroll to top"
+          size="lg"
+        >
+          <ArrowUp className="h-5 w-5 md:h-6 md:w-6" />
+        </Button>
+      )}
+
+      <Footer />
      </div>
    );
  };

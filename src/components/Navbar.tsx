@@ -39,14 +39,17 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid' }) => {
               <Link to="/" className={`${textClass} ${hoverClass} transition-colors text-sm font-medium`}>
                 Home
               </Link>
-              <Link to="/about" className={`${textClass} ${hoverClass} transition-colors text-sm font-medium`}>
-                About
+              <Link to="/who-we-are" className={`${textClass} ${hoverClass} transition-colors text-sm font-medium`}>
+                Who We Are
+              </Link>
+              <Link to="/team" className={`${textClass} ${hoverClass} transition-colors text-sm font-medium`}>
+                Team
+              </Link>
+              <Link to="/portfolio" className={`${textClass} ${hoverClass} transition-colors text-sm font-medium`}>
+                Portfolio
               </Link>
               <Link to="/blog" className={`${textClass} ${hoverClass} transition-colors text-sm font-medium`}>
                 Blog
-              </Link>
-              <Link to="/gallery" className={`${textClass} ${hoverClass} transition-colors text-sm font-medium`}>
-                Gallery
               </Link>
               <Link to="/contact" className={`${textClass} ${hoverClass} transition-colors text-sm font-medium`}>
                 Contact
@@ -82,11 +85,25 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid' }) => {
                 Home
               </Link>
               <Link 
-                to="/about" 
+                to="/who-we-are" 
                 className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors text-sm font-medium`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                About
+                Who We Are
+              </Link>
+              <Link 
+                to="/team" 
+                className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors text-sm font-medium`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Team
+              </Link>
+              <Link 
+                to="/portfolio" 
+                className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors text-sm font-medium`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Portfolio
               </Link>
               <Link 
                 to="/blog" 
@@ -94,13 +111,6 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid' }) => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Blog
-              </Link>
-              <Link 
-                to="/gallery" 
-                className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors text-sm font-medium`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Gallery
               </Link>
               <Link 
                 to="/contact" 

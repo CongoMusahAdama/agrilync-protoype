@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { X, MapPin, Leaf, Calendar, ArrowLeft, ArrowRight } from 'lucide-react';
+import { X, MapPin, Leaf, Calendar, ArrowLeft, ArrowRight, ArrowUp } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
@@ -272,6 +272,7 @@ const Gallery = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Scroll animation hooks
   const [heroRef, heroVisible] = useScrollReveal();
@@ -288,6 +289,24 @@ const Gallery = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Handle scroll to top button visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
   // Filter farm visits based on selected region and category
   const filteredVisits = farmVisits.filter(visit => {
@@ -346,7 +365,7 @@ const Gallery = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className={`transition-all duration-1000 ease-out ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
                          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-               Our Farm Visits & Engagements
+               Our Portfolio
              </h1>
              <div className="w-16 h-0.5 bg-purple-600 mx-auto mb-4 animate-fade-in-up" style={{ animationDelay: '0.3s' }}></div>
              <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -444,11 +463,11 @@ const Gallery = () => {
                 <p className="text-gray-500">Try adjusting your filters to see more results.</p>
               </div>
                                       ) : (
-                                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                      {filteredVisits.map((visit, index) => (
                      <div
                        key={visit.id}
-                       className="group relative overflow-hidden rounded-2xl cursor-pointer transform transition-all duration-1000 ease-out hover:scale-[1.02] hover:shadow-2xl opacity-100 translate-y-0"
+                       className="group relative overflow-hidden cursor-pointer transform transition-all duration-1000 ease-out hover:scale-[1.02] hover:shadow-2xl opacity-100 translate-y-0"
                        style={{ 
                          animationDelay: `${index * 150}ms`,
                          animationFillMode: 'both'
@@ -546,7 +565,7 @@ const Gallery = () => {
                    <img
                      src={selectedImage.image}
                      alt={selectedImage.title}
-                     className="max-w-full max-h-full object-contain rounded-lg"
+                     className="max-w-full max-h-full object-contain"
                    />
                  </div>
 
@@ -626,6 +645,18 @@ const Gallery = () => {
            </div>
          </DialogContent>
        </Dialog>
+
+      {/* Scroll to Top Button - Mobile Optimized */}
+      {showScrollTop && (
+        <Button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-4 z-50 bg-green-600 hover:bg-green-700 text-white p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 md:bottom-8 md:right-6"
+          aria-label="Scroll to top"
+          size="lg"
+        >
+          <ArrowUp className="h-5 w-5 md:h-6 md:w-6" />
+        </Button>
+      )}
 
       {/* Footer */}
       <Footer />
