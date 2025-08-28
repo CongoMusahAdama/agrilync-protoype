@@ -156,7 +156,7 @@ const Index = () => {
       </section>
 
              {/* Who We Are Section */}
-      <section className="py-10 sm:py-16 md:py-20 bg-white">
+               <section className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-start">
             {/* Left Column - Title */}
@@ -182,7 +182,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Why Farmers Are Crying Section */}
+             {/* Why Farmers Are Crying Section */}
       <section className="py-10 sm:py-16 md:py-20" style={{ backgroundColor: '#002f37' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-start">
@@ -350,7 +350,7 @@ const Index = () => {
         </Button>
       )}
 
-      <Footer />
+             <Footer />
      </div>
    );
  };

@@ -50,6 +50,7 @@ const Blog = () => {
   const [webinarSectionRef, webinarSectionVisible] = useScrollReveal();
   const [completedSectionRef, completedSectionVisible] = useScrollReveal();
   const [registrationSectionRef, registrationSectionVisible] = useScrollReveal();
+  const [latestArticlesRef, latestArticlesVisible] = useScrollReveal();
 
   // Handle scroll to top button visibility
   useEffect(() => {
@@ -349,7 +350,7 @@ const Blog = () => {
       <section className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2" style={{ color: BRAND_TEAL }}>
+            <h2 ref={latestArticlesRef} className={"text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (latestArticlesVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
               Latest Articles
             </h2>
             <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3 mx-auto"></div>

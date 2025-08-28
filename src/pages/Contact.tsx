@@ -67,7 +67,7 @@ const Contact = () => {
       {/* Hero Section */}
       <section ref={heroRef} className={"py-16 sm:py-20 md:py-24 bg-white transition-all duration-700 ease-in-out " + (heroVisible ? " animate-fade-in-up" : " opacity-0")}>
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2" style={{ color: BRAND_TEAL }}>
+          <h1 className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (heroVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
             Get in Touch
           </h1>
           <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3 mx-auto"></div>
@@ -84,7 +84,7 @@ const Contact = () => {
             
             {/* Contact Form */}
             <div ref={formRef} className={"transition-all duration-700 ease-in-out " + (formVisible ? " animate-fade-in-up" : " opacity-0")}>
-              <h2 className="text-2xl font-bold mb-1 sm:mb-2" style={{ color: BRAND_TEAL }}>
+              <h2 className={"text-2xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (formVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
                 Send us a Message
               </h2>
               <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3"></div>
@@ -190,7 +190,7 @@ const Contact = () => {
 
             {/* Contact Information */}
             <div ref={infoRef} className={"transition-all duration-700 ease-in-out " + (infoVisible ? " animate-fade-in-up" : " opacity-0")}>
-              <h2 className="text-2xl font-bold mb-1 sm:mb-2" style={{ color: BRAND_TEAL }}>
+              <h2 className={"text-2xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (infoVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
                 Contact Information
               </h2>
               <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3"></div>
@@ -276,7 +276,7 @@ const Contact = () => {
       {/* WhatsApp Community Section */}
       <section ref={communityRef} className={"py-12 sm:py-16 md:py-20 bg-white transition-all duration-700 ease-in-out " + (communityVisible ? " animate-fade-in-up" : " opacity-0")}>
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2" style={{ color: BRAND_TEAL }}>
+          <h2 className={"text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (communityVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
             Join Our WhatsApp Community
           </h2>
           <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3 mx-auto"></div>

@@ -30,6 +30,8 @@ const About = () => {
   const [serve3Ref, serve3Visible] = useScrollReveal();
   const [serve4Ref, serve4Visible] = useScrollReveal();
   const [howWeDoItRef, howWeDoItVisible] = useScrollReveal();
+  const [whyChooseUsRef, whyChooseUsVisible] = useScrollReveal();
+  const [mobileAppRef, mobileAppVisible] = useScrollReveal();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Handle scroll to top button visibility
@@ -53,7 +55,7 @@ const About = () => {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Hero Section with Professional Background Image */}
-      <section className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] flex flex-col items-center justify-center overflow-hidden p-0 m-0">
+              <section className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] flex flex-col items-center justify-center overflow-hidden p-0 m-0">
         {/* Hero Image */}
         <img
           src="/lovable-uploads/ab.jpg"
@@ -200,9 +202,10 @@ const About = () => {
                 <div className="w-2 h-2" style={{ backgroundColor: BRAND_TEAL }}></div>
                 <span className="text-gray-500 text-sm uppercase tracking-wider ml-3">WHO WE SERVE</span>
               </div>
-              <h2 ref={whoWeServeRef} className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-6 transition-all duration-700 ease-in-out " + (whoWeServeVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
+              <h2 ref={whoWeServeRef} className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (whoWeServeVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
                 Who We Serve
             </h2>
+            <div className="w-16 h-0.5 bg-purple-600 mb-4 sm:mb-6"></div>
           </div>
 
             {/* Right Column - Stakeholders */}
@@ -230,7 +233,7 @@ const About = () => {
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                     Registered farmers with proven track records across regions under our Lync Growers Association. They are matched with investors.
                   </p>
-                </div>
+              </div>
             </div>
 
               {/* Lync Investors */}
@@ -274,6 +277,7 @@ const About = () => {
             <h2 ref={howWeDoItRef} className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (howWeDoItVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: 'white' }}>
               how we do it
             </h2>
+            <div className="w-16 h-0.5 bg-purple-400 mb-4 sm:mb-6 mx-auto"></div>
                 </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
@@ -318,14 +322,15 @@ const About = () => {
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-start">
             {/* Left Column - Title */}
-            <div className="animate-fade-in-right transition-all duration-700 ease-in-out">
+            <div ref={whyChooseUsRef} className={"animate-fade-in-right transition-all duration-700 ease-in-out " + (whyChooseUsVisible ? " animate-fade-in-up" : " opacity-0")}>
               <div className="flex items-center mb-4">
                 <div className="w-2 h-2" style={{ backgroundColor: BRAND_TEAL }}></div>
                 <span className="text-gray-500 text-sm uppercase tracking-wider ml-3">WHO WE ARE</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6" style={{ color: BRAND_TEAL }}>
+              <h2 className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (whyChooseUsVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
                 why<br />Choose us
               </h2>
+              <div className="w-16 h-0.5 bg-purple-600 mb-4 sm:mb-6"></div>
             </div>
 
             {/* Right Column - Reasons */}
@@ -389,6 +394,43 @@ const About = () => {
                   </p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Mobile App Development Section */}
+      <section ref={mobileAppRef} className={"py-10 sm:py-16 md:py-20 bg-white transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0")}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10 sm:mb-14 md:mb-16">
+            <h2 className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
+              Mobile App Development
+            </h2>
+            <div className="w-16 h-0.5 bg-purple-600 mb-4 sm:mb-6 mx-auto"></div>
+            <h3 className={"text-lg sm:text-xl md:text-2xl font-semibold mb-6 text-gray-600 transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0") }>
+              Bringing AgriLync to Your Pocket
+            </h3>
+            <p className={"text-gray-700 leading-relaxed text-sm sm:text-base max-w-4xl mx-auto transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0") }>
+              Our mobile app is currently under development, designed to bring our AI-powered agricultural solutions directly to farmers' smartphones. This represents the next step in our mission to transform African agriculture through accessible, mobile-first technology.
+            </p>
+          </div>
+
+          {/* Mobile App Mockups */}
+          <div className="relative max-w-6xl mx-auto">
+            {/* Phone Mockups Container */}
+            <div className="flex items-center justify-center">
+              <img
+                src="/lovable-uploads/ui.jpg"
+                alt="AgriLync Mobile App Interface"
+                className="w-full max-w-2xl h-auto"
+                loading="eager"
+                fetchPriority="high"
+                onError={(e) => {
+                  console.log('Mobile app image failed to load');
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
             </div>
           </div>
         </div>
