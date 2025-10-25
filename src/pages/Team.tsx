@@ -63,13 +63,13 @@ const Team = () => {
           <div className="relative">
             {/* Top Level - CEO */}
             <div ref={leadershipRef} className={"text-center mb-16 sm:mb-20 transition-all duration-1000 ease-out " + (leadershipVisible ? " animate-fade-in-up opacity-100 translate-y-0" : " opacity-0 translate-y-8")}>
-              <div className="inline-block group hover:scale-105 transition-all duration-300 cursor-pointer" onClick={() => setIsCEOModalOpen(true)}>
-                <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-purple-100">
+              <div className="inline-block group hover:scale-110 transition-all duration-500 cursor-pointer transform hover:rotate-1" onClick={() => setIsCEOModalOpen(true)}>
+                <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-purple-100 group-hover:border-purple-300 group-hover:border-8">
                   <img
-                    src="/lovable-uploads/congo.jpg"
+                    src="/lovable-uploads/suit.jpg"
                     alt="Congo Musah Adama"
                     className="w-full h-full object-cover"
-                    style={{ objectPosition: 'center 20%' }}
+                    style={{ objectPosition: 'center center' }}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
@@ -80,7 +80,7 @@ const Team = () => {
                 <h4 className="text-xl sm:text-2xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Congo Musah Adama</h4>
                 <p className="text-lg sm:text-xl font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>CEO and Founder</p>
                 <p className="text-sm text-gray-600 leading-relaxed max-w-md mx-auto">
-                  Provides technical leadership, project oversight, backend development, and ensures alignment with agricultural operations.
+                  Technical leadership, backend architecture, AI integration, strategic vision, and cross-department coordination.
                 </p>
               </div>
             </div>
@@ -98,8 +98,8 @@ const Team = () => {
             <div className={"grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 mb-16 sm:mb-20 transition-all duration-1000 ease-out delay-300 " + (leadershipVisible ? " animate-fade-in-up opacity-100 translate-y-0" : " opacity-0 translate-y-8")}>
               {/* Takyi Robert - Strategy */}
               <div className="text-center">
-                <div className="inline-block group hover:scale-105 transition-all duration-300">
-                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-green-100">
+                <div className="inline-block group hover:scale-110 transition-all duration-500 transform hover:-translate-y-2">
+                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-green-100 group-hover:border-green-300 group-hover:border-6">
                     <img
                       src="/lovable-uploads/robert.jpg"
                       alt="Takyi Robert"
@@ -113,17 +113,17 @@ const Team = () => {
                     />
                   </div>
                   <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Takyi Robert</h4>
-                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Co-Founder (Strategy)</p>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Co-Founder (Finance & Partnerships)</p>
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
-                    Leads business strategy, stakeholder engagement, and partnership development.
+                    Finance, partnerships, investor relations, financial planning, and strategic collaborations.
                   </p>
                 </div>
               </div>
 
               {/* Agbenyenu Sedem Prince - Product Manager */}
-              <div className="text-center group hover:scale-105 transition-all duration-300">
-                <div className="inline-block group hover:scale-105 transition-all duration-300">
-                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-orange-100">
+              <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-2">
+                <div className="inline-block group hover:scale-110 transition-all duration-500">
+                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-orange-100 group-hover:border-orange-300 group-hover:border-6">
                     <img
                       src="/lovable-uploads/prince-sedem.jpg"
                       alt="Agbenyenu Sedem Prince"
@@ -136,9 +136,9 @@ const Team = () => {
                     />
                   </div>
                   <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Agbenyenu Sedem Prince</h4>
-                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Co-Founder (Product Manager)</p>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Co-Founder (CTO)</p>
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
-                    Manages frontend development and product.
+                    Software development, product management, technical execution, and cross-team coordination.
                   </p>
                 </div>
               </div>
@@ -154,8 +154,8 @@ const Team = () => {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
                 {/* Osei Prince */}
-                <div className="text-center group hover:scale-105 transition-all duration-300">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-3 hover:rotate-2">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-2 border-transparent group-hover:border-indigo-300 group-hover:border-4">
                     <img
                       src="/lovable-uploads/princeosei.jpg"
                       alt="Osei Prince"
@@ -168,15 +168,15 @@ const Team = () => {
                     />
                   </div>
                   <h4 className="text-base sm:text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Osei Prince</h4>
-                  <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Brand Design Lead</p>
+                  <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>UI/UX & Product Design Lead</p>
                   <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
-                    Guides brand identity and overall design direction across UX and UI.
+                    Product design, user experience, design standards, and interface consistency.
                   </p>
                 </div>
 
                 {/* Cecil Odonkor */}
-                <div className="text-center group hover:scale-105 transition-all duration-300">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-3 hover:-rotate-2">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-2 border-transparent group-hover:border-teal-300 group-hover:border-4">
                     <img
                       src="/lovable-uploads/cecilodonkoh.jpg"
                       alt="Cecil Odonkor"
@@ -189,15 +189,15 @@ const Team = () => {
                     />
                   </div>
                   <h4 className="text-base sm:text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Cecil Odonkor</h4>
-                  <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>UI/UX Designer & Frontend Developer</p>
+                  <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>UI/UX Designer & Frontend Support</p>
                   <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
-                    Builds user-centric interfaces, ensuring functional and interactive frontend design.
+                    Interface design, frontend development, responsive design, and user-friendly interaction.
                   </p>
                 </div>
 
                 {/* Boah Samuel */}
-                <div className="text-center group hover:scale-105 transition-all duration-300">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-3 hover:rotate-1">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-2 border-transparent group-hover:border-yellow-300 group-hover:border-4">
                     <img
                       src="/lovable-uploads/boahsamuel.jpg"
                       alt="Boah Samuel"
@@ -210,15 +210,15 @@ const Team = () => {
                     />
                   </div>
                   <h4 className="text-base sm:text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Boah Samuel</h4>
-                  <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>CTO / Frontend Developer</p>
+                  <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Frontend Developer</p>
                   <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
-                    Supports frontend and backend development, ensuring seamless UI/UX collaboration.
+                    User-facing components, web/mobile interfaces, performance optimization, and feature integration.
                   </p>
                 </div>
 
                 {/* Kwaku Essah */}
-                <div className="text-center group hover:scale-105 transition-all duration-300">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-3 hover:-rotate-1">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-2 border-transparent group-hover:border-pink-300 group-hover:border-4">
                     <img
                       src="/lovable-uploads/kwakuessah.jpg"
                       alt="Kwaku Essah"
@@ -232,9 +232,9 @@ const Team = () => {
                     />
                   </div>
                   <h4 className="text-base sm:text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Kwaku Essah</h4>
-                  <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Backend Developer & Quality Assurance</p>
+                  <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Backend Developer & AI Support</p>
                   <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
-                    Assists in frontend tasks and contributes to backend system development.
+                    Backend systems, APIs, AI integration, system security, and data processing.
                   </p>
                 </div>
               </div>
@@ -250,8 +250,8 @@ const Team = () => {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12">
                 {/* Kwagbedzi Dela */}
-                <div className="text-center group hover:scale-105 transition-all duration-300">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-4 hover:rotate-3">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-emerald-100 group-hover:border-emerald-300 group-hover:border-6">
                     <img
                       src="/lovable-uploads/dela.jpg"
                       alt="Kwagbedzi Dela"
@@ -264,15 +264,15 @@ const Team = () => {
                     />
                   </div>
                   <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Kwagbedzi Dela</h4>
-                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Business & Partnership Lead</p>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Marketing & Partnership Lead</p>
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
-                    Supports business growth through investor and partnership engagement.
+                    Marketing strategy, brand communication, partnership development, and business growth.
                   </p>
                 </div>
 
                 {/* Adzah Isabella */}
-                <div className="text-center group hover:scale-105 transition-all duration-300">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-4 hover:-rotate-2">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-pink-100 group-hover:border-pink-300 group-hover:border-6">
                     <img
                       src="/lovable-uploads/isabel.jpg"
                       alt="Adzah Isabella"
@@ -286,15 +286,15 @@ const Team = () => {
                     />
                   </div>
                   <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Adzah Isabella</h4>
-                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Digital Marketing & Sales</p>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Sales & Content Support</p>
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
-                    Identifies and engages cooperatives, NGOs, agribusiness stakeholders and government bodies while driving early sales and B2B partnerships.
+                    Sales initiatives, content creation, community engagement, and partnership activations.
                   </p>
                 </div>
 
                 {/* Vorlashie Raphael */}
-                <div className="text-center group hover:scale-105 transition-all duration-300">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-4 hover:rotate-2">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-blue-100 group-hover:border-blue-300 group-hover:border-6">
                     <img
                       src="/lovable-uploads/mawuli.jpg"
                       alt="Vorlashie Raphael"
@@ -307,9 +307,9 @@ const Team = () => {
                     />
                   </div>
                   <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Vorlashie Raphael</h4>
-                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Digital Marketing & Media</p>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Communications Lead</p>
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
-                    Leads digital campaigns, media content creation, and brand presence.
+                    Public relations, internal communication, media content, and brand visibility.
                   </p>
                 </div>
               </div>
@@ -325,8 +325,8 @@ const Team = () => {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8 sm:gap-12">
                 {/* Wontumi Gabriel */}
-                <div className="text-center group hover:scale-105 transition-all duration-300">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-5 hover:rotate-4">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-violet-100 group-hover:border-violet-300 group-hover:border-6">
                     <img
                       src="/lovable-uploads/wontumi.jpg"
                       alt="Wontumi Gabriel"
@@ -339,15 +339,15 @@ const Team = () => {
                     />
                   </div>
                   <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Wontumi Gabriel Oti</h4>
-                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Operational Lead (Community & Extension Operations)</p>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Field Operations Lead</p>
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
-                    Leads field engagement, drives tech adoption, and connects farmers with digital tools.
+                    Community engagement, field agents, farmer onboarding, and regional operations.
                   </p>
                 </div>
 
                 {/* Simons Justice */}
-                <div className="text-center group hover:scale-105 transition-all duration-300">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-5 hover:-rotate-3">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-amber-100 group-hover:border-amber-300 group-hover:border-6">
                     <img
                       src="/lovable-uploads/simons.jpg"
                       alt="Simons Justice"
@@ -360,9 +360,9 @@ const Team = () => {
                     />
                   </div>
                   <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Simmons Justice</h4>
-                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Farmer Outreach & Engagement Specialist</p>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Advisory & Research Lead</p>
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
-                    Champions webinars and outreach strategies to engage farmers across communities.
+                    Field research, agricultural insights, farmer outreach, and AI model training support.
                   </p>
                 </div>
               </div>
@@ -390,10 +390,10 @@ const Team = () => {
             <div className="text-center">
               <div className="w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg">
                 <img
-                  src="/lovable-uploads/congo.jpg"
+                  src="/lovable-uploads/suit.jpg"
                   alt="Congo Musah Adama"
                   className="w-full h-full object-cover"
-                  style={{ objectPosition: 'center 20%' }}
+                  style={{ objectPosition: 'center center' }}
                 />
               </div>
             </div>
