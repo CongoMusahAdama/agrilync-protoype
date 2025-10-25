@@ -5,22 +5,24 @@ import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 
 interface NavbarProps {
-  variant?: 'transparent' | 'solid';
+  variant?: 'transparent' | 'solid' | 'light';
 }
 
 const Navbar: React.FC<NavbarProps> = ({ variant = 'solid' }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Color logic
-  const bgClass = variant === 'transparent' ? 'bg-transparent' : 'bg-gray-800';
-  const textClass = variant === 'transparent' ? 'text-white' : 'text-white';
-  const hoverClass = variant === 'transparent' ? 'hover:text-green-300' : 'hover:text-green-300';
+  const bgClass = variant === 'transparent' ? 'bg-transparent' : variant === 'light' ? 'bg-white' : 'bg-gray-800';
+  const textClass = variant === 'transparent' ? 'text-white' : variant === 'light' ? 'text-gray-800' : 'text-white';
+  const hoverClass = variant === 'transparent' ? 'hover:text-green-300' : variant === 'light' ? 'hover:text-green-600' : 'hover:text-green-300';
   const btnClass = variant === 'transparent'
     ? 'bg-white text-[#002f37] border-2 border-[#002f37] hover:bg-gray-100 px-5 py-2 text-sm font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300'
     : 'bg-white text-[#002f37] border-2 border-[#002f37] hover:bg-gray-100 px-5 py-2 text-sm font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300';
 
+  const shadowClass = variant === 'light' ? 'shadow-none' : 'shadow-lg';
+  
   return (
-    <nav className={`${bgClass} shadow-lg sticky top-0 z-50`}>
+    <nav className={`${bgClass} ${shadowClass} fixed top-0 left-0 right-0 z-50`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}

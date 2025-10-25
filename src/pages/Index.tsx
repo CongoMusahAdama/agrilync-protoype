@@ -102,57 +102,121 @@ const Index = () => {
 
   return (
     <div className="min-h-screen overflow-x-hidden">
-      {/* Hero Section - Single Image */}
-              <section className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] flex flex-col items-center justify-center overflow-hidden p-0 m-0">
-        {/* Single Hero Image */}
-        <img
-          src="/lovable-uploads/b.jpg"
-          alt="Hero background"
-          className="w-full h-full object-cover absolute inset-0 z-0"
-          style={{ objectPosition: 'center 40%' }}
-          loading="eager"
-          fetchPriority="high"
-        />
-        {/* Lighter overlay for better image visibility */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/30 z-10"></div>
-        {/* Navbar overlayed above image */}
-        <div className="absolute top-0 left-0 right-0 z-30">
-          <Navbar variant="transparent" />
+      {/* Navbar */}
+      <Navbar variant="light" />
+      
+      {/* Hero Section - Text Left, Images Right */}
+      <section className="relative min-h-[60vh] sm:min-h-[70vh] md:min-h-[80vh] lg:min-h-[85vh] bg-white overflow-hidden pt-16 pb-8 sm:pb-12 md:pb-16">
+        {/* Leaf Pattern Background */}
+        <div className="absolute inset-0 opacity-20 z-0">
+          <div className="absolute top-10 left-10 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] rotate-12" /></div>
+          <div className="absolute top-20 right-20 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] -rotate-12" /></div>
+          <div className="absolute top-30 left-24 w-14 h-14"><Leaf className="w-full h-full text-[#7ede56] rotate-45" /></div>
+          <div className="absolute top-40 right-8 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] -rotate-45" /></div>
+          <div className="absolute top-50 left-16 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] rotate-90" /></div>
+          <div className="absolute top-60 right-36 w-14 h-14"><Leaf className="w-full h-full text-[#7ede56] rotate-12" /></div>
+          <div className="absolute top-70 left-8 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] -rotate-12" /></div>
+          <div className="absolute top-80 right-12 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] rotate-45" /></div>
+          <div className="absolute top-100 left-28 w-14 h-14"><Leaf className="w-full h-full text-[#7ede56] -rotate-45" /></div>
+          <div className="absolute top-120 right-24 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] rotate-90" /></div>
+          <div className="absolute bottom-100 left-10 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] rotate-12" /></div>
+          <div className="absolute bottom-90 right-28 w-14 h-14"><Leaf className="w-full h-full text-[#7ede56] -rotate-12" /></div>
+          <div className="absolute bottom-80 left-22 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] rotate-45" /></div>
+          <div className="absolute bottom-70 right-14 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] -rotate-45" /></div>
+          <div className="absolute bottom-60 left-16 w-14 h-14"><Leaf className="w-full h-full text-[#7ede56] rotate-90" /></div>
+          <div className="absolute bottom-50 right-32 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] rotate-12" /></div>
+          <div className="absolute bottom-40 left-6 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] -rotate-12" /></div>
+          <div className="absolute bottom-30 right-18 w-14 h-14"><Leaf className="w-full h-full text-[#7ede56] rotate-45" /></div>
+          <div className="absolute bottom-20 left-34 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] -rotate-45" /></div>
+          <div className="absolute bottom-10 right-8 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] rotate-90" /></div>
         </div>
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-end h-full pb-4 sm:pb-6 md:pb-8">
-          <div className="animate-fade-in-up w-full max-w-4xl mx-auto">
-                          <h1 ref={heroHeadingRef} className={"text-lg sm:text-xl md:text-3xl lg:text-4xl font-extrabold text-white mb-3 sm:mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight px-2 " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") }>
-                <div className="text-center">
-                  <div className="mb-2 sm:mb-3">
-                    Transforming African Agriculture Through
-                  </div>
-                  <div className="typewriter-text text-center" style={{ color: '#002f37' }}>
-                    AI and Easy Access To Finance
-                  </div>
-                </div>
+        
+        {/* Main Content Container */}
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+            
+            {/* Left Side - Text Content */}
+            <div className="order-2 lg:order-1 flex flex-col justify-start animate-fade-in-up -mt-8 sm:-mt-12 md:-mt-16 lg:-mt-20">
+              <h1 ref={heroHeadingRef} className={"text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold mb-6 sm:mb-8 transition-all duration-700 ease-in-out leading-tight text-gray-800 " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0")}>
+                <span className="animate-pulse-text">Simplifying access to </span><span className="animated-purple-word">FINANCE</span> and <span className="animated-purple-word">INFORMATION</span> for smallholder farmers while leveraging AI to smart <span className="animated-purple-word">INVESTOR</span> matching
               </h1>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center animate-fade-in delay-1000 w-full px-2">
+              
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
               <a 
                 href="https://agrilync.netlify.app" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto max-w-xs"
+                  className="w-full sm:w-auto"
               >
-                <Button className="w-full sm:w-auto max-w-xs bg-white/100 border-2 border-[#002f37] text-[#002f37] hover:bg-gray-100 px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
+                  <Button className="w-full sm:w-auto bg-[#002f37] hover:bg-[#001a1f] text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                   Join the Waitlist
                 </Button>
               </a>
                              <Button
                  variant="outline"
-                 className="w-full sm:w-auto max-w-xs bg-white/20 border-white text-white hover:bg-white hover:text-gray-900 px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold rounded-full shadow-xl backdrop-blur-sm"
+                  className="w-full sm:w-auto border-2 border-[#002f37] text-[#002f37] hover:bg-[#002f37] hover:text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
                  onClick={() => window.open('https://www.youtube.com/watch?v=-gOZgTW00GY', '_blank')}
                >
                  Watch Demo Video
                </Button>
+              </div>
+              
+              <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600">
+                <div className="flex -space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-green-100 border-2 border-white"></div>
+                  <div className="w-8 h-8 rounded-full bg-green-200 border-2 border-white"></div>
+                  <div className="w-8 h-8 rounded-full bg-green-300 border-2 border-white"></div>
+                  <div className="w-8 h-8 rounded-full bg-green-400 border-2 border-white"></div>
+                </div>
+                <span className="ml-2">Join us as a lync grower, lync investor or a solo farmer NOW</span>
+              </div>
+            </div>
+            
+            {/* Right Side - Vertical Triptych Image Layout */}
+            <div className="order-1 lg:order-2 relative flex items-end justify-center lg:justify-end min-h-[500px] sm:min-h-[600px] md:min-h-[700px] lg:min-h-[800px] pb-4 sm:pb-6 md:pb-8">
+              {/* Image Panel Container - Overlapping Style */}
+              <div className="relative w-full max-w-xs sm:max-w-md lg:max-w-xl h-[500px] sm:h-[600px] md:h-[700px] lg:h-[800px] flex items-center justify-center gap-3 sm:gap-4 md:gap-6">
+                
+                {/* Panel 1 - hero1.jpg - Higher Position */}
+                <div className="absolute left-0 top-[5%] w-[30%] sm:w-[32%] z-10 animate-hero-image-1">
+                  <div className="relative rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105">
+                    <img
+                      src="/lovable-uploads/hero1.jpg"
+                      alt="Hero image 1"
+                      className="w-full h-[400px] sm:h-[450px] md:h-[500px] lg:h-[550px] object-cover"
+                      loading="eager"
+                      fetchPriority="high"
+                    />
+                  </div>
+                </div>
+                
+                {/* Panel 2 - hero2.jpg - Lower Position */}
+                <div className="absolute left-[35%] sm:left-[34%] top-[20%] w-[30%] sm:w-[32%] z-20 animate-hero-image-2">
+                  <div className="relative rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105">
+                    <img
+                      src="/lovable-uploads/hero2.jpg"
+                      alt="Hero image 2"
+                      className="w-full h-[400px] sm:h-[450px] md:h-[500px] lg:h-[550px] object-cover"
+                      loading="eager"
+                    />
+                  </div>
+                </div>
+                
+                {/* Panel 3 - hero3.jpg - Higher Position */}
+                <div className="absolute left-[70%] sm:left-[68%] top-[5%] w-[30%] sm:w-[32%] z-30 animate-hero-image-3">
+                  <div className="relative rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105">
+                    <img
+                      src="/lovable-uploads/hero3.jpg"
+                      alt="Hero image 3"
+                      className="w-full h-[400px] sm:h-[450px] md:h-[500px] lg:h-[550px] object-cover"
+                      loading="eager"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
       </section>
 
              {/* Who We Are Section */}
