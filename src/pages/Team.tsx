@@ -66,10 +66,10 @@ const Team = () => {
               <div className="inline-block group hover:scale-110 transition-all duration-500 cursor-pointer transform hover:rotate-1" onClick={() => setIsCEOModalOpen(true)}>
                 <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-purple-100 group-hover:border-purple-300 group-hover:border-8">
                   <img
-                    src="/lovable-uploads/suit.jpg"
+                    src="/lovable-uploads/f.jpg"
                     alt="Congo Musah Adama"
                     className="w-full h-full object-cover"
-                    style={{ objectPosition: 'center center' }}
+                    style={{ objectPosition: 'center 20%', objectFit: 'cover', transform: 'scale(1.2)' }}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
@@ -390,10 +390,10 @@ const Team = () => {
             <div className="text-center">
               <div className="w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg">
                 <img
-                  src="/lovable-uploads/suit.jpg"
+                  src="/lovable-uploads/f.jpg"
                   alt="Congo Musah Adama"
                   className="w-full h-full object-cover"
-                  style={{ objectPosition: 'center center' }}
+                  style={{ objectPosition: 'center 20%', objectFit: 'cover', transform: 'scale(1.2)' }}
                 />
               </div>
             </div>

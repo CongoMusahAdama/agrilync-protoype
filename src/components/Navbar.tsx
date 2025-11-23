@@ -19,7 +19,7 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid' }) => {
     ? 'bg-white text-[#002f37] border-2 border-[#002f37] hover:bg-gray-100 px-5 py-2 text-sm font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300'
     : 'bg-white text-[#002f37] border-2 border-[#002f37] hover:bg-gray-100 px-5 py-2 text-sm font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300';
 
-  const shadowClass = variant === 'light' ? 'shadow-none' : 'shadow-lg';
+  const shadowClass = variant === 'light' || variant === 'transparent' ? 'shadow-none' : 'shadow-lg';
   
   return (
     <nav className={`${bgClass} ${shadowClass} fixed top-0 left-0 right-0 z-50`}>
@@ -59,9 +59,18 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid' }) => {
             </div>
           </div>
 
-          {/* Spacer for centering */}
-          <div className="hidden md:block w-32">
-            {/* This div helps center the navigation items */}
+          {/* Right side buttons */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Link to="/login">
+              <Button variant="ghost" className={`${textClass} ${hoverClass} px-4 py-2`}>
+                Sign In
+              </Button>
+            </Link>
+            <Link to="/signup">
+              <Button className="bg-[#7ede56] hover:bg-[#6bc947] text-white px-6 py-2 rounded-full">
+                Get Started
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -121,6 +130,22 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid' }) => {
               >
                 Contact
               </Link>
+              <div className="pt-4 border-t border-gray-200">
+                <Link 
+                  to="/login" 
+                  className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors text-sm font-medium`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+                <Link 
+                  to="/signup" 
+                  className={`block px-3 py-2 ${textClass} ${hoverClass} transition-colors text-sm font-medium`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Get Started
+                </Link>
+              </div>
             </div>
           </div>
         )}

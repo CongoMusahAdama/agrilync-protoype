@@ -161,14 +161,22 @@ const Index = () => {
                </Button>
               </div>
               
-              <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600">
-                <div className="flex -space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-green-100 border-2 border-white"></div>
-                  <div className="w-8 h-8 rounded-full bg-green-200 border-2 border-white"></div>
-                  <div className="w-8 h-8 rounded-full bg-green-300 border-2 border-white"></div>
-                  <div className="w-8 h-8 rounded-full bg-green-400 border-2 border-white"></div>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 text-sm sm:text-base text-gray-600">
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    <div className="w-8 h-8 rounded-full bg-green-100 border-2 border-white"></div>
+                    <div className="w-8 h-8 rounded-full bg-green-200 border-2 border-white"></div>
+                    <div className="w-8 h-8 rounded-full bg-green-300 border-2 border-white"></div>
+                    <div className="w-8 h-8 rounded-full bg-green-400 border-2 border-white"></div>
+                  </div>
+                  <span className="ml-2">Join us as a lync grower, lync investor or a solo farmer NOW</span>
                 </div>
-                <span className="ml-2">Join us as a lync grower, lync investor or a solo farmer NOW</span>
+                <Button
+                  className="bg-[#7ede56] hover:bg-[#6bc947] text-white px-6 py-2 text-sm font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                  onClick={() => navigate('/signup')}
+                >
+                  Get Started
+                </Button>
               </div>
             </div>
             

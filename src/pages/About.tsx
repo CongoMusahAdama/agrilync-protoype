@@ -12,6 +12,14 @@ const BRAND_GREEN = '#7ede56';
 const BRAND_TEAL = '#002F37';
 const BRAND_WHITE = '#FFFFFF';
 
+// Hero images for carousel - using all "who we are" images
+const heroImages = [
+  '/lovable-uploads/who.jpg',
+  '/lovable-uploads/' + encodeURIComponent('who we are 2.jpg'),
+  '/lovable-uploads/' + encodeURIComponent('who we are 4.jpg'),
+  '/lovable-uploads/whoweare2.jpg',
+];
+
 const About = () => {
   // Scroll-triggered animation hooks
   const [heroHeadingRef, heroHeadingVisible] = useScrollReveal();
@@ -33,6 +41,15 @@ const About = () => {
   const [whyChooseUsRef, whyChooseUsVisible] = useScrollReveal();
   const [mobileAppRef, mobileAppVisible] = useScrollReveal();
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Carousel auto-rotation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+    }, 5000); // 5 seconds per slide
+    return () => clearInterval(interval);
+  }, []);
 
   // Handle scroll to top button visibility
   useEffect(() => {
@@ -54,24 +71,53 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
-      {/* Hero Section with Professional Background Image */}
-              <section className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] flex flex-col items-center justify-center overflow-hidden p-0 m-0">
-        {/* Hero Image */}
-        <img
-          src="/lovable-uploads/ab.jpg"
-          alt="Who We Are Hero Background"
-          className="w-full h-full object-cover absolute inset-0 z-0"
-          loading="eager"
-          fetchPriority="high"
-          style={{ objectPosition: 'center 60%', objectFit: 'cover' }}
-          onError={(e) => {
-            console.log('Image failed to load, trying fallback');
-            const target = e.target as HTMLImageElement;
-            target.src = '/lovable-uploads/image.png'; // Fallback to homepage image
-          }}
-        />
-        {/* Enhanced overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/50 z-10"></div>
+      {/* Hero Section with Carousel Background Images */}
+      <section className="relative h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[75vh] flex flex-col items-center justify-center overflow-hidden p-0 m-0">
+        {/* Carousel Container */}
+        <div className="absolute inset-0 z-0">
+          {heroImages.map((image, index) => (
+            <img
+              key={index}
+              src={image}
+              alt={`Who We Are Hero Background ${index + 1}`}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+                index === currentSlide ? 'opacity-100' : 'opacity-0'
+              }`}
+              loading={index === 0 ? 'eager' : 'lazy'}
+              fetchPriority={index === 0 ? 'high' : 'low'}
+              style={{ 
+                objectPosition: index === 0 ? 'center center' : 'center 25%',
+                objectFit: 'cover',
+                width: '100%',
+                height: '100%'
+              }}
+              onError={(e) => {
+                console.log(`Image ${index + 1} failed to load`);
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
+            />
+          ))}
+        </div>
+        
+        {/* Enhanced overlay for better text readability - lighter at top to show faces */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/60 z-10"></div>
+        
+        {/* Carousel Indicators */}
+        <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex gap-2 sm:gap-3">
+          {heroImages.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`h-2 sm:h-2.5 rounded-full transition-all duration-300 ${
+                index === currentSlide
+                  ? 'bg-white w-6 sm:w-8'
+                  : 'bg-white/50 hover:bg-white/75 w-2 sm:w-2.5'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
         
         {/* Navbar overlayed above image */}
         <div className="absolute top-0 left-0 right-0 z-30">
