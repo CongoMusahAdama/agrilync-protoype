@@ -160,14 +160,14 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
       </nav>
 
       <div
-        className={`border-t p-4 flex-shrink-0 ${darkMode ? 'border-[#124b53] bg-[#0b2528]' : 'border-[#002f37] border-opacity-20 bg-[#002f37]'
+        className={`border-t p-4 flex-shrink-0 ${darkMode ? 'border-gray-200/60 bg-white' : 'border-[#002f37] border-opacity-20 bg-[#002f37]'
           }`}
       >
         <button
           type="button"
           onClick={() => navigate('/')}
           className={`flex w-full items-center gap-3 rounded-lg p-3 font-medium transition-colors ${darkMode
-            ? 'bg-[#0d3a41] text-white hover:bg-[#124c56]'
+            ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50 border border-red-800/50'
             : 'bg-[#0a4a52] text-white hover:bg-[#0d606b]'
             }`}
         >

@@ -80,12 +80,11 @@ const About = () => {
               key={index}
               src={image}
               alt={`Who We Are Hero Background ${index + 1}`}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
-                index === currentSlide ? 'opacity-100' : 'opacity-0'
-              }`}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'
+                }`}
               loading={index === 0 ? 'eager' : 'lazy'}
               fetchPriority={index === 0 ? 'high' : 'low'}
-              style={{ 
+              style={{
                 objectPosition: index === 0 ? 'center center' : 'center 25%',
                 objectFit: 'cover',
                 width: '100%',
@@ -99,33 +98,32 @@ const About = () => {
             />
           ))}
         </div>
-        
+
         {/* Enhanced overlay for better text readability - lighter at top to show faces */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/60 z-10"></div>
-        
+
         {/* Carousel Indicators */}
         <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex gap-2 sm:gap-3">
           {heroImages.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`h-2 sm:h-2.5 rounded-full transition-all duration-300 ${
-                index === currentSlide
+              className={`h-2 sm:h-2.5 rounded-full transition-all duration-300 ${index === currentSlide
                   ? 'bg-white w-6 sm:w-8'
                   : 'bg-white/50 hover:bg-white/75 w-2 sm:w-2.5'
-              }`}
+                }`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
-        
+
         {/* Navbar overlayed above image */}
         <div className="absolute top-0 left-0 right-0 z-30">
           <Navbar variant="transparent" />
         </div>
         <div className="relative z-20 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-end h-full pb-8 sm:pb-12 md:pb-16">
           <div className="animate-fade-in-up w-full max-w-4xl mx-auto">
-            <h1 ref={heroHeadingRef} className={"text-lg sm:text-xl md:text-3xl lg:text-4xl font-extrabold text-white mb-3 sm:mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight px-2 " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") } style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+            <h1 ref={heroHeadingRef} className={"text-lg sm:text-xl md:text-3xl lg:text-4xl font-extrabold text-white mb-3 sm:mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight px-2 " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0")} style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
               Who We Are
             </h1>
           </div>
@@ -136,9 +134,9 @@ const About = () => {
       <section className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
-            <h2 ref={whoWeAreRef} className={"text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 transition-all duration-700 ease-in-out " + (whoWeAreVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
+            <h2 ref={whoWeAreRef} className={"text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 transition-all duration-700 ease-in-out " + (whoWeAreVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
               Who We Are
-              </h2>
+            </h2>
             <div className="w-16 h-0.5 bg-purple-600 mb-4 sm:mb-6"></div>
             <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-4">
               AgriLync is a revolutionary agricultural technology platform that connects farmers, investors, and agricultural experts in a seamless ecosystem. We bridge the gap between traditional farming practices and modern agricultural innovation, empowering farmers with the resources, knowledge, and financial support they need to thrive in today's competitive agricultural landscape.
@@ -165,7 +163,7 @@ const About = () => {
               <a href="#" className="inline-flex items-center text-white hover:underline transition-colors duration-300">
                 Our Solutions →
               </a>
-          </div>
+            </div>
 
             {/* Mission Section */}
             <div className="p-8 sm:p-12 text-center bg-white border border-gray-200">
@@ -187,52 +185,73 @@ const About = () => {
       </section>
 
       {/* Core Values Section */}
-      <section className="py-10 sm:py-16 md:py-20 bg-white">
-        <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-          <div className="text-center mb-10 sm:mb-14 md:mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
-            <h2 ref={valuesRef} className={"text-base sm:text-lg md:text-2xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (valuesVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
+      <section className="py-8 sm:py-10 md:py-12" style={{ backgroundColor: BRAND_TEAL }}>
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+          <div className="text-center mb-6 sm:mb-8 animate-fade-in-up transition-all duration-700 ease-in-out">
+            <div className="flex items-center justify-center mb-3">
+              <div className="w-2 h-2" style={{ backgroundColor: BRAND_GREEN }}></div>
+              <span className="text-gray-300 text-xs uppercase tracking-wider ml-3">OUR FOUNDATION</span>
+            </div>
+            <h2 ref={valuesRef} className={"text-xl sm:text-2xl md:text-3xl font-bold mb-2 transition-all duration-700 ease-in-out " + (valuesVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: 'white' }}>
               Core Values
             </h2>
-            <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3 mx-auto"></div>
-            <p className="text-xs sm:text-sm text-gray-600 max-w-xs sm:max-w-md md:max-w-3xl mx-auto">
-              The principles that guide our mission to transform African agriculture through technology and innovation.
-            </p>
+            <div className="w-16 h-0.5 bg-purple-400 mb-3 mx-auto"></div>
           </div>
 
-          <div className="space-y-6 sm:space-y-8">
-            <div ref={value1Ref} className={"transition-all duration-700 ease-in-out transform " + (value1Visible ? " animate-slide-in-left opacity-100" : " opacity-0 translate-x-8")}>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: BRAND_MAGENTA }}>Inclusivity</h3>
-              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                Ensuring our solutions are accessible to all farmers, regardless of their background or resources.
-              </p>
+          <div className="flex flex-wrap justify-center gap-8 sm:gap-12 md:gap-16">
+            {/* Inclusivity */}
+            <div ref={value1Ref} className={"transition-all duration-700 ease-in-out transform " + (value1Visible ? " animate-fade-in-up opacity-100" : " opacity-0")}>
+              <div className="flex flex-col items-center text-center">
+                <Heart className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Inclusivity</h3>
+                <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
+                  Accessible to all farmers
+                </p>
+              </div>
             </div>
 
-            <div ref={value2Ref} className={"transition-all duration-700 ease-in-out transform " + (value2Visible ? " animate-slide-in-left opacity-100" : " opacity-0 translate-x-8")}>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: BRAND_MAGENTA }}>Collaboration</h3>
-              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                Working together with farmers, partners, and stakeholders to achieve shared agricultural goals.
-              </p>
+            {/* Collaboration */}
+            <div ref={value2Ref} className={"transition-all duration-700 ease-in-out transform " + (value2Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '100ms' }}>
+              <div className="flex flex-col items-center text-center">
+                <Handshake className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Collaboration</h3>
+                <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
+                  Working together
+                </p>
+              </div>
             </div>
 
-            <div ref={value3Ref} className={"transition-all duration-700 ease-in-out transform " + (value3Visible ? " animate-slide-in-left opacity-100" : " opacity-0 translate-x-8")}>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: BRAND_MAGENTA }}>Innovation</h3>
-              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                Continuously developing cutting-edge technologies and solutions for modern farming challenges.
-              </p>
+            {/* Innovation */}
+            <div ref={value3Ref} className={"transition-all duration-700 ease-in-out transform " + (value3Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '200ms' }}>
+              <div className="flex flex-col items-center text-center">
+                <Lightbulb className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Innovation</h3>
+                <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
+                  Cutting-edge solutions
+                </p>
+              </div>
             </div>
 
-            <div ref={value4Ref} className={"transition-all duration-700 ease-in-out transform " + (value4Visible ? " animate-slide-in-left opacity-100" : " opacity-0 translate-x-8")}>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: BRAND_MAGENTA }}>Empowerment</h3>
-              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                Equipping farmers with the knowledge, tools, and resources they need to succeed and grow.
-              </p>
+            {/* Empowerment */}
+            <div ref={value4Ref} className={"transition-all duration-700 ease-in-out transform " + (value4Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '300ms' }}>
+              <div className="flex flex-col items-center text-center">
+                <TrendingUp className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Empowerment</h3>
+                <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
+                  Tools to succeed
+                </p>
+              </div>
             </div>
 
-            <div ref={value5Ref} className={"transition-all duration-700 ease-in-out transform " + (value5Visible ? " animate-slide-in-left opacity-100" : " opacity-0 translate-x-8")}>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: BRAND_MAGENTA }}>Transparency</h3>
-              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                Maintaining open, honest communication and clear processes in all our partnerships and operations.
-              </p>
+            {/* Transparency */}
+            <div ref={value5Ref} className={"transition-all duration-700 ease-in-out transform " + (value5Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '400ms' }}>
+              <div className="flex flex-col items-center text-center">
+                <Shield className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Transparency</h3>
+                <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
+                  Open communication
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -248,11 +267,11 @@ const About = () => {
                 <div className="w-2 h-2" style={{ backgroundColor: BRAND_TEAL }}></div>
                 <span className="text-gray-500 text-sm uppercase tracking-wider ml-3">WHO WE SERVE</span>
               </div>
-              <h2 ref={whoWeServeRef} className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (whoWeServeVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
+              <h2 ref={whoWeServeRef} className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (whoWeServeVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
                 Who We Serve
-            </h2>
-            <div className="w-16 h-0.5 bg-purple-600 mb-4 sm:mb-6"></div>
-          </div>
+              </h2>
+              <div className="w-16 h-0.5 bg-purple-600 mb-4 sm:mb-6"></div>
+            </div>
 
             {/* Right Column - Stakeholders */}
             <div className="space-y-6 animate-fade-in-left transition-all duration-700 ease-in-out">
@@ -265,9 +284,9 @@ const About = () => {
                   <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Solo Farmers</h3>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                     Farmers who join to seek consultation, book appointments, and interact with our AI agent Akuafo Adanfo, which supports three local languages: Twi, Ewe, and Dagomba, with English as the default language.
-                </p>
+                  </p>
+                </div>
               </div>
-            </div>
 
               {/* Lync Growers */}
               <div className="flex items-start gap-4">
@@ -279,14 +298,14 @@ const About = () => {
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                     Registered farmers with proven track records across regions under our Lync Growers Association. They are matched with investors.
                   </p>
+                </div>
               </div>
-            </div>
 
               {/* Lync Investors */}
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
                   <Award className="w-6 h-6 text-white" />
-                  </div>
+                </div>
                 <div>
                   <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Lync Investors</h3>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
@@ -299,7 +318,7 @@ const About = () => {
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
                   <Shield className="w-6 h-6 text-white" />
-                  </div>
+                </div>
                 <div>
                   <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Lync Agents</h3>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
@@ -319,46 +338,46 @@ const About = () => {
             <div className="flex items-center justify-center mb-4">
               <div className="w-2 h-2" style={{ backgroundColor: BRAND_GREEN }}></div>
               <span className="text-gray-300 text-sm uppercase tracking-wider ml-3">Our Process</span>
-                  </div>
-            <h2 ref={howWeDoItRef} className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (howWeDoItVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: 'white' }}>
+            </div>
+            <h2 ref={howWeDoItRef} className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (howWeDoItVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: 'white' }}>
               how we do it
             </h2>
             <div className="w-16 h-0.5 bg-purple-400 mb-4 sm:mb-6 mx-auto"></div>
-                </div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
             {/* Step 1: Connect */}
             <div className="text-center group">
               <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-white group-hover:text-green-400 transition-colors duration-300 mb-6" style={{ fontFamily: 'Arial, sans-serif' }}>
                 01
-                  </div>
+              </div>
               <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">Connect</h3>
               <p className="text-gray-300 leading-relaxed text-sm sm:text-base">
                 Connect farmers to investors on a shared-profit basis, creating mutually beneficial partnerships that drive sustainable agricultural growth.
-                  </p>
-                </div>
+              </p>
+            </div>
 
             {/* Step 2: Monitor */}
             <div className="text-center group">
               <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-white group-hover:text-purple-400 transition-colors duration-300 mb-6" style={{ fontFamily: 'Arial, sans-serif' }}>
                 02
-                  </div>
+              </div>
               <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">Monitor</h3>
               <p className="text-gray-300 leading-relaxed text-sm sm:text-base">
                 Extension agents are assigned to oversee activities on/off the farm, ensuring accountability and transparency for both farmers and investors.
-                  </p>
-                </div>
+              </p>
+            </div>
 
             {/* Step 3: Invest */}
             <div className="text-center group">
               <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-white group-hover:text-blue-400 transition-colors duration-300 mb-6" style={{ fontFamily: 'Arial, sans-serif' }}>
                 03
-                  </div>
+              </div>
               <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">Invest</h3>
               <p className="text-gray-300 leading-relaxed text-sm sm:text-base">
                 Investment can be in the form of money, tools, or equipment, providing comprehensive support for agricultural projects and ensuring success.
-                  </p>
-                </div>
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -373,7 +392,7 @@ const About = () => {
                 <div className="w-2 h-2" style={{ backgroundColor: BRAND_TEAL }}></div>
                 <span className="text-gray-500 text-sm uppercase tracking-wider ml-3">WHO WE ARE</span>
               </div>
-              <h2 className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (whyChooseUsVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
+              <h2 className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (whyChooseUsVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
                 why<br />Choose us
               </h2>
               <div className="w-16 h-0.5 bg-purple-600 mb-4 sm:mb-6"></div>
@@ -385,55 +404,55 @@ const About = () => {
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
                   <Users className="w-6 h-6 text-white" />
-                  </div>
+                </div>
                 <div>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                     We are consummate professionals and specialists in agricultural technology, with a proven track record in AI-driven farming solutions. Our expertise in connecting farmers with investors and providing digital tools backs up our reputation. We take care of the technical details, so farmers can focus on what they do best.
                   </p>
                 </div>
-                </div>
+              </div>
 
               {/* Reason 2 */}
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
                   <Target className="w-6 h-6 text-white" />
-                  </div>
+                </div>
                 <div>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                     When it comes to agricultural technology and farmer support, we recognize that you have a choice. Our goal is to be your platform of choice - through the right technology, with dedication, integrity, enthusiasm and time-tested processes that have helped over 200 farmers across Ghana.
                   </p>
                 </div>
-                </div>
+              </div>
 
               {/* Reason 3 */}
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
                   <Lightbulb className="w-6 h-6 text-white" />
-                  </div>
+                </div>
                 <div>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                     We have over the years through innovation, creativity, commitment and sheer hard work pioneered the era of AI-powered agricultural consultation and digital farming solutions with a strategic approach to support farmers' growth strategies across Africa.
                   </p>
+                </div>
               </div>
-            </div>
 
               {/* Reason 4 */}
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
                   <TrendingUp className="w-6 h-6 text-white" />
-                  </div>
+                </div>
                 <div>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                     We have grown and expanded our service offering to include comprehensive agricultural technology solutions since our founding. This makes us a one-stop platform for all farming digital needs, from AI consultation to investment matching.
                   </p>
                 </div>
-                </div>
+              </div>
 
               {/* Reason 5 */}
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
                   <Award className="w-6 h-6 text-white" />
-                  </div>
+                </div>
                 <div>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                     We love what we do, working with us puts you in good company. A passionate team with experience in both agriculture and technology, working with some of the most innovative farming communities and investors across Ghana.
@@ -449,14 +468,14 @@ const About = () => {
       <section ref={mobileAppRef} className={"py-10 sm:py-16 md:py-20 bg-white transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0")}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-14 md:mb-16">
-            <h2 className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
+            <h2 className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
               Mobile App Development
             </h2>
             <div className="w-16 h-0.5 bg-purple-600 mb-4 sm:mb-6 mx-auto"></div>
-            <h3 className={"text-lg sm:text-xl md:text-2xl font-semibold mb-6 text-gray-600 transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0") }>
+            <h3 className={"text-lg sm:text-xl md:text-2xl font-semibold mb-6 text-gray-600 transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0")}>
               Bringing AgriLync to Your Pocket
             </h3>
-            <p className={"text-gray-700 leading-relaxed text-sm sm:text-base max-w-4xl mx-auto transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0") }>
+            <p className={"text-gray-700 leading-relaxed text-sm sm:text-base max-w-4xl mx-auto transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0")}>
               Our mobile app is currently under development, designed to bring our AI-powered agricultural solutions directly to farmers' smartphones. This represents the next step in our mission to transform African agriculture through accessible, mobile-first technology.
             </p>
           </div>

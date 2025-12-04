@@ -172,14 +172,6 @@ const AgentDashboard: React.FC = () => {
         <Users className="mr-2 h-4 w-4" />
         Manage Farmers
       </Button>
-      <Button
-        className={`${darkMode ? 'bg-[#1db954] text-white hover:bg-[#159b46]' : 'bg-[#1db954] text-white hover:bg-[#17a447]'
-          }`}
-        onClick={() => navigate('/dashboard/agent/farm-monitoring')}
-      >
-        <Sprout className="mr-2 h-4 w-4" />
-        Log Field Visit
-      </Button>
     </div>
   );
 

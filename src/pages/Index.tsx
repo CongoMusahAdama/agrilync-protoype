@@ -383,14 +383,22 @@ const Index = () => {
               </h3>
               <p className="text-lg text-gray-600 mb-6">
                 Connect verified farmers with impact investors through our transparent
-                partnership platform. Secure funding, share profits, and build sustainable agricultural communities.
+                partnership platform. Choose from flexible partnership models that work for you.
               </p>
-              <ul className="space-y-2 text-gray-600 mb-6">
-                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>• Verified farmer profiles</li>
-                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>• Transparent profit sharing</li>
-                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}>• Extension agent monitoring</li>
-                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>• Impact tracking dashboard</li>
+
+              {/* Partnership Models */}
+              <ul className="space-y-3 text-gray-600 mb-6">
+                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
+                  <span className="font-semibold text-gray-800">• Profit Sharing</span> — Share profits after harvest with your investor partner
+                </li>
+                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
+                  <span className="font-semibold text-gray-800">• Buy-back Agreement</span> — Investor purchases your produce at agreed prices
+                </li>
+                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}>
+                  <span className="font-semibold text-gray-800">• Input Financing</span> — Receive loans for seeds, fertilizers, and equipment
+                </li>
               </ul>
+
               <Button
                 onClick={() => handleFeatureClick('/who-we-are')}
                 className="bg-purple-600 hover:bg-purple-700"
