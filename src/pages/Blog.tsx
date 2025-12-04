@@ -8,12 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  Users, 
-  ExternalLink, 
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  ExternalLink,
   Play,
   CheckCircle,
   Plus,
@@ -23,7 +23,12 @@ import {
   TrendingUp,
   Leaf,
   Zap,
-  ArrowUp
+  ArrowUp,
+  MessageCircle,
+  Video,
+  CheckCircle2,
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 
 // Brand colors
@@ -49,8 +54,7 @@ const Blog = () => {
   const [blogSectionRef, blogSectionVisible] = useScrollReveal();
   const [webinarSectionRef, webinarSectionVisible] = useScrollReveal();
   const [completedSectionRef, completedSectionVisible] = useScrollReveal();
-  const [registrationSectionRef, registrationSectionVisible] = useScrollReveal();
-  const [latestArticlesRef, latestArticlesVisible] = useScrollReveal();
+  const [consultationSectionRef, consultationSectionVisible] = useScrollReveal();
 
   // Handle scroll to top button visibility
   useEffect(() => {
@@ -77,7 +81,7 @@ const Blog = () => {
       if (element) {
         setTimeout(() => {
           element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 500); // Small delay to ensure page is loaded
+        }, 500);
       }
     }
   }, []);
@@ -220,7 +224,6 @@ const Blog = () => {
   ];
 
   const handleWebinarRegistration = (webinar: any) => {
-    // For the post-harvest losses webinar, redirect to the registration link
     if (webinar.id === 3) {
       window.open('https://is.gd/agrilyncwebinar', '_blank');
     } else {
@@ -248,327 +251,315 @@ const Blog = () => {
   const filteredPosts = blogPosts.filter(post => {
     const matchesCategory = activeTab === 'all' || post.category.toLowerCase().replace(' ', '-') === activeTab;
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+      post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
   const featuredPosts = blogPosts.filter(post => post.featured);
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white overflow-x-hidden">
       <Navbar />
-      
-      {/* Hero Section */}
-      <section className="relative py-16 sm:py-20 md:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 sm:mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
-            <h1 ref={heroHeadingRef} className={"text-3xl sm:text-4xl md:text-5xl font-extrabold mb-6 animate-fade-in-down transition-all duration-700 ease-in-out " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_MAGENTA }}>
+
+      {/* Modern Hero Section with White Background */}
+      <section className="relative py-20 md:py-28 overflow-hidden bg-white">
+        {/* Decorative Elements - subtle on white */}
+        <div className="absolute top-20 right-10 w-72 h-72 bg-[#7ede56]/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#921573]/5 rounded-full blur-3xl"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-12 animate-fade-in-up">
+
+            <h1
+              ref={heroHeadingRef}
+              className={`text-4xl sm:text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-[#921573] via-[#002F37] to-[#7ede56] bg-clip-text text-transparent transition-all duration-700 ${heroHeadingVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+            >
               AgriLync Blog & Events
             </h1>
-            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto animate-fade-in-up delay-200 leading-relaxed">
-              Stay updated with the latest insights in agricultural technology, farming best practices, and upcoming events. Discover innovative solutions that are transforming African agriculture.
-            </p>
-          </div>
 
-          {/* Search and Filter Bar */}
-          <div className="max-w-4xl mx-auto animate-fade-in-up delay-300">
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8">
+              Stay updated with the latest insights in agricultural technology, farming best practices, and upcoming events.
+            </p>
+
+            {/* Modern Search Bar */}
+            <div className="max-w-2xl mx-auto">
+              <div className="relative group">
+                <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 group-focus-within:text-[#7ede56] transition-colors" />
                 <Input
                   type="text"
                   placeholder="Search articles, topics, or keywords..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-3 border-2 border-gray-200 focus:border-green-500 rounded-full"
+                  className="pl-14 pr-6 py-6 text-lg border-2 border-gray-200 focus:border-[#7ede56] rounded-2xl shadow-lg hover:shadow-xl transition-all bg-white/80 backdrop-blur-sm"
                 />
               </div>
-              <Button 
-                variant="outline" 
-                className="px-6 py-3 border-2 border-green-500 text-green-600 hover:bg-green-500 hover:text-white rounded-full transition-all duration-300"
-              >
-                <Filter className="mr-2 h-4 w-4" />
-                Filter
-              </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Featured Articles Section */}
-      <section className="py-16 sm:py-20 bg-white">
+      {/* Category Pills - Modern Design */}
+      <section className="py-8 sticky top-16 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 sm:mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
-            <h2 ref={blogSectionRef} className={"text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 transition-all duration-700 ease-in-out " + (blogSectionVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {categories.map((category) => {
+              const Icon = category.icon;
+              const isActive = activeTab === category.id;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => setActiveTab(category.id)}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${isActive
+                    ? 'bg-gradient-to-r from-[#7ede56] to-[#66cc44] text-white shadow-lg scale-105'
+                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200 hover:border-[#7ede56]'
+                    }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{category.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Articles - Modern Glass Cards */}
+      <section className="py-16 sm:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2
+              ref={blogSectionRef}
+              className={`text-3xl sm:text-4xl font-bold mb-4 text-[#002F37] transition-all duration-700 ${blogSectionVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+            >
               Featured Articles
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              Our most popular and insightful articles on agricultural innovation and technology.
-            </p>
+            <div className="w-24 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full mx-auto"></div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {featuredPosts.slice(0, 2).map((post, index) => (
-              <div key={post.id} className="group cursor-pointer animate-fade-in-up" style={{ animationDelay: `${index * 200}ms` }}>
-                <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500">
-                  <img 
-                    src={post.image} 
-                    alt={post.title}
-                    className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <Badge className="mb-3 bg-green-500 text-white">
-                      {post.category}
-                    </Badge>
-                    <h3 className="text-xl sm:text-2xl font-bold mb-2 group-hover:text-green-300 transition-colors duration-300">
-                      {post.title}
-                    </h3>
-                    <p className="text-gray-200 mb-4 line-clamp-2">
-                      {post.excerpt}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4 text-sm text-gray-300">
-                        <span>{post.author}</span>
-                        <span>•</span>
-                        <span>{formatDate(post.date)}</span>
-                        <span>•</span>
-                        <span>{post.readTime}</span>
+              <a
+                key={post.id}
+                href={post.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group cursor-pointer animate-fade-in-up"
+                style={{ animationDelay: `${index * 150}ms` }}
+              >
+                <div className="relative overflow-hidden rounded-3xl bg-white shadow-xl hover:shadow-2xl transition-all duration-500 border border-gray-100">
+                  <div className="relative h-80 overflow-hidden">
+                    <img
+                      src={post.image}
+                      alt={post.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+
+                    {/* Floating Tags */}
+                    <div className="absolute top-6 left-6 flex flex-wrap gap-2">
+                      <Badge className="bg-white/90 backdrop-blur-sm text-[#002F37] hover:bg-white">
+                        {post.category}
+                      </Badge>
+                    </div>
+
+                    {/* Content Overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                      <h3 className="text-2xl font-bold mb-3 group-hover:text-[#7ede56] transition-colors">
+                        {post.title}
+                      </h3>
+                      <p className="text-gray-200 mb-4 line-clamp-2">
+                        {post.excerpt}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 text-sm text-gray-300">
+                          <span>{post.author}</span>
+                          <span>•</span>
+                          <span>{post.readTime}</span>
+                        </div>
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                       </div>
-                      <ExternalLink className="h-5 w-5 text-green-400 group-hover:text-green-300 transition-colors duration-300" />
                     </div>
                   </div>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Blog Posts with Categories */}
-      <section className="py-16 sm:py-20 bg-white">
+      {/* Latest Articles - Modern Grid */}
+      <section className="py-16 sm:py-20 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 ref={latestArticlesRef} className={"text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (latestArticlesVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-[#002F37]">
               Latest Articles
             </h2>
-            <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3 mx-auto"></div>
-            
-            {/* Category Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-4xl mx-auto">
-              <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 w-full bg-white shadow-lg rounded-full p-1">
-                {categories.map((category) => {
-                  const Icon = category.icon;
-                  return (
-                    <TabsTrigger 
-                      key={category.id} 
-                      value={category.id}
-                      className="flex items-center space-x-2 px-4 py-2 rounded-full data-[state=active]:bg-green-500 data-[state=active]:text-white transition-all duration-300"
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span className="hidden sm:inline">{category.name}</span>
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
-
-              <TabsContent value={activeTab} className="mt-8">
-                {/* Search Results Counter */}
-                {searchTerm && (
-                  <div className="text-center mb-6 animate-fade-in-up">
-                    <p className="text-gray-600">
-                      {filteredPosts.length === 1 
-                        ? `Found 1 article for "${searchTerm}"`
-                        : `Found ${filteredPosts.length} articles for "${searchTerm}"`
-                      }
-                    </p>
-                  </div>
-                )}
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-                  {filteredPosts.map((post, index) => (
-                    <article key={post.id} className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden group animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
-                      <div className="relative overflow-hidden">
-                        <img 
-                          src={post.image} 
-                          alt={post.title}
-                          className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                        <div className="absolute top-4 left-4">
-                          <Badge className="bg-green-500 text-white">
-                            {post.category}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="p-6">
-                        <div className="flex items-center space-x-2 mb-3">
-                          {post.tags.slice(0, 2).map((tag, tagIndex) => (
-                            <Badge key={tagIndex} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                        <h3 className="text-lg font-bold mb-3 group-hover:text-green-600 transition-colors duration-300" style={{ color: BRAND_MAGENTA }}>
-                          {post.title}
-                        </h3>
-                        <p className="text-gray-600 mb-4 text-sm leading-relaxed line-clamp-3">
-                          {post.excerpt}
-                        </p>
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center space-x-4 text-xs text-gray-500">
-                            <span>{post.author}</span>
-                            <span>•</span>
-                            <span>{formatDate(post.date)}</span>
-                            <span>•</span>
-                            <span>{post.readTime}</span>
-                          </div>
-                        </div>
-                        <a 
-                          href={post.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center px-4 py-2 bg-green-600 text-white font-semibold rounded-full hover:bg-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm"
-                        >
-                          Read Article
-                          <ExternalLink className="ml-2 h-4 w-4" />
-                        </a>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-                
-                {filteredPosts.length === 0 && (
-                  <div className="text-center py-12 animate-fade-in-up">
-                    <div className="text-gray-400 mb-4">
-                      <Search className="h-16 w-16 mx-auto" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                      {searchTerm ? `No articles found for "${searchTerm}"` : "No articles found"}
-                    </h3>
-                    <p className="text-gray-500 mb-4">
-                      {searchTerm 
-                        ? `We couldn't find any articles matching "${searchTerm}". Try different keywords or check your spelling.`
-                        : "Try adjusting your search terms or category filter."
-                      }
-                    </p>
-                    {searchTerm && (
-                      <div className="flex flex-wrap gap-2 justify-center mb-4">
-                        <span className="text-sm text-gray-500">Suggestions:</span>
-                        {['agriculture', 'technology', 'farming', 'AI', 'finance'].map((suggestion) => (
-                          <button
-                            key={suggestion}
-                            onClick={() => setSearchTerm(suggestion)}
-                            className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors duration-200"
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    <Button 
-                      onClick={() => {
-                        setSearchTerm('');
-                        setActiveTab('all');
-                      }}
-                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full transition-all duration-300"
-                    >
-                      Clear Search
-                    </Button>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+            <div className="w-24 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full mx-auto"></div>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredPosts.map((post, index) => (
+              <article
+                key={post.id}
+                className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-[#7ede56]/30 animate-fade-in-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="relative overflow-hidden h-56">
+                  <img
+                    src={post.image}
+                    alt={post.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute top-4 left-4">
+                    <Badge className="bg-gradient-to-r from-[#7ede56] to-[#66cc44] text-white border-0">
+                      {post.category}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {post.tags.slice(0, 2).map((tag, tagIndex) => (
+                      <Badge key={tagIndex} variant="outline" className="text-xs border-[#921573]/20 text-[#921573]">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  <h3 className="text-xl font-bold mb-3 text-[#002F37] group-hover:text-[#921573] transition-colors leading-tight">
+                    {post.title}
+                  </h3>
+
+                  <p className="text-gray-600 mb-4 text-sm leading-relaxed line-clamp-3">
+                    {post.excerpt}
+                  </p>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <Clock className="w-3 h-3" />
+                      <span>{post.readTime}</span>
+                    </div>
+                    <a
+                      href={post.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-[#7ede56] hover:text-[#66cc44] font-semibold text-sm group-hover:gap-3 transition-all"
+                    >
+                      Read More
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {filteredPosts.length === 0 && (
+            <div className="text-center py-16">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <Search className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                No articles found
+              </h3>
+              <p className="text-gray-500 mb-6">
+                Try adjusting your search or filters
+              </p>
+              <Button
+                onClick={() => {
+                  setSearchTerm('');
+                  setActiveTab('all');
+                }}
+                className="bg-gradient-to-r from-[#7ede56] to-[#66cc44] hover:from-[#66cc44] hover:to-[#7ede56] text-white rounded-full px-8"
+              >
+                Clear Filters
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Upcoming Webinars Section */}
-      <section id="upcoming-webinars" className="py-16 sm:py-20 bg-white">
+      {/* Webinars Section - Keep existing structure but update styling */}
+      <section id="upcoming-webinars" className="py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 sm:mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
-            <h2 ref={webinarSectionRef} className={"text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (webinarSectionVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
+          <div className="text-center mb-12">
+            <h2
+              ref={webinarSectionRef}
+              className={`text-3xl sm:text-4xl font-bold mb-4 text-[#002F37] transition-all duration-700 ${webinarSectionVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+            >
               Upcoming Webinars & Events
             </h2>
-            <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3 mx-auto"></div>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              Join our expert-led webinars and events to learn about the latest agricultural innovations and best practices.
+            <div className="w-24 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Join our expert-led webinars and events to learn about the latest agricultural innovations.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {webinars.filter(w => w.status === 'upcoming').map((webinar, index) => (
-              <Card key={webinar.id} className="group hover:shadow-2xl transition-all duration-500 animate-fade-in-up overflow-hidden" style={{ animationDelay: `${index * 200}ms` }}>
-                <div className="relative overflow-hidden">
-                  <img 
-                    src={webinar.image} 
+              <Card key={webinar.id} className="group hover:shadow-2xl transition-all duration-500 overflow-hidden border-2 hover:border-[#7ede56]/30 rounded-2xl">
+                <div className="relative overflow-hidden h-52">
+                  <img
+                    src={webinar.image}
                     alt={webinar.title}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                    style={{ objectPosition: webinar.id === 3 ? 'center 25%' : 'center' }}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                   <div className="absolute top-4 right-4">
-                    <Badge className="bg-green-500 text-white">
+                    <Badge className="bg-gradient-to-r from-[#7ede56] to-[#66cc44] text-white border-0">
                       {webinar.registered}/{webinar.spots} spots
                     </Badge>
                   </div>
-                  
                 </div>
+
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold group-hover:text-green-600 transition-colors duration-300" style={{ color: BRAND_MAGENTA }}>
+                  <CardTitle className="text-xl font-bold group-hover:text-[#921573] transition-colors">
                     {webinar.title}
                   </CardTitle>
-                  <div className="space-y-3 text-sm text-gray-600">
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-4 w-4 text-green-500" />
+                  <div className="space-y-2 text-sm text-gray-600 mt-4">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-[#7ede56]" />
                       <span>{formatDate(webinar.date)}</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-4 w-4 text-green-500" />
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-[#7ede56]" />
                       <span>{webinar.time}</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-4 w-4 text-green-500" />
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-[#7ede56]" />
                       <span>{webinar.location}</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Users className="h-4 w-4 text-green-500" />
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-[#7ede56]" />
                       <span>Speaker: {webinar.speaker}</span>
                     </div>
                   </div>
                 </CardHeader>
+
                 <CardContent>
                   <p className="text-gray-600 mb-6 text-sm leading-relaxed">
                     {webinar.description}
                   </p>
-                  <Button 
+                  <Button
                     onClick={() => handleWebinarRegistration(webinar)}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-full transition-all duration-300 transform hover:scale-105"
+                    className="w-full bg-gradient-to-r from-[#7ede56] to-[#66cc44] hover:from-[#66cc44] hover:to-[#7ede56] text-white rounded-full transition-all duration-300 transform hover:scale-105"
                     disabled={webinar.registered >= webinar.spots}
                   >
                     {webinar.registered >= webinar.spots ? 'Fully Booked' : 'Register Now'}
                   </Button>
-                  
-                                     {/* QR Code section for direct registration */}
-                   {webinar.id === 3 && (
-                     <div className="mt-4 text-center">
-                       <div className="inline-block bg-white rounded-lg p-4 shadow-lg border-2 border-gray-200">
-                         <div className="mb-3">
-                           <img 
-                             src="/lovable-uploads/webinar-qr.jpg" 
-                             alt="QR Code for Registration"
-                             className="w-28 h-28 rounded-lg"
-                             style={{ minWidth: '112px', minHeight: '112px' }}
-                             onError={(e) => {
-                               console.error('QR code image failed to load');
-                               e.currentTarget.style.display = 'none';
-                             }}
-                           />
-                         </div>
-                         <p className="text-sm text-gray-700 font-semibold mb-1">Scan to Register</p>
-                         <p className="text-xs text-gray-500">Direct Registration Link</p>
-                       </div>
-                     </div>
-                   )}
+
+                  {webinar.id === 3 && (
+                    <div className="mt-4 text-center">
+                      <div className="inline-block bg-white rounded-xl p-4 shadow-lg border-2 border-gray-100">
+                        <img
+                          src="/lovable-uploads/webinar-qr.jpg"
+                          alt="QR Code"
+                          className="w-28 h-28 rounded-lg mb-2"
+                        />
+                        <p className="text-sm font-semibold text-gray-700">Scan to Register</p>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -576,60 +567,65 @@ const Blog = () => {
         </div>
       </section>
 
-      {/* Completed Webinars Section */}
+      {/* Completed Webinars */}
       <section className="py-16 sm:py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 sm:mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
-            <h2 ref={completedSectionRef} className={"text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (completedSectionVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
+          <div className="text-center mb-12">
+            <h2
+              ref={completedSectionRef}
+              className={`text-3xl sm:text-4xl font-bold mb-4 text-[#002F37] transition-all duration-700 ${completedSectionVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+            >
               Completed Events
             </h2>
-            <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3 mx-auto"></div>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              Watch recordings of our previous webinars and learn from our expert sessions.
+            <div className="w-24 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Watch recordings of our previous webinars and learn from expert sessions.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {webinars.filter(w => w.status === 'completed').map((webinar, index) => (
-              <Card key={webinar.id} className="group hover:shadow-2xl transition-all duration-500 animate-fade-in-up overflow-hidden" style={{ animationDelay: `${index * 200}ms` }}>
-                <div className="relative overflow-hidden">
-                  <img 
-                    src={webinar.image} 
+              <Card key={webinar.id} className="group hover:shadow-2xl transition-all duration-500 overflow-hidden border-2 hover:border-[#921573]/30 rounded-2xl">
+                <div className="relative overflow-hidden h-64">
+                  <img
+                    src={webinar.image}
                     alt={webinar.title}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <Play className="h-16 w-16 text-white" />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <Play className="h-20 w-20 text-white" />
                   </div>
                   <div className="absolute top-4 right-4">
-                    <Badge className="bg-green-600 text-white flex items-center gap-2">
+                    <Badge className="bg-emerald-600 text-white flex items-center gap-2">
                       <CheckCircle className="h-4 w-4" />
                       Completed
                     </Badge>
                   </div>
                 </div>
+
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold group-hover:text-green-600 transition-colors duration-300" style={{ color: BRAND_MAGENTA }}>
+                  <CardTitle className="text-xl font-bold group-hover:text-[#921573] transition-colors">
                     {webinar.title}
                   </CardTitle>
-                  <div className="space-y-3 text-sm text-gray-600">
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-4 w-4 text-green-500" />
+                  <div className="space-y-2 text-sm text-gray-600 mt-4">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-[#7ede56]" />
                       <span>{formatDate(webinar.date)}</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Users className="h-4 w-4 text-green-500" />
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-[#7ede56]" />
                       <span>Speaker: {webinar.speaker}</span>
                     </div>
                   </div>
                 </CardHeader>
+
                 <CardContent>
                   <p className="text-gray-600 mb-6 text-sm leading-relaxed">
                     {webinar.description}
                   </p>
-                  <Button 
-                    variant="outline" 
-                    className="w-full border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white py-3 rounded-full transition-all duration-300 transform hover:scale-105"
+                  <Button
+                    variant="outline"
+                    className="w-full border-2 border-[#921573] text-[#921573] hover:bg-[#921573] hover:text-white rounded-full transition-all duration-300"
                     onClick={() => webinar.recordingLink && window.open(webinar.recordingLink, '_blank')}
                   >
                     <Play className="mr-2 h-4 w-4" />
@@ -639,6 +635,39 @@ const Blog = () => {
               </Card>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Consultation CTA */}
+      <section ref={consultationSectionRef} className={`py-20 bg-gradient-to-br from-[#002F37] to-[#004555] relative overflow-hidden transition-all duration-700 ${consultationSectionVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center text-white">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6">
+            <Sparkles className="w-4 h-4" />
+            <span className="text-sm font-semibold">Book a Free Session</span>
+          </div>
+
+          <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+            Ready to Transform Your Farm?
+          </h2>
+          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+            Get expert advice and answers to all your farming questions from our agricultural specialists.
+          </p>
+
+          <Button
+            onClick={() => window.open('https://calendly.com/agrilync/consultation', '_blank')}
+            className="bg-gradient-to-r from-[#7ede56] to-[#66cc44] hover:from-[#66cc44] hover:to-[#7ede56] text-[#002F37] font-bold py-6 px-10 rounded-full text-lg shadow-2xl hover:shadow-[#7ede56]/50 transition-all duration-300 transform hover:scale-105"
+            size="lg"
+          >
+            <Calendar className="mr-2 h-6 w-6" />
+            Book Free Consultation
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+
+          <p className="text-sm text-gray-400 mt-6">
+            Free 30-minute session • No credit card required
+          </p>
         </div>
       </section>
 
@@ -655,7 +684,7 @@ const Blog = () => {
                 type="text"
                 required
                 value={registrationForm.name}
-                onChange={(e) => setRegistrationForm({...registrationForm, name: e.target.value})}
+                onChange={(e) => setRegistrationForm({ ...registrationForm, name: e.target.value })}
                 placeholder="Enter your full name"
               />
             </div>
@@ -665,7 +694,7 @@ const Blog = () => {
                 type="email"
                 required
                 value={registrationForm.email}
-                onChange={(e) => setRegistrationForm({...registrationForm, email: e.target.value})}
+                onChange={(e) => setRegistrationForm({ ...registrationForm, email: e.target.value })}
                 placeholder="Enter your email"
               />
             </div>
@@ -674,7 +703,7 @@ const Blog = () => {
               <Input
                 type="tel"
                 value={registrationForm.phone}
-                onChange={(e) => setRegistrationForm({...registrationForm, phone: e.target.value})}
+                onChange={(e) => setRegistrationForm({ ...registrationForm, phone: e.target.value })}
                 placeholder="Enter your phone number"
               />
             </div>
@@ -683,12 +712,12 @@ const Blog = () => {
               <Input
                 type="text"
                 value={registrationForm.organization}
-                onChange={(e) => setRegistrationForm({...registrationForm, organization: e.target.value})}
+                onChange={(e) => setRegistrationForm({ ...registrationForm, organization: e.target.value })}
                 placeholder="Enter your organization"
               />
             </div>
             <DialogFooter>
-              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">
+              <Button type="submit" className="w-full bg-gradient-to-r from-[#7ede56] to-[#66cc44] hover:from-[#66cc44] hover:to-[#7ede56] text-white">
                 Register for Event
               </Button>
             </DialogFooter>
@@ -696,15 +725,14 @@ const Blog = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Scroll to Top Button - Mobile Optimized */}
+      {/* Scroll to Top Button */}
       {showScrollTop && (
         <Button
           onClick={scrollToTop}
-          className="fixed bottom-6 right-4 z-50 bg-green-600 hover:bg-green-700 text-white p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 md:bottom-8 md:right-6"
+          className="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-[#7ede56] to-[#66cc44] hover:from-[#66cc44] hover:to-[#7ede56] text-white p-4 rounded-full shadow-2xl hover:shadow-[#7ede56]/50 transition-all duration-300 transform hover:scale-110"
           aria-label="Scroll to top"
-          size="lg"
         >
-          <ArrowUp className="h-5 w-5 md:h-6 md:w-6" />
+          <ArrowUp className="h-6 w-6" />
         </Button>
       )}
 
@@ -713,4 +741,4 @@ const Blog = () => {
   );
 };
 
-export default Blog; 
+export default Blog;

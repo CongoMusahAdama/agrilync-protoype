@@ -34,26 +34,26 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Login is disabled - under development
+    // Show under development message
+    alert('🌾 Thank you for your interest in AgriLync!\n\nOur authentication system and user dashboards are currently under development and will be available very soon.\n\nStay tuned for updates!');
     return;
   };
 
   return (
     <div className="min-h-screen bg-white">
       <Navbar variant="light" />
-      
+
       <div className="flex min-h-screen">
         {/* Left Side - Image Grid */}
         <div className="hidden lg:flex lg:flex-1 bg-gray-50 p-6">
           <div className="w-full grid grid-cols-3 gap-3 h-full">
             {/* Column 1 */}
             <div className="space-y-4">
-              <div 
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${
-                  imagesLoaded 
-                    ? 'opacity-100 translate-y-0' 
+              <div
+                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${imagesLoaded
+                    ? 'opacity-100 translate-y-0'
                     : 'opacity-0 translate-y-8'
-                }`}
+                  }`}
                 style={{ transitionDelay: '0.1s' }}
               >
                 <img
@@ -63,13 +63,12 @@ const Login = () => {
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-20"></div>
               </div>
-              
-              <div 
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${
-                  imagesLoaded 
-                    ? 'opacity-100 translate-y-0' 
+
+              <div
+                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${imagesLoaded
+                    ? 'opacity-100 translate-y-0'
                     : 'opacity-0 translate-y-8'
-                }`}
+                  }`}
                 style={{ transitionDelay: '0.3s' }}
               >
                 <img
@@ -80,15 +79,14 @@ const Login = () => {
                 <div className="absolute inset-0 bg-black bg-opacity-20"></div>
               </div>
             </div>
-            
+
             {/* Column 2 */}
             <div className="space-y-4">
-              <div 
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${
-                  imagesLoaded 
-                    ? 'opacity-100 translate-y-0' 
+              <div
+                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${imagesLoaded
+                    ? 'opacity-100 translate-y-0'
                     : 'opacity-0 translate-y-8'
-                }`}
+                  }`}
                 style={{ transitionDelay: '0.2s' }}
               >
                 <img
@@ -98,13 +96,12 @@ const Login = () => {
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-20"></div>
               </div>
-              
-              <div 
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${
-                  imagesLoaded 
-                    ? 'opacity-100 translate-y-0' 
+
+              <div
+                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${imagesLoaded
+                    ? 'opacity-100 translate-y-0'
                     : 'opacity-0 translate-y-8'
-                }`}
+                  }`}
                 style={{ transitionDelay: '0.4s' }}
               >
                 <img
@@ -115,15 +112,14 @@ const Login = () => {
                 <div className="absolute inset-0 bg-black bg-opacity-20"></div>
               </div>
             </div>
-            
+
             {/* Column 3 */}
             <div className="space-y-4">
-              <div 
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${
-                  imagesLoaded 
-                    ? 'opacity-100 translate-y-0' 
+              <div
+                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${imagesLoaded
+                    ? 'opacity-100 translate-y-0'
                     : 'opacity-0 translate-y-8'
-                }`}
+                  }`}
                 style={{ transitionDelay: '0.3s' }}
               >
                 <img
@@ -133,13 +129,12 @@ const Login = () => {
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-20"></div>
               </div>
-              
-              <div 
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${
-                  imagesLoaded 
-                    ? 'opacity-100 translate-y-0' 
+
+              <div
+                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${imagesLoaded
+                    ? 'opacity-100 translate-y-0'
                     : 'opacity-0 translate-y-8'
-                }`}
+                  }`}
                 style={{ transitionDelay: '0.5s' }}
               >
                 <img
@@ -186,7 +181,7 @@ const Login = () => {
                     <div className="flex-1">
                       <h3 className="font-semibold text-yellow-800 mb-1">Under Development</h3>
                       <p className="text-sm text-yellow-700">
-                        Our login system is currently under development. We're working hard to bring you the best experience. 
+                        Our login system is currently under development. We're working hard to bring you the best experience.
                         In the meantime, join our WhatsApp community to stay updated and connect with fellow farmers!
                       </p>
                     </div>
@@ -308,12 +303,11 @@ const Login = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-3 gap-3">
             {/* Mobile Image Grid - 3 columns */}
-            <div 
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${
-                imagesLoaded 
-                  ? 'opacity-100 translate-y-0' 
+            <div
+              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                  ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-8'
-              }`}
+                }`}
               style={{ transitionDelay: '0.1s' }}
             >
               <img
@@ -323,13 +317,12 @@ const Login = () => {
               />
               <div className="absolute inset-0 bg-black bg-opacity-20"></div>
             </div>
-            
-            <div 
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${
-                imagesLoaded 
-                  ? 'opacity-100 translate-y-0' 
+
+            <div
+              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                  ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-8'
-              }`}
+                }`}
               style={{ transitionDelay: '0.2s' }}
             >
               <img
@@ -339,13 +332,12 @@ const Login = () => {
               />
               <div className="absolute inset-0 bg-black bg-opacity-20"></div>
             </div>
-            
-            <div 
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${
-                imagesLoaded 
-                  ? 'opacity-100 translate-y-0' 
+
+            <div
+              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                  ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-8'
-              }`}
+                }`}
               style={{ transitionDelay: '0.3s' }}
             >
               <img
@@ -355,13 +347,12 @@ const Login = () => {
               />
               <div className="absolute inset-0 bg-black bg-opacity-20"></div>
             </div>
-            
-            <div 
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${
-                imagesLoaded 
-                  ? 'opacity-100 translate-y-0' 
+
+            <div
+              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                  ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-8'
-              }`}
+                }`}
               style={{ transitionDelay: '0.4s' }}
             >
               <img
@@ -371,13 +362,12 @@ const Login = () => {
               />
               <div className="absolute inset-0 bg-black bg-opacity-20"></div>
             </div>
-            
-            <div 
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${
-                imagesLoaded 
-                  ? 'opacity-100 translate-y-0' 
+
+            <div
+              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                  ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-8'
-              }`}
+                }`}
               style={{ transitionDelay: '0.5s' }}
             >
               <img
@@ -387,13 +377,12 @@ const Login = () => {
               />
               <div className="absolute inset-0 bg-black bg-opacity-20"></div>
             </div>
-            
-            <div 
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${
-                imagesLoaded 
-                  ? 'opacity-100 translate-y-0' 
+
+            <div
+              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                  ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-8'
-              }`}
+                }`}
               style={{ transitionDelay: '0.6s' }}
             >
               <img

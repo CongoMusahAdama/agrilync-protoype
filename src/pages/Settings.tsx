@@ -33,7 +33,13 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  Wallet,
+  Camera,
+  Image as ImageIcon
 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
+import FarmMap from '@/components/FarmMap';
 
 // Region to Districts/Communities mapping
 const regionDistricts: Record<string, string[]> = {
@@ -313,6 +319,17 @@ const regionLanguages: Record<string, string[]> = {
   ]
 };
 
+const regionCoordinates: Record<string, [number, number]> = {
+  ashanti: [6.7470, -1.5209],
+  eastern: [6.4468, -0.3424],
+  northern: [9.5439, -0.9057],
+  western: [5.3216, -2.1887],
+  volta: [6.5781, 0.4502],
+  central: [5.5571, -1.3489],
+  bono: [7.5766, -2.3392],
+  other: [7.9465, -1.0232]
+};
+
 const Settings = () => {
   const { userType } = useParams();
   const navigate = useNavigate();
@@ -323,6 +340,9 @@ const Settings = () => {
   const [selectedFarmType, setSelectedFarmType] = useState<string>('');
   const [selectedCropCategory, setSelectedCropCategory] = useState<string>('');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('');
+  const [latitude, setLatitude] = useState<number>(0);
+  const [longitude, setLongitude] = useState<number>(0);
+  const [farmSize, setFarmSize] = useState<number>(0);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [activeProfileSection, setActiveProfileSection] = useState<string>('personal');
   const [completedSections, setCompletedSections] = useState<string[]>([]);
@@ -405,13 +425,12 @@ const Settings = () => {
           return (
             <div
               key={item.key}
-              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                activeSidebarItem === item.key
-                  ? 'bg-[#7ede56] text-[#002f37]'
-                  : darkMode
+              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === item.key
+                ? 'bg-[#7ede56] text-[#002f37]'
+                : darkMode
                   ? 'text-[#002f37] hover:bg-gray-100'
                   : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-              }`}
+                }`}
               onClick={() => handleSidebarNavigation(item.key)}
             >
               <Icon className="h-5 w-5 flex-shrink-0" />
@@ -440,6 +459,7 @@ const Settings = () => {
         { id: 'identification', label: 'Valid Identification', icon: CreditCard, color: '#ffa500' }, // Orange
         { id: 'location', label: 'Farm Location', icon: MapPin, color: '#ff6347' }, // Red/Coral
         { id: 'farm', label: 'Farm Details', icon: Leaf, color: '#921573' }, // Deep Magenta
+        { id: 'investment', label: 'Investment & Support', icon: Wallet, color: '#ffa500' }, // Orange
         { id: 'additional', label: 'Additional Information', icon: Info, color: '#7ede56' }, // Green
       ];
 
@@ -476,7 +496,7 @@ const Settings = () => {
                 <Edit className={`h-4 w-4 mr-2 ${darkMode ? 'text-white' : 'text-gray-700'}`} />
                 <span className={darkMode ? 'text-white' : 'text-gray-700'}>{isEditing ? 'Cancel' : 'Edit'}</span>
               </Button>
-              <Button 
+              <Button
                 type="button"
                 size="sm"
                 onClick={() => {
@@ -484,482 +504,721 @@ const Settings = () => {
                   setIsEditing(false);
                 }}
                 disabled={!isEditing}
-                className={`h-9 px-4 font-semibold ${
-                  isEditing 
-                    ? 'bg-[#7ede56] hover:bg-[#6bc947] text-white' 
-                    : darkMode
+                className={`h-9 px-4 font-semibold ${isEditing
+                  ? 'bg-[#7ede56] hover:bg-[#6bc947] text-white'
+                  : darkMode
                     ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                  }`}
               >
                 UPDATE PROFILE
               </Button>
             </div>
           </div>
 
-          {/* Profile Roadmap */}
-          <div className={`rounded-lg p-6 ${darkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
-            {/* Roadmap Timeline */}
-            <div className="relative mb-8">
-              {/* Progress Line */}
-              <div className={`absolute top-6 left-0 right-0 h-1 rounded-full ${darkMode ? 'bg-gray-800' : 'bg-gray-200'}`}>
-                <div 
-                  className="h-1 rounded-full transition-all duration-500"
-                  style={{ 
-                    width: `${getProgressPercentage()}%`,
-                    background: `linear-gradient(to right, ${profileSections.map(s => s.color).join(', ')})`
-                  }}
-                ></div>
-              </div>
+          {/* Main Content Grid - Form on Left, Steps on Right */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Side - Form Content (2/3 width) */}
+            <div className={`lg:col-span-2 rounded-lg p-6 ${darkMode ? 'bg-[#002f37]' : 'bg-white'} shadow-lg`}>
+              {/* Active Section Title */}
+              <h3 className={`text-xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                {profileSections.find(s => s.id === activeProfileSection)?.label}
+              </h3>
 
-              {/* Sections */}
-              <div className="relative flex justify-between items-start">
-                {profileSections.map((section, index) => {
-                  const currentIndex = getSectionIndex(activeProfileSection);
-                  const isCompleted = isSectionCompleted(section.id);
-                  const isCurrent = isSectionActive(section.id);
-                  const isUpcoming = index > currentIndex;
-                  const Icon = section.icon;
-                  const sectionColor = section.color;
+              {/* Active Section Fields */}
+              <div>
+                {/* Personal Details Section */}
+                {activeProfileSection === 'personal' && (
+                  <div className="space-y-6">
+                    <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <UserCheck className="h-5 w-5" style={{ color: '#7ede56' }} />
+                      Personal Details
+                    </h3>
 
-                  return (
-                    <div key={section.id} className="flex flex-col items-center flex-1">
-                      {/* Section Circle */}
-                      <button
-                        onClick={() => setActiveProfileSection(section.id)}
-                        className={`relative z-10 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                          isCompleted 
-                            ? `shadow-lg` 
-                            : isCurrent 
-                            ? `shadow-lg` 
-                            : darkMode
-                            ? 'bg-gray-800 border-2 border-gray-700'
-                            : 'bg-gray-200 border-2 border-gray-300'
-                        }`}
-                        style={{
-                          backgroundColor: isCompleted || isCurrent ? sectionColor : undefined,
-                          boxShadow: isCompleted || isCurrent ? `0 10px 15px -3px ${sectionColor}50, 0 4px 6px -2px ${sectionColor}50, 0 0 0 4px ${sectionColor}30` : undefined,
-                        }}
-                      >
-                        {isUpcoming ? (
-                          <div className={`w-4 h-4 rounded-full ${darkMode ? 'bg-gray-600' : 'bg-gray-400'}`}></div>
-                        ) : isCompleted ? (
-                          <CheckCircle className="h-6 w-6 text-white" />
-                        ) : (
-                          <Icon className={`h-6 w-6 ${isCurrent ? 'text-white' : darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
-                        )}
-                      </button>
-                      
-                      {/* Section Label */}
-                      <div className="mt-3 text-center">
-                        <p className={`text-sm font-bold ${
-                          isCurrent ? '' : isCompleted ? (darkMode ? 'text-gray-300' : 'text-gray-700') : (darkMode ? 'text-gray-500' : 'text-gray-400')
-                        }`}
-                        style={{
-                          color: isCurrent ? sectionColor : undefined
-                        }}>
-                          {section.label}
-                        </p>
-                        {isCurrent && (
-                          <p className="text-xs font-medium mt-1" style={{ color: sectionColor }}>Current</p>
-                        )}
+                    {/* Profile Picture */}
+                    <div className="mb-6">
+                      <Label className={`text-sm font-semibold mb-3 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        Profile Picture <span className="text-red-500">*</span>
+                      </Label>
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                          <div className={`w-24 h-24 rounded-full flex items-center justify-center border-2 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-300'}`}>
+                            <User className={`h-12 w-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            id="profile-picture"
+                          />
+                          <label
+                            htmlFor="profile-picture"
+                            className={`inline-block px-4 py-2 rounded-md text-sm font-medium cursor-pointer transition-colors ${darkMode
+                              ? 'bg-gray-800 text-white hover:bg-gray-700'
+                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              }`}
+                          >
+                            Choose File
+                          </label>
+                          <span className={`ml-3 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            No file chosen
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  );
-                })}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="fullName" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Full Name <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="fullName"
+                          placeholder="Enter your full name"
+                          className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Phone Number <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="+233 XX XXX XXXX"
+                          className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="email" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Email Address <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="Enter your email address"
+                          className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="gender" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Gender <span className="text-red-500">*</span>
+                        </Label>
+                        <Select>
+                          <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
+                            <SelectValue placeholder="Select gender" />
+                          </SelectTrigger>
+                          <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
+                            <SelectItem value="male" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Male</SelectItem>
+                            <SelectItem value="female" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Female</SelectItem>
+                            <SelectItem value="other" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="dob" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Date of Birth <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="dob"
+                          type="date"
+                          className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Valid Identification Document Section */}
+                {activeProfileSection === 'identification' && (
+                  <div className="space-y-6">
+                    <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <CreditCard className="h-5 w-5" style={{ color: '#ffa500' }} />
+                      Valid Identification Document
+                    </h3>
+                    <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Please upload a valid identity card. This can be your Ghana Card or any other valid identification document.
+                    </p>
+
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="idType" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          ID Type <span className="text-red-500">*</span>
+                        </Label>
+                        <Select>
+                          <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
+                            <SelectValue placeholder="Select ID type" />
+                          </SelectTrigger>
+                          <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
+                            <SelectItem value="ghana-card" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Ghana Card</SelectItem>
+                            <SelectItem value="passport" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Passport</SelectItem>
+                            <SelectItem value="drivers-license" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Driver's License</SelectItem>
+                            <SelectItem value="voters-id" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Voter's ID</SelectItem>
+                            <SelectItem value="other" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="idNumber" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          ID Number <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="idNumber"
+                          placeholder="Enter your ID number"
+                          className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
+                        />
+                      </div>
+
+                      <div>
+                        <Label className={`text-sm font-semibold mb-3 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Upload ID Document <span className="text-red-500">*</span>
+                        </Label>
+                        <div className={`border-2 border-dashed rounded-lg p-8 text-center ${darkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-300 bg-gray-50'}`}>
+                          <Upload className={`h-12 w-12 mx-auto mb-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                          <p className={`text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Upload a clear photo or scan of your ID document
+                          </p>
+                          <input
+                            type="file"
+                            accept="image/*,.pdf"
+                            className="hidden"
+                            id="id-document"
+                          />
+                          <label
+                            htmlFor="id-document"
+                            className={`inline-block px-6 py-2 rounded-md text-sm font-medium cursor-pointer transition-colors ${darkMode
+                              ? 'bg-gray-700 text-white hover:bg-gray-600'
+                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              }`}
+                          >
+                            Choose File
+                          </label>
+                          <span className={`ml-3 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            No file chosen
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Farm Location Section */}
+                {activeProfileSection === 'location' && (
+                  <div className="space-y-6">
+                    <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <MapPin className="h-5 w-5" style={{ color: '#ff6347' }} />
+                      Farm Location
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="region" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Region <span className="text-red-500">*</span>
+                        </Label>
+                        <Select
+                          value={selectedRegion}
+                          onValueChange={(value) => {
+                            setSelectedRegion(value);
+                            setSelectedDistrict('');
+                            const coords = regionCoordinates[value];
+                            if (coords) {
+                              setLatitude(coords[0]);
+                              setLongitude(coords[1]);
+                            }
+                          }}
+                        >
+                          <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
+                            <SelectValue placeholder="Select region" />
+                          </SelectTrigger>
+                          <SelectContent className={`${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'} z-[1001]`}>
+                            <SelectItem value="ashanti" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Ashanti</SelectItem>
+                            <SelectItem value="eastern" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Eastern</SelectItem>
+                            <SelectItem value="northern" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Northern</SelectItem>
+                            <SelectItem value="western" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Western</SelectItem>
+                            <SelectItem value="volta" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Volta</SelectItem>
+                            <SelectItem value="central" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Central</SelectItem>
+                            <SelectItem value="bono" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Bono</SelectItem>
+                            <SelectItem value="other" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="district" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          District/Community <span className="text-red-500">*</span>
+                        </Label>
+                        <Select
+                          value={selectedDistrict}
+                          onValueChange={setSelectedDistrict}
+                          disabled={!selectedRegion || selectedRegion === 'other'}
+                        >
+                          <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
+                            <SelectValue placeholder={
+                              !selectedRegion || selectedRegion === 'other'
+                                ? "Select region first"
+                                : "Select district/community"
+                            } />
+                          </SelectTrigger>
+                          <SelectContent className={`${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'} z-[1001]`}>
+                            {selectedRegion && selectedRegion !== 'other' && regionDistricts[selectedRegion]?.map((district) => (
+                              <SelectItem key={district} value={district.toLowerCase().replace(/\s+/g, '-')} className={darkMode ? 'text-white hover:bg-gray-800' : ''}>
+                                {district}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="mt-6">
+                      <Label className={`text-sm font-semibold mb-3 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        Pin Farm Location & Measure Area
+                      </Label>
+                      <FarmMap
+                        latitude={latitude}
+                        longitude={longitude}
+                        onLocationChange={(lat, lng) => {
+                          setLatitude(lat);
+                          setLongitude(lng);
+                        }}
+                        onAreaChange={(area) => setFarmSize(area)}
+                        farmSize={farmSize}
+                      />
+                      <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Click on the map to pin your exact farm location. Use the ruler tool to measure your farm boundaries and automatically calculate size.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Farm Details Section */}
+                {activeProfileSection === 'farm' && (
+                  <div className="space-y-6">
+                    <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <Leaf className="h-5 w-5" style={{ color: '#921573' }} />
+                      Farm Details
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="farmType" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Farm Type <span className="text-red-500">*</span>
+                        </Label>
+                        <Select
+                          value={selectedFarmType}
+                          onValueChange={(value) => {
+                            setSelectedFarmType(value);
+                            setSelectedCropCategory('');
+                          }}
+                        >
+                          <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
+                            <SelectValue placeholder="Select farm type" />
+                          </SelectTrigger>
+                          <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
+                            <SelectItem value="crop" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Crop</SelectItem>
+                            <SelectItem value="livestock" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Livestock</SelectItem>
+                            <SelectItem value="mixed" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Mixed</SelectItem>
+                            <SelectItem value="other" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="cropCategory" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Crop/Animal Category <span className="text-red-500">*</span>
+                        </Label>
+                        <Select
+                          value={selectedCropCategory}
+                          onValueChange={setSelectedCropCategory}
+                          disabled={!selectedFarmType || selectedFarmType === 'other'}
+                        >
+                          <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
+                            <SelectValue placeholder={
+                              !selectedFarmType || selectedFarmType === 'other'
+                                ? "Select farm type first"
+                                : selectedFarmType === 'crop'
+                                  ? "Select crop"
+                                  : selectedFarmType === 'livestock'
+                                    ? "Select livestock"
+                                    : "Select crop or livestock"
+                            } />
+                          </SelectTrigger>
+                          <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
+                            {selectedFarmType && selectedFarmType !== 'other' && farmTypeCategories[selectedFarmType]?.map((category) => (
+                              <SelectItem key={category} value={category.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '')} className={darkMode ? 'text-white hover:bg-gray-800' : ''}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="farmSize" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Farm Size (acres/hectares) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="farmSize"
+                          type="number"
+                          placeholder="Enter farm size"
+                          value={farmSize > 0 ? farmSize : ''}
+                          onChange={(e) => setFarmSize(parseFloat(e.target.value) || 0)}
+                          className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="farmingExperience" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Years of Farming Experience <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="farmingExperience"
+                          type="number"
+                          placeholder="Years of experience"
+                          className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Conditional Fields based on Farm Type */}
+                    {selectedFarmType === 'crop' && (
+                      <div className="mt-4">
+                        <Label htmlFor="irrigation" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Irrigation Access
+                        </Label>
+                        <Select>
+                          <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
+                            <SelectValue placeholder="Select access" />
+                          </SelectTrigger>
+                          <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
+                            <SelectItem value="yes" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Yes</SelectItem>
+                            <SelectItem value="no" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>No</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {selectedFarmType === 'livestock' && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div>
+                          <Label htmlFor="animalCount" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            Number of Animals <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="animalCount"
+                            type="number"
+                            placeholder="e.g. 100"
+                            className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="housing" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            Housing Type
+                          </Label>
+                          <Input
+                            id="housing"
+                            placeholder="e.g. Coop, Pen, Free-range"
+                            className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div>
+                        <Label htmlFor="productionStage" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Production Stage <span className="text-red-500">*</span>
+                        </Label>
+                        <Select>
+                          <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
+                            <SelectValue placeholder="Select stage" />
+                          </SelectTrigger>
+                          <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
+                            <SelectItem value="planning" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Planning</SelectItem>
+                            <SelectItem value="planting" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Planting/Breeding</SelectItem>
+                            <SelectItem value="growing" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Growing</SelectItem>
+                            <SelectItem value="harvesting" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Harvesting</SelectItem>
+                            <SelectItem value="processing" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Processing</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="method" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Farming Method
+                        </Label>
+                        <Select>
+                          <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
+                            <SelectValue placeholder="Select method" />
+                          </SelectTrigger>
+                          <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
+                            <SelectItem value="organic" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Organic</SelectItem>
+                            <SelectItem value="conventional" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Conventional</SelectItem>
+                            <SelectItem value="mixed" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Mixed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="landOwnership" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Land Ownership
+                        </Label>
+                        <Select>
+                          <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
+                            <SelectValue placeholder="Select ownership" />
+                          </SelectTrigger>
+                          <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
+                            <SelectItem value="owned" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Owned</SelectItem>
+                            <SelectItem value="leased" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Leased</SelectItem>
+                            <SelectItem value="family" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Family Land</SelectItem>
+                            <SelectItem value="sharecropping" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Sharecropping</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Photo Uploads */}
+                    <div className="mt-6">
+                      <Label className={`text-sm font-semibold mb-3 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        Farm & Product Photos (Optional)
+                      </Label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center transition-colors cursor-pointer ${darkMode ? 'border-gray-700 hover:bg-gray-800/50' : 'border-gray-300 hover:bg-gray-50'}`}>
+                          <Camera className={`h-8 w-8 mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
+                          <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Upload Farm Photo</span>
+                          <span className="text-xs text-gray-500">Overview of the land/site</span>
+                          <input type="file" className="hidden" accept="image/*" />
+                        </div>
+                        <div className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center transition-colors cursor-pointer ${darkMode ? 'border-gray-700 hover:bg-gray-800/50' : 'border-gray-300 hover:bg-gray-50'}`}>
+                          <ImageIcon className={`h-8 w-8 mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
+                          <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Upload Product Photos</span>
+                          <span className="text-xs text-gray-500">Crops, animals, or produce</span>
+                          <input type="file" className="hidden" accept="image/*" multiple />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Investment & Support Section */}
+                {activeProfileSection === 'investment' && (
+                  <div className="space-y-6">
+                    <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <Wallet className="h-5 w-5" style={{ color: '#ffa500' }} />
+                      Investment & Support
+                    </h3>
+
+                    <div className="space-y-6">
+                      <div className="space-y-3">
+                        <Label className={`text-base font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Type of Investment Needed</Label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="inv-input" className={darkMode ? 'border-gray-500' : ''} />
+                            <Label htmlFor="inv-input" className={`font-normal ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Input Support</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="inv-equip" className={darkMode ? 'border-gray-500' : ''} />
+                            <Label htmlFor="inv-equip" className={`font-normal ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Equipment Support</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="inv-labour" className={darkMode ? 'border-gray-500' : ''} />
+                            <Label htmlFor="inv-labour" className={`font-normal ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Labour Support</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="inv-land" className={darkMode ? 'border-gray-500' : ''} />
+                            <Label htmlFor="inv-land" className={`font-normal ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Land Preparation</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="inv-cash" className={darkMode ? 'border-gray-500' : ''} />
+                            <Label htmlFor="inv-cash" className={`font-normal ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Cash Support</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="inv-process" className={darkMode ? 'border-gray-500' : ''} />
+                            <Label htmlFor="inv-process" className={`font-normal ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Processing</Label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <Label className={`text-base font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Preferred Partnership Model</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className={`flex items-center space-x-2 border p-3 rounded-md transition-colors ${darkMode ? 'border-gray-700 hover:bg-gray-800/50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                            <Checkbox id="part-profit" className={darkMode ? 'border-gray-500' : ''} />
+                            <div className="flex flex-col">
+                              <Label htmlFor="part-profit" className={`font-medium cursor-pointer ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Profit Sharing</Label>
+                              <span className="text-xs text-gray-500">Share profits after harvest</span>
+                            </div>
+                          </div>
+                          <div className={`flex items-center space-x-2 border p-3 rounded-md transition-colors ${darkMode ? 'border-gray-700 hover:bg-gray-800/50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                            <Checkbox id="part-buyback" className={darkMode ? 'border-gray-500' : ''} />
+                            <div className="flex flex-col">
+                              <Label htmlFor="part-buyback" className={`font-medium cursor-pointer ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Buy-back Agreement</Label>
+                              <span className="text-xs text-gray-500">Investor buys produce</span>
+                            </div>
+                          </div>
+                          <div className={`flex items-center space-x-2 border p-3 rounded-md transition-colors ${darkMode ? 'border-gray-700 hover:bg-gray-800/50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                            <Checkbox id="part-finance" className={darkMode ? 'border-gray-500' : ''} />
+                            <div className="flex flex-col">
+                              <Label htmlFor="part-finance" className={`font-medium cursor-pointer ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Input Financing</Label>
+                              <span className="text-xs text-gray-500">Loan for inputs</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="pastPerformance" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Past Farm Performance (Optional)
+                        </Label>
+                        <Textarea
+                          id="pastPerformance"
+                          placeholder="Describe previous yields, revenue, or successful seasons..."
+                          className={`min-h-[100px] ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+
+
+                {/* Additional Information Section */}
+                {activeProfileSection === 'additional' && (
+                  <div className="space-y-6">
+                    <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <Info className="h-5 w-5" style={{ color: '#7ede56' }} />
+                      Additional Information
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="preferredLanguage" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Preferred Language <span className="text-red-500">*</span>
+                        </Label>
+                        <Select
+                          value={selectedLanguage}
+                          onValueChange={setSelectedLanguage}
+                          disabled={!selectedRegion}
+                        >
+                          <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
+                            <SelectValue placeholder={!selectedRegion ? "Select region first" : "Select language"} />
+                          </SelectTrigger>
+                          <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
+                            {selectedRegion && regionLanguages[selectedRegion]?.map((lang) => (
+                              <SelectItem key={lang} value={lang.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '')} className={darkMode ? 'text-white hover:bg-gray-800' : ''}>
+                                {lang}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Navigation Buttons */}
+              <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    const currentIndex = getSectionIndex(activeProfileSection);
+                    if (currentIndex > 0) {
+                      setActiveProfileSection(profileSections[currentIndex - 1].id);
+                    }
+                  }}
+                  disabled={getSectionIndex(activeProfileSection) === 0}
+                  className={`${darkMode ? 'border-gray-700 text-white hover:bg-gray-800' : 'border-gray-300'}`}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Previous
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    const currentIndex = getSectionIndex(activeProfileSection);
+                    if (currentIndex < profileSections.length - 1) {
+                      if (!completedSections.includes(activeProfileSection)) {
+                        setCompletedSections([...completedSections, activeProfileSection]);
+                      }
+                      setActiveProfileSection(profileSections[currentIndex + 1].id);
+                    }
+                  }}
+                  disabled={getSectionIndex(activeProfileSection) === profileSections.length - 1}
+                  className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
+                >
+                  Next
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
               </div>
             </div>
 
-            {/* Active Section Fields */}
-            <div className={`rounded-lg p-6 ${darkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
-              {/* Personal Details Section */}
-              {activeProfileSection === 'personal' && (
-                <div className="space-y-6">
-                  <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    <UserCheck className="h-5 w-5" style={{ color: '#7ede56' }} />
-                    Personal Details
-                  </h3>
-                  
-                  {/* Profile Picture */}
-                  <div className="mb-6">
-                    <Label className={`text-sm font-semibold mb-3 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                      Profile Picture <span className="text-red-500">*</span>
-                    </Label>
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
-                        <div className={`w-24 h-24 rounded-full flex items-center justify-center border-2 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-300'}`}>
-                          <User className={`h-12 w-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+            {/* Right Side - Step Indicators (1/3 width) */}
+            <div className="lg:col-span-1">
+              <div className={`rounded-lg p-6 ${darkMode ? 'bg-[#002f37]' : 'bg-white'} shadow-lg sticky top-6`}>
+                <h3 className={`text-lg font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Progress
+                </h3>
+                <div className="space-y-4">
+                  {profileSections.map((section, index) => {
+                    const isActive = isSectionActive(section.id);
+                    const isCompleted = isSectionCompleted(section.id);
+                    const Icon = section.icon;
+
+                    return (
+                      <div
+                        key={section.id}
+                        onClick={() => setActiveProfileSection(section.id)}
+                        className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${isActive
+                          ? 'bg-[#7ede56] bg-opacity-10 border-2 border-[#7ede56]'
+                          : 'border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'
+                          }`}
+                      >
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${isCompleted
+                            ? 'bg-[#7ede56]'
+                            : isActive
+                              ? 'bg-[#7ede56]'
+                              : darkMode
+                                ? 'bg-gray-700'
+                                : 'bg-gray-200'
+                            }`}
+                        >
+                          {isCompleted ? (
+                            <CheckCircle className="h-5 w-5 text-white" />
+                          ) : (
+                            <span className={`text-sm font-bold ${isActive || isCompleted ? 'text-white' : darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                              {index + 1}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className={`text-sm font-semibold ${isActive ? 'text-[#7ede56]' : darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            {section.label}
+                          </p>
                         </div>
                       </div>
-                      <div className="flex-1">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          id="profile-picture"
-                        />
-                        <label
-                          htmlFor="profile-picture"
-                          className={`inline-block px-4 py-2 rounded-md text-sm font-medium cursor-pointer transition-colors ${
-                            darkMode 
-                              ? 'bg-gray-800 text-white hover:bg-gray-700' 
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          }`}
-                        >
-                          Choose File
-                        </label>
-                        <span className={`ml-3 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                          No file chosen
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="fullName" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        Full Name <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="fullName"
-                        placeholder="Enter your full name"
-                        className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        Phone Number <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="+233 XX XXX XXXX"
-                        className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="email" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        Email Address <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email address"
-                        className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="gender" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        Gender <span className="text-red-500">*</span>
-                      </Label>
-                      <Select>
-                        <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
-                          <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
-                        <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
-                          <SelectItem value="male" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Male</SelectItem>
-                          <SelectItem value="female" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Female</SelectItem>
-                          <SelectItem value="other" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+                    );
+                  })}
                 </div>
-              )}
-
-              {/* Valid Identification Document Section */}
-              {activeProfileSection === 'identification' && (
-                <div className="space-y-6">
-                  <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    <CreditCard className="h-5 w-5" style={{ color: '#ffa500' }} />
-                    Valid Identification Document
-                  </h3>
-                  <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Please upload a valid identity card. This can be your Ghana Card or any other valid identification document.
-                  </p>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="idType" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        ID Type <span className="text-red-500">*</span>
-                      </Label>
-                      <Select>
-                        <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
-                          <SelectValue placeholder="Select ID type" />
-                        </SelectTrigger>
-                        <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
-                          <SelectItem value="ghana-card" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Ghana Card</SelectItem>
-                          <SelectItem value="passport" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Passport</SelectItem>
-                          <SelectItem value="drivers-license" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Driver's License</SelectItem>
-                          <SelectItem value="voters-id" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Voter's ID</SelectItem>
-                          <SelectItem value="other" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="idNumber" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        ID Number <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="idNumber"
-                        placeholder="Enter your ID number"
-                        className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
-                      />
-                    </div>
-
-                    <div>
-                      <Label className={`text-sm font-semibold mb-3 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        Upload ID Document <span className="text-red-500">*</span>
-                      </Label>
-                      <div className={`border-2 border-dashed rounded-lg p-8 text-center ${darkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-300 bg-gray-50'}`}>
-                        <Upload className={`h-12 w-12 mx-auto mb-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-                        <p className={`text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          Upload a clear photo or scan of your ID document
-                        </p>
-                        <input
-                          type="file"
-                          accept="image/*,.pdf"
-                          className="hidden"
-                          id="id-document"
-                        />
-                        <label
-                          htmlFor="id-document"
-                          className={`inline-block px-6 py-2 rounded-md text-sm font-medium cursor-pointer transition-colors ${
-                            darkMode 
-                              ? 'bg-gray-700 text-white hover:bg-gray-600' 
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          }`}
-                        >
-                          Choose File
-                        </label>
-                        <span className={`ml-3 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                          No file chosen
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Farm Location Section */}
-              {activeProfileSection === 'location' && (
-                <div className="space-y-6">
-                  <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    <MapPin className="h-5 w-5" style={{ color: '#ff6347' }} />
-                    Farm Location
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="region" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        Region <span className="text-red-500">*</span>
-                      </Label>
-                      <Select 
-                        value={selectedRegion} 
-                        onValueChange={(value) => {
-                          setSelectedRegion(value);
-                          setSelectedDistrict('');
-                        }}
-                      >
-                        <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
-                          <SelectValue placeholder="Select region" />
-                        </SelectTrigger>
-                        <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
-                          <SelectItem value="ashanti" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Ashanti</SelectItem>
-                          <SelectItem value="eastern" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Eastern</SelectItem>
-                          <SelectItem value="northern" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Northern</SelectItem>
-                          <SelectItem value="western" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Western</SelectItem>
-                          <SelectItem value="volta" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Volta</SelectItem>
-                          <SelectItem value="central" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Central</SelectItem>
-                          <SelectItem value="bono" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Bono</SelectItem>
-                          <SelectItem value="other" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="district" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        District/Community <span className="text-red-500">*</span>
-                      </Label>
-                      <Select 
-                        value={selectedDistrict} 
-                        onValueChange={setSelectedDistrict}
-                        disabled={!selectedRegion || selectedRegion === 'other'}
-                      >
-                        <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
-                          <SelectValue placeholder={
-                            !selectedRegion || selectedRegion === 'other'
-                              ? "Select region first"
-                              : "Select district/community"
-                          } />
-                        </SelectTrigger>
-                        <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
-                          {selectedRegion && selectedRegion !== 'other' && regionDistricts[selectedRegion]?.map((district) => (
-                            <SelectItem key={district} value={district.toLowerCase().replace(/\s+/g, '-')} className={darkMode ? 'text-white hover:bg-gray-800' : ''}>
-                              {district}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Farm Details Section */}
-              {activeProfileSection === 'farm' && (
-                <div className="space-y-6">
-                  <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    <Leaf className="h-5 w-5" style={{ color: '#921573' }} />
-                    Farm Details
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="farmType" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        Farm Type <span className="text-red-500">*</span>
-                      </Label>
-                      <Select 
-                        value={selectedFarmType} 
-                        onValueChange={(value) => {
-                          setSelectedFarmType(value);
-                          setSelectedCropCategory('');
-                        }}
-                      >
-                        <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
-                          <SelectValue placeholder="Select farm type" />
-                        </SelectTrigger>
-                        <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
-                          <SelectItem value="crop" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Crop</SelectItem>
-                          <SelectItem value="livestock" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Livestock</SelectItem>
-                          <SelectItem value="mixed" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Mixed</SelectItem>
-                          <SelectItem value="other" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="cropCategory" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        Crop/Animal Category <span className="text-red-500">*</span>
-                      </Label>
-                      <Select 
-                        value={selectedCropCategory} 
-                        onValueChange={setSelectedCropCategory}
-                        disabled={!selectedFarmType || selectedFarmType === 'other'}
-                      >
-                        <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
-                          <SelectValue placeholder={
-                            !selectedFarmType || selectedFarmType === 'other'
-                              ? "Select farm type first"
-                              : selectedFarmType === 'crop'
-                              ? "Select crop"
-                              : selectedFarmType === 'livestock'
-                              ? "Select livestock"
-                              : "Select crop or livestock"
-                          } />
-                        </SelectTrigger>
-                        <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
-                          {selectedFarmType && selectedFarmType !== 'other' && farmTypeCategories[selectedFarmType]?.map((category) => (
-                            <SelectItem key={category} value={category.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '')} className={darkMode ? 'text-white hover:bg-gray-800' : ''}>
-                              {category}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="farmSize" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        Farm Size (acres/hectares) <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="farmSize"
-                        type="number"
-                        placeholder="Enter farm size"
-                        className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="farmingExperience" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        Years of Farming Experience <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="farmingExperience"
-                        type="number"
-                        placeholder="Years of experience"
-                        className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Additional Information Section */}
-              {activeProfileSection === 'additional' && (
-                <div className="space-y-6">
-                  <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    <Info className="h-5 w-5" style={{ color: '#7ede56' }} />
-                    Additional Information
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="preferredLanguage" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        Preferred Language
-                      </Label>
-                      <Select 
-                        value={selectedLanguage} 
-                        onValueChange={setSelectedLanguage}
-                      >
-                        <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
-                          <SelectValue placeholder="Select language" />
-                        </SelectTrigger>
-                        <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
-                          {selectedRegion && regionLanguages[selectedRegion] ? (
-                            regionLanguages[selectedRegion].map((lang) => (
-                              <SelectItem key={lang} value={lang.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '')} className={darkMode ? 'text-white hover:bg-gray-800' : ''}>
-                                {lang}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            regionLanguages['other'].map((lang) => (
-                              <SelectItem key={lang} value={lang.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '')} className={darkMode ? 'text-white hover:bg-gray-800' : ''}>
-                                {lang}
-                              </SelectItem>
-                            ))
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="currentStage" className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        Current Farm Stage
-                      </Label>
-                      <Select>
-                        <SelectTrigger className={`h-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white focus:border-[#7ede56]' : 'bg-white border-gray-300 focus:border-[#7ede56]'}`}>
-                          <SelectValue placeholder="Select current stage" />
-                        </SelectTrigger>
-                        <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}>
-                          <SelectItem value="planning" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Planning</SelectItem>
-                          <SelectItem value="planting" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Planting</SelectItem>
-                          <SelectItem value="growing" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Growing</SelectItem>
-                          <SelectItem value="harvesting" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Harvesting</SelectItem>
-                          <SelectItem value="maintenance" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Maintenance</SelectItem>
-                          <SelectItem value="other" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
       );
     }
-    return null;
+
+    // Default profile settings for other user types
+    return (
+      <div className="space-y-6">
+        <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Profile Settings</h2>
+        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Profile settings for {userType}</p>
+      </div>
+    );
   };
 
   const renderPassword = () => (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Change Password</h3>
-        <Button className="bg-[#002f37] hover:bg-[#001a1f] text-white px-6 py-2 h-9 text-sm font-semibold">
+        <Button className="bg-[#7ede56] hover:bg-[#6bc947] text-white px-6 py-2 h-9 text-sm font-semibold">
           Update Password
         </Button>
       </div>
@@ -1039,7 +1298,7 @@ const Settings = () => {
   const renderVerification = () => (
     <div className="space-y-6">
       <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Account Verification</h2>
-      
+
       <div className={`rounded-lg p-6 ${darkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
         <div className="flex items-start gap-4 mb-6">
           <div className={`p-3 rounded-full ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
@@ -1082,13 +1341,13 @@ const Settings = () => {
         </div>
 
         <div className="flex gap-3">
-          <Button 
+          <Button
             onClick={() => setActiveSection('profile')}
             className="bg-[#7ede56] hover:bg-[#6bc947] text-white px-6 py-2 font-semibold"
           >
             Complete Profile →
           </Button>
-          <Button 
+          <Button
             variant="outline"
             className={`px-6 py-2 ${darkMode ? 'border-gray-700 text-white hover:bg-gray-800 hover:text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
           >
@@ -1140,17 +1399,17 @@ const Settings = () => {
                   <ArrowLeft className="h-4 w-4" />
                   Back to Dashboard
                 </Button>
-                <img 
-                  src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png" 
-                  alt="AgriLync Logo" 
+                <img
+                  src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png"
+                  alt="AgriLync Logo"
                   className="h-8 w-8"
                 />
                 <span className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>AgriLync</span>
               </div>
               <div className="flex items-center gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className={`flex items-center gap-2 rounded-full p-2 ${darkMode ? 'text-gray-300 hover:bg-gray-800 hover:text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                   onClick={toggleDarkMode}
                   title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
@@ -1162,9 +1421,9 @@ const Settings = () => {
                   )}
                   <span className="hidden sm:inline ml-1">{darkMode ? 'Light' : 'Dark'}</span>
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className={`flex items-center gap-2 rounded-full p-2 ${darkMode ? 'text-gray-300 hover:bg-gray-800 hover:text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                   onClick={() => navigate('/')}
                   title="Log Out"
@@ -1176,46 +1435,42 @@ const Settings = () => {
             </div>
           </div>
 
-          <div className="max-w-6xl mx-auto p-4">
-            <div className="mb-4">
+          <div className="max-w-7xl mx-auto p-4">
+            <div className="mb-6">
               <h1 className={`text-2xl font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Account Settings</h1>
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Manage your profile, security, and preferences</p>
             </div>
 
-            <div className="flex gap-4">
-              {/* Sidebar Navigation */}
-              <div className="w-56 flex-shrink-0">
-                <Card className={`p-1 ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
-                  <nav className="space-y-0.5">
-                    {sidebarItems.map((item) => {
-                      const Icon = item.icon;
-                      const isActive = activeSection === item.id;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => setActiveSection(item.id)}
-                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors relative ${
-                            isActive
-                              ? 'bg-[#7ede56] text-[#002f37]'
-                              : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-                          }`}
-                        >
-                          {isActive && (
-                            <div className={`absolute left-0 top-0 bottom-0 w-1 ${darkMode ? 'bg-[#002f37]' : 'bg-[#002f37]'} rounded-r`}></div>
-                          )}
-                          <Icon className={`h-4 w-4 flex-shrink-0 ${isActive ? 'text-[#002f37]' : darkMode ? 'text-[#002f37]' : 'text-[#f4ffee]'}`} />
-                          <span className="text-left">{item.label}</span>
-                        </button>
-                      );
-                    })}
-                  </nav>
-                </Card>
+            <div className="flex flex-col gap-6">
+              {/* Horizontal Navigation */}
+              <div className="w-full overflow-x-auto pb-2 scrollbar-hide">
+                <nav className="flex gap-2 min-w-max">
+                  {sidebarItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeSection === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveSection(item.id)}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all ${isActive
+                          ? 'bg-[#7ede56] text-[#002f37] shadow-sm'
+                          : darkMode
+                            ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'
+                            : 'bg-white text-gray-600 hover:bg-gray-100 text-[#002f37]'
+                          } border ${isActive ? 'border-[#7ede56]' : darkMode ? 'border-gray-700' : 'border-gray-200'}`}
+                      >
+                        <Icon className={`h-4 w-4 ${isActive ? 'text-[#002f37]' : ''}`} />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
               </div>
 
               {/* Main Content */}
               <div className="flex-1">
-                <Card className={darkMode ? 'bg-[#002f37]' : ''}>
-                  <CardContent className="p-4">
+                <Card className={`border-none shadow-none ${darkMode ? 'bg-transparent' : 'bg-transparent'}`}>
+                  <CardContent className="p-0">
                     {activeSection === 'profile' && renderProfileSettings()}
                     {activeSection === 'password' && renderPassword()}
                     {activeSection === 'notifications' && renderNotifications()}

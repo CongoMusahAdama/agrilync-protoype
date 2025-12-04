@@ -12,10 +12,16 @@ import Contact from "./pages/Contact";
 import Gallery from "./pages/Gallery";
 import Team from "./pages/Team";
 import Signup from "./pages/Signup";
+import SignupFarmer from "./pages/SignupFarmer";
+import SignupGrower from "./pages/SignupGrower";
+import SignupInvestor from "./pages/SignupInvestor";
+import SignupAgent from "./pages/SignupAgent";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AgentDashboard from "./pages/AgentDashboard";
+import AgentProfile from "./pages/agent/AgentProfile";
 import AgentFarmersManagement from "./pages/agent/FarmersManagement";
+import AgentFarmManagement from "./pages/agent/FarmManagement";
 import AgentFarmMonitoring from "./pages/agent/FarmMonitoring";
 import AgentInvestorMatches from "./pages/agent/InvestorFarmerMatches";
 import AgentDisputeManagement from "./pages/agent/DisputeManagement";
@@ -27,6 +33,7 @@ import TrainingSessions from "./pages/TrainingSessions";
 import FarmManagement from "./pages/FarmManagement";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
+import GrowerProfile from "./pages/grower/GrowerProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,13 +54,21 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/signup/farmer" element={<SignupFarmer />} />
+            <Route path="/signup/grower" element={<SignupGrower />} />
+            <Route path="/signup/investor" element={<SignupInvestor />} />
+            <Route path="/signup/agent" element={<SignupAgent />} />
             <Route path="/dashboard/agent" element={<AgentDashboard />} />
+            <Route path="/dashboard/agent/profile" element={<AgentProfile />} />
             <Route path="/dashboard/agent/farmers-management" element={<AgentFarmersManagement />} />
+            <Route path="/dashboard/agent/farm-management" element={<AgentFarmManagement />} />
             <Route path="/dashboard/agent/farm-monitoring" element={<AgentFarmMonitoring />} />
             <Route path="/dashboard/agent/investor-farmer-matches" element={<AgentInvestorMatches />} />
             <Route path="/dashboard/agent/dispute-management" element={<AgentDisputeManagement />} />
             <Route path="/dashboard/agent/training-performance" element={<AgentTrainingPerformance />} />
             <Route path="/dashboard/agent/notifications-center" element={<AgentNotificationsCenter />} />
+            <Route path="/dashboard/grower/profile" element={<GrowerProfile />} />
+            <Route path="/dashboard/farmer/profile" element={<GrowerProfile />} />
             <Route path="/dashboard/:userType" element={<Dashboard />} />
             <Route path="/dashboard/:userType/farm-analytics" element={<FarmAnalytics />} />
             <Route path="/dashboard/:userType/investor-matches" element={<InvestorMatches />} />

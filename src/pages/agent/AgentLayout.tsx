@@ -32,8 +32,7 @@ type AgentNavItem = {
 
 const agentNavItems: AgentNavItem[] = [
   { id: 'profile-overview', label: 'Profile Overview', icon: Activity, path: '/dashboard/agent' },
-  { id: 'farmers-management', label: 'Farmers Management', icon: Users, path: '/dashboard/agent/farmers-management' },
-  { id: 'farm-monitoring', label: 'Farm Monitoring', icon: Sprout, path: '/dashboard/agent/farm-monitoring' },
+  { id: 'farm-management', label: 'Farm Management', icon: Sprout, path: '/dashboard/agent/farm-management' },
   { id: 'investor-farmer-matches', label: 'Investor-Farmer Matches', icon: Handshake, path: '/dashboard/agent/investor-farmer-matches' },
   { id: 'dispute-management', label: 'Dispute Management', icon: AlertTriangle, path: '/dashboard/agent/dispute-management' },
   { id: 'training-performance', label: 'Training & Performance', icon: Calendar, path: '/dashboard/agent/training-performance' },
@@ -65,7 +64,11 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
   const [currentSection, setCurrentSection] = useState(activeSection);
 
   useEffect(() => {
-    const match = agentNavItems.find((item) => location.pathname.startsWith(item.path));
+    // Sort items by path length descending to ensure specific paths are matched before general ones
+    // e.g., '/dashboard/agent/farmers-management' should match before '/dashboard/agent'
+    const sortedItems = [...agentNavItems].sort((a, b) => b.path.length - a.path.length);
+    const match = sortedItems.find((item) => location.pathname.startsWith(item.path));
+
     if (match) {
       setCurrentSection(match.id);
     } else {
@@ -73,8 +76,14 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
     }
   }, [location.pathname, activeSection]);
 
-  const handleNavigation = (item: AgentNavItem) => {
+  const handleNavigation = (item: AgentNavItem, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    // Set the section immediately for instant visual feedback
     setCurrentSection(item.id);
+    // Then navigate
     navigate(item.path);
     if (isMobile) {
       setMobileSidebarOpen(false);
@@ -82,11 +91,10 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
   };
 
   const SidebarContent = ({ mobileView = false }: { mobileView?: boolean }) => (
-    <>
+    <div className="flex h-full flex-col">
       <div
-        className={`p-4 border-b ${
-          darkMode ? 'border-gray-200/60' : 'border-[#002f37] border-opacity-20'
-        }`}
+        className={`p-4 border-b flex-shrink-0 ${darkMode ? 'border-gray-200/60' : 'border-[#002f37] border-opacity-20'
+          }`}
       >
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -97,9 +105,8 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
             />
             {(!sidebarCollapsed || mobileView) && (
               <span
-                className={`text-xl font-bold ${
-                  darkMode ? 'text-[#002f37]' : 'text-[#f4ffee]'
-                }`}
+                className={`text-xl font-bold ${darkMode ? 'text-[#002f37]' : 'text-[#f4ffee]'
+                  }`}
               >
                 AgriLync
               </span>
@@ -108,11 +115,10 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
           {!mobileView && (
             <button
               onClick={() => setSidebarCollapsed((prev) => !prev)}
-              className={`p-2 rounded-lg transition-colors ${
-                darkMode
-                  ? 'text-[#002f37] hover:bg-gray-100'
-                  : 'text-[#f4ffee] hover:bg-[#01343c]'
-              }`}
+              className={`p-2 rounded-lg transition-colors ${darkMode
+                ? 'text-[#002f37] hover:bg-gray-100'
+                : 'text-[#f4ffee] hover:bg-[#01343c]'
+                }`}
               aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
               {sidebarCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
@@ -121,14 +127,16 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
         </div>
       </div>
 
-      <SidebarProfileCard
-        sidebarCollapsed={sidebarCollapsed && !mobileView}
-        isMobile={mobileView}
-        darkMode={darkMode}
-        userType="agent"
-      />
+      <div className="flex-shrink-0">
+        <SidebarProfileCard
+          sidebarCollapsed={sidebarCollapsed && !mobileView}
+          isMobile={mobileView}
+          darkMode={darkMode}
+          userType="agent"
+        />
+      </div>
 
-      <nav className="flex-1 space-y-2 p-4">
+      <nav className="flex-1 space-y-2 p-4 overflow-y-auto min-h-0">
         {agentNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentSection === item.id;
@@ -136,41 +144,38 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
             <button
               key={item.id}
               type="button"
-              onClick={() => handleNavigation(item)}
-              className={`flex w-full items-center gap-3 rounded-lg p-3 text-left text-sm transition-colors ${
-                isActive
-                  ? 'bg-[#7ede56] text-[#002f37]'
-                  : darkMode
+              onClick={(e) => handleNavigation(item, e)}
+              className={`flex w-full items-center gap-3 rounded-lg p-3 text-left text-sm font-medium transition-all duration-200 ${isActive
+                ? 'bg-[#7ede56] text-[#002f37] shadow-md'
+                : darkMode
                   ? 'text-[#002f37] hover:bg-gray-100'
                   : 'text-[#f4ffee] hover:bg-[#01343c]'
-              }`}
+                }`}
             >
               <Icon className="h-5 w-5 flex-shrink-0" />
-              {(!sidebarCollapsed || mobileView) && <span className="font-medium">{item.label}</span>}
+              {(!sidebarCollapsed || mobileView) && <span>{item.label}</span>}
             </button>
           );
         })}
       </nav>
 
       <div
-        className={`mt-auto border-t p-4 ${
-          darkMode ? 'border-[#124b53] bg-[#0b2528]' : 'border-[#002f37] border-opacity-20 bg-[#002f37]'
-        }`}
+        className={`border-t p-4 flex-shrink-0 ${darkMode ? 'border-[#124b53] bg-[#0b2528]' : 'border-[#002f37] border-opacity-20 bg-[#002f37]'
+          }`}
       >
         <button
           type="button"
           onClick={() => navigate('/')}
-          className={`flex w-full items-center gap-3 rounded-lg p-3 font-medium transition-colors ${
-            darkMode
-              ? 'bg-[#0d3a41] text-white hover:bg-[#124c56]'
-              : 'bg-[#0a4a52] text-white hover:bg-[#0d606b]'
-          }`}
+          className={`flex w-full items-center gap-3 rounded-lg p-3 font-medium transition-colors ${darkMode
+            ? 'bg-[#0d3a41] text-white hover:bg-[#124c56]'
+            : 'bg-[#0a4a52] text-white hover:bg-[#0d606b]'
+            }`}
         >
-          <LogOut className="h-5 w-5" />
+          <LogOut className="h-5 w-5 flex-shrink-0" />
           {(!sidebarCollapsed || mobileView) && <span>Log Out</span>}
         </button>
       </div>
-    </>
+    </div>
   );
 
   return (
@@ -191,19 +196,17 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
 
         {!isMobile && (
           <div
-            className={`${sidebarCollapsed ? 'w-16' : 'w-64'} ${
-              darkMode ? 'bg-white' : 'bg-[#002f37]'
-            } flex-shrink-0 border-r transition-all duration-300 ${
-              darkMode ? 'border-gray-200/60' : 'border-[#00404a]'
-            }`}
+            className={`${sidebarCollapsed ? 'w-16' : 'w-64'} ${darkMode ? 'bg-white' : 'bg-[#002f37]'
+              } flex-shrink-0 border-r transition-all duration-300 ${darkMode ? 'border-gray-200/60' : 'border-[#00404a]'
+              } fixed left-0 top-0 h-screen z-30`}
           >
-            <div className="flex h-full flex-col overflow-hidden">
+            <div className="flex h-full flex-col">
               <SidebarContent />
             </div>
           </div>
         )}
 
-        <div className={`flex-1 overflow-y-auto ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
+        <div className={`flex-1 overflow-y-auto ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'} ${!isMobile ? (sidebarCollapsed ? 'ml-16' : 'ml-64') : ''}`}>
           <div
             className={`${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white border-gray-200'} border-b px-3 py-3 sm:px-6 sm:py-4 sticky top-0 z-20`}
           >
@@ -254,9 +257,8 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
                   <span className="hidden sm:inline">Notifications</span>
                 </Button>
                 <div
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors ${
-                    darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
-                  }`}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
+                    }`}
                   onClick={() => navigate('/dashboard/agent/profile')}
                   role="button"
                 >

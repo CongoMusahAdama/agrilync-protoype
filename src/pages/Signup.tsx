@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Leaf, Users, TrendingUp, UserCheck, ArrowLeft, Upload, MapPin, Calendar, Phone, MessageCircle, Construction } from 'lucide-react';
+import { Leaf, Users, TrendingUp, UserCheck, ArrowLeft, Upload, MapPin, Calendar, Phone } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -26,7 +26,7 @@ const Signup = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    
+
     // Professional Info (for specific user types)
     investorType: '',
     investmentSize: '',
@@ -38,20 +38,21 @@ const Signup = () => {
     qualification: '',
     yearsExperience: '',
     linkedOrganization: '',
-    
+
     // Additional Info
     nationalId: null as File | null,
     businessCertificate: null as File | null,
     profilePhoto: null as File | null,
     extensionAgentName: '',
-    
+
     // Farm Location (for growers and farmers)
     farmRegion: '',
     farmDistrict: '',
     farmAddress: '',
     farmLatitude: '',
     farmLongitude: '',
-    
+    farmSize: 0, // in hectares
+
     // Terms
     acceptTerms: false,
     acceptDataPolicy: false
@@ -96,8 +97,25 @@ const Signup = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Registration is disabled - under development
-    return;
+
+    if (!verifyOTP()) {
+      alert('Please enter the correct OTP code');
+      return;
+    }
+
+    console.log('User Type:', userType);
+    console.log('Form Data:', formData);
+
+    // Navigate to appropriate dashboard
+    if (userType === 'grower') {
+      navigate('/dashboard/grower');
+    } else if (userType === 'investor') {
+      navigate('/dashboard/investor');
+    } else if (userType === 'farmer') {
+      navigate('/dashboard/farmer');
+    } else if (userType === 'agent') {
+      navigate('/dashboard/agent');
+    }
   };
 
   const userTypes = [
@@ -158,7 +176,7 @@ const Signup = () => {
                 <UserCheck className="h-5 w-5" />
                 Basic Information
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Full Name *</Label>
@@ -201,10 +219,10 @@ const Signup = () => {
                     />
                   </div>
                   <div className="mt-3">
-                    <Button 
-                      type="button" 
-                      onClick={sendOTP} 
-                      disabled={!formData.phone} 
+                    <Button
+                      type="button"
+                      onClick={sendOTP}
+                      disabled={!formData.phone}
                       className="w-full sm:w-auto"
                     >
                       Send OTP
@@ -274,7 +292,7 @@ const Signup = () => {
                 <MapPin className="h-5 w-5" />
                 Farm Location *
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <Label htmlFor="farmRegion" className="text-sm font-medium text-gray-700">Region *</Label>
@@ -301,7 +319,7 @@ const Signup = () => {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <Label htmlFor="farmAddress" className="text-sm font-medium text-gray-700">Farm Address *</Label>
                 <Input
@@ -327,7 +345,7 @@ const Signup = () => {
                 <UserCheck className="h-5 w-5" />
                 Personal Information
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Full Name *</Label>
@@ -381,10 +399,10 @@ const Signup = () => {
                     />
                   </div>
                   <div className="mt-3">
-                    <Button 
-                      type="button" 
-                      onClick={sendOTP} 
-                      disabled={!formData.phone} 
+                    <Button
+                      type="button"
+                      onClick={sendOTP}
+                      disabled={!formData.phone}
                       className="w-full sm:w-auto"
                     >
                       Send OTP
@@ -440,7 +458,7 @@ const Signup = () => {
                 <MapPin className="h-5 w-5" />
                 Farm Location *
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <Label htmlFor="farmRegion" className="text-sm font-medium text-gray-700">Region *</Label>
@@ -467,7 +485,7 @@ const Signup = () => {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <Label htmlFor="farmAddress" className="text-sm font-medium text-gray-700">Farm Address *</Label>
                 <Input
@@ -479,6 +497,7 @@ const Signup = () => {
                   required
                 />
               </div>
+
             </div>
 
             {/* Additional Info */}
@@ -487,7 +506,7 @@ const Signup = () => {
                 <UserCheck className="h-5 w-5" />
                 Additional Information
               </h3>
-              
+
               <div>
                 <Label htmlFor="extensionAgentName">Name of Extension Agent (if onboarded by one)</Label>
                 <Input
@@ -533,7 +552,7 @@ const Signup = () => {
                 <UserCheck className="h-5 w-5" />
                 Basic Information
               </h3>
-              
+
               <div className="grid grid-cols-1 gap-6">
                 <div>
                   <Label htmlFor="fullName">Full Name or Business Name *</Label>
@@ -630,7 +649,7 @@ const Signup = () => {
                 <UserCheck className="h-5 w-5" />
                 Personal Information
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Full Name *</Label>
@@ -673,10 +692,10 @@ const Signup = () => {
                     />
                   </div>
                   <div className="mt-3">
-                    <Button 
-                      type="button" 
-                      onClick={sendOTP} 
-                      disabled={!formData.phone} 
+                    <Button
+                      type="button"
+                      onClick={sendOTP}
+                      disabled={!formData.phone}
                       className="w-full sm:w-auto"
                     >
                       Send OTP
@@ -737,19 +756,18 @@ const Signup = () => {
   return (
     <div className="min-h-screen bg-white">
       <Navbar variant="light" />
-      
+
       <div className="flex min-h-screen">
         {/* Left Side - Image Grid */}
-        <div className="hidden lg:flex lg:flex-1 bg-gray-50 p-6">
-          <div className="w-full grid grid-cols-3 gap-3 h-full">
+        <div className="hidden lg:flex lg:flex-1 bg-gray-50 p-6 items-center justify-center">
+          <div className="w-full max-w-3xl grid grid-cols-3 gap-3">
             {/* Column 1 */}
-            <div className="space-y-4">
-              <div 
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${
-                  imagesLoaded 
-                    ? 'opacity-100 translate-y-0' 
-                    : 'opacity-0 translate-y-8'
-                }`}
+            <div className="space-y-3">
+              <div
+                className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+                  }`}
                 style={{ transitionDelay: '0.1s' }}
               >
                 <img
@@ -759,13 +777,12 @@ const Signup = () => {
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-20"></div>
               </div>
-              
-              <div 
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${
-                  imagesLoaded 
-                    ? 'opacity-100 translate-y-0' 
-                    : 'opacity-0 translate-y-8'
-                }`}
+
+              <div
+                className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+                  }`}
                 style={{ transitionDelay: '0.3s' }}
               >
                 <img
@@ -776,15 +793,14 @@ const Signup = () => {
                 <div className="absolute inset-0 bg-black bg-opacity-20"></div>
               </div>
             </div>
-            
+
             {/* Column 2 */}
-            <div className="space-y-4">
-              <div 
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${
-                  imagesLoaded 
-                    ? 'opacity-100 translate-y-0' 
-                    : 'opacity-0 translate-y-8'
-                }`}
+            <div className="space-y-3">
+              <div
+                className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+                  }`}
                 style={{ transitionDelay: '0.2s' }}
               >
                 <img
@@ -794,13 +810,12 @@ const Signup = () => {
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-20"></div>
               </div>
-              
-              <div 
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${
-                  imagesLoaded 
-                    ? 'opacity-100 translate-y-0' 
-                    : 'opacity-0 translate-y-8'
-                }`}
+
+              <div
+                className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+                  }`}
                 style={{ transitionDelay: '0.4s' }}
               >
                 <img
@@ -811,15 +826,14 @@ const Signup = () => {
                 <div className="absolute inset-0 bg-black bg-opacity-20"></div>
               </div>
             </div>
-            
+
             {/* Column 3 */}
-            <div className="space-y-4">
-              <div 
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${
-                  imagesLoaded 
-                    ? 'opacity-100 translate-y-0' 
-                    : 'opacity-0 translate-y-8'
-                }`}
+            <div className="space-y-3">
+              <div
+                className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+                  }`}
                 style={{ transitionDelay: '0.3s' }}
               >
                 <img
@@ -829,13 +843,12 @@ const Signup = () => {
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-20"></div>
               </div>
-              
-              <div 
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${
-                  imagesLoaded 
-                    ? 'opacity-100 translate-y-0' 
-                    : 'opacity-0 translate-y-8'
-                }`}
+
+              <div
+                className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+                  }`}
                 style={{ transitionDelay: '0.5s' }}
               >
                 <img
@@ -872,10 +885,8 @@ const Signup = () => {
                 {userTypes.map((type) => (
                   <Card
                     key={type.id}
-                    className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${type.color} ${
-                      userType === type.id ? 'ring-2 ring-[#7ede56]' : ''
-                    }`}
-                    onClick={() => setUserType(type.id)}
+                    className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${type.color}`}
+                    onClick={() => navigate(`/signup/${type.id}`)}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center space-x-4">
@@ -903,64 +914,32 @@ const Signup = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {/* Under Development Message */}
-                  <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <Construction className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-yellow-800 mb-1">Under Development</h3>
-                        <p className="text-sm text-yellow-700">
-                          Our registration system is currently under development. We're working hard to bring you the best experience. 
-                          In the meantime, join our WhatsApp community to stay updated and connect with fellow farmers!
-                        </p>
-                      </div>
-                    </div>
-                    {/* WhatsApp Icon Button */}
-                    <div className="mt-4 flex justify-center">
-                      <a
-                        href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center w-12 h-12 bg-green-500 hover:bg-green-600 text-white rounded-full transition-colors shadow-md hover:shadow-lg"
-                        title="Join Our WhatsApp Community"
-                      >
-                        <MessageCircle className="h-6 w-6" />
-                      </a>
-                    </div>
-                  </div>
-
                   <form onSubmit={handleSubmit} className="space-y-6">
-                    <fieldset disabled className="space-y-6 opacity-60">
-                      {renderFormFields()}
-                    </fieldset>
+                    {renderFormFields()}
 
                     {/* Terms and Conditions */}
-                    <div className="space-y-4 border-t pt-6 opacity-60">
+                    <div className="space-y-4 border-t pt-6">
                       <h3 className="text-lg font-semibold text-gray-900">Terms & Conditions</h3>
-                      
+
                       <div className="space-y-3">
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             id="acceptTerms"
                             checked={formData.acceptTerms}
                             onCheckedChange={(checked) => handleInputChange('acceptTerms', checked as boolean)}
-                            disabled
-                            className="cursor-not-allowed"
                           />
-                          <Label htmlFor="acceptTerms" className="text-sm cursor-not-allowed">
+                          <Label htmlFor="acceptTerms" className="text-sm">
                             I accept the Terms & Conditions *
                           </Label>
                         </div>
-                        
+
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             id="acceptDataPolicy"
                             checked={formData.acceptDataPolicy}
                             onCheckedChange={(checked) => handleInputChange('acceptDataPolicy', checked as boolean)}
-                            disabled
-                            className="cursor-not-allowed"
                           />
-                          <Label htmlFor="acceptDataPolicy" className="text-sm cursor-not-allowed">
+                          <Label htmlFor="acceptDataPolicy" className="text-sm">
                             I agree to the Data Use Policy *
                           </Label>
                         </div>
@@ -978,10 +957,10 @@ const Signup = () => {
                       </Button>
                       <Button
                         type="submit"
-                        className="flex-1 bg-gray-400 text-white cursor-not-allowed"
-                        disabled={true}
+                        className="flex-1 bg-[#7ede56] hover:bg-[#6bc947]"
+                        disabled={!formData.acceptTerms || !formData.acceptDataPolicy}
                       >
-                        Complete Registration (Disabled)
+                        Complete Registration
                       </Button>
                     </div>
                   </form>
@@ -997,12 +976,11 @@ const Signup = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-3 gap-3">
             {/* Mobile Image Grid - 3 columns */}
-            <div 
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${
-                imagesLoaded 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-8'
-              }`}
+            <div
+              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-8'
+                }`}
               style={{ transitionDelay: '0.1s' }}
             >
               <img
@@ -1012,13 +990,12 @@ const Signup = () => {
               />
               <div className="absolute inset-0 bg-black bg-opacity-20"></div>
             </div>
-            
-            <div 
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${
-                imagesLoaded 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-8'
-              }`}
+
+            <div
+              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-8'
+                }`}
               style={{ transitionDelay: '0.2s' }}
             >
               <img
@@ -1028,13 +1005,12 @@ const Signup = () => {
               />
               <div className="absolute inset-0 bg-black bg-opacity-20"></div>
             </div>
-            
-            <div 
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${
-                imagesLoaded 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-8'
-              }`}
+
+            <div
+              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-8'
+                }`}
               style={{ transitionDelay: '0.3s' }}
             >
               <img
@@ -1044,13 +1020,12 @@ const Signup = () => {
               />
               <div className="absolute inset-0 bg-black bg-opacity-20"></div>
             </div>
-            
-            <div 
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${
-                imagesLoaded 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-8'
-              }`}
+
+            <div
+              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-8'
+                }`}
               style={{ transitionDelay: '0.4s' }}
             >
               <img
@@ -1060,13 +1035,12 @@ const Signup = () => {
               />
               <div className="absolute inset-0 bg-black bg-opacity-20"></div>
             </div>
-            
-            <div 
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${
-                imagesLoaded 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-8'
-              }`}
+
+            <div
+              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-8'
+                }`}
               style={{ transitionDelay: '0.5s' }}
             >
               <img
@@ -1076,13 +1050,12 @@ const Signup = () => {
               />
               <div className="absolute inset-0 bg-black bg-opacity-20"></div>
             </div>
-            
-            <div 
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${
-                imagesLoaded 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-8'
-              }`}
+
+            <div
+              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-8'
+                }`}
               style={{ transitionDelay: '0.6s' }}
             >
               <img

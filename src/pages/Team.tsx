@@ -91,11 +91,12 @@ const Team = () => {
               <div className="flex justify-between px-8">
                 <div className="w-px h-16 bg-purple-300"></div>
                 <div className="w-px h-16 bg-purple-300"></div>
+                <div className="w-px h-16 bg-purple-300"></div>
               </div>
             </div>
 
             {/* Second Level - Co-Founders */}
-            <div className={"grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 mb-16 sm:mb-20 transition-all duration-1000 ease-out delay-300 " + (leadershipVisible ? " animate-fade-in-up opacity-100 translate-y-0" : " opacity-0 translate-y-8")}>
+            <div className={"grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-12 mb-16 sm:mb-20 transition-all duration-1000 ease-out delay-300 " + (leadershipVisible ? " animate-fade-in-up opacity-100 translate-y-0" : " opacity-0 translate-y-8")}>
               {/* Takyi Robert - Strategy */}
               <div className="text-center">
                 <div className="inline-block group hover:scale-110 transition-all duration-500 transform hover:-translate-y-2">
@@ -142,6 +143,29 @@ const Team = () => {
                   </p>
                 </div>
               </div>
+
+              {/* Boah Samuel - Product Experience */}
+              <div className="text-center">
+                <div className="inline-block group hover:scale-110 transition-all duration-500 transform hover:-translate-y-2">
+                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-yellow-100 group-hover:border-yellow-300 group-hover:border-6">
+                    <img
+                      src="/lovable-uploads/boahsamuel.jpg"
+                      alt="Boah Samuel"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center"><span class="text-white font-bold text-2xl">BS</span></div>';
+                      }}
+                    />
+                  </div>
+                  <h4 className="text-lg sm:text-xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Boah Samuel</h4>
+                  <p className="text-base sm:text-lg font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Co-Founder (Product Experience)</p>
+                  <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
+                    User experience direction, product consistency, and inclusive interface design across platforms.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Mobile Hierarchy Divider */}
@@ -152,7 +176,7 @@ const Team = () => {
               <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-8 sm:mb-10 text-center" style={{ color: BRAND_MAGENTA }}>
                 Product & Design Team
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {/* Osei Prince */}
                 <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-3 hover:rotate-2">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-2 border-transparent group-hover:border-indigo-300 group-hover:border-4">
@@ -192,27 +216,6 @@ const Team = () => {
                   <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>UI/UX Designer & Frontend Support</p>
                   <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
                     Interface design, frontend development, responsive design, and user-friendly interaction.
-                  </p>
-                </div>
-
-                {/* Boah Samuel */}
-                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-3 hover:rotate-1">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-2 border-transparent group-hover:border-yellow-300 group-hover:border-4">
-                    <img
-                      src="/lovable-uploads/boahsamuel.jpg"
-                      alt="Boah Samuel"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        target.parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center"><span class="text-white font-bold text-lg">BS</span></div>';
-                      }}
-                    />
-                  </div>
-                  <h4 className="text-base sm:text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Boah Samuel</h4>
-                  <p className="text-xs sm:text-sm font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>Frontend Developer</p>
-                  <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
-                    User-facing components, web/mobile interfaces, performance optimization, and feature integration.
                   </p>
                 </div>
 

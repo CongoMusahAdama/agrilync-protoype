@@ -104,7 +104,7 @@ const Index = () => {
     <div className="min-h-screen overflow-x-hidden">
       {/* Navbar */}
       <Navbar variant="light" />
-      
+
       {/* Hero Section - Text Left, Images Right */}
       <section className="relative min-h-[60vh] sm:min-h-[70vh] md:min-h-[80vh] lg:min-h-[85vh] bg-white overflow-hidden pt-16 pb-8 sm:pb-12 md:pb-16">
         {/* Leaf Pattern Background */}
@@ -130,37 +130,37 @@ const Index = () => {
           <div className="absolute bottom-20 left-34 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] -rotate-45" /></div>
           <div className="absolute bottom-10 right-8 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] rotate-90" /></div>
         </div>
-        
+
         {/* Main Content Container */}
         <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
-            
+
             {/* Left Side - Text Content */}
-            <div className="order-2 lg:order-1 flex flex-col justify-start animate-fade-in-up -mt-8 sm:-mt-12 md:-mt-16 lg:-mt-20">
-              <h1 ref={heroHeadingRef} className={"text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold mb-6 sm:mb-8 transition-all duration-700 ease-in-out leading-tight text-gray-800 " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0")}>
+            <div className="order-2 lg:order-1 flex flex-col justify-start animate-fade-in-up -mt-16 sm:-mt-20 md:-mt-24 lg:-mt-32">
+              <h1 ref={heroHeadingRef} className={`text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold mb-6 sm:mb-8 transition-all duration-700 ease-in-out leading-tight text-gray-800 ${heroHeadingVisible ? " animate-fade-in-up" : " opacity-0"}`}>
                 <span className="animate-pulse-text">Simplifying access to </span><span className="animated-purple-word">FINANCE</span> and <span className="animated-purple-word">INFORMATION</span> for smallholder farmers while leveraging AI to smart <span className="animated-purple-word">INVESTOR</span> matching
               </h1>
-              
+
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
-              <a 
-                href="https://agrilync.netlify.app" 
-                target="_blank" 
-                rel="noopener noreferrer"
+                <a
+                  href="https://agrilync.netlify.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-full sm:w-auto"
-              >
+                >
                   <Button className="w-full sm:w-auto bg-[#002f37] hover:bg-[#001a1f] text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                  Join the Waitlist
-                </Button>
-              </a>
-                             <Button
-                 variant="outline"
+                    Join the Waitlist
+                  </Button>
+                </a>
+                <Button
+                  variant="outline"
                   className="w-full sm:w-auto border-2 border-[#002f37] text-[#002f37] hover:bg-[#002f37] hover:text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-                 onClick={() => window.open('https://www.youtube.com/watch?v=-gOZgTW00GY', '_blank')}
-               >
-                 Watch Demo Video
-               </Button>
+                  onClick={() => window.open('https://www.youtube.com/watch?v=-gOZgTW00GY', '_blank')}
+                >
+                  Watch Demo Video
+                </Button>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 text-sm sm:text-base text-gray-600">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
@@ -179,17 +179,17 @@ const Index = () => {
                 </Button>
               </div>
             </div>
-            
+
             {/* Right Side - Vertical Triptych Image Layout */}
-            <div className="order-1 lg:order-2 relative flex items-end justify-center lg:justify-end min-h-[500px] sm:min-h-[600px] md:min-h-[700px] lg:min-h-[800px] pb-4 sm:pb-6 md:pb-8">
+            <div className="order-1 lg:order-2 relative flex items-end justify-center lg:justify-end min-h-[500px] sm:min-h-[600px] md:min-h-[700px] lg:min-h-[800px] pb-4 sm:pb-6 md:pb-8 -mt-8 sm:mt-0">
               {/* Image Panel Container - Overlapping Style */}
               <div className="relative w-full max-w-xs sm:max-w-md lg:max-w-xl h-[500px] sm:h-[600px] md:h-[700px] lg:h-[800px] flex items-center justify-center gap-3 sm:gap-4 md:gap-6">
-                
-                {/* Panel 1 - hero1.jpg - Higher Position */}
+
+                {/* Panel 1 - hero2.jpg - Higher Position */}
                 <div className="absolute left-0 top-[5%] w-[30%] sm:w-[32%] z-10 animate-hero-image-1">
                   <div className="relative rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105">
                     <img
-                      src="/lovable-uploads/hero1.jpg"
+                      src="/lovable-uploads/hero2.jpg"
                       alt="Hero image 1"
                       className="w-full h-[400px] sm:h-[450px] md:h-[500px] lg:h-[550px] object-cover"
                       loading="eager"
@@ -197,19 +197,19 @@ const Index = () => {
                     />
                   </div>
                 </div>
-                
-                {/* Panel 2 - hero2.jpg - Lower Position */}
+
+                {/* Panel 2 - hero4.png - Lower Position (Middle - Reduced height on mobile) */}
                 <div className="absolute left-[35%] sm:left-[34%] top-[20%] w-[30%] sm:w-[32%] z-20 animate-hero-image-2">
                   <div className="relative rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105">
                     <img
-                      src="/lovable-uploads/hero2.jpg"
+                      src="/lovable-uploads/hero4.png"
                       alt="Hero image 2"
-                      className="w-full h-[400px] sm:h-[450px] md:h-[500px] lg:h-[550px] object-cover"
+                      className="w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[550px] object-cover"
                       loading="eager"
                     />
                   </div>
                 </div>
-                
+
                 {/* Panel 3 - hero3.jpg - Higher Position */}
                 <div className="absolute left-[70%] sm:left-[68%] top-[5%] w-[30%] sm:w-[32%] z-30 animate-hero-image-3">
                   <div className="relative rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105">
@@ -227,8 +227,8 @@ const Index = () => {
         </div>
       </section>
 
-             {/* Who We Are Section */}
-               <section className="py-10 sm:py-16 md:py-20 bg-white">
+      {/* Who We Are Section */}
+      <section className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-start">
             {/* Left Column - Title */}
@@ -237,7 +237,7 @@ const Index = () => {
                 <div className="w-2 h-2" style={{ backgroundColor: '#002f37' }}></div>
                 <span className="text-gray-500 text-xs sm:text-sm uppercase tracking-wider ml-3">WHO WE ARE</span>
               </div>
-              <h2 ref={whoWeAreRef} className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3 transition-all duration-700 ease-in-out " + (whoWeAreVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: '#002f37' }}>
+              <h2 ref={whoWeAreRef} className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3 transition-all duration-700 ease-in-out " + (whoWeAreVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: '#002f37' }}>
                 Who We Are
               </h2>
             </div>
@@ -254,7 +254,7 @@ const Index = () => {
         </div>
       </section>
 
-             {/* Why Farmers Are Crying Section */}
+      {/* Why Farmers Are Crying Section */}
       <section className="py-10 sm:py-16 md:py-20" style={{ backgroundColor: '#002f37' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-start">
@@ -264,7 +264,7 @@ const Index = () => {
                 <div className="w-2 h-2" style={{ backgroundColor: '#7ede56' }}></div>
                 <span className="text-gray-300 text-xs sm:text-sm uppercase tracking-wider ml-3">THE CHALLENGE</span>
               </div>
-              <h2 ref={farmersCryingRef} className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3 transition-all duration-700 ease-in-out " + (farmersCryingVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: 'white' }}>
+              <h2 ref={farmersCryingRef} className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3 transition-all duration-700 ease-in-out " + (farmersCryingVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: 'white' }}>
                 The Challenge
               </h2>
             </div>
@@ -281,11 +281,11 @@ const Index = () => {
         </div>
       </section>
 
-             {/* Everything You Need to Succeed Section - Updated with staggered animations */}
-               <section className="py-10 sm:py-16 md:py-20 bg-white">
+      {/* Everything You Need to Succeed Section - Updated with staggered animations */}
+      <section className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-14 md:mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
-            <h2 ref={succeedHeadingRef} className={"text-base sm:text-lg md:text-2xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (succeedHeadingVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: '#002f37' }}>
+            <h2 ref={succeedHeadingRef} className={"text-base sm:text-lg md:text-2xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (succeedHeadingVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: '#002f37' }}>
               Everything You Need to Succeed
             </h2>
             <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3 mx-auto"></div>
@@ -302,11 +302,11 @@ const Index = () => {
                 <Leaf className="h-12 w-12 text-purple-600" />
               </div>
               <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in transition-all duration-700 ease-in-out" style={{ color: '#002f37' }}
-                  onClick={() => handleFeatureClick('/who-we-are')}>
+                onClick={() => handleFeatureClick('/who-we-are')}>
                 AI-Powered Crop Consultation
               </h3>
               <p className="text-lg text-gray-600 mb-6">
-                Get instant, personalized advice for your crops. Upload photos of plant diseases, 
+                Get instant, personalized advice for your crops. Upload photos of plant diseases,
                 pests, or growth issues and receive expert recommendations powered by advanced AI technology.
               </p>
               <ul className="space-y-2 text-gray-600 mb-6">
@@ -315,7 +315,7 @@ const Index = () => {
                 <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}>• Connect with human experts</li>
                 <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>• Track crop health over time</li>
               </ul>
-              <Button 
+              <Button
                 onClick={() => handleFeatureClick('/who-we-are')}
                 className="bg-purple-600 hover:bg-purple-700"
               >
@@ -323,7 +323,7 @@ const Index = () => {
               </Button>
             </div>
             <div ref={feature1Ref} className={(feature1Visible ? "animate-slide-in-left" : "opacity-0") + " order-1 lg:order-2 lg:col-start-2"}>
-              <img 
+              <img
                 src="/lovable-uploads/889a4eaa-0299-4896-8399-849a40f5565a.png"
                 alt="AI Consultation"
                 className="shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
@@ -335,7 +335,7 @@ const Index = () => {
           {/* Feature 2 - Weather with scroll-triggered slide-in */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center mb-10 sm:mb-16 md:mb-20">
             <div ref={feature2Ref} className={(feature2Visible ? "animate-slide-in-left" : "opacity-0") + " order-1 lg:order-1 lg:col-start-1"}>
-              <img 
+              <img
                 src="/lovable-uploads/3e19a1d1-e890-436d-ba69-4227c2a1c8b1.png"
                 alt="Weather Forecast"
                 className="shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
@@ -348,11 +348,11 @@ const Index = () => {
                 <MapPin className="h-12 w-12 text-purple-600" />
               </div>
               <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in transition-all duration-700 ease-in-out" style={{ color: '#002f37' }}
-                  onClick={() => handleFeatureClick('/who-we-are')}>
+                onClick={() => handleFeatureClick('/who-we-are')}>
                 Hyperlocal Weather Insights
               </h3>
               <p className="text-lg text-gray-600 mb-6">
-                Access precise, farm-specific weather forecasts and receive intelligent 
+                Access precise, farm-specific weather forecasts and receive intelligent
                 recommendations for planting, irrigation, and harvesting based on local conditions.
               </p>
               <ul className="space-y-2 text-gray-600 mb-6">
@@ -361,7 +361,7 @@ const Index = () => {
                 <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}>• Farming calendar notifications</li>
                 <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>• AI-driven recommendations</li>
               </ul>
-              <Button 
+              <Button
                 onClick={() => handleFeatureClick('/who-we-are')}
                 className="bg-purple-600 hover:bg-purple-700"
               >
@@ -378,11 +378,11 @@ const Index = () => {
                 <TrendingUp className="h-12 w-12 text-purple-600" />
               </div>
               <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in transition-all duration-700 ease-in-out" style={{ color: '#002f37' }}
-                  onClick={() => handleFeatureClick('/who-we-are')}>
+                onClick={() => handleFeatureClick('/who-we-are')}>
                 FarmPartner Investment Initiative
               </h3>
               <p className="text-lg text-gray-600 mb-6">
-                Connect verified farmers with impact investors through our transparent 
+                Connect verified farmers with impact investors through our transparent
                 partnership platform. Secure funding, share profits, and build sustainable agricultural communities.
               </p>
               <ul className="space-y-2 text-gray-600 mb-6">
@@ -391,7 +391,7 @@ const Index = () => {
                 <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}>• Extension agent monitoring</li>
                 <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>• Impact tracking dashboard</li>
               </ul>
-              <Button 
+              <Button
                 onClick={() => handleFeatureClick('/who-we-are')}
                 className="bg-purple-600 hover:bg-purple-700"
               >
@@ -399,7 +399,7 @@ const Index = () => {
               </Button>
             </div>
             <div ref={feature3Ref} className={(feature3Visible ? "animate-slide-in-left delay-800" : "opacity-0") + " order-1 lg:order-2 lg:col-start-2"}>
-              <img 
+              <img
                 src="/lovable-uploads/d5bee012-8bd6-4f66-bd49-d60d2468bcb3.png"
                 alt="FarmPartner Investment"
                 className="shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
@@ -422,9 +422,9 @@ const Index = () => {
         </Button>
       )}
 
-             <Footer />
-     </div>
-   );
- };
+      <Footer />
+    </div>
+  );
+};
 
 export default Index;
