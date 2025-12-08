@@ -216,67 +216,87 @@ const FarmManagement: React.FC = () => {
         >
             <div className="space-y-6">
                 {/* Summary Cards */}
-                <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
-                    <button type="button" onClick={() => handleCardClick(null)} className={`relative overflow-hidden rounded-xl p-6 text-left shadow-md transition-all hover:shadow-xl hover:scale-105 bg-[#1db954] text-white ${statusFilter === null ? 'ring-2 ring-white ring-offset-2' : ''}`}>
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="rounded-lg bg-white/20 p-3">
-                                <Users className="h-6 w-6" />
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <Card
+                        className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${statusFilter === null ? 'ring-2 ring-white' : ''} bg-[#1db954]`}
+                        onClick={() => handleCardClick(null)}
+                    >
+                        <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-white/20">
+                                    <Users className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-bold text-white">{metrics.total}</p>
+                                    <p className="text-xs text-white/80">Total Farmers</p>
+                                </div>
                             </div>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-sm font-medium opacity-90">Total Farmers</p>
-                            <p className="text-4xl font-bold">{metrics.total}</p>
-                            <p className="text-xs opacity-80">All farmers in system</p>
-                        </div>
-                    </button>
-                    <button type="button" onClick={() => handleCardClick('Verified')} className={`relative overflow-hidden rounded-xl p-6 text-left shadow-md transition-all hover:shadow-xl hover:scale-105 bg-emerald-600 text-white ${statusFilter === 'Verified' ? 'ring-2 ring-white ring-offset-2' : ''}`}>
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="rounded-lg bg-white/20 p-3">
-                                <CheckCircle className="h-6 w-6" />
+                        </CardContent>
+                    </Card>
+                    <Card
+                        className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${statusFilter === 'Verified' ? 'ring-2 ring-white' : ''} bg-emerald-600`}
+                        onClick={() => handleCardClick('Verified')}
+                    >
+                        <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-white/20">
+                                    <CheckCircle className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-bold text-white">{metrics.verified}</p>
+                                    <p className="text-xs text-white/80">Verified</p>
+                                </div>
                             </div>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-sm font-medium opacity-90">Verified</p>
-                            <p className="text-4xl font-bold">{metrics.verified}</p>
-                            <p className="text-xs opacity-80">Fully verified farmers</p>
-                        </div>
-                    </button>
-                    <button type="button" onClick={() => handleCardClick('Pending')} className={`relative overflow-hidden rounded-xl p-6 text-left shadow-md transition-all hover:shadow-xl hover:scale-105 bg-yellow-500 text-white ${statusFilter === 'Pending' ? 'ring-2 ring-white ring-offset-2' : ''}`}>
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="rounded-lg bg-white/20 p-3">
-                                <Clock className="h-6 w-6" />
+                        </CardContent>
+                    </Card>
+                    <Card
+                        className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${statusFilter === 'Pending' ? 'ring-2 ring-white' : ''} bg-yellow-500`}
+                        onClick={() => handleCardClick('Pending')}
+                    >
+                        <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-white/20">
+                                    <Clock className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-bold text-white">{metrics.pending}</p>
+                                    <p className="text-xs text-white/80">Pending</p>
+                                </div>
                             </div>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-sm font-medium opacity-90">Pending</p>
-                            <p className="text-4xl font-bold">{metrics.pending}</p>
-                            <p className="text-xs opacity-80">Awaiting verification</p>
-                        </div>
-                    </button>
-                    <button type="button" onClick={() => handleCardClick('In Progress')} className={`relative overflow-hidden rounded-xl p-6 text-left shadow-md transition-all hover:shadow-xl hover:scale-105 bg-blue-600 text-white ${statusFilter === 'In Progress' ? 'ring-2 ring-white ring-offset-2' : ''}`}>
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="rounded-lg bg-white/20 p-3">
-                                <TrendingUp className="h-6 w-6" />
+                        </CardContent>
+                    </Card>
+                    <Card
+                        className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${statusFilter === 'In Progress' ? 'ring-2 ring-white' : ''} bg-blue-600`}
+                        onClick={() => handleCardClick('In Progress')}
+                    >
+                        <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-white/20">
+                                    <TrendingUp className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-bold text-white">{metrics.active}</p>
+                                    <p className="text-xs text-white/80">Active Farms</p>
+                                </div>
                             </div>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-sm font-medium opacity-90">Active Farms</p>
-                            <p className="text-4xl font-bold">{metrics.active}</p>
-                            <p className="text-xs opacity-80">Currently in progress</p>
-                        </div>
-                    </button>
-                    <button type="button" onClick={() => handleCardClick('Matched')} className={`relative overflow-hidden rounded-xl p-6 text-left shadow-md transition-all hover:shadow-xl hover:scale-105 bg-purple-600 text-white ${statusFilter === 'Matched' ? 'ring-2 ring-white ring-offset-2' : ''}`}>
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="rounded-lg bg-white/20 p-3">
-                                <Coins className="h-6 w-6" />
+                        </CardContent>
+                    </Card>
+                    <Card
+                        className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${statusFilter === 'Matched' ? 'ring-2 ring-white' : ''} bg-purple-600`}
+                        onClick={() => handleCardClick('Matched')}
+                    >
+                        <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-white/20">
+                                    <Coins className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-bold text-white">{metrics.matched}</p>
+                                    <p className="text-xs text-white/80">Matched</p>
+                                </div>
                             </div>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-sm font-medium opacity-90">Matched</p>
-                            <p className="text-4xl font-bold">{metrics.matched}</p>
-                            <p className="text-xs opacity-80">With investors</p>
-                        </div>
-                    </button>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 {/* Tabs for Farmers Directory and Field Visit Logs */}
@@ -371,16 +391,16 @@ const FarmManagement: React.FC = () => {
                                 <div className="overflow-x-auto">
                                     <table className="w-full">
                                         <thead>
-                                            <tr className={`border-b-2 ${darkMode ? 'border-[#1b5b65]' : 'border-gray-200'}`}>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>#</th>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Lync ID</th>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Farmer</th>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Phone</th>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Location</th>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Farm Details</th>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Status</th>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Last Visit</th>
-                                                <th className={`text-right py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Actions</th>
+                                            <tr className="bg-[#1db954] border-[#1db954]">
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">#</th>
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Lync ID</th>
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Farmer</th>
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Phone</th>
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Location</th>
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Farm Details</th>
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Status</th>
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Last Visit</th>
+                                                <th className="text-right py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -480,15 +500,15 @@ const FarmManagement: React.FC = () => {
                                 <div className="overflow-x-auto">
                                     <table className="w-full">
                                         <thead>
-                                            <tr className={`border-b-2 ${darkMode ? 'border-[#1b5b65]' : 'border-gray-200'}`}>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>#</th>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Lync ID</th>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Farmer</th>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Phone</th>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Date</th>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Purpose</th>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Notes</th>
-                                                <th className={`text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Status</th>
+                                            <tr className="bg-[#1db954] border-[#1db954]">
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">#</th>
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Lync ID</th>
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Farmer</th>
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Phone</th>
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Date</th>
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Purpose</th>
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Notes</th>
+                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Status</th>
                                             </tr>
                                         </thead>
                                         <tbody>

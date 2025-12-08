@@ -484,14 +484,14 @@ const InvestorFarmerMatchesDashboard = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className={`border-b ${darkMode ? 'border-[#1b5b65]' : 'border-gray-200'}`}>
-                        <th className={`text-left py-3 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Investor</th>
-                        <th className={`text-left py-3 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Farmer</th>
-                        <th className={`text-left py-3 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Category</th>
-                        <th className={`text-left py-3 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Investment</th>
-                        <th className={`text-left py-3 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Progress</th>
-                        <th className={`text-left py-3 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Status</th>
-                        <th className={`text-left py-3 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Actions</th>
+                      <tr className="bg-[#1db954] border-[#1db954]">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Investor</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Farmer</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Category</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Investment</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Progress</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Status</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -557,7 +557,7 @@ const InvestorFarmerMatchesDashboard = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => handleViewMatch(match)}
-                              className={`border-[#7ede56] hover:bg-[#7ede56] hover:text-white ${darkMode ? 'text-[#7ede56]' : 'text-[#7ede56]'}`}
+                              className={`${darkMode ? 'bg-[#7ede56] text-white border-[#7ede56] hover:bg-[#6bc947]' : 'border-[#7ede56] text-[#7ede56] hover:bg-[#7ede56] hover:text-white'}`}
                             >
                               <Eye className="h-4 w-4 mr-1" />
                               View
@@ -594,15 +594,15 @@ const InvestorFarmerMatchesDashboard = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className={`border-b ${darkMode ? 'border-[#1b5b65]' : 'border-gray-200'}`}>
-                        <th className={`text-left py-3 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Issue ID</th>
-                        <th className={`text-left py-3 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Farmer</th>
-                        <th className={`text-left py-3 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Investor</th>
-                        <th className={`text-left py-3 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Type</th>
-                        <th className={`text-left py-3 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Date</th>
-                        <th className={`text-left py-3 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Severity</th>
-                        <th className={`text-left py-3 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Status</th>
-                        <th className={`text-left py-3 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Action</th>
+                      <tr className="bg-[#1db954] border-[#1db954]">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Issue ID</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Farmer</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Investor</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Type</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Date</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Severity</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Status</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -638,318 +638,318 @@ const InvestorFarmerMatchesDashboard = () => {
         </Tabs>
 
         {/* Match Details Modal */}
-            <Dialog open={showMatchModal} onOpenChange={setShowMatchModal}>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    Match Details
-                    {selectedMatch && (
-                      <Badge className={`${getStatusBadge(selectedMatch.status)} capitalize ml-2`}>
-                        {selectedMatch.status}
-                      </Badge>
-                    )}
-                  </DialogTitle>
-                  <DialogDescription>
-                    View and manage investor-farmer partnership details
-                  </DialogDescription>
-                </DialogHeader>
-
+        <Dialog open={showMatchModal} onOpenChange={setShowMatchModal}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                Match Details
                 {selectedMatch && (
-                  <ScrollArea className="max-h-[calc(90vh-120px)]">
-                    <Tabs defaultValue="overview" className="w-full">
-                      <TabsList className="grid w-full grid-cols-4 mb-4">
-                        <TabsTrigger value="overview">Overview</TabsTrigger>
-                        <TabsTrigger value="farmer">Farmer</TabsTrigger>
-                        <TabsTrigger value="investor">Investor</TabsTrigger>
-                        <TabsTrigger value="timeline">Timeline</TabsTrigger>
-                      </TabsList>
+                  <Badge className={`${getStatusBadge(selectedMatch.status)} capitalize ml-2`}>
+                    {selectedMatch.status}
+                  </Badge>
+                )}
+              </DialogTitle>
+              <DialogDescription>
+                View and manage investor-farmer partnership details
+              </DialogDescription>
+            </DialogHeader>
 
-                      <TabsContent value="overview" className="space-y-4">
-                        {/* Progress Tracking Section */}
-                        <Card className="border-2 border-[#7ede56]/30 bg-[#7ede56]/5">
-                          <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                              <CardTitle className="text-sm font-medium text-gray-700">Investment Progress</CardTitle>
-                              <Badge className={`${selectedMatch.progress === 100 ? 'bg-blue-100 text-blue-700' :
-                                selectedMatch.progress >= 50 ? 'bg-green-100 text-green-700' :
-                                  selectedMatch.progress > 0 ? 'bg-orange-100 text-orange-700' :
-                                    'bg-gray-100 text-gray-700'
-                                }`}>
-                                {selectedMatch.progress}% Complete
-                              </Badge>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Progress</span>
-                                <span className="font-bold text-gray-900">{selectedMatch.progress}%</span>
-                              </div>
-                              <Progress
-                                value={selectedMatch.progress}
-                                className={`h-3 ${selectedMatch.status === 'completed' ? '[&>div]:bg-blue-500' :
-                                  selectedMatch.status === 'flagged' ? '[&>div]:bg-red-500' :
-                                    selectedMatch.progress >= 50 ? '[&>div]:bg-green-500' :
-                                      '[&>div]:bg-orange-500'
-                                  }`}
-                              />
-                            </div>
+            {selectedMatch && (
+              <ScrollArea className="max-h-[calc(90vh-120px)]">
+                <Tabs defaultValue="overview" className="w-full">
+                  <TabsList className="grid w-full grid-cols-4 mb-4">
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="farmer">Farmer</TabsTrigger>
+                    <TabsTrigger value="investor">Investor</TabsTrigger>
+                    <TabsTrigger value="timeline">Timeline</TabsTrigger>
+                  </TabsList>
 
-                            {/* Updates History */}
-                            {selectedMatch.updates && selectedMatch.updates.length > 0 && (
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <h4 className="text-sm font-medium text-gray-700">Recent Updates ({selectedMatch.updates.length})</h4>
-                                </div>
-                                <div className="space-y-2 max-h-48 overflow-y-auto">
-                                  {selectedMatch.updates.slice().reverse().map((update: any, index: number) => (
-                                    <div key={update.id || index} className="bg-white rounded-lg p-3 border border-gray-100 shadow-sm">
-                                      <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                          <h5 className="font-medium text-gray-900 text-sm">{update.title}</h5>
-                                          <p className="text-xs text-gray-500 mt-1">{update.description}</p>
-                                        </div>
-                                        <div className="text-right ml-3">
-                                          <Badge variant="outline" className="text-xs">{update.progress}%</Badge>
-                                          <p className="text-xs text-gray-400 mt-1">{update.date}</p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {(!selectedMatch.updates || selectedMatch.updates.length === 0) && (
-                              <div className="text-center py-4 text-gray-500 text-sm">
-                                <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                                No updates yet. Upload a progress report to track this investment.
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-
-                        <div className="grid md:grid-cols-2 gap-4">
-                          {/* Investment Details Card */}
-                          <Card>
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-sm font-medium text-gray-500">Investment Details</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Type:</span>
-                                <span className="font-medium">{selectedMatch.investmentType}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Value:</span>
-                                <span className="font-medium text-green-600">{selectedMatch.investmentValue}</span>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-gray-500">Partnership Model:</span>
-                                <Badge className={`${selectedMatch.partnershipModel === 'Profit Sharing' ? 'bg-purple-100 text-purple-700 border-purple-200' :
-                                  selectedMatch.partnershipModel === 'Buy-back Agreement' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-                                    'bg-orange-100 text-orange-700 border-orange-200'
-                                  } border`}>
-                                  {selectedMatch.partnershipModel}
-                                </Badge>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Match Date:</span>
-                                <span className="font-medium">{selectedMatch.matchDate}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Start Date:</span>
-                                <span className="font-medium">{selectedMatch.startDate || 'Not started'}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Assigned Agent:</span>
-                                <span className="font-medium">{selectedMatch.assignedAgent}</span>
-                              </div>
-                            </CardContent>
-                          </Card>
-
-                          {/* Quick Actions Card */}
-                          <Card>
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-sm font-medium text-gray-500">Quick Actions</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-2">
-                              <Button className="w-full justify-start bg-[#7ede56] hover:bg-[#6bc947] text-white" onClick={() => setShowUploadModal(true)}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add Progress Update
-                              </Button>
-                              <Button className="w-full justify-start" variant="outline" onClick={() => setShowUploadModal(true)}>
-                                <Upload className="h-4 w-4 mr-2" />
-                                Upload Report
-                              </Button>
-                              <Button className="w-full justify-start text-orange-600 border-orange-200 hover:bg-orange-50" variant="outline">
-                                <Flag className="h-4 w-4 mr-2" />
-                                Flag an Issue
-                              </Button>
-                              <Button className="w-full justify-start text-blue-600 border-blue-200 hover:bg-blue-50" variant="outline">
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Complete Match
-                              </Button>
-                            </CardContent>
-                          </Card>
+                  <TabsContent value="overview" className="space-y-4">
+                    {/* Progress Tracking Section */}
+                    <Card className="border-2 border-[#7ede56]/30 bg-[#7ede56]/5">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-sm font-medium text-gray-700">Investment Progress</CardTitle>
+                          <Badge className={`${selectedMatch.progress === 100 ? 'bg-blue-100 text-blue-700' :
+                            selectedMatch.progress >= 50 ? 'bg-green-100 text-green-700' :
+                              selectedMatch.progress > 0 ? 'bg-orange-100 text-orange-700' :
+                                'bg-gray-100 text-gray-700'
+                            }`}>
+                            {selectedMatch.progress}% Complete
+                          </Badge>
                         </div>
-                      </TabsContent>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-500">Progress</span>
+                            <span className="font-bold text-gray-900">{selectedMatch.progress}%</span>
+                          </div>
+                          <Progress
+                            value={selectedMatch.progress}
+                            className={`h-3 ${selectedMatch.status === 'completed' ? '[&>div]:bg-blue-500' :
+                              selectedMatch.status === 'flagged' ? '[&>div]:bg-red-500' :
+                                selectedMatch.progress >= 50 ? '[&>div]:bg-green-500' :
+                                  '[&>div]:bg-orange-500'
+                              }`}
+                          />
+                        </div>
 
-                      <TabsContent value="farmer" className="space-y-4">
-                        <Card>
-                          <CardContent className="pt-6">
-                            <div className="flex items-start gap-4">
-                              <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                                <User className="h-8 w-8 text-green-600" />
-                              </div>
-                              <div className="flex-1 space-y-3">
-                                <div className="flex items-center gap-2">
-                                  <h3 className="text-xl font-bold">{selectedMatch.farmer.name}</h3>
-                                  {selectedMatch.farmer.verified && (
-                                    <Badge className="bg-blue-100 text-blue-700">
-                                      <CheckCircle2 className="h-3 w-3 mr-1" />
-                                      Verified
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="flex items-center gap-2 text-gray-600">
-                                    <MapPin className="h-4 w-4" />
-                                    {selectedMatch.farmer.region} Region
-                                  </div>
-                                  <div className="flex items-center gap-2 text-gray-600">
-                                    <Leaf className="h-4 w-4" />
-                                    {selectedMatch.farmType} - {selectedMatch.category}
-                                  </div>
-                                  <div className="flex items-center gap-2 text-gray-600">
-                                    <TrendingUp className="h-4 w-4" />
-                                    Land: {selectedMatch.farmer.landSize}
-                                  </div>
-                                  <div className="flex items-center gap-2 text-gray-600">
-                                    <CircleDot className="h-4 w-4" />
-                                    Stage: {selectedMatch.farmer.productionStage}
-                                  </div>
-                                </div>
-                              </div>
+                        {/* Updates History */}
+                        {selectedMatch.updates && selectedMatch.updates.length > 0 && (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-sm font-medium text-gray-700">Recent Updates ({selectedMatch.updates.length})</h4>
                             </div>
-                          </CardContent>
-                        </Card>
-                      </TabsContent>
-
-                      <TabsContent value="investor" className="space-y-4">
-                        <Card>
-                          <CardContent className="pt-6">
-                            <div className="flex items-start gap-4">
-                              <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                                <Building className="h-8 w-8 text-blue-600" />
-                              </div>
-                              <div className="flex-1 space-y-3">
-                                <h3 className="text-xl font-bold">{selectedMatch.investor.name}</h3>
-                                <p className="text-gray-600">{selectedMatch.investor.organization}</p>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="flex items-center gap-2 text-gray-600">
-                                    <Phone className="h-4 w-4" />
-                                    {selectedMatch.investor.contact}
-                                  </div>
-                                  <div className="flex items-center gap-2 text-gray-600">
-                                    <Mail className="h-4 w-4" />
-                                    {selectedMatch.investor.email}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </TabsContent>
-
-                      <TabsContent value="timeline" className="space-y-4">
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-500">Activity Timeline</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="relative">
-                              {selectedMatch.timeline.map((item, index) => (
-                                <div key={index} className="flex gap-4 pb-4">
-                                  <div className="flex flex-col items-center">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${item.type === 'issue' ? 'bg-red-100' :
-                                      item.type === 'complete' ? 'bg-green-100' :
-                                        'bg-blue-100'
-                                      }`}>
-                                      {item.type === 'issue' ? (
-                                        <AlertCircle className="h-4 w-4 text-red-600" />
-                                      ) : item.type === 'complete' ? (
-                                        <CheckCircle2 className="h-4 w-4 text-green-600" />
-                                      ) : (
-                                        <CircleDot className="h-4 w-4 text-blue-600" />
-                                      )}
+                            <div className="space-y-2 max-h-48 overflow-y-auto">
+                              {selectedMatch.updates.slice().reverse().map((update: any, index: number) => (
+                                <div key={update.id || index} className="bg-white rounded-lg p-3 border border-gray-100 shadow-sm">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <h5 className="font-medium text-gray-900 text-sm">{update.title}</h5>
+                                      <p className="text-xs text-gray-500 mt-1">{update.description}</p>
                                     </div>
-                                    {index < selectedMatch.timeline.length - 1 && (
-                                      <div className="w-0.5 h-full bg-gray-200 min-h-[20px]" />
-                                    )}
-                                  </div>
-                                  <div className="flex-1 pb-2">
-                                    <p className="font-medium text-gray-900 dark:text-white">{item.action}</p>
-                                    <p className="text-sm text-gray-500">{item.date}</p>
+                                    <div className="text-right ml-3">
+                                      <Badge variant="outline" className="text-xs">{update.progress}%</Badge>
+                                      <p className="text-xs text-gray-400 mt-1">{update.date}</p>
+                                    </div>
                                   </div>
                                 </div>
                               ))}
                             </div>
-                          </CardContent>
-                        </Card>
-                      </TabsContent>
-                    </Tabs>
-                  </ScrollArea>
-                )}
-              </DialogContent>
-            </Dialog>
+                          </div>
+                        )}
 
-            {/* Upload Update Modal */}
-            <Dialog open={showUploadModal} onOpenChange={setShowUploadModal}>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Upload Progress Update</DialogTitle>
-                  <DialogDescription>
-                    Add notes, photos, or reports for this match
-                  </DialogDescription>
-                </DialogHeader>
+                        {(!selectedMatch.updates || selectedMatch.updates.length === 0) && (
+                          <div className="text-center py-4 text-gray-500 text-sm">
+                            <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                            No updates yet. Upload a progress report to track this investment.
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
 
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="notes">Update Notes</Label>
-                    <Textarea
-                      id="notes"
-                      placeholder="Enter your progress update notes..."
-                      value={updateNotes}
-                      onChange={(e) => setUpdateNotes(e.target.value)}
-                      rows={4}
-                    />
-                  </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {/* Investment Details Card */}
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-medium text-gray-500">Investment Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Type:</span>
+                            <span className="font-medium">{selectedMatch.investmentType}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Value:</span>
+                            <span className="font-medium text-green-600">{selectedMatch.investmentValue}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-500">Partnership Model:</span>
+                            <Badge className={`${selectedMatch.partnershipModel === 'Profit Sharing' ? 'bg-purple-100 text-purple-700 border-purple-200' :
+                              selectedMatch.partnershipModel === 'Buy-back Agreement' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                                'bg-orange-100 text-orange-700 border-orange-200'
+                              } border`}>
+                              {selectedMatch.partnershipModel}
+                            </Badge>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Match Date:</span>
+                            <span className="font-medium">{selectedMatch.matchDate}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Start Date:</span>
+                            <span className="font-medium">{selectedMatch.startDate || 'Not started'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Assigned Agent:</span>
+                            <span className="font-medium">{selectedMatch.assignedAgent}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
 
-                  <div>
-                    <Label>Attachments</Label>
-                    <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-[#7ede56] transition-colors cursor-pointer">
-                      <Camera className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600">Click to upload photos or documents</p>
-                      <p className="text-xs text-gray-400 mt-1">PNG, JPG, PDF up to 10MB</p>
+                      {/* Quick Actions Card */}
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-medium text-gray-500">Quick Actions</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <Button className="w-full justify-start bg-[#7ede56] hover:bg-[#6bc947] text-white" onClick={() => setShowUploadModal(true)}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Progress Update
+                          </Button>
+                          <Button className="w-full justify-start" variant="outline" onClick={() => setShowUploadModal(true)}>
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload Report
+                          </Button>
+                          <Button className="w-full justify-start text-orange-600 border-orange-200 hover:bg-orange-50" variant="outline">
+                            <Flag className="h-4 w-4 mr-2" />
+                            Flag an Issue
+                          </Button>
+                          <Button className="w-full justify-start text-blue-600 border-blue-200 hover:bg-blue-50" variant="outline">
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Complete Match
+                          </Button>
+                        </CardContent>
+                      </Card>
                     </div>
-                  </div>
+                  </TabsContent>
 
-                  <div className="flex gap-2 justify-end">
-                    <Button variant="outline" onClick={() => setShowUploadModal(false)}>
-                      Cancel
-                    </Button>
-                    <Button className="bg-[#7ede56] hover:bg-[#6bc947] text-white">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Submit Update
-                    </Button>
-                  </div>
+                  <TabsContent value="farmer" className="space-y-4">
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="flex items-start gap-4">
+                          <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                            <User className="h-8 w-8 text-green-600" />
+                          </div>
+                          <div className="flex-1 space-y-3">
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-xl font-bold">{selectedMatch.farmer.name}</h3>
+                              {selectedMatch.farmer.verified && (
+                                <Badge className="bg-blue-100 text-blue-700">
+                                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                                  Verified
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <MapPin className="h-4 w-4" />
+                                {selectedMatch.farmer.region} Region
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Leaf className="h-4 w-4" />
+                                {selectedMatch.farmType} - {selectedMatch.category}
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <TrendingUp className="h-4 w-4" />
+                                Land: {selectedMatch.farmer.landSize}
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <CircleDot className="h-4 w-4" />
+                                Stage: {selectedMatch.farmer.productionStage}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="investor" className="space-y-4">
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="flex items-start gap-4">
+                          <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                            <Building className="h-8 w-8 text-blue-600" />
+                          </div>
+                          <div className="flex-1 space-y-3">
+                            <h3 className="text-xl font-bold">{selectedMatch.investor.name}</h3>
+                            <p className="text-gray-600">{selectedMatch.investor.organization}</p>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Phone className="h-4 w-4" />
+                                {selectedMatch.investor.contact}
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Mail className="h-4 w-4" />
+                                {selectedMatch.investor.email}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="timeline" className="space-y-4">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-gray-500">Activity Timeline</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="relative">
+                          {selectedMatch.timeline.map((item, index) => (
+                            <div key={index} className="flex gap-4 pb-4">
+                              <div className="flex flex-col items-center">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${item.type === 'issue' ? 'bg-red-100' :
+                                  item.type === 'complete' ? 'bg-green-100' :
+                                    'bg-blue-100'
+                                  }`}>
+                                  {item.type === 'issue' ? (
+                                    <AlertCircle className="h-4 w-4 text-red-600" />
+                                  ) : item.type === 'complete' ? (
+                                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                  ) : (
+                                    <CircleDot className="h-4 w-4 text-blue-600" />
+                                  )}
+                                </div>
+                                {index < selectedMatch.timeline.length - 1 && (
+                                  <div className="w-0.5 h-full bg-gray-200 min-h-[20px]" />
+                                )}
+                              </div>
+                              <div className="flex-1 pb-2">
+                                <p className="font-medium text-gray-900 dark:text-white">{item.action}</p>
+                                <p className="text-sm text-gray-500">{item.date}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+              </ScrollArea>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Upload Update Modal */}
+        <Dialog open={showUploadModal} onOpenChange={setShowUploadModal}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Upload Progress Update</DialogTitle>
+              <DialogDescription>
+                Add notes, photos, or reports for this match
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="notes">Update Notes</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Enter your progress update notes..."
+                  value={updateNotes}
+                  onChange={(e) => setUpdateNotes(e.target.value)}
+                  rows={4}
+                />
+              </div>
+
+              <div>
+                <Label>Attachments</Label>
+                <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-[#7ede56] transition-colors cursor-pointer">
+                  <Camera className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600">Click to upload photos or documents</p>
+                  <p className="text-xs text-gray-400 mt-1">PNG, JPG, PDF up to 10MB</p>
                 </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </AgentLayout>
-        );
+              </div>
+
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setShowUploadModal(false)}>
+                  Cancel
+                </Button>
+                <Button className="bg-[#7ede56] hover:bg-[#6bc947] text-white">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Submit Update
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </AgentLayout>
+  );
 };
 
-        export default InvestorFarmerMatchesDashboard;
+export default InvestorFarmerMatchesDashboard;

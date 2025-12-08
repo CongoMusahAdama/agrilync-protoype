@@ -67,7 +67,9 @@ const FarmAnalytics = () => {
         totalProjects: 12,
         activeConnections: 8,
         totalInvestment: 45000,
-        monthlyGrowth: 15.2
+        monthlyGrowth: 15.2,
+        performance: 85,
+        satisfaction: 4.8
       }
     },
     farmer: {
@@ -76,7 +78,9 @@ const FarmAnalytics = () => {
         totalCrops: 8,
         activeProjects: 5,
         totalEarnings: 25000,
-        monthlyGrowth: 12.5
+        monthlyGrowth: 12.5,
+        performance: 92,
+        satisfaction: 4.9
       }
     },
     investor: {
@@ -85,7 +89,9 @@ const FarmAnalytics = () => {
         totalInvestment: 150000,
         activePortfolio: 12,
         totalReturns: 18000,
-        monthlyGrowth: 8.3
+        monthlyGrowth: 8.3,
+        performance: 78,
+        satisfaction: 4.5
       }
     },
     agent: {
@@ -94,7 +100,9 @@ const FarmAnalytics = () => {
         activeConnections: 25,
         totalFarmers: 45,
         completedVisits: 120,
-        monthlyGrowth: 22.1
+        monthlyGrowth: 22.1,
+        performance: 95,
+        satisfaction: 5.0
       }
     }
   };
@@ -208,9 +216,9 @@ const FarmAnalytics = () => {
       <div className={`p-4 border-b ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'}`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <img 
-              src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png" 
-              alt="AgriLync Logo" 
+            <img
+              src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png"
+              alt="AgriLync Logo"
               className="h-8 w-8"
             />
             {(!sidebarCollapsed || isMobile) && (
@@ -240,78 +248,71 @@ const FarmAnalytics = () => {
       />
 
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        <div 
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-            activeSidebarItem === 'dashboard' 
-              ? 'bg-[#7ede56] text-[#002f37]' 
-              : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-          }`}
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'dashboard'
+            ? 'bg-[#7ede56] text-[#002f37]'
+            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+            }`}
           onClick={() => handleSidebarNavigation('dashboard')}
         >
           <Activity className="h-5 w-5 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Dashboard</span>}
         </div>
-        <div 
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-            activeSidebarItem === 'settings' 
-              ? 'bg-[#7ede56] text-[#002f37]' 
-              : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-          }`}
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'settings'
+            ? 'bg-[#7ede56] text-[#002f37]'
+            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+            }`}
           onClick={() => handleSidebarNavigation('settings')}
         >
           <Settings className="h-5 w-5 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Profile & Settings</span>}
         </div>
-        <div 
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-            activeSidebarItem === 'farm-management' 
-              ? 'bg-[#7ede56] text-[#002f37]' 
-              : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-          }`}
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'farm-management'
+            ? 'bg-[#7ede56] text-[#002f37]'
+            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+            }`}
           onClick={() => handleSidebarNavigation('farm-management')}
         >
           <MapPin className="h-5 w-5 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Farm Management</span>}
         </div>
-        <div 
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-            activeSidebarItem === 'farm-analytics' 
-              ? 'bg-[#7ede56] text-[#002f37]' 
-              : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-          }`}
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'farm-analytics'
+            ? 'bg-[#7ede56] text-[#002f37]'
+            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+            }`}
           onClick={() => handleSidebarNavigation('farm-analytics')}
         >
           <BarChart3 className="h-5 w-5 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Farm Analytics</span>}
         </div>
-        <div 
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-            activeSidebarItem === 'investor-matches' 
-              ? 'bg-[#7ede56] text-[#002f37]' 
-              : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-          }`}
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'investor-matches'
+            ? 'bg-[#7ede56] text-[#002f37]'
+            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+            }`}
           onClick={() => handleSidebarNavigation('investor-matches')}
         >
           <Users className="h-5 w-5 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Investor Matches</span>}
         </div>
-        <div 
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-            activeSidebarItem === 'training-sessions' 
-              ? 'bg-[#7ede56] text-[#002f37]' 
-              : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-          }`}
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'training-sessions'
+            ? 'bg-[#7ede56] text-[#002f37]'
+            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+            }`}
           onClick={() => handleSidebarNavigation('training-sessions')}
         >
           <Calendar className="h-5 w-5 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Training Sessions</span>}
         </div>
-        <div 
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-            activeSidebarItem === 'notifications' 
-              ? 'bg-[#7ede56] text-[#002f37]' 
-              : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-          }`}
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'notifications'
+            ? 'bg-[#7ede56] text-[#002f37]'
+            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+            }`}
           onClick={() => handleSidebarNavigation('notifications')}
         >
           <Bell className="h-5 w-5 flex-shrink-0" />
@@ -320,8 +321,16 @@ const FarmAnalytics = () => {
       </nav>
 
       {/* Log Out - Sticky at bottom */}
-      <div className={`mt-auto p-4 border-t ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'} sticky bottom-0 ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
-        <div 
+      <div className={`mt-auto p-4 border-t space-y-2 ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'} sticky bottom-0 ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
+          onClick={toggleDarkMode}
+          title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {darkMode ? <Sun className="h-5 w-5 flex-shrink-0 text-yellow-500" /> : <Moon className="h-5 w-5 flex-shrink-0 text-gray-400" />}
+          {(!sidebarCollapsed || isMobile) && <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
+        </div>
+        <div
           className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
           onClick={() => navigate('/')}
         >
@@ -378,9 +387,9 @@ const FarmAnalytics = () => {
                 </div>
               </div>
               <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className={`flex items-center gap-1 sm:gap-2 rounded-full p-2 ${darkMode ? 'text-gray-300 hover:bg-gray-800 hover:text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                   onClick={toggleDarkMode}
                   title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
@@ -396,115 +405,70 @@ const FarmAnalytics = () => {
             </div>
           </div>
 
-          <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6">
+          <div className="w-full p-3 sm:p-4 md:p-6">
             <div className="mb-4 sm:mb-6 md:mb-8">
               <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Track your performance and growth metrics</p>
             </div>
 
             {/* Key Metrics Cards - Matching Main Dashboard Style */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
-              {/* Crops & Livestock - Green */}
-              <Card className="bg-[#7ede56] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
-                {/* Leaf Pattern Background */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                  <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
-                  <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
-                  <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
-                  <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
-                </div>
-                <div className="flex flex-col h-full relative z-10">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Leaf className="h-8 w-8 text-white" />
-                    <p className="text-sm font-medium text-white">Crops & Livestock</p>
+            {/* Top Stats Cards - Matching Agent Dashboard Style */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+              {/* Performance Score - Green */}
+              <Card className="hover:shadow-md transition-shadow bg-[#7ede56] border-none">
+                <CardContent className="p-4 flex flex-row items-center justify-between space-y-0">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-medium text-white/90">Performance Score</span>
+                    <span className="text-2xl font-bold text-white">{currentData.stats.performance}%</span>
                   </div>
-                  <div className="flex-1 flex items-center">
-                    <p className="text-4xl font-bold text-white">
-                      {'totalCrops' in currentData.stats ? currentData.stats.totalCrops : 0}
-                    </p>
+                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+                    <Activity className="h-5 w-5 text-white" />
                   </div>
-                  <div className="flex justify-end mt-4">
-                    <a href="#" className="text-sm font-medium text-white hover:underline">View crops/livestock</a>
-                  </div>
-                </div>
+                </CardContent>
               </Card>
 
-              {/* Active Projects - Orange */}
-              <Card className="bg-[#ffa500] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
-                {/* Leaf Pattern Background */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                  <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
-                  <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
-                  <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
-                  <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
-                </div>
-                <div className="flex flex-col h-full relative z-10">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Activity className="h-8 w-8 text-white" />
-                    <p className="text-sm font-medium text-white">Active Projects</p>
+              {/* Satisfaction - Blue */}
+              <Card className="hover:shadow-md transition-shadow bg-[#3b82f6] border-none">
+                <CardContent className="p-4 flex flex-row items-center justify-between space-y-0">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-medium text-white/90">Satisfaction</span>
+                    <span className="text-2xl font-bold text-white">{currentData.stats.satisfaction}/5.0</span>
                   </div>
-                  <div className="flex-1 flex items-center">
-                    <p className="text-4xl font-bold text-white">
-                      {'activeProjects' in currentData.stats ? currentData.stats.activeProjects : 0}
-                    </p>
+                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+                    <Star className="h-5 w-5 text-white" />
                   </div>
-                  <div className="flex justify-end mt-4">
-                    <a href="#" className="text-sm font-medium text-white hover:underline">View projects</a>
-                  </div>
-                </div>
+                </CardContent>
               </Card>
 
-              {/* Total Value - Red/Coral */}
-              <Card className="bg-[#ff6347] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
-                {/* Leaf Pattern Background */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                  <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
-                  <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
-                  <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
-                  <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
-                </div>
-                <div className="flex flex-col h-full relative z-10">
-                  <div className="flex items-center gap-3 mb-4">
-                    <DollarSign className="h-8 w-8 text-white" />
-                    <p className="text-sm font-medium text-white">Total Value</p>
+              {/* Total Value - Coral/Red */}
+              <Card className="hover:shadow-md transition-shadow bg-[#ff6347] border-none">
+                <CardContent className="p-4 flex flex-row items-center justify-between space-y-0">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-medium text-white/90">Total Value</span>
+                    <span className="text-2xl font-bold text-white">
+                      GHS {userType === 'farmer' ?
+                        ('totalEarnings' in currentData.stats ? (currentData.stats as any).totalEarnings : 0).toLocaleString() :
+                        ('totalInvestment' in currentData.stats ? (currentData.stats as any).totalInvestment :
+                          'totalReturns' in currentData.stats ? (currentData.stats as any).totalReturns : 0)
+                          .toLocaleString()}
+                    </span>
                   </div>
-                  <div className="flex-1 flex items-center">
-                    <p className="text-4xl font-bold text-white">
-                      GHS {userType === 'farmer' ? 
-                        ('totalEarnings' in currentData.stats ? (currentData.stats as any).totalEarnings : 0) : 
-                        ('totalInvestment' in currentData.stats ? (currentData.stats as any).totalInvestment : 
-                         'totalReturns' in currentData.stats ? (currentData.stats as any).totalReturns : 0)
-                      .toLocaleString()}
-                    </p>
+                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+                    <DollarSign className="h-5 w-5 text-white" />
                   </div>
-                  <div className="flex justify-end mt-4">
-                    <a href="#" className="text-sm font-medium text-white hover:underline">View details</a>
-                  </div>
-                </div>
+                </CardContent>
               </Card>
 
-              {/* Monthly Growth - Deep Magenta */}
-              <Card className="bg-[#921573] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
-                {/* Leaf Pattern Background */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                  <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
-                  <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
-                  <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
-                  <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
-                </div>
-                <div className="flex flex-col h-full relative z-10">
-                  <div className="flex items-center gap-3 mb-4">
-                    <TrendingUp className="h-8 w-8 text-white" />
-                    <p className="text-sm font-medium text-white">Monthly Growth</p>
+              {/* Monthly Growth - Magenta/Purple */}
+              <Card className="hover:shadow-md transition-shadow bg-[#9333ea] border-none">
+                <CardContent className="p-4 flex flex-row items-center justify-between space-y-0">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-medium text-white/90">Monthly Growth</span>
+                    <span className="text-2xl font-bold text-white">+{currentData.stats.monthlyGrowth}%</span>
                   </div>
-                  <div className="flex-1 flex items-center">
-                    <p className="text-4xl font-bold text-white">
-                      +{currentData.stats.monthlyGrowth}%
-                    </p>
+                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+                    <TrendingUp className="h-5 w-5 text-white" />
                   </div>
-                  <div className="flex justify-end mt-4">
-                    <a href="#" className="text-sm font-medium text-white hover:underline">View trends</a>
-                  </div>
-                </div>
+                </CardContent>
               </Card>
             </div>
 
@@ -538,7 +502,7 @@ const FarmAnalytics = () => {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <ChartTooltip 
+                      <ChartTooltip
                         content={<ChartTooltipContent />}
                         contentStyle={{
                           backgroundColor: darkMode ? '#1a1f24' : '#ffffff',
@@ -557,8 +521,8 @@ const FarmAnalytics = () => {
                     {yieldData.map((item, index) => (
                       <div key={index} className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
-                          <div 
-                            className="w-3 h-3 rounded-full" 
+                          <div
+                            className="w-3 h-3 rounded-full"
                             style={{ backgroundColor: item.color }}
                           />
                           <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{item.name}</span>
@@ -584,17 +548,17 @@ const FarmAnalytics = () => {
                   <ChartContainer config={revenueConfig} className="h-80">
                     <BarChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#374151' : '#e5e7eb'} />
-                      <XAxis 
-                        dataKey="month" 
+                      <XAxis
+                        dataKey="month"
                         tick={{ fill: darkMode ? '#9ca3af' : '#6b7280', fontSize: 12 }}
                         stroke={darkMode ? '#4b5563' : '#d1d5db'}
                       />
-                      <YAxis 
+                      <YAxis
                         tick={{ fill: darkMode ? '#9ca3af' : '#6b7280', fontSize: 12 }}
                         stroke={darkMode ? '#4b5563' : '#d1d5db'}
                         tickFormatter={(value) => `GHS ${(value / 1000).toFixed(0)}k`}
                       />
-                      <ChartTooltip 
+                      <ChartTooltip
                         content={<ChartTooltipContent />}
                         contentStyle={{
                           backgroundColor: darkMode ? '#1a1f24' : '#ffffff',
@@ -607,8 +571,8 @@ const FarmAnalytics = () => {
                           'Revenue'
                         ]}
                       />
-                      <Bar 
-                        dataKey="revenue" 
+                      <Bar
+                        dataKey="revenue"
                         fill={darkMode ? '#7ede56' : '#7ede56'}
                         radius={[8, 8, 0, 0]}
                       />
@@ -640,33 +604,33 @@ const FarmAnalytics = () => {
                     <AreaChart data={performanceData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorPerformance" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={darkMode ? '#7ede56' : '#7ede56'} stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor={darkMode ? '#7ede56' : '#7ede56'} stopOpacity={0}/>
+                          <stop offset="5%" stopColor={darkMode ? '#7ede56' : '#7ede56'} stopOpacity={0.3} />
+                          <stop offset="95%" stopColor={darkMode ? '#7ede56' : '#7ede56'} stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="colorRating" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={darkMode ? '#ffa500' : '#ffa500'} stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor={darkMode ? '#ffa500' : '#ffa500'} stopOpacity={0}/>
+                          <stop offset="5%" stopColor={darkMode ? '#ffa500' : '#ffa500'} stopOpacity={0.3} />
+                          <stop offset="95%" stopColor={darkMode ? '#ffa500' : '#ffa500'} stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#374151' : '#e5e7eb'} />
-                      <XAxis 
-                        dataKey="month" 
+                      <XAxis
+                        dataKey="month"
                         tick={{ fill: darkMode ? '#9ca3af' : '#6b7280', fontSize: 12 }}
                         stroke={darkMode ? '#4b5563' : '#d1d5db'}
                       />
-                      <YAxis 
+                      <YAxis
                         yAxisId="left"
                         tick={{ fill: darkMode ? '#9ca3af' : '#6b7280', fontSize: 12 }}
                         stroke={darkMode ? '#4b5563' : '#d1d5db'}
                       />
-                      <YAxis 
-                        yAxisId="right" 
+                      <YAxis
+                        yAxisId="right"
                         orientation="right"
                         domain={[3.5, 5.5]}
                         tick={{ fill: darkMode ? '#9ca3af' : '#6b7280', fontSize: 12 }}
                         stroke={darkMode ? '#4b5563' : '#d1d5db'}
                       />
-                      <ChartTooltip 
+                      <ChartTooltip
                         content={<ChartTooltipContent />}
                         contentStyle={{
                           backgroundColor: darkMode ? '#1a1f24' : '#ffffff',
@@ -674,25 +638,25 @@ const FarmAnalytics = () => {
                           borderRadius: '8px',
                         }}
                       />
-                      <Area 
+                      <Area
                         yAxisId="left"
-                        type="monotone" 
-                        dataKey="performance" 
-                        stroke={darkMode ? '#7ede56' : '#7ede56'} 
-                        fillOpacity={1} 
+                        type="monotone"
+                        dataKey="performance"
+                        stroke={darkMode ? '#7ede56' : '#7ede56'}
+                        fillOpacity={1}
                         fill="url(#colorPerformance)"
                         strokeWidth={2}
                       />
-                      <Line 
+                      <Line
                         yAxisId="right"
-                        type="monotone" 
-                        dataKey="rating" 
-                        stroke={darkMode ? '#ffa500' : '#ffa500'} 
+                        type="monotone"
+                        dataKey="rating"
+                        stroke={darkMode ? '#ffa500' : '#ffa500'}
                         strokeWidth={2}
                         dot={{ fill: darkMode ? '#ffa500' : '#ffa500', r: 3 }}
                         activeDot={{ r: 5 }}
                       />
-                      <Legend 
+                      <Legend
                         wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
                         iconType="line"
                         formatter={(value) => (
@@ -731,7 +695,7 @@ const FarmAnalytics = () => {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <ChartTooltip 
+                      <ChartTooltip
                         content={<ChartTooltipContent />}
                         contentStyle={{
                           backgroundColor: darkMode ? '#1a1f24' : '#ffffff',
@@ -750,8 +714,8 @@ const FarmAnalytics = () => {
                     {trendsData.map((item, index) => (
                       <div key={index} className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
-                          <div 
-                            className="w-3 h-3 rounded-full" 
+                          <div
+                            className="w-3 h-3 rounded-full"
                             style={{ backgroundColor: item.color }}
                           />
                           <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{item.name}</span>

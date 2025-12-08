@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import { useDarkMode } from '@/contexts/DarkModeContext';
-import { User, Sprout, MapPin, Phone, Mail, Calendar, Eye, TrendingUp, CheckCircle, Sparkles } from 'lucide-react';
+import { User, Sprout, MapPin, Phone, Mail, Calendar, Eye, TrendingUp, CheckCircle, Sparkles, X } from 'lucide-react';
 
 interface ViewFarmerModalProps {
     open: boolean;
@@ -56,9 +56,9 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                         <div className="flex items-center gap-4">
                             {/* Enhanced Avatar */}
                             <div className={`relative w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-lg ${farmer.status === 'Verified' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' :
-                                    farmer.status === 'Pending' ? 'bg-gradient-to-br from-yellow-500 to-yellow-600' :
-                                        farmer.status === 'Matched' ? 'bg-gradient-to-br from-purple-500 to-purple-600' :
-                                            'bg-gradient-to-br from-blue-500 to-blue-600'
+                                farmer.status === 'Pending' ? 'bg-gradient-to-br from-yellow-500 to-yellow-600' :
+                                    farmer.status === 'Matched' ? 'bg-gradient-to-br from-purple-500 to-purple-600' :
+                                        'bg-gradient-to-br from-blue-500 to-blue-600'
                                 }`}>
                                 {farmer.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
                                 {farmer.status === 'Verified' && (
@@ -89,6 +89,7 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                                     Investment Matched
                                 </Badge>
                             )}
+
                         </div>
                     </div>
                 </DialogHeader>

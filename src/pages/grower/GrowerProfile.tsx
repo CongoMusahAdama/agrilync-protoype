@@ -131,7 +131,15 @@ const GrowerProfile: React.FC = () => {
                 })}
             </nav>
 
-            <div className={`mt-auto p-4 border-t ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'} ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
+            <div className={`mt-auto p-4 border-t space-y-2 ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'} ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
+                <div
+                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
+                    onClick={toggleDarkMode}
+                    title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                >
+                    {darkMode ? <Sun className="h-5 w-5 flex-shrink-0 text-yellow-500" /> : <Moon className="h-5 w-5 flex-shrink-0 text-gray-400" />}
+                    {(!sidebarCollapsed || isMobile) && <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
+                </div>
                 <div
                     className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
                     onClick={() => navigate('/')}
@@ -171,7 +179,7 @@ const GrowerProfile: React.FC = () => {
                     </div>
                 )}
 
-                <div className={`flex-1 overflow-y-auto ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'} ${!isMobile ? (sidebarCollapsed ? 'ml-16' : 'ml-64') : ''}`}>
+                <div className={`flex-1 flex flex-col ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'} ${!isMobile ? (sidebarCollapsed ? 'ml-16' : 'ml-64') : ''} min-h-screen`}>
                     <div
                         className={`${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white border-gray-200'} border-b px-3 py-3 sm:px-6 sm:py-4 sticky top-0 z-20`}
                     >
@@ -212,178 +220,180 @@ const GrowerProfile: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="space-y-6 px-3 py-6 sm:px-6">
-                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            Input the required details to customize your profile. Ensure all fields are complete for accuracy.
-                        </p>
+                    <div className="flex-1 overflow-y-auto">
+                        <div className="space-y-6 px-3 py-6 sm:px-6">
+                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                Input the required details to customize your profile. Ensure all fields are complete for accuracy.
+                            </p>
 
-                        {/* Two Column Layout */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Left Side - Form Content (2/3 width) */}
-                            <div className={`lg:col-span-2 rounded-lg p-6 ${darkMode ? 'bg-[#002f37]' : 'bg-white'} shadow-lg`}>
-                                <h3 className={`text-xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                    {profileSteps.find(s => s.id === activeStep)?.label}
-                                </h3>
+                            {/* Two Column Layout */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* Left Side - Form Content (2/3 width) */}
+                                <div className={`lg:col-span-2 rounded-lg p-6 ${darkMode ? 'bg-[#002f37]' : 'bg-white'} shadow-lg`}>
+                                    <h3 className={`text-xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                        {profileSteps.find(s => s.id === activeStep)?.label}
+                                    </h3>
 
-                                {/* Personal Information Form */}
-                                {activeStep === 'personal' && (
-                                    <div className="space-y-4">
-                                        <div>
-                                            <Label htmlFor="clientName" className={`text-sm font-medium mb-2 block ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                                                Client Name <span className="text-red-500">*</span>
-                                            </Label>
-                                            <Input
-                                                id="clientName"
-                                                placeholder="John Doe"
-                                                className={`${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}
-                                            />
+                                    {/* Personal Information Form */}
+                                    {activeStep === 'personal' && (
+                                        <div className="space-y-4">
+                                            <div>
+                                                <Label htmlFor="clientName" className={`text-sm font-medium mb-2 block ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                                    Client Name <span className="text-red-500">*</span>
+                                                </Label>
+                                                <Input
+                                                    id="clientName"
+                                                    placeholder="John Doe"
+                                                    className={`${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="email" className={`text-sm font-medium mb-2 block ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                                    Email <span className="text-red-500">*</span>
+                                                </Label>
+                                                <Input
+                                                    id="email"
+                                                    type="email"
+                                                    placeholder="john@gmail.com"
+                                                    className={`${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="country" className={`text-sm font-medium mb-2 block ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                                    Country <span className="text-red-500">*</span>
+                                                </Label>
+                                                <Select>
+                                                    <SelectTrigger className={`${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}>
+                                                        <SelectValue placeholder="Select Country" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="ghana">Ghana</SelectItem>
+                                                        <SelectItem value="nigeria">Nigeria</SelectItem>
+                                                        <SelectItem value="kenya">Kenya</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="region" className={`text-sm font-medium mb-2 block ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                                    Region/Province/State
+                                                </Label>
+                                                <Select>
+                                                    <SelectTrigger className={`${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}>
+                                                        <SelectValue placeholder="Select State" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="ashanti">Ashanti</SelectItem>
+                                                        <SelectItem value="eastern">Eastern</SelectItem>
+                                                        <SelectItem value="western">Western</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <Label htmlFor="email" className={`text-sm font-medium mb-2 block ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                                                Email <span className="text-red-500">*</span>
-                                            </Label>
-                                            <Input
-                                                id="email"
-                                                type="email"
-                                                placeholder="john@gmail.com"
-                                                className={`${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}
-                                            />
+                                    )}
+
+                                    {/* Job Details Form */}
+                                    {activeStep === 'job' && (
+                                        <div className="space-y-4">
+                                            <div>
+                                                <Label className={`text-sm font-medium mb-2 block ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                                    Job Title
+                                                </Label>
+                                                <Input
+                                                    placeholder="Enter job title"
+                                                    className={`${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label className={`text-sm font-medium mb-2 block ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                                    Department
+                                                </Label>
+                                                <Input
+                                                    placeholder="Enter department"
+                                                    className={`${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}
+                                                />
+                                            </div>
                                         </div>
-                                        <div>
-                                            <Label htmlFor="country" className={`text-sm font-medium mb-2 block ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                                                Country <span className="text-red-500">*</span>
-                                            </Label>
-                                            <Select>
-                                                <SelectTrigger className={`${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}>
-                                                    <SelectValue placeholder="Select Country" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="ghana">Ghana</SelectItem>
-                                                    <SelectItem value="nigeria">Nigeria</SelectItem>
-                                                    <SelectItem value="kenya">Kenya</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                    )}
+
+                                    {/* Compensation Budget Form */}
+                                    {activeStep === 'compensation' && (
+                                        <div className="space-y-4">
+                                            <div>
+                                                <Label className={`text-sm font-medium mb-2 block ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                                    Budget Amount
+                                                </Label>
+                                                <Input
+                                                    type="number"
+                                                    placeholder="Enter amount"
+                                                    className={`${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}
+                                                />
+                                            </div>
                                         </div>
-                                        <div>
-                                            <Label htmlFor="region" className={`text-sm font-medium mb-2 block ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                                                Region/Province/State
-                                            </Label>
-                                            <Select>
-                                                <SelectTrigger className={`${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}>
-                                                    <SelectValue placeholder="Select State" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="ashanti">Ashanti</SelectItem>
-                                                    <SelectItem value="eastern">Eastern</SelectItem>
-                                                    <SelectItem value="western">Western</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                    )}
+
+                                    {/* Review Contract */}
+                                    {activeStep === 'review' && (
+                                        <div className="space-y-4">
+                                            <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                Please review all the information before submitting.
+                                            </p>
                                         </div>
+                                    )}
+
+                                    <div className="mt-6">
+                                        <Button className="bg-[#1db954] hover:bg-[#17a447] text-white w-full sm:w-auto">
+                                            Continue
+                                        </Button>
                                     </div>
-                                )}
-
-                                {/* Job Details Form */}
-                                {activeStep === 'job' && (
-                                    <div className="space-y-4">
-                                        <div>
-                                            <Label className={`text-sm font-medium mb-2 block ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                                                Job Title
-                                            </Label>
-                                            <Input
-                                                placeholder="Enter job title"
-                                                className={`${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label className={`text-sm font-medium mb-2 block ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                                                Department
-                                            </Label>
-                                            <Input
-                                                placeholder="Enter department"
-                                                className={`${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Compensation Budget Form */}
-                                {activeStep === 'compensation' && (
-                                    <div className="space-y-4">
-                                        <div>
-                                            <Label className={`text-sm font-medium mb-2 block ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                                                Budget Amount
-                                            </Label>
-                                            <Input
-                                                type="number"
-                                                placeholder="Enter amount"
-                                                className={`${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Review Contract */}
-                                {activeStep === 'review' && (
-                                    <div className="space-y-4">
-                                        <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            Please review all the information before submitting.
-                                        </p>
-                                    </div>
-                                )}
-
-                                <div className="mt-6">
-                                    <Button className="bg-[#1db954] hover:bg-[#17a447] text-white w-full sm:w-auto">
-                                        Continue
-                                    </Button>
                                 </div>
-                            </div>
 
-                            {/* Right Side - Step Indicators (1/3 width) */}
-                            <div className={`rounded-lg p-6 ${darkMode ? 'bg-[#002f37]' : 'bg-white'} shadow-lg`}>
-                                <div className="space-y-3">
-                                    {profileSteps.map((step, index) => {
-                                        const isActive = activeStep === step.id;
-                                        const isCompleted = completedSteps.includes(step.id);
-                                        const stepNumber = index + 1;
+                                {/* Right Side - Step Indicators (1/3 width) */}
+                                <div className={`rounded-lg p-6 ${darkMode ? 'bg-[#002f37]' : 'bg-white'} shadow-lg`}>
+                                    <div className="space-y-3">
+                                        {profileSteps.map((step, index) => {
+                                            const isActive = activeStep === step.id;
+                                            const isCompleted = completedSteps.includes(step.id);
+                                            const stepNumber = index + 1;
 
-                                        return (
-                                            <button
-                                                key={step.id}
-                                                onClick={() => setActiveStep(step.id)}
-                                                className={`w-full text-left p-4 rounded-lg transition-all duration-200 ${isActive
-                                                    ? darkMode
-                                                        ? 'bg-[#1db954]/20 border-2 border-[#1db954]'
-                                                        : 'bg-[#1db954]/10 border-2 border-[#1db954]'
-                                                    : darkMode
-                                                        ? 'bg-[#0d3036] border-2 border-transparent hover:border-gray-700'
-                                                        : 'bg-gray-50 border-2 border-transparent hover:border-gray-200'
-                                                    }`}
-                                            >
-                                                <div className="flex items-center justify-between">
-                                                    <span className={`text-sm font-semibold ${isActive
-                                                        ? 'text-[#1db954]'
+                                            return (
+                                                <button
+                                                    key={step.id}
+                                                    onClick={() => setActiveStep(step.id)}
+                                                    className={`w-full text-left p-4 rounded-lg transition-all duration-200 ${isActive
+                                                        ? darkMode
+                                                            ? 'bg-[#1db954]/20 border-2 border-[#1db954]'
+                                                            : 'bg-[#1db954]/10 border-2 border-[#1db954]'
                                                         : darkMode
-                                                            ? 'text-gray-300'
-                                                            : 'text-gray-700'
-                                                        }`}>
-                                                        {step.label}
-                                                    </span>
-                                                    <div
-                                                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${isActive
-                                                            ? 'bg-[#1db954] text-white'
-                                                            : isCompleted
+                                                            ? 'bg-[#0d3036] border-2 border-transparent hover:border-gray-700'
+                                                            : 'bg-gray-50 border-2 border-transparent hover:border-gray-200'
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center justify-between">
+                                                        <span className={`text-sm font-semibold ${isActive
+                                                            ? 'text-[#1db954]'
+                                                            : darkMode
+                                                                ? 'text-gray-300'
+                                                                : 'text-gray-700'
+                                                            }`}>
+                                                            {step.label}
+                                                        </span>
+                                                        <div
+                                                            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${isActive
                                                                 ? 'bg-[#1db954] text-white'
-                                                                : darkMode
-                                                                    ? 'bg-gray-700 text-gray-400'
-                                                                    : 'bg-gray-200 text-gray-500'
-                                                            }`}
-                                                    >
-                                                        {stepNumber}
+                                                                : isCompleted
+                                                                    ? 'bg-[#1db954] text-white'
+                                                                    : darkMode
+                                                                        ? 'bg-gray-700 text-gray-400'
+                                                                        : 'bg-gray-200 text-gray-500'
+                                                                }`}
+                                                        >
+                                                            {stepNumber}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
                         </div>

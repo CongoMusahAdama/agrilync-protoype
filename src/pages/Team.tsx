@@ -50,7 +50,7 @@ const Team = () => {
       <section className="pt-24 pb-10 sm:pb-16 md:pb-20 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-14 md:mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
-            <h2 ref={teamRef} className={"text-base sm:text-lg md:text-2xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (teamVisible ? " animate-fade-in-up" : " opacity-0") } style={{ color: BRAND_TEAL }}>
+            <h2 ref={teamRef} className={"text-base sm:text-lg md:text-2xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (teamVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
               Meet the Team Behind AgriLync
             </h2>
             <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3 mx-auto"></div>
@@ -63,8 +63,8 @@ const Team = () => {
           <div className="relative">
             {/* Top Level - CEO */}
             <div ref={leadershipRef} className={"text-center mb-16 sm:mb-20 transition-all duration-1000 ease-out " + (leadershipVisible ? " animate-fade-in-up opacity-100 translate-y-0" : " opacity-0 translate-y-8")}>
-              <div className="inline-block group hover:scale-110 transition-all duration-500 cursor-pointer transform hover:rotate-1" onClick={() => setIsCEOModalOpen(true)}>
-                <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-purple-100 group-hover:border-purple-300 group-hover:border-8">
+              <div className="inline-block cursor-pointer" onClick={() => setIsCEOModalOpen(true)}>
+                <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full mx-auto mb-4 overflow-hidden shadow-lg border-4 border-purple-100">
                   <img
                     src="/lovable-uploads/f.jpg"
                     alt="Congo Musah Adama"
@@ -85,22 +85,12 @@ const Team = () => {
               </div>
             </div>
 
-            {/* Connecting Lines from CEO to Co-Founders */}
-            <div className={"hidden lg:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-32 pointer-events-none transition-all duration-1000 delay-500 " + (leadershipVisible ? " opacity-100" : " opacity-0")}>
-              <div className="w-px h-16 bg-purple-300 mx-auto"></div>
-              <div className="flex justify-between px-8">
-                <div className="w-px h-16 bg-purple-300"></div>
-                <div className="w-px h-16 bg-purple-300"></div>
-                <div className="w-px h-16 bg-purple-300"></div>
-              </div>
-            </div>
-
             {/* Second Level - Co-Founders */}
             <div className={"grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-12 mb-16 sm:mb-20 transition-all duration-1000 ease-out delay-300 " + (leadershipVisible ? " animate-fade-in-up opacity-100 translate-y-0" : " opacity-0 translate-y-8")}>
               {/* Takyi Robert - Strategy */}
               <div className="text-center">
-                <div className="inline-block group hover:scale-110 transition-all duration-500 transform hover:-translate-y-2">
-                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-green-100 group-hover:border-green-300 group-hover:border-6">
+                <div className="inline-block">
+                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg border-4 border-green-100">
                     <img
                       src="/lovable-uploads/robert.jpg"
                       alt="Takyi Robert"
@@ -122,9 +112,9 @@ const Team = () => {
               </div>
 
               {/* Agbenyenu Sedem Prince - Product Manager */}
-              <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-2">
-                <div className="inline-block group hover:scale-110 transition-all duration-500">
-                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-orange-100 group-hover:border-orange-300 group-hover:border-6">
+              <div className="text-center">
+                <div className="inline-block">
+                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg border-4 border-orange-100">
                     <img
                       src="/lovable-uploads/prince-sedem.jpg"
                       alt="Agbenyenu Sedem Prince"
@@ -146,8 +136,8 @@ const Team = () => {
 
               {/* Boah Samuel - Product Experience */}
               <div className="text-center">
-                <div className="inline-block group hover:scale-110 transition-all duration-500 transform hover:-translate-y-2">
-                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-yellow-100 group-hover:border-yellow-300 group-hover:border-6">
+                <div className="inline-block">
+                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 overflow-hidden shadow-lg border-4 border-yellow-100">
                     <img
                       src="/lovable-uploads/boahsamuel.jpg"
                       alt="Boah Samuel"
@@ -178,8 +168,8 @@ const Team = () => {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {/* Osei Prince */}
-                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-3 hover:rotate-2">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-2 border-transparent group-hover:border-indigo-300 group-hover:border-4">
+                <div className="text-center">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg border-2 border-indigo-100">
                     <img
                       src="/lovable-uploads/princeosei.jpg"
                       alt="Osei Prince"
@@ -199,8 +189,8 @@ const Team = () => {
                 </div>
 
                 {/* Cecil Odonkor */}
-                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-3 hover:-rotate-2">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-2 border-transparent group-hover:border-teal-300 group-hover:border-4">
+                <div className="text-center">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg border-2 border-teal-100">
                     <img
                       src="/lovable-uploads/cecilodonkoh.jpg"
                       alt="Cecil Odonkor"
@@ -220,8 +210,8 @@ const Team = () => {
                 </div>
 
                 {/* Kwaku Essah */}
-                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-3 hover:-rotate-1">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-2 border-transparent group-hover:border-pink-300 group-hover:border-4">
+                <div className="text-center">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 overflow-hidden shadow-lg border-2 border-pink-100">
                     <img
                       src="/lovable-uploads/kwakuessah.jpg"
                       alt="Kwaku Essah"
@@ -253,8 +243,8 @@ const Team = () => {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12">
                 {/* Kwagbedzi Dela */}
-                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-4 hover:rotate-3">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-emerald-100 group-hover:border-emerald-300 group-hover:border-6">
+                <div className="text-center">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg border-4 border-emerald-100">
                     <img
                       src="/lovable-uploads/dela.jpg"
                       alt="Kwagbedzi Dela"
@@ -274,8 +264,8 @@ const Team = () => {
                 </div>
 
                 {/* Adzah Isabella */}
-                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-4 hover:-rotate-2">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-pink-100 group-hover:border-pink-300 group-hover:border-6">
+                <div className="text-center">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg border-4 border-pink-100">
                     <img
                       src="/lovable-uploads/isabel.jpg"
                       alt="Adzah Isabella"
@@ -296,8 +286,8 @@ const Team = () => {
                 </div>
 
                 {/* Vorlashie Raphael */}
-                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-4 hover:rotate-2">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-blue-100 group-hover:border-blue-300 group-hover:border-6">
+                <div className="text-center">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg border-4 border-blue-100">
                     <img
                       src="/lovable-uploads/mawuli.jpg"
                       alt="Vorlashie Raphael"
@@ -328,8 +318,8 @@ const Team = () => {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8 sm:gap-12">
                 {/* Wontumi Gabriel */}
-                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-5 hover:rotate-4">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-violet-100 group-hover:border-violet-300 group-hover:border-6">
+                <div className="text-center">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg border-4 border-violet-100">
                     <img
                       src="/lovable-uploads/wontumi.jpg"
                       alt="Wontumi Gabriel"
@@ -349,8 +339,8 @@ const Team = () => {
                 </div>
 
                 {/* Simons Justice */}
-                <div className="text-center group hover:scale-110 transition-all duration-500 transform hover:-translate-y-5 hover:-rotate-3">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-amber-100 group-hover:border-amber-300 group-hover:border-6">
+                <div className="text-center">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden shadow-lg border-4 border-amber-100">
                     <img
                       src="/lovable-uploads/simons.jpg"
                       alt="Simons Justice"
@@ -387,7 +377,7 @@ const Team = () => {
               <p className="text-lg font-semibold" style={{ color: BRAND_MAGENTA }}>CEO and Founder</p>
             </div>
           </DialogHeader>
-          
+
           <div className="space-y-6">
             {/* Profile Image */}
             <div className="text-center">
@@ -410,7 +400,7 @@ const Team = () => {
               <p className="text-gray-700 leading-relaxed">
                 With three years of hands-on experience, I've:
               </p>
-              
+
               <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
                 <li>Engineered backend systems that process agricultural data at scale</li>
                 <li>Built intuitive interfaces that bridge the digital divide for rural users</li>

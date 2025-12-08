@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import SidebarProfileCard from '@/components/SidebarProfileCard';
-import { 
+import {
   ArrowLeft,
   ArrowRight,
   Users,
@@ -65,7 +65,7 @@ const InvestorMatches = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
   const [activeSidebarItem, setActiveSidebarItem] = useState('investor-matches');
-  
+
   const profileMapping: Record<string, { name: string; role: string; location: string; email: string; avatarUrl?: string }> = {
     grower: {
       name: 'John Agribusiness',
@@ -94,7 +94,7 @@ const InvestorMatches = () => {
   };
 
   const profileInfo = profileMapping[userType as keyof typeof profileMapping] || profileMapping['grower'];
-  
+
   // Investment update states
   const [showUpdateDialog, setShowUpdateDialog] = useState(false);
   const [selectedInvestment, setSelectedInvestment] = useState<number | null>(null);
@@ -355,7 +355,7 @@ const InvestorMatches = () => {
 
   const filteredMatches = mockMatches.filter(match => {
     const matchesSearch = match.investorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         match.interest.toLowerCase().includes(searchTerm.toLowerCase());
+      match.interest.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || match.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -397,7 +397,7 @@ const InvestorMatches = () => {
     const files = Array.from(e.target.files || []);
     const newPhotos = [...updateForm.photos, ...files];
     const newPreviews = newPhotos.map(file => URL.createObjectURL(file));
-    
+
     setUpdateForm({
       ...updateForm,
       photos: newPhotos,
@@ -444,9 +444,9 @@ const InvestorMatches = () => {
       investments.map(inv =>
         inv.id === selectedInvestment
           ? {
-              ...updatedInvestment,
-              progress: newProgress
-            }
+            ...updatedInvestment,
+            progress: newProgress
+          }
           : inv
       )
     );
@@ -467,7 +467,7 @@ const InvestorMatches = () => {
     const files = Array.from(e.target.files || []);
     const newPhotos = [...complaintForm.photos, ...files];
     const newPreviews = newPhotos.map(file => URL.createObjectURL(file));
-    
+
     setComplaintForm({
       ...complaintForm,
       photos: newPhotos,
@@ -507,9 +507,9 @@ const InvestorMatches = () => {
       <div className={`p-4 border-b ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'}`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <img 
-              src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png" 
-              alt="AgriLync Logo" 
+            <img
+              src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png"
+              alt="AgriLync Logo"
               className="h-8 w-8"
             />
             {(!sidebarCollapsed || isMobile) && (
@@ -533,9 +533,8 @@ const InvestorMatches = () => {
 
       <div className={`px-4 py-4 border-b ${darkMode ? 'border-gray-200/70' : 'border-[#f4ffee]/10'} ${sidebarCollapsed && !isMobile ? 'flex justify-center' : ''}`}>
         <div
-          className={`w-full flex ${sidebarCollapsed && !isMobile ? 'flex-col items-center gap-2' : 'items-center gap-3'} ${
-            darkMode ? 'bg-[#f4ffee] text-[#002f37]' : 'bg-[#01414a] text-white'
-          } rounded-xl p-3 shadow-sm transition-colors`}
+          className={`w-full flex ${sidebarCollapsed && !isMobile ? 'flex-col items-center gap-2' : 'items-center gap-3'} ${darkMode ? 'bg-[#f4ffee] text-[#002f37]' : 'bg-[#01414a] text-white'
+            } rounded-xl p-3 shadow-sm transition-colors`}
         >
           <SidebarProfileCard
             sidebarCollapsed={sidebarCollapsed}
@@ -547,78 +546,71 @@ const InvestorMatches = () => {
       </div>
 
       <nav className="flex-1 p-4 space-y-2">
-        <div 
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-            activeSidebarItem === 'dashboard' 
-              ? 'bg-[#7ede56] text-[#002f37]' 
-              : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-          }`}
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'dashboard'
+            ? 'bg-[#7ede56] text-[#002f37]'
+            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+            }`}
           onClick={() => handleSidebarNavigation('dashboard')}
         >
           <Activity className="h-5 w-5 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Dashboard</span>}
         </div>
-        <div 
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-            activeSidebarItem === 'settings' 
-              ? 'bg-[#7ede56] text-[#002f37]' 
-              : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-          }`}
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'settings'
+            ? 'bg-[#7ede56] text-[#002f37]'
+            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+            }`}
           onClick={() => handleSidebarNavigation('settings')}
         >
           <Settings className="h-5 w-5 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Profile & Settings</span>}
         </div>
-        <div 
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-            activeSidebarItem === 'farm-management' 
-              ? 'bg-[#7ede56] text-[#002f37]' 
-              : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-          }`}
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'farm-management'
+            ? 'bg-[#7ede56] text-[#002f37]'
+            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+            }`}
           onClick={() => handleSidebarNavigation('farm-management')}
         >
           <MapPin className="h-5 w-5 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Farm Management</span>}
         </div>
-        <div 
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-            activeSidebarItem === 'farm-analytics' 
-              ? 'bg-[#7ede56] text-[#002f37]' 
-              : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-          }`}
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'farm-analytics'
+            ? 'bg-[#7ede56] text-[#002f37]'
+            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+            }`}
           onClick={() => handleSidebarNavigation('farm-analytics')}
         >
           <BarChart3 className="h-5 w-5 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Farm Analytics</span>}
         </div>
-        <div 
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-            activeSidebarItem === 'investor-matches' 
-              ? 'bg-[#7ede56] text-[#002f37]' 
-              : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-          }`}
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'investor-matches'
+            ? 'bg-[#7ede56] text-[#002f37]'
+            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+            }`}
           onClick={() => handleSidebarNavigation('investor-matches')}
         >
           <Users className="h-5 w-5 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Investor Matches</span>}
         </div>
-        <div 
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-            activeSidebarItem === 'training-sessions' 
-              ? 'bg-[#7ede56] text-[#002f37]' 
-              : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-          }`}
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'training-sessions'
+            ? 'bg-[#7ede56] text-[#002f37]'
+            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+            }`}
           onClick={() => handleSidebarNavigation('training-sessions')}
         >
           <Calendar className="h-5 w-5 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Training Sessions</span>}
         </div>
-        <div 
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-            activeSidebarItem === 'notifications' 
-              ? 'bg-[#7ede56] text-[#002f37]' 
-              : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-          }`}
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'notifications'
+            ? 'bg-[#7ede56] text-[#002f37]'
+            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+            }`}
           onClick={() => handleSidebarNavigation('notifications')}
         >
           <Bell className="h-5 w-5 flex-shrink-0" />
@@ -627,8 +619,16 @@ const InvestorMatches = () => {
       </nav>
 
       {/* Log Out - Sticky at bottom */}
-      <div className={`mt-auto p-4 border-t ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'} sticky bottom-0 ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
-        <div 
+      <div className={`mt-auto p-4 border-t space-y-2 ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'} sticky bottom-0 ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
+          onClick={toggleDarkMode}
+          title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {darkMode ? <Sun className="h-5 w-5 flex-shrink-0 text-yellow-500" /> : <Moon className="h-5 w-5 flex-shrink-0 text-gray-400" />}
+          {(!sidebarCollapsed || isMobile) && <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
+        </div>
+        <div
           className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
           onClick={() => navigate('/')}
         >
@@ -685,9 +685,9 @@ const InvestorMatches = () => {
                 </div>
               </div>
               <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className={`flex items-center gap-1 sm:gap-2 rounded-full p-2 ${darkMode ? 'text-gray-300 hover:bg-gray-800 hover:text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                   onClick={toggleDarkMode}
                   title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
@@ -703,38 +703,35 @@ const InvestorMatches = () => {
             </div>
           </div>
 
-          <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6">
+          <div className="w-full p-3 sm:p-4 md:p-6">
             {/* Tabs */}
             <div className="mb-6 flex gap-2 border-b border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => setActiveTab('matches')}
-                className={`px-6 py-3 font-medium text-sm transition-colors ${
-                  activeTab === 'matches'
-                    ? `border-b-2 ${darkMode ? 'border-[#7ede56] text-[#7ede56]' : 'border-[#7ede56] text-[#7ede56]'}`
-                    : `${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`
-                }`}
+                className={`px-6 py-3 font-medium text-sm transition-colors ${activeTab === 'matches'
+                  ? `border-b-2 ${darkMode ? 'border-[#7ede56] text-[#7ede56]' : 'border-[#7ede56] text-[#7ede56]'}`
+                  : `${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`
+                  }`}
               >
                 <Users className="h-4 w-4 inline mr-2" />
                 Find Investors
               </button>
               <button
                 onClick={() => setActiveTab('investments')}
-                className={`px-6 py-3 font-medium text-sm transition-colors ${
-                  activeTab === 'investments'
-                    ? `border-b-2 ${darkMode ? 'border-[#7ede56] text-[#7ede56]' : 'border-[#7ede56] text-[#7ede56]'}`
-                    : `${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`
-                }`}
+                className={`px-6 py-3 font-medium text-sm transition-colors ${activeTab === 'investments'
+                  ? `border-b-2 ${darkMode ? 'border-[#7ede56] text-[#7ede56]' : 'border-[#7ede56] text-[#7ede56]'}`
+                  : `${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`
+                  }`}
               >
                 <TrendingUp className="h-4 w-4 inline mr-2" />
                 My Investments
               </button>
               <button
                 onClick={() => setActiveTab('stages')}
-                className={`px-6 py-3 font-medium text-sm transition-colors ${
-                  activeTab === 'stages'
-                    ? `border-b-2 ${darkMode ? 'border-[#7ede56] text-[#7ede56]' : 'border-[#7ede56] text-[#7ede56]'}`
-                    : `${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`
-                }`}
+                className={`px-6 py-3 font-medium text-sm transition-colors ${activeTab === 'stages'
+                  ? `border-b-2 ${darkMode ? 'border-[#7ede56] text-[#7ede56]' : 'border-[#7ede56] text-[#7ede56]'}`
+                  : `${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`
+                  }`}
               >
                 <Activity className="h-4 w-4 inline mr-2" />
                 Investment Stages
@@ -773,165 +770,165 @@ const InvestorMatches = () => {
                   </div>
                 </div>
 
-            {/* Stats Cards - Matching Main Dashboard Style */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
-              {/* Total Matches - Green */}
-              <Card className="bg-[#7ede56] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
-                {/* Leaf Pattern Background */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                  <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
-                  <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
-                  <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
-                  <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
+                {/* Stats Cards - Matching Main Dashboard Style */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
+                  {/* Total Matches - Green */}
+                  <Card className="bg-[#7ede56] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
+                    {/* Leaf Pattern Background */}
+                    <div className="absolute inset-0 opacity-10 pointer-events-none">
+                      <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
+                      <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
+                      <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
+                      <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
+                    </div>
+                    <div className="flex items-center justify-between relative z-10">
+                      <div>
+                        <p className="text-sm font-medium text-white">Total Matches</p>
+                        <p className="text-2xl font-bold text-white">{mockMatches.length}</p>
+                      </div>
+                      <Users className="h-8 w-8 text-white" />
+                    </div>
+                  </Card>
+                  {/* Active Matches - Orange */}
+                  <Card className="bg-[#ffa500] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
+                    {/* Leaf Pattern Background */}
+                    <div className="absolute inset-0 opacity-10 pointer-events-none">
+                      <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
+                      <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
+                      <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
+                      <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
+                    </div>
+                    <div className="flex items-center justify-between relative z-10">
+                      <div>
+                        <p className="text-sm font-medium text-white">Active Matches</p>
+                        <p className="text-2xl font-bold text-white">
+                          {mockMatches.filter(m => m.status === 'matched').length}
+                        </p>
+                      </div>
+                      <DollarSign className="h-8 w-8 text-white" />
+                    </div>
+                  </Card>
+                  {/* Pending - Red/Coral */}
+                  <Card className="bg-[#ff6347] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
+                    {/* Leaf Pattern Background */}
+                    <div className="absolute inset-0 opacity-10 pointer-events-none">
+                      <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
+                      <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
+                      <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
+                      <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
+                    </div>
+                    <div className="flex items-center justify-between relative z-10">
+                      <div>
+                        <p className="text-sm font-medium text-white">Pending</p>
+                        <p className="text-2xl font-bold text-white">
+                          {mockMatches.filter(m => m.status === 'pending').length}
+                        </p>
+                      </div>
+                      <Calendar className="h-8 w-8 text-white" />
+                    </div>
+                  </Card>
+                  {/* Total Investment - Deep Magenta */}
+                  <Card className="bg-[#921573] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
+                    {/* Leaf Pattern Background */}
+                    <div className="absolute inset-0 opacity-10 pointer-events-none">
+                      <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
+                      <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
+                      <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
+                      <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
+                    </div>
+                    <div className="flex items-center justify-between relative z-10">
+                      <div>
+                        <p className="text-sm font-medium text-white">Total Investment</p>
+                        <p className="text-2xl font-bold text-white">
+                          GHS {mockMatches.reduce((sum, match) => sum + match.amount, 0).toLocaleString()}
+                        </p>
+                      </div>
+                      <DollarSign className="h-8 w-8 text-white" />
+                    </div>
+                  </Card>
                 </div>
-                <div className="flex items-center justify-between relative z-10">
-                  <div>
-                    <p className="text-sm font-medium text-white">Total Matches</p>
-                    <p className="text-2xl font-bold text-white">{mockMatches.length}</p>
-                  </div>
-                  <Users className="h-8 w-8 text-white" />
-                </div>
-              </Card>
-            {/* Active Matches - Orange */}
-            <Card className="bg-[#ffa500] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
-              {/* Leaf Pattern Background */}
-              <div className="absolute inset-0 opacity-10 pointer-events-none">
-                <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
-                <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
-                <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
-                <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
-              </div>
-              <div className="flex items-center justify-between relative z-10">
-                <div>
-                  <p className="text-sm font-medium text-white">Active Matches</p>
-                  <p className="text-2xl font-bold text-white">
-                    {mockMatches.filter(m => m.status === 'matched').length}
-                  </p>
-                </div>
-                <DollarSign className="h-8 w-8 text-white" />
-              </div>
-            </Card>
-            {/* Pending - Red/Coral */}
-            <Card className="bg-[#ff6347] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
-              {/* Leaf Pattern Background */}
-              <div className="absolute inset-0 opacity-10 pointer-events-none">
-                <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
-                <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
-                <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
-                <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
-              </div>
-              <div className="flex items-center justify-between relative z-10">
-                <div>
-                  <p className="text-sm font-medium text-white">Pending</p>
-                  <p className="text-2xl font-bold text-white">
-                    {mockMatches.filter(m => m.status === 'pending').length}
-                  </p>
-                </div>
-                <Calendar className="h-8 w-8 text-white" />
-              </div>
-            </Card>
-            {/* Total Investment - Deep Magenta */}
-            <Card className="bg-[#921573] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
-              {/* Leaf Pattern Background */}
-              <div className="absolute inset-0 opacity-10 pointer-events-none">
-                <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
-                <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
-                <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
-                <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
-              </div>
-              <div className="flex items-center justify-between relative z-10">
-                <div>
-                  <p className="text-sm font-medium text-white">Total Investment</p>
-                  <p className="text-2xl font-bold text-white">
-                    GHS {mockMatches.reduce((sum, match) => sum + match.amount, 0).toLocaleString()}
-                  </p>
-                </div>
-                <DollarSign className="h-8 w-8 text-white" />
-              </div>
-            </Card>
-            </div>
 
                 {/* Matches List */}
                 <div className="space-y-4">
                   {filteredMatches.map((match) => (
-                <Card key={match.id} className={`hover:shadow-md transition-shadow ${darkMode ? 'bg-[#002f37] border-gray-600' : ''}`}>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <h3 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{match.investorName}</h3>
-                      <Badge className={getStatusColor(match.status)}>
-                        {match.status.charAt(0).toUpperCase() + match.status.slice(1)}
-                      </Badge>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                      <div>
-                        <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Investment Amount</p>
-                        <p className={`text-lg font-semibold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>GHS {match.amount.toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Interest</p>
-                        <p className={`text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{match.interest}</p>
-                      </div>
-                      <div>
-                        <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Farm Type</p>
-                        <p className={`text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{match.farmType} - {match.category}</p>
-                      </div>
-                      <div>
-                        <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Region</p>
-                        <p className={`text-sm flex items-center gap-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                          <MapPin className="h-3 w-3" />
-                          {match.region}
-                        </p>
-                      </div>
-                    </div>
+                    <Card key={match.id} className={`hover:shadow-md transition-shadow ${darkMode ? 'bg-[#002f37] border-gray-600' : ''}`}>
+                      <CardContent className="p-4 sm:p-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-3">
+                              <h3 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{match.investorName}</h3>
+                              <Badge className={getStatusColor(match.status)}>
+                                {match.status.charAt(0).toUpperCase() + match.status.slice(1)}
+                              </Badge>
+                            </div>
 
-                    <div className={`flex items-center gap-6 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>Date: {new Date(match.date).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span>Contact: {match.contact}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span>Email: {match.email}</span>
-                      </div>
-                    </div>
-                  </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                              <div>
+                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Investment Amount</p>
+                                <p className={`text-lg font-semibold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>GHS {match.amount.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Interest</p>
+                                <p className={`text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{match.interest}</p>
+                              </div>
+                              <div>
+                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Farm Type</p>
+                                <p className={`text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{match.farmType} - {match.category}</p>
+                              </div>
+                              <div>
+                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Region</p>
+                                <p className={`text-sm flex items-center gap-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                  <MapPin className="h-3 w-3" />
+                                  {match.region}
+                                </p>
+                              </div>
+                            </div>
 
-                  <div className="flex flex-col gap-2 ml-4">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className={`flex items-center gap-2 ${darkMode ? 'border-gray-600 bg-gray-800/50 text-white hover:bg-gray-700 hover:text-white' : ''}`}
-                    >
-                      <ArrowUpRight className="h-4 w-4" />
-                      View Details
-                    </Button>
-                    {match.status === 'matched' && (
-                      <Button 
-                        size="sm"
-                        className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
-                      >
-                        Contact Now
-                      </Button>
-                    )}
-                    {match.status === 'pending' && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className={darkMode ? 'border-yellow-600 text-yellow-400 hover:bg-yellow-900/30' : 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'}
-                      >
-                        Respond
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-              ))}
+                            <div className={`flex items-center gap-6 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4" />
+                                <span>Date: {new Date(match.date).toLocaleDateString()}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span>Contact: {match.contact}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span>Email: {match.email}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col gap-2 ml-4">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className={`flex items-center gap-2 ${darkMode ? 'border-gray-600 bg-gray-800/50 text-white hover:bg-gray-700 hover:text-white' : ''}`}
+                            >
+                              <ArrowUpRight className="h-4 w-4" />
+                              View Details
+                            </Button>
+                            {match.status === 'matched' && (
+                              <Button
+                                size="sm"
+                                className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
+                              >
+                                Contact Now
+                              </Button>
+                            )}
+                            {match.status === 'pending' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className={darkMode ? 'border-yellow-600 text-yellow-400 hover:bg-yellow-900/30' : 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'}
+                              >
+                                Respond
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
 
                   {filteredMatches.length === 0 && mockInvestments.filter((inv: any) => inv.approvalStatus === 'pending').length === 0 && (
                     <Card className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
@@ -939,7 +936,7 @@ const InvestorMatches = () => {
                         <Users className={`h-12 w-12 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-300'}`} />
                         <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>No matches found</h3>
                         <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                          {searchTerm || statusFilter !== 'all' 
+                          {searchTerm || statusFilter !== 'all'
                             ? 'Try adjusting your search or filter criteria'
                             : 'Complete your farm profile to get better investor matches'
                           }
@@ -972,14 +969,14 @@ const InvestorMatches = () => {
                                     Pending Approval
                                   </Badge>
                                 </div>
-                                
+
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                   <div>
                                     <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                       {investment.investmentType === 'equipment' ? 'Investment Value' : investment.investmentType === 'mixed' ? 'Total Investment' : 'Investment Amount'}
                                     </p>
                                     <p className={`text-lg font-semibold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
-                                      {investment.investmentType === 'equipment' 
+                                      {investment.investmentType === 'equipment'
                                         ? `Equipment (GHS ${investment.investmentAmount.toLocaleString()})`
                                         : `GHS ${investment.investmentAmount.toLocaleString()}`
                                       }
@@ -1077,7 +1074,7 @@ const InvestorMatches = () => {
                       <DollarSign className="h-8 w-8 text-white" />
                     </div>
                   </Card>
-                  
+
                   {/* Expected Returns - Orange */}
                   <Card className="bg-[#ffa500] rounded-lg p-6 shadow-lg relative overflow-hidden">
                     {/* Leaf Pattern Background */}
@@ -1097,7 +1094,7 @@ const InvestorMatches = () => {
                       <TrendingUp className="h-8 w-8 text-white" />
                     </div>
                   </Card>
-                  
+
                   {/* Active Investments - Red/Coral */}
                   <Card className="bg-[#ff6347] rounded-lg p-6 shadow-lg relative overflow-hidden">
                     {/* Leaf Pattern Background */}
@@ -1128,7 +1125,7 @@ const InvestorMatches = () => {
                         Share progress and photos with your investor
                       </DialogDescription>
                     </DialogHeader>
-                    
+
                     <div className="space-y-4 mt-4">
                       <div>
                         <Label htmlFor="update-title" className={darkMode ? 'text-white' : ''}>
@@ -1248,7 +1245,7 @@ const InvestorMatches = () => {
                         Report issues or concerns about your investment
                       </DialogDescription>
                     </DialogHeader>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Left Column */}
                       <div className="space-y-4">
@@ -1374,7 +1371,7 @@ const InvestorMatches = () => {
                         Complete information about your investment
                       </DialogDescription>
                     </DialogHeader>
-                    
+
                     {selectedInvestmentForDetails && (
                       <div className="space-y-6 mt-4">
                         {/* Investment Overview */}
@@ -1392,8 +1389,8 @@ const InvestorMatches = () => {
                             <div>
                               <p className={`text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Investment Type</p>
                               <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                {(selectedInvestmentForDetails as any).investmentType === 'financial' ? 'Financial' : 
-                                 (selectedInvestmentForDetails as any).investmentType === 'equipment' ? 'Equipment' : 'Mixed'}
+                                {(selectedInvestmentForDetails as any).investmentType === 'financial' ? 'Financial' :
+                                  (selectedInvestmentForDetails as any).investmentType === 'equipment' ? 'Equipment' : 'Mixed'}
                               </p>
                             </div>
                             <div>
@@ -1439,11 +1436,11 @@ const InvestorMatches = () => {
                                   (selectedInvestmentForDetails as any).approvalStatus === 'approved'
                                     ? 'bg-green-500 text-white'
                                     : (selectedInvestmentForDetails as any).approvalStatus === 'pending'
-                                    ? 'bg-yellow-500 text-white'
-                                    : 'bg-red-500 text-white'
+                                      ? 'bg-yellow-500 text-white'
+                                      : 'bg-red-500 text-white'
                                 }>
-                                  {(selectedInvestmentForDetails as any).approvalStatus === 'approved' ? 'Approved' : 
-                                   (selectedInvestmentForDetails as any).approvalStatus === 'pending' ? 'Pending' : 'Rejected'}
+                                  {(selectedInvestmentForDetails as any).approvalStatus === 'approved' ? 'Approved' :
+                                    (selectedInvestmentForDetails as any).approvalStatus === 'pending' ? 'Pending' : 'Rejected'}
                                 </Badge>
                               </div>
                             )}
@@ -1667,7 +1664,7 @@ const InvestorMatches = () => {
                         Get in touch with your investor
                       </DialogDescription>
                     </DialogHeader>
-                    
+
                     {selectedInvestmentForDetails && (
                       <div className="space-y-5 mt-4">
                         <div className="grid gap-5 md:grid-cols-2">
@@ -1683,7 +1680,7 @@ const InvestorMatches = () => {
                                 </div>
                                 <div>
                                   <p className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Phone</p>
-                                  <a 
+                                  <a
                                     href={`tel:${selectedInvestmentForDetails.contact}`}
                                     className={`text-sm font-semibold ${darkMode ? 'text-[#7ede56] hover:text-[#6bc947]' : 'text-blue-600 hover:text-blue-700'}`}
                                   >
@@ -1697,7 +1694,7 @@ const InvestorMatches = () => {
                                 </div>
                                 <div>
                                   <p className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Email</p>
-                                  <a 
+                                  <a
                                     href={`mailto:${selectedInvestmentForDetails.email}`}
                                     className={`text-sm font-semibold ${darkMode ? 'text-[#7ede56] hover:text-[#6bc947]' : 'text-blue-600 hover:text-blue-700'}`}
                                   >
@@ -1836,14 +1833,14 @@ const InvestorMatches = () => {
                                 />
                               </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                               <div>
                                 <p className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                   {(investment as any).investmentType === 'equipment' ? 'Investment Value' : (investment as any).investmentType === 'mixed' ? 'Total Investment' : 'Investment Amount'}
                                 </p>
                                 <p className={`text-sm font-semibold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
-                                  {(investment as any).investmentType === 'equipment' 
+                                  {(investment as any).investmentType === 'equipment'
                                     ? `Equipment (GHS ${investment.investmentAmount.toLocaleString()})`
                                     : `GHS ${investment.investmentAmount.toLocaleString()}`
                                   }
@@ -1852,11 +1849,11 @@ const InvestorMatches = () => {
                               <div>
                                 <p className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Received</p>
                                 <p className={`text-xs ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                  {(investment as any).investmentType === 'financial' 
+                                  {(investment as any).investmentType === 'financial'
                                     ? `GHS ${(investment as any).receivedAmount?.toLocaleString() || 0}`
                                     : (investment as any).investmentType === 'equipment'
-                                    ? `${(investment as any).receivedEquipment?.length || 0} Equipment`
-                                    : `GHS ${(investment as any).receivedAmount?.toLocaleString() || 0} + ${(investment as any).receivedEquipment?.length || 0} Items`
+                                      ? `${(investment as any).receivedEquipment?.length || 0} Equipment`
+                                      : `GHS ${(investment as any).receivedAmount?.toLocaleString() || 0} + ${(investment as any).receivedEquipment?.length || 0} Items`
                                   }
                                 </p>
                               </div>
@@ -2024,8 +2021,8 @@ const InvestorMatches = () => {
 
                           {/* Action Buttons - Better Positioned */}
                           <div className="flex flex-col gap-2 flex-shrink-0">
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={() => {
                                 setSelectedInvestmentForDetails(investment);
@@ -2036,7 +2033,7 @@ const InvestorMatches = () => {
                               <Eye className="h-3 w-3" />
                               View Details
                             </Button>
-                            <Button 
+                            <Button
                               variant="outline"
                               size="sm"
                               onClick={() => {
@@ -2048,7 +2045,7 @@ const InvestorMatches = () => {
                               <MessageCircle className="h-3 w-3" />
                               Complaint
                             </Button>
-                            <Button 
+                            <Button
                               variant="outline"
                               size="sm"
                               onClick={() => {
@@ -2136,7 +2133,7 @@ const InvestorMatches = () => {
                       <Clock className="h-8 w-8 text-white" />
                     </div>
                   </Card>
-                  
+
                   {/* Approved - Green */}
                   <Card className="bg-[#7ede56] rounded-lg p-6 shadow-lg relative overflow-hidden">
                     {/* Leaf Pattern Background */}
@@ -2156,7 +2153,7 @@ const InvestorMatches = () => {
                       <ShieldCheck className="h-8 w-8 text-white" />
                     </div>
                   </Card>
-                  
+
                   {/* Active - Red/Coral */}
                   <Card className="bg-[#ff6347] rounded-lg p-6 shadow-lg relative overflow-hidden">
                     {/* Leaf Pattern Background */}
@@ -2176,7 +2173,7 @@ const InvestorMatches = () => {
                       <Activity className="h-8 w-8 text-white" />
                     </div>
                   </Card>
-                  
+
                   {/* Total Investments - Deep Magenta */}
                   <Card className="bg-[#921573] rounded-lg p-6 shadow-lg relative overflow-hidden">
                     {/* Leaf Pattern Background */}
@@ -2200,15 +2197,15 @@ const InvestorMatches = () => {
 
                 {/* Investment Stages Timeline */}
                 <div className="space-y-6">
-                  {(investmentStageFilter === 'all' 
-                    ? mockInvestments 
+                  {(investmentStageFilter === 'all'
+                    ? mockInvestments
                     : investmentStageFilter === 'pending'
-                    ? mockInvestments.filter((inv: any) => inv.approvalStatus === 'pending')
-                    : investmentStageFilter === 'approved'
-                    ? mockInvestments.filter((inv: any) => inv.approvalStatus === 'approved')
-                    : investmentStageFilter === 'active'
-                    ? mockInvestments.filter((inv: any) => inv.status === 'active')
-                    : mockInvestments.filter((inv: any) => inv.status === 'completed')
+                      ? mockInvestments.filter((inv: any) => inv.approvalStatus === 'pending')
+                      : investmentStageFilter === 'approved'
+                        ? mockInvestments.filter((inv: any) => inv.approvalStatus === 'approved')
+                        : investmentStageFilter === 'active'
+                          ? mockInvestments.filter((inv: any) => inv.status === 'active')
+                          : mockInvestments.filter((inv: any) => inv.status === 'completed')
                   ).map((investment: any) => {
                     const stages = [
                       { name: 'Pending Approval', status: investment.approvalStatus === 'pending', icon: Clock, color: 'yellow' },
@@ -2217,7 +2214,7 @@ const InvestorMatches = () => {
                       { name: 'Active Investment', status: investment.status === 'active' && investment.approvalStatus === 'approved', icon: Activity, color: 'blue' },
                       { name: 'Completed', status: investment.status === 'completed', icon: CheckCircle, color: 'green' }
                     ];
-                    
+
                     const currentStageIndex = stages.findIndex((stage, idx) => {
                       if (idx === 0) return stage.status;
                       if (idx === 1) return stage.status && stages[0].status;
@@ -2235,11 +2232,11 @@ const InvestorMatches = () => {
                                 {investment.investorName} - {investment.projectName}
                               </h3>
                               <Badge className={
-                                investment.approvalStatus === 'approved' 
+                                investment.approvalStatus === 'approved'
                                   ? 'bg-green-500 text-white'
                                   : investment.approvalStatus === 'pending'
-                                  ? 'bg-yellow-500 text-white'
-                                  : 'bg-gray-500 text-white'
+                                    ? 'bg-yellow-500 text-white'
+                                    : 'bg-gray-500 text-white'
                               }>
                                 {investment.approvalStatus === 'approved' ? 'Approved' : investment.approvalStatus === 'pending' ? 'Pending' : 'Rejected'}
                               </Badge>
@@ -2261,40 +2258,35 @@ const InvestorMatches = () => {
                                 return (
                                   <React.Fragment key={index}>
                                     <div className="flex flex-col items-center flex-1">
-                                      <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${
-                                        isCompleted 
-                                          ? stage.color === 'yellow' ? 'bg-yellow-500' : stage.color === 'blue' ? 'bg-blue-500' : 'bg-green-500'
-                                          : isCurrent
+                                      <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${isCompleted
+                                        ? stage.color === 'yellow' ? 'bg-yellow-500' : stage.color === 'blue' ? 'bg-blue-500' : 'bg-green-500'
+                                        : isCurrent
                                           ? stage.color === 'yellow' ? 'bg-yellow-500 ring-4 ring-yellow-200' : stage.color === 'blue' ? 'bg-blue-500 ring-4 ring-blue-200' : 'bg-green-500 ring-4 ring-green-200'
                                           : 'bg-gray-300 dark:bg-gray-700'
-                                      }`}>
-                                        <Icon className={`h-6 w-6 ${
-                                          isCompleted || isCurrent ? 'text-white' : 'text-gray-500'
-                                        }`} />
+                                        }`}>
+                                        <Icon className={`h-6 w-6 ${isCompleted || isCurrent ? 'text-white' : 'text-gray-500'
+                                          }`} />
                                       </div>
-                                      <p className={`text-xs text-center font-medium ${
-                                        isCompleted || isCurrent 
-                                          ? darkMode ? 'text-white' : 'text-gray-900'
-                                          : darkMode ? 'text-gray-500' : 'text-gray-400'
-                                      }`}>
+                                      <p className={`text-xs text-center font-medium ${isCompleted || isCurrent
+                                        ? darkMode ? 'text-white' : 'text-gray-900'
+                                        : darkMode ? 'text-gray-500' : 'text-gray-400'
+                                        }`}>
                                         {stage.name}
                                       </p>
                                       {(isCompleted || isCurrent) && (
-                                        <p className={`text-xs mt-1 ${
-                                          stage.color === 'yellow' ? 'text-yellow-600 dark:text-yellow-400' :
+                                        <p className={`text-xs mt-1 ${stage.color === 'yellow' ? 'text-yellow-600 dark:text-yellow-400' :
                                           stage.color === 'blue' ? 'text-blue-600 dark:text-blue-400' :
-                                          'text-green-600 dark:text-green-400'
-                                        }`}>
+                                            'text-green-600 dark:text-green-400'
+                                          }`}>
                                           {isCurrent ? 'Current' : 'Done'}
                                         </p>
                                       )}
                                     </div>
                                     {index < stages.length - 1 && (
-                                      <div className={`flex-1 h-0.5 mx-2 ${
-                                        index < currentStageIndex && stage.status
-                                          ? stage.color === 'yellow' ? 'bg-yellow-500' : stage.color === 'blue' ? 'bg-blue-500' : 'bg-green-500'
-                                          : 'bg-gray-300 dark:bg-gray-700'
-                                      }`} />
+                                      <div className={`flex-1 h-0.5 mx-2 ${index < currentStageIndex && stage.status
+                                        ? stage.color === 'yellow' ? 'bg-yellow-500' : stage.color === 'blue' ? 'bg-blue-500' : 'bg-green-500'
+                                        : 'bg-gray-300 dark:bg-gray-700'
+                                        }`} />
                                     )}
                                   </React.Fragment>
                                 );
@@ -2303,9 +2295,8 @@ const InvestorMatches = () => {
                           </div>
 
                           {/* Stage Details */}
-                          <div className={`mt-6 p-4 rounded-lg ${
-                            darkMode ? 'bg-gray-800/50' : 'bg-gray-50'
-                          }`}>
+                          <div className={`mt-6 p-4 rounded-lg ${darkMode ? 'bg-gray-800/50' : 'bg-gray-50'
+                            }`}>
                             <p className={`text-sm font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                               Current Stage Details:
                             </p>

@@ -209,6 +209,20 @@ const Blog = () => {
       speaker: "Mrs Erica Adjoa Appaih",
       status: "completed",
       recordingLink: "https://drive.google.com/file/d/1kqJWei0rrOflXEF1DzfKnoD-s5ElcMEw/view?usp=sharing"
+    },
+    {
+      id: 4,
+      title: "Smart Farming Investments: What Every Entrepreneur and Investor Should Know",
+      date: "2025-12-14",
+      time: "3:00 PM - 6:00 PM",
+      location: "Virtual",
+      spots: 100,
+      registered: 0,
+      image: "/lovable-uploads/image copy 5.png",
+      description: "Join us for an insightful session on smart farming investments and what every entrepreneur and investor needs to know to succeed in the agricultural sector.",
+      speaker: "eyramax",
+      status: "upcoming",
+      registrationLink: "https://luma.com/q7tsnwsl"
     }
   ];
 
@@ -224,7 +238,9 @@ const Blog = () => {
   ];
 
   const handleWebinarRegistration = (webinar: any) => {
-    if (webinar.id === 3) {
+    if (webinar.registrationLink) {
+      window.open(webinar.registrationLink, '_blank');
+    } else if (webinar.id === 3) {
       window.open('https://is.gd/agrilyncwebinar', '_blank');
     } else {
       setSelectedWebinar(webinar);

@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useDarkMode } from '@/contexts/DarkModeContext';
-import { User, Sprout, MapPin, Edit, Save } from 'lucide-react';
+import { User, Sprout, MapPin, Edit, Save, X } from 'lucide-react';
 import { regions, farmCategories } from '@/data/mockFarmData';
 
 interface EditFarmerModalProps {
@@ -43,10 +43,13 @@ const EditFarmerModal: React.FC<EditFarmerModalProps> = ({ open, onOpenChange, f
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className={`max-w-5xl h-[75vh] flex flex-col p-0 gap-0 ${darkMode ? 'bg-[#002f37] border-[#124b53]' : 'bg-white border-none'}`}>
                 <DialogHeader className={`p-6 border-b ${darkMode ? 'border-gray-800' : 'border-gray-100'} flex-shrink-0`}>
-                    <DialogTitle className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} flex items-center gap-2`}>
-                        <Edit className="h-6 w-6 text-[#1db954]" />
-                        Edit Farmer Profile
-                    </DialogTitle>
+                    <div className="flex items-center justify-between">
+                        <DialogTitle className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} flex items-center gap-2`}>
+                            <Edit className="h-6 w-6 text-[#1db954]" />
+                            Edit Farmer Profile
+                        </DialogTitle>
+
+                    </div>
                 </DialogHeader>
 
                 <div className="flex-1 overflow-hidden flex flex-col">
@@ -82,45 +85,45 @@ const EditFarmerModal: React.FC<EditFarmerModalProps> = ({ open, onOpenChange, f
                             <TabsContent value="personal" className="mt-0 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label htmlFor="name">Full Name <span className="text-red-500">*</span></Label>
+                                        <Label htmlFor="name" className={darkMode ? 'text-gray-300' : ''}>Full Name <span className="text-red-500">*</span></Label>
                                         <Input
                                             id="name"
                                             value={formData.name || ''}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                             disabled={!isEditing}
-                                            className={!isEditing ? 'opacity-60' : ''}
+                                            className={`${!isEditing ? 'opacity-60' : ''} ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-white' : ''}`}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="phone">Phone Number <span className="text-red-500">*</span></Label>
+                                        <Label htmlFor="phone" className={darkMode ? 'text-gray-300' : ''}>Phone Number <span className="text-red-500">*</span></Label>
                                         <Input
                                             id="phone"
                                             value={formData.phone || ''}
                                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                             disabled={!isEditing}
-                                            className={!isEditing ? 'opacity-60' : ''}
+                                            className={`${!isEditing ? 'opacity-60' : ''} ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-white' : ''}`}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="status">Status <span className="text-red-500">*</span></Label>
+                                        <Label htmlFor="status" className={darkMode ? 'text-gray-300' : ''}>Status <span className="text-red-500">*</span></Label>
                                         <Select
                                             value={formData.status || ''}
                                             onValueChange={(val) => setFormData({ ...formData, status: val })}
                                             disabled={!isEditing}
                                         >
-                                            <SelectTrigger className={!isEditing ? 'opacity-60' : ''}>
+                                            <SelectTrigger className={`${!isEditing ? 'opacity-60' : ''} ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-white' : ''}`}>
                                                 <SelectValue />
                                             </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="Pending">Pending</SelectItem>
-                                                <SelectItem value="Verified">Verified</SelectItem>
-                                                <SelectItem value="Matched">Matched</SelectItem>
-                                                <SelectItem value="In Progress">In Progress</SelectItem>
+                                            <SelectContent className={darkMode ? 'bg-[#0b2528] border-[#124b53]' : ''}>
+                                                <SelectItem value="Pending" className={darkMode ? 'text-white hover:bg-[#124b53]' : ''}>Pending</SelectItem>
+                                                <SelectItem value="Verified" className={darkMode ? 'text-white hover:bg-[#124b53]' : ''}>Verified</SelectItem>
+                                                <SelectItem value="Matched" className={darkMode ? 'text-white hover:bg-[#124b53]' : ''}>Matched</SelectItem>
+                                                <SelectItem value="In Progress" className={darkMode ? 'text-white hover:bg-[#124b53]' : ''}>In Progress</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="email">Email (Optional)</Label>
+                                        <Label htmlFor="email" className={darkMode ? 'text-gray-300' : ''}>Email (Optional)</Label>
                                         <Input
                                             id="email"
                                             type="email"
@@ -128,7 +131,7 @@ const EditFarmerModal: React.FC<EditFarmerModalProps> = ({ open, onOpenChange, f
                                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                             placeholder="farmer@example.com"
                                             disabled={!isEditing}
-                                            className={!isEditing ? 'opacity-60' : ''}
+                                            className={`${!isEditing ? 'opacity-60' : ''} ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-white placeholder:text-gray-500' : ''}`}
                                         />
                                     </div>
                                 </div>
@@ -138,18 +141,18 @@ const EditFarmerModal: React.FC<EditFarmerModalProps> = ({ open, onOpenChange, f
                             <TabsContent value="location" className="mt-0 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label htmlFor="region">Region <span className="text-red-500">*</span></Label>
+                                        <Label htmlFor="region" className={darkMode ? 'text-gray-300' : ''}>Region <span className="text-red-500">*</span></Label>
                                         <Select
                                             value={formData.region || ''}
                                             onValueChange={(val) => setFormData({ ...formData, region: val })}
                                             disabled={!isEditing}
                                         >
-                                            <SelectTrigger className={!isEditing ? 'opacity-60' : ''}>
+                                            <SelectTrigger className={`${!isEditing ? 'opacity-60' : ''} ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-white' : ''}`}>
                                                 <SelectValue placeholder="Select region" />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className={darkMode ? 'bg-[#0b2528] border-[#124b53]' : ''}>
                                                 {regions.map((region) => (
-                                                    <SelectItem key={region} value={region}>
+                                                    <SelectItem key={region} value={region} className={darkMode ? 'text-white hover:bg-[#124b53]' : ''}>
                                                         {region}
                                                     </SelectItem>
                                                 ))}
@@ -157,13 +160,13 @@ const EditFarmerModal: React.FC<EditFarmerModalProps> = ({ open, onOpenChange, f
                                         </Select>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="community">Community <span className="text-red-500">*</span></Label>
+                                        <Label htmlFor="community" className={darkMode ? 'text-gray-300' : ''}>Community <span className="text-red-500">*</span></Label>
                                         <Input
                                             id="community"
                                             value={formData.community || ''}
                                             onChange={(e) => setFormData({ ...formData, community: e.target.value })}
                                             disabled={!isEditing}
-                                            className={!isEditing ? 'opacity-60' : ''}
+                                            className={`${!isEditing ? 'opacity-60' : ''} ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-white' : ''}`}
                                         />
                                     </div>
                                 </div>
@@ -173,40 +176,40 @@ const EditFarmerModal: React.FC<EditFarmerModalProps> = ({ open, onOpenChange, f
                             <TabsContent value="farm" className="mt-0 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label htmlFor="farmType">Farm Type <span className="text-red-500">*</span></Label>
+                                        <Label htmlFor="farmType" className={darkMode ? 'text-gray-300' : ''}>Farm Type <span className="text-red-500">*</span></Label>
                                         <Select
                                             value={formData.farmType || ''}
                                             onValueChange={(val) => setFormData({ ...formData, farmType: val })}
                                             disabled={!isEditing}
                                         >
-                                            <SelectTrigger className={!isEditing ? 'opacity-60' : ''}>
+                                            <SelectTrigger className={`${!isEditing ? 'opacity-60' : ''} ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-white' : ''}`}>
                                                 <SelectValue placeholder="Select farm type" />
                                             </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="Crop">Crop</SelectItem>
-                                                <SelectItem value="Livestock">Livestock</SelectItem>
+                                            <SelectContent className={darkMode ? 'bg-[#0b2528] border-[#124b53]' : ''}>
+                                                <SelectItem value="Crop" className={darkMode ? 'text-white hover:bg-[#124b53]' : ''}>Crop</SelectItem>
+                                                <SelectItem value="Livestock" className={darkMode ? 'text-white hover:bg-[#124b53]' : ''}>Livestock</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="category">Category <span className="text-red-500">*</span></Label>
+                                        <Label htmlFor="category" className={darkMode ? 'text-gray-300' : ''}>Category <span className="text-red-500">*</span></Label>
                                         <Select
                                             value={formData.category || ''}
                                             onValueChange={(val) => setFormData({ ...formData, category: val })}
                                             disabled={!isEditing}
                                         >
-                                            <SelectTrigger className={!isEditing ? 'opacity-60' : ''}>
+                                            <SelectTrigger className={`${!isEditing ? 'opacity-60' : ''} ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-white' : ''}`}>
                                                 <SelectValue placeholder="Select category" />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className={darkMode ? 'bg-[#0b2528] border-[#124b53]' : ''}>
                                                 {formData.farmType === 'Crop'
                                                     ? farmCategories.Crop.map((cat) => (
-                                                        <SelectItem key={cat} value={cat}>
+                                                        <SelectItem key={cat} value={cat} className={darkMode ? 'text-white hover:bg-[#124b53]' : ''}>
                                                             {cat}
                                                         </SelectItem>
                                                     ))
                                                     : farmCategories.Livestock.map((cat) => (
-                                                        <SelectItem key={cat} value={cat}>
+                                                        <SelectItem key={cat} value={cat} className={darkMode ? 'text-white hover:bg-[#124b53]' : ''}>
                                                             {cat}
                                                         </SelectItem>
                                                     ))}
@@ -214,14 +217,14 @@ const EditFarmerModal: React.FC<EditFarmerModalProps> = ({ open, onOpenChange, f
                                         </Select>
                                     </div>
                                     <div className="space-y-2 md:col-span-2">
-                                        <Label htmlFor="lastVisit">Last Visit</Label>
+                                        <Label htmlFor="lastVisit" className={darkMode ? 'text-gray-300' : ''}>Last Visit</Label>
                                         <Input
                                             id="lastVisit"
                                             type="date"
                                             value={formData.lastVisit ? new Date(formData.lastVisit).toISOString().split('T')[0] : ''}
                                             onChange={(e) => setFormData({ ...formData, lastVisit: e.target.value })}
                                             disabled={!isEditing}
-                                            className={!isEditing ? 'opacity-60' : ''}
+                                            className={`${!isEditing ? 'opacity-60' : ''} ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-white' : ''}`}
                                         />
                                     </div>
                                 </div>

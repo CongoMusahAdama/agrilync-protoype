@@ -163,7 +163,7 @@ const Notifications = () => {
 
   const filteredNotifications = mockNotifications.filter(notification => {
     const matchesSearch = notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         notification.description.toLowerCase().includes(searchTerm.toLowerCase());
+      notification.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === 'all' || notification.type === typeFilter;
     const matchesStatus = statusFilter === 'all' || notification.status === statusFilter;
     return matchesSearch && matchesType && matchesStatus;
@@ -249,13 +249,12 @@ const Notifications = () => {
         ].map((item) => (
           <div
             key={item.key}
-            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-              activeSidebarItem === item.key
-                ? 'bg-[#7ede56] text-[#002f37]'
-                : darkMode
+            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === item.key
+              ? 'bg-[#7ede56] text-[#002f37]'
+              : darkMode
                 ? 'text-[#002f37] hover:bg-gray-100'
                 : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-            }`}
+              }`}
             onClick={() => handleSidebarNavigation(item.key)}
           >
             <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -265,7 +264,15 @@ const Notifications = () => {
       </nav>
 
       {/* Log Out - Sticky at bottom */}
-      <div className={`mt-auto p-4 border-t ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'} sticky bottom-0 ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
+      <div className={`mt-auto p-4 border-t space-y-2 ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'} sticky bottom-0 ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
+          onClick={toggleDarkMode}
+          title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {darkMode ? <Sun className="h-5 w-5 flex-shrink-0 text-yellow-500" /> : <Moon className="h-5 w-5 flex-shrink-0 text-gray-400" />}
+          {(!sidebarCollapsed || isMobile) && <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
+        </div>
         <div
           className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
           onClick={() => navigate('/')}
@@ -350,7 +357,7 @@ const Notifications = () => {
             </div>
           </div>
 
-          <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6">
+          <div className="w-full p-3 sm:p-4 md:p-6">
             {/* Search and Filter */}
             <div className="mb-6 flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
@@ -471,79 +478,78 @@ const Notifications = () => {
             </div>
 
             {/* Notifications List */}
-        <div className="space-y-4">
-          {filteredNotifications.map((notification) => (
-            <Card
-              key={notification.id}
-              className={`hover:shadow-md transition-shadow ${
-                notification.status === 'unread'
-                  ? `border-l-4 border-l-[#7ede56] ${darkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`
-                  : ''
-              } ${darkMode ? 'bg-[#002f37] border-gray-600' : ''}`}
-            >
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 mt-1">
-                    {getTypeIcon(notification.type)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{notification.title}</h3>
-                          {notification.status === 'unread' && (
-                            <div className="w-2 h-2 bg-[#7ede56] rounded-full"></div>
-                          )}
-                          <Badge className={getPriorityColor(notification.priority)}>
-                            {notification.priority}
-                          </Badge>
-                        </div>
-                        <p className={`mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{notification.description}</p>
-                        <div className={`flex items-center gap-4 text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            <span>{new Date(notification.date).toLocaleDateString()}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            <span>{notification.time}</span>
-                          </div>
-                        </div>
+            <div className="space-y-4">
+              {filteredNotifications.map((notification) => (
+                <Card
+                  key={notification.id}
+                  className={`hover:shadow-md transition-shadow ${notification.status === 'unread'
+                    ? `border-l-4 border-l-[#7ede56] ${darkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`
+                    : ''
+                    } ${darkMode ? 'bg-[#002f37] border-gray-600' : ''}`}
+                >
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 mt-1">
+                        {getTypeIcon(notification.type)}
                       </div>
-                      <div className="flex flex-col gap-2 ml-4">
-                        <Button
-                          size="sm"
-                          className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
-                        >
-                          {notification.action}
-                        </Button>
-                        {notification.status === 'unread' && (
-                          <Button variant="outline" size="sm" className={darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white' : ''}>
-                            Mark as Read
-                          </Button>
-                        )}
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{notification.title}</h3>
+                              {notification.status === 'unread' && (
+                                <div className="w-2 h-2 bg-[#7ede56] rounded-full"></div>
+                              )}
+                              <Badge className={getPriorityColor(notification.priority)}>
+                                {notification.priority}
+                              </Badge>
+                            </div>
+                            <p className={`mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{notification.description}</p>
+                            <div className={`flex items-center gap-4 text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                <span>{new Date(notification.date).toLocaleDateString()}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                <span>{notification.time}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2 ml-4">
+                            <Button
+                              size="sm"
+                              className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
+                            >
+                              {notification.action}
+                            </Button>
+                            {notification.status === 'unread' && (
+                              <Button variant="outline" size="sm" className={darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white' : ''}>
+                                Mark as Read
+                              </Button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  </CardContent>
+                </Card>
+              ))}
 
-          {filteredNotifications.length === 0 && (
-            <Card className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
-              <CardContent className="p-8 sm:p-12 text-center">
-                <Bell className={`h-12 w-12 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-300'}`} />
-                <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>No notifications found</h3>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                  {searchTerm || typeFilter !== 'all' || statusFilter !== 'all'
-                    ? 'Try adjusting your search or filter criteria'
-                    : 'You\'re all caught up! New notifications will appear here.'
-                  }
-                </p>
-              </CardContent>
-            </Card>
-            )}
+              {filteredNotifications.length === 0 && (
+                <Card className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+                  <CardContent className="p-8 sm:p-12 text-center">
+                    <Bell className={`h-12 w-12 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-300'}`} />
+                    <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>No notifications found</h3>
+                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                      {searchTerm || typeFilter !== 'all' || statusFilter !== 'all'
+                        ? 'Try adjusting your search or filter criteria'
+                        : 'You\'re all caught up! New notifications will appear here.'
+                      }
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         </div>

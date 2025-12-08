@@ -69,7 +69,7 @@ const FarmersManagement: React.FC = () => {
   const selectTriggerClass = darkMode ? 'bg-[#002f37] border-gray-600 text-white' : '';
   const selectContentClass = darkMode ? 'bg-[#002f37] border-gray-600' : '';
   const selectItemClass = darkMode ? 'text-white hover:bg-gray-800' : '';
-  const tableHeaderClass = darkMode ? 'bg-[#0f3a41] text-gray-100' : 'bg-gray-50';
+  const tableHeaderClass = 'bg-[#1db954] text-white border-[#1db954]';
   const tableRowClass = darkMode ? 'border-b border-gray-700 hover:bg-[#0d3036]' : '';
   const tableCellClass = darkMode ? 'text-gray-100' : 'text-gray-900';
 

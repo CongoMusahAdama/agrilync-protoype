@@ -51,7 +51,7 @@ const FarmMonitoring: React.FC = () => {
   const selectTriggerClass = darkMode ? 'bg-[#002f37] border-gray-600 text-white' : '';
   const selectContentClass = darkMode ? 'bg-[#002f37] border-gray-600' : '';
   const selectItemClass = darkMode ? 'text-white hover:bg-gray-800' : '';
-  const tableHeaderClass = darkMode ? 'bg-[#0f3a41] text-gray-100' : 'bg-gray-50';
+  const tableHeaderClass = 'bg-[#1db954] text-white border-[#1db954]';
   const tableRowClass = darkMode ? 'border-b border-gray-700 hover:bg-[#0d3036]' : '';
   const tableCellClass = darkMode ? 'text-gray-100' : 'text-gray-900';
 
@@ -84,14 +84,14 @@ const FarmMonitoring: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow className={tableHeaderClass}>
-                  <TableHead className={darkMode ? 'text-gray-100' : ''}>Farm ID</TableHead>
-                  <TableHead className={darkMode ? 'text-gray-100' : ''}>Farmer</TableHead>
-                  <TableHead className={darkMode ? 'text-gray-100' : ''}>Crop / Livestock</TableHead>
-                  <TableHead className={darkMode ? 'text-gray-100' : ''}>Status</TableHead>
-                  <TableHead className={darkMode ? 'text-gray-100' : ''}>Last Visit</TableHead>
-                  <TableHead className={darkMode ? 'text-gray-100' : ''}>Next Visit</TableHead>
-                  <TableHead className={darkMode ? 'text-gray-100' : ''}>Report</TableHead>
-                  <TableHead className={`text-right ${darkMode ? 'text-gray-100' : ''}`}>Actions</TableHead>
+                  <TableHead className="text-white">Farm ID</TableHead>
+                  <TableHead className="text-white">Farmer</TableHead>
+                  <TableHead className="text-white">Crop / Livestock</TableHead>
+                  <TableHead className="text-white">Status</TableHead>
+                  <TableHead className="text-white">Last Visit</TableHead>
+                  <TableHead className="text-white">Next Visit</TableHead>
+                  <TableHead className="text-white">Report</TableHead>
+                  <TableHead className="text-right text-white">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

@@ -160,9 +160,21 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
       </nav>
 
       <div
-        className={`border-t p-4 flex-shrink-0 ${darkMode ? 'border-gray-200/60 bg-white' : 'border-[#002f37] border-opacity-20 bg-[#002f37]'
+        className={`border-t p-4 flex-shrink-0 space-y-2 ${darkMode ? 'border-gray-200/60 bg-white' : 'border-[#002f37] border-opacity-20 bg-[#002f37]'
           }`}
       >
+        <button
+          type="button"
+          onClick={toggleDarkMode}
+          className={`flex w-full items-center gap-3 rounded-lg p-3 font-medium transition-colors ${darkMode
+            ? 'text-[#002f37] hover:bg-gray-100'
+            : 'text-[#f4ffee] hover:bg-[#01343c]'
+            }`}
+          title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {darkMode ? <Sun className="h-5 w-5 flex-shrink-0 text-yellow-500" /> : <Moon className="h-5 w-5 flex-shrink-0 text-gray-400" />}
+          {(!sidebarCollapsed || mobileView) && <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
+        </button>
         <button
           type="button"
           onClick={() => navigate('/')}
@@ -238,19 +250,9 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
               <div className="flex items-center gap-3">
                 {headerActions}
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`flex items-center gap-2 rounded-full px-3 ${darkMode ? 'text-gray-300 hover:bg-gray-800 hover:text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-                  onClick={toggleDarkMode}
-                  title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                >
-                  {darkMode ? <Sun className="h-4 w-4 text-yellow-400" /> : <Moon className="h-4 w-4 text-gray-600" />}
-                  <span className="hidden sm:inline">{darkMode ? 'Light' : 'Dark'}</span>
-                </Button>
-                <Button
                   variant="outline"
                   size="sm"
-                  className={darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white' : ''}
+                  className={darkMode ? 'bg-[#0d3036] border-[#1b5b65] text-[#7ede56] hover:bg-[#1b5b65] hover:text-white' : ''}
                   onClick={() => navigate('/dashboard/agent/notifications')}
                 >
                   <Bell className="h-4 w-4" />
