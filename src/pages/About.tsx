@@ -42,6 +42,7 @@ const About = () => {
   const [mobileAppRef, mobileAppVisible] = useScrollReveal();
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isScrolledPastHero, setIsScrolledPastHero] = useState(false);
 
   // Carousel auto-rotation
   useEffect(() => {
@@ -51,10 +52,12 @@ const About = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Handle scroll to top button visibility
+  // Handle scroll to top button visibility and navbar variant
   useEffect(() => {
     const handleScroll = () => {
+      const heroHeight = window.innerHeight * 0.75; // 75vh hero section
       setShowScrollTop(window.scrollY > 300);
+      setIsScrolledPastHero(window.scrollY > heroHeight);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -109,8 +112,8 @@ const About = () => {
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={`h-2 sm:h-2.5 rounded-full transition-all duration-300 ${index === currentSlide
-                  ? 'bg-white w-6 sm:w-8'
-                  : 'bg-white/50 hover:bg-white/75 w-2 sm:w-2.5'
+                ? 'bg-white w-6 sm:w-8'
+                : 'bg-white/50 hover:bg-white/75 w-2 sm:w-2.5'
                 }`}
               aria-label={`Go to slide ${index + 1}`}
             />
@@ -118,8 +121,8 @@ const About = () => {
         </div>
 
         {/* Navbar overlayed above image */}
-        <div className="absolute top-0 left-0 right-0 z-30">
-          <Navbar variant="transparent" />
+        <div className="fixed top-0 left-0 right-0 z-30">
+          <Navbar variant={isScrolledPastHero ? "light" : "transparent"} />
         </div>
         <div className="relative z-20 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-end h-full pb-8 sm:pb-12 md:pb-16">
           <div className="animate-fade-in-up w-full max-w-4xl mx-auto">
