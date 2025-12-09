@@ -3,7 +3,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { X, ExternalLink, ArrowUp } from 'lucide-react';
+import { X, ExternalLink, ArrowUp, Linkedin, Instagram, Facebook } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // Brand colors
@@ -79,9 +79,17 @@ const Team = () => {
                 </div>
                 <h4 className="text-xl sm:text-2xl font-bold mb-2" style={{ color: BRAND_TEAL }}>Congo Musah Adama</h4>
                 <p className="text-lg sm:text-xl font-semibold mb-3" style={{ color: BRAND_MAGENTA }}>CEO and Founder</p>
-                <p className="text-sm text-gray-600 leading-relaxed max-w-md mx-auto">
+                <p className="text-sm text-gray-600 leading-relaxed max-w-md mx-auto mb-4">
                   Technical leadership, backend architecture, AI integration, strategic vision, and cross-department coordination.
                 </p>
+                <div className="flex justify-center space-x-4">
+                  <a href="https://x.com/1real_vee" target="_blank" rel="noopener noreferrer" className="text-black transition-opacity hover:opacity-80">
+                    <img src="/x-logo.png" alt="X" className="w-5 h-5 object-contain" />
+                  </a>
+                  <a href="https://www.linkedin.com/in/congo-musah-ad-deen-766bb3224/" target="_blank" rel="noopener noreferrer" className="text-[#0077b5] transition-opacity hover:opacity-80">
+                    <Linkedin className="w-5 h-5" />
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -131,6 +139,14 @@ const Team = () => {
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
                     Software development, product management, technical execution, and cross-team coordination.
                   </p>
+                  <div className="flex justify-center space-x-4 mt-3">
+                    <a href="https://www.instagram.com/prinzsedem/?hl=en" target="_blank" rel="noopener noreferrer" className="text-[#E1306C] transition-opacity hover:opacity-80">
+                      <Instagram className="w-5 h-5" />
+                    </a>
+                    <a href="https://x.com/PrinzSedem" target="_blank" rel="noopener noreferrer" className="text-black transition-opacity hover:opacity-80">
+                      <img src="/x-logo.png" alt="X" className="w-5 h-5 object-contain" />
+                    </a>
+                  </div>
                 </div>
               </div>
 
@@ -186,6 +202,14 @@ const Team = () => {
                   <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
                     Product design, user experience, design standards, and interface consistency.
                   </p>
+                  <div className="flex justify-center space-x-4 mt-3">
+                    <a href="https://www.instagram.com/prince.ui.ux/" target="_blank" rel="noopener noreferrer" className="text-[#E1306C] transition-opacity hover:opacity-80">
+                      <Instagram className="w-5 h-5" />
+                    </a>
+                    <a href="https://www.linkedin.com/in/prince-osei-597605207/" target="_blank" rel="noopener noreferrer" className="text-[#0077b5] transition-opacity hover:opacity-80">
+                      <Linkedin className="w-5 h-5" />
+                    </a>
+                  </div>
                 </div>
 
                 {/* Cecil Odonkor */}
@@ -261,6 +285,14 @@ const Team = () => {
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
                     Marketing strategy, brand communication, partnership development, and business growth.
                   </p>
+                  <div className="flex justify-center space-x-4 mt-3">
+                    <a href="https://www.linkedin.com/public-profile/settings" target="_blank" rel="noopener noreferrer" className="text-[#0077b5] transition-opacity hover:opacity-80">
+                      <Linkedin className="w-5 h-5" />
+                    </a>
+                    <a href="https://www.facebook.com/share/1CuccL8ABV/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="text-[#1877F2] transition-opacity hover:opacity-80">
+                      <Facebook className="w-5 h-5" />
+                    </a>
+                  </div>
                 </div>
 
                 {/* Adzah Isabella */}
