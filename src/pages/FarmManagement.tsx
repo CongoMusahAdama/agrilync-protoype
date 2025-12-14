@@ -573,8 +573,7 @@ const FarmManagement = () => {
 
           <div className="w-full p-3 sm:p-4 md:p-6">
             {/* Stats Cards - Matching Main Dashboard Style */}
-            {/* Stats Cards - Matching Main Dashboard Style */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {/* Total Items - Green */}
               <Card className="hover:shadow-md transition-shadow bg-[#7ede56] border-none">
                 <CardContent className="p-4 flex flex-row items-center justify-between space-y-0">
@@ -653,7 +652,7 @@ const FarmManagement = () => {
               (userType === 'farmer' || userType === 'grower') && (
                 <Card className={`mb-8 transition-colors ${darkMode ? 'bg-[#002f37] border border-gray-700' : 'bg-white border border-gray-200'} shadow-md`}>
                   <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <CardTitle className={`flex items-center gap-2 text-xl ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                           <Leaf className={`h-6 w-6 ${darkMode ? 'text-[#7ede56]' : 'text-[#0b8a62]'}`} />
@@ -663,121 +662,87 @@ const FarmManagement = () => {
                           Track every activity in your farming journey. Click on any stage to record detailed activities, dates, resources used, and observations from planning through harvest.
                         </CardDescription>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Select value={farmStage} onValueChange={setFarmStage}>
-                          <SelectTrigger className={`h-10 w-48 border-2 border-[#7ede56] ${darkMode ? 'bg-[#002f37] text-white border-gray-600' : 'bg-white'}`}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
-                            <SelectItem value="planning" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Planning</SelectItem>
-                            <SelectItem value="planting" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Planting</SelectItem>
-                            <SelectItem value="growing" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Growing</SelectItem>
-                            <SelectItem value="harvesting" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Harvesting</SelectItem>
-                            <SelectItem value="maintenance" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Maintenance</SelectItem>
-                            <SelectItem value="other" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          onClick={() => {
-                            console.log('Farm stage updated:', farmStage);
-                          }}
-                          className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
-                        >
-                          Update Current Stage
-                        </Button>
-                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-4 sm:mt-0">
+                      <Select value={farmStage} onValueChange={setFarmStage}>
+                        <SelectTrigger className={`h-10 w-full sm:w-48 border-2 border-[#7ede56] ${darkMode ? 'bg-[#002f37] text-white border-gray-600' : 'bg-white'}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+                          <SelectItem value="planning" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Planning</SelectItem>
+                          <SelectItem value="planting" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Planting</SelectItem>
+                          <SelectItem value="growing" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Growing</SelectItem>
+                          <SelectItem value="harvesting" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Harvesting</SelectItem>
+                          <SelectItem value="maintenance" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Maintenance</SelectItem>
+                          <SelectItem value="other" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        onClick={() => {
+                          console.log('Farm stage updated:', farmStage);
+                        }}
+                        className="bg-[#7ede56] hover:bg-[#6bc947] text-white w-full sm:w-auto"
+                      >
+                        Update Current Stage
+                      </Button>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    {/* Roadmap Timeline */}
-                    <div className="relative mt-6">
-                      {/* Progress Line */}
-                      <div className={`absolute top-6 left-0 right-0 h-1 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
-                        <div
-                          className="h-1 rounded-full transition-all duration-500"
-                          style={{
-                            width: `${((['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'].indexOf(farmStage) + 1) / 6) * 100}%`,
-                            background: `linear-gradient(to right, rgba(126, 222, 86, 0.9), rgba(126, 222, 86, 0.6))`
-                          }}
-                        ></div>
-                      </div>
-
-                      {/* Stages */}
-                      <div className="relative flex justify-between items-start mb-8">
+                    {/* Roadmap Timeline - Responsive Layout */}
+                    <div className="mt-6">
+                      {/* Mobile Vertical Stepper */}
+                      <div className="sm:hidden relative pl-4 border-l-2 border-gray-200 dark:border-gray-700 ml-4 space-y-8 pb-4">
                         {['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'].map((stage, index) => {
                           const currentIndex = ['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'].indexOf(farmStage);
                           const isCompleted = index < currentIndex || stageDetails[stage].status === 'completed';
                           const isCurrent = index === currentIndex;
-                          const isUpcoming = index > currentIndex && stageDetails[stage].status !== 'completed';
                           const stageColor = getStageColor(stage);
                           const stageActivities = stageDetails[stage]?.activities || [];
 
                           return (
-                            <div key={stage} className="flex flex-col items-center flex-1">
-                              {/* Stage Circle - Clickable */}
-                              <button
-                                onClick={() => handleEditStage(stage)}
-                                className={`relative z-10 w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer hover:scale-110 ${isCompleted
-                                  ? 'shadow-lg'
-                                  : isCurrent
-                                    ? 'shadow-lg'
-                                    : `${darkMode ? 'bg-gray-800 border border-gray-600 text-gray-200' : 'bg-gray-100 border border-gray-300 text-gray-600'} hover:border-opacity-60`
-                                  }`}
-                                style={{
-                                  backgroundColor: isCompleted || isCurrent ? stageColor.bg : undefined,
-                                  color: '#ffffff',
-                                  boxShadow: isCompleted || isCurrent
-                                    ? `0 10px 15px -3px ${stageColor.bg}50, 0 4px 6px -2px ${stageColor.bg}50${isCurrent ? `, 0 0 0 4px ${stageColor.bg}30` : ''}`
-                                    : undefined,
-                                  borderColor: !isCompleted && !isCurrent ? (darkMode ? '#4b5563' : stageColor.bg) : undefined
-                                }}
-                                title={`Click to ${isCompleted ? 'view' : 'add/update'} ${stage} details`}
+                            <div key={stage} className="relative pl-8">
+                              {/* Connector Dot */}
+                              <div
+                                className={`absolute -left-[17px] top-0 w-8 h-8 rounded-full flex items-center justify-center border-4 ${darkMode ? 'bg-gray-800 border-gray-900' : 'bg-white border-white'} shadow-md transition-colors z-10`}
                               >
-                                {isUpcoming ? (
-                                  <div className={`w-4 h-4 rounded-full ${darkMode ? 'bg-gray-500' : 'bg-gray-400'}`}></div>
-                                ) : (
-                                  getStageIcon(stage, isCompleted, isCurrent)
-                                )}
-                              </button>
-
-                              {/* Stage Label */}
-                              <div className="mt-3 text-center">
-                                <p className={`text-sm font-semibold ${isCurrent
-                                  ? 'text-[#7ede56]'
-                                  : isCompleted
-                                    ? darkMode ? 'text-[#d9f4dd]' : 'text-[#0f5132]'
-                                    : darkMode ? 'text-gray-400' : 'text-gray-500'
-                                  }`}>
-                                  {stage.charAt(0).toUpperCase() + stage.slice(1)}
-                                </p>
-                                {isCurrent && (
-                                  <p className="text-xs text-[#7ede56] font-medium mt-1">Current Stage</p>
-                                )}
+                                <div
+                                  className={`w-full h-full rounded-full flex items-center justify-center ${isCompleted || isCurrent ? 'text-white' : darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}
+                                  style={{ backgroundColor: isCompleted || isCurrent ? stageColor.bg : undefined }}
+                                >
+                                  {isCompleted || isCurrent ? getStageIcon(stage, isCompleted, isCurrent) : <div className={`w-2 h-2 rounded-full ${darkMode ? 'bg-gray-500' : 'bg-gray-400'}`} />}
+                                </div>
                               </div>
 
-                              {/* Activities Summary */}
-                              <div className={`mt-3 w-full px-3 py-2 rounded-lg text-xs ${darkMode ? 'bg-[#0f3a40]' : 'bg-gray-50'}`}>
+                              {/* Content Card */}
+                              <div
+                                onClick={() => handleEditStage(stage)}
+                                className={`p-4 rounded-xl border transition-all active:scale-98 ${isCurrent
+                                  ? `bg-[#7ede56]/10 border-[#7ede56] shadow-md`
+                                  : darkMode
+                                    ? 'bg-gray-800 border-gray-700'
+                                    : 'bg-white border-gray-200 shadow-sm'
+                                  }`}
+                              >
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className={`font-bold text-lg ${isCurrent ? 'text-[#7ede56]' : darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                    {stage.charAt(0).toUpperCase() + stage.slice(1)}
+                                  </h4>
+                                  {isCurrent && <Badge className="bg-[#7ede56] text-white">Current</Badge>}
+                                </div>
+
                                 {stageActivities.length > 0 ? (
-                                  <div className="space-y-1">
-                                    {stageActivities.slice(0, 3).map((activity, activityIndex) => {
-                                      const label = getActivityLabel(activity);
-                                      return (
-                                        <div key={activityIndex} className={`flex items-center gap-2 ${darkMode ? 'text-[#d4f5d7]' : 'text-[#1f5133]'}`}>
-                                          <div className={`w-1.5 h-1.5 rounded-full ${darkMode ? 'bg-[#7ede56]' : 'bg-[#3a9258]'}`}></div>
-                                          <span className="truncate">{label}</span>
-                                        </div>
-                                      );
-                                    })}
-                                    {stageActivities.length > 3 && (
-                                      <p className={`text-[11px] italic ${darkMode ? 'text-[#a3d6aa]' : 'text-[#3f6b45]'}`}>
-                                        + {stageActivities.length - 3} more updates
-                                      </p>
-                                    )}
+                                  <div className="text-sm space-y-1">
+                                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                                      <Activity className="h-4 w-4" />
+                                      <span>{stageActivities.length} activities recorded</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                                      <Calendar className="h-4 w-4" />
+                                      <span>Latest: {new Date(stageActivities[0].date).toLocaleDateString()}</span>
+                                    </div>
                                   </div>
                                 ) : (
-                                  <p className={`${darkMode ? 'text-[#7aa9af]' : 'text-gray-500'} italic`}>
-                                    No activities recorded yet
-                                  </p>
+                                  <p className="text-sm text-gray-400 italic">Tap to add activities</p>
                                 )}
                               </div>
                             </div>
@@ -785,154 +750,251 @@ const FarmManagement = () => {
                         })}
                       </div>
 
-                      {/* Activities Display by Stage - Collapsible */}
-                      <div className="mt-8 space-y-4">
-                        <h3 className={`text-lg font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Stage Activities</h3>
-                        {['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'].map((stage) => {
-                          const stageActivities = stageDetails[stage]?.activities || [];
-                          const stageColor = getStageColor(stage);
-                          const currentIndex = ['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'].indexOf(farmStage);
-                          const stageIndex = ['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'].indexOf(stage);
-                          const isCompleted = stageIndex < currentIndex || stageDetails[stage].status === 'completed';
-                          const isCurrent = stageIndex === currentIndex;
-                          const isUpcoming = stageIndex > currentIndex && stageDetails[stage].status !== 'completed';
-                          const isExpanded = expandedStages[stage] || false;
+                      {/* Desktop Horizontal Timeline */}
+                      <div className="hidden sm:block relative">
+                        {/* Progress Line */}
+                        <div className={`absolute top-6 left-0 right-0 h-1 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                          <div
+                            className="h-1 rounded-full transition-all duration-500"
+                            style={{
+                              width: `${((['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'].indexOf(farmStage) + 1) / 6) * 100}%`,
+                              background: `linear-gradient(to right, rgba(126, 222, 86, 0.9), rgba(126, 222, 86, 0.6))`
+                            }}
+                          ></div>
+                        </div>
 
-                          if (stageActivities.length === 0 && !isCurrent && !isCompleted) {
-                            return null;
-                          }
+                        {/* Stages */}
+                        <div className="relative flex justify-between items-start mb-8">
+                          {['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'].map((stage, index) => {
+                            const currentIndex = ['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'].indexOf(farmStage);
+                            const isCompleted = index < currentIndex || stageDetails[stage].status === 'completed';
+                            const isCurrent = index === currentIndex;
+                            const isUpcoming = index > currentIndex && stageDetails[stage].status !== 'completed';
+                            const stageColor = getStageColor(stage);
+                            const stageActivities = stageDetails[stage]?.activities || [];
 
-                          return (
-                            <div
-                              key={stage}
-                              className={`rounded-lg border transition-all duration-200 ${darkMode ? 'bg-gray-800/30 border-gray-700' : 'bg-gray-50 border-gray-200'
-                                } ${isExpanded ? 'shadow-md' : ''}`}
-                            >
-                              {/* Stage Header - Clickable to Expand/Collapse */}
-                              <button
-                                onClick={() => toggleStageExpansion(stage)}
-                                className={`w-full p-4 flex items-center justify-between hover:bg-opacity-50 transition-colors ${darkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-100'
-                                  }`}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div
-                                    className="w-3 h-3 rounded-full flex-shrink-0"
-                                    style={{ backgroundColor: stageColor.bg }}
-                                  ></div>
-                                  <div className="flex items-center gap-2">
-                                    <h4
-                                      className={`font-semibold text-left ${darkMode ? 'text-white' : 'text-gray-900'}`}
-                                      style={{ color: isCurrent || isCompleted ? (darkMode ? stageColor.textOnDark : stageColor.textOnLight) : undefined }}
-                                    >
-                                      {stage.charAt(0).toUpperCase() + stage.slice(1)} Stage
-                                    </h4>
-                                    {isCurrent && (
-                                      <Badge className="bg-[#7ede56] text-white text-xs">Current</Badge>
-                                    )}
-                                    {isCompleted && (
-                                      <Badge className="bg-green-500 text-white text-xs">Completed</Badge>
-                                    )}
-                                    {stageActivities.length > 0 && (
-                                      <Badge variant="outline" className={`text-xs ${darkMode ? 'border-gray-600 text-gray-400' : 'border-gray-300 text-gray-600'}`}>
-                                        {stageActivities.length} {stageActivities.length === 1 ? 'activity' : 'activities'}
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleEditStage(stage);
-                                    }}
-                                    className={`text-xs ${darkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'}`}
-                                  >
-                                    <Edit className="h-3 w-3 mr-1" />
-                                    {stageActivities.length > 0 ? 'Edit' : 'Add'}
-                                  </Button>
-                                  {isExpanded ? (
-                                    <ChevronUp className={`h-4 w-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+                            return (
+                              <div key={stage} className="flex flex-col items-center flex-1">
+                                {/* Stage Circle - Clickable */}
+                                <button
+                                  onClick={() => handleEditStage(stage)}
+                                  className={`relative z-10 w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer hover:scale-110 ${isCompleted
+                                    ? 'shadow-lg'
+                                    : isCurrent
+                                      ? 'shadow-lg'
+                                      : `${darkMode ? 'bg-gray-800 border border-gray-600 text-gray-200' : 'bg-gray-100 border border-gray-300 text-gray-600'} hover:border-opacity-60`
+                                    }`}
+                                  style={{
+                                    backgroundColor: isCompleted || isCurrent ? stageColor.bg : undefined,
+                                    color: '#ffffff',
+                                    boxShadow: isCompleted || isCurrent
+                                      ? `0 10px 15px -3px ${stageColor.bg}50, 0 4px 6px -2px ${stageColor.bg}50${isCurrent ? `, 0 0 0 4px ${stageColor.bg}30` : ''}`
+                                      : undefined,
+                                    borderColor: !isCompleted && !isCurrent ? (darkMode ? '#4b5563' : stageColor.bg) : undefined
+                                  }}
+                                  title={`Click to ${isCompleted ? 'view' : 'add/update'} ${stage} details`}
+                                >
+                                  {isUpcoming ? (
+                                    <div className={`w-4 h-4 rounded-full ${darkMode ? 'bg-gray-500' : 'bg-gray-400'}`}></div>
                                   ) : (
-                                    <ChevronDown className={`h-4 w-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+                                    getStageIcon(stage, isCompleted, isCurrent)
+                                  )}
+                                </button>
+
+                                {/* Stage Label */}
+                                <div className="mt-3 text-center">
+                                  <p className={`text-sm font-semibold ${isCurrent
+                                    ? 'text-[#7ede56]'
+                                    : isCompleted
+                                      ? darkMode ? 'text-[#d9f4dd]' : 'text-[#0f5132]'
+                                      : darkMode ? 'text-gray-400' : 'text-gray-500'
+                                    }`}>
+                                    {stage.charAt(0).toUpperCase() + stage.slice(1)}
+                                  </p>
+                                  {isCurrent && (
+                                    <p className="text-xs text-[#7ede56] font-medium mt-1">Current Stage</p>
                                   )}
                                 </div>
-                              </button>
 
-                              {/* Collapsible Content */}
-                              {isExpanded && (
-                                <div className="px-4 pb-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                                {/* Activities Summary */}
+                                <div className={`mt-3 w-full px-3 py-2 rounded-lg text-xs ${darkMode ? 'bg-[#0f3a40]' : 'bg-gray-50'}`}>
                                   {stageActivities.length > 0 ? (
-                                    <div className="space-y-2">
-                                      {stageActivities.map((activity, activityIndex) => {
+                                    <div className="space-y-1">
+                                      {stageActivities.slice(0, 3).map((activity, activityIndex) => {
                                         const label = getActivityLabel(activity);
-                                        const activityId = typeof activity === 'string' ? `${stage}-activity-${activityIndex}` : activity.id ?? `${stage}-activity-${activityIndex}`;
-                                        const activityDate = typeof activity === 'string' || !activity.date ? null : new Date(activity.date).toLocaleDateString();
-                                        const activityDescription = typeof activity === 'string' ? null : activity.description;
-                                        const activityResources = typeof activity === 'string' ? null : activity.resources;
                                         return (
-                                          <div
-                                            key={activityId}
-                                            className={`p-3 rounded-md ${darkMode ? 'bg-gray-800/50' : 'bg-white'} border-l-4 transition-all hover:shadow-sm`}
-                                            style={{ borderLeftColor: stageColor.bg }}
-                                          >
-                                            <div className="flex items-start justify-between">
-                                              <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                  {activityDate && (
-                                                    <>
-                                                      <Calendar className={`h-3 w-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                                                      <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                        {activityDate}
-                                                      </span>
-                                                    </>
-                                                  )}
-                                                  <Badge
-                                                    className="text-xs"
-                                                    style={{ backgroundColor: stageColor.bg, color: 'white' }}
-                                                  >
-                                                    {label}
-                                                  </Badge>
-                                                </div>
-                                                {activityDescription && (
-                                                  <p className={`text-sm mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                    {activityDescription}
-                                                  </p>
-                                                )}
-                                                {activityResources && (
-                                                  <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                    <span className="font-medium">Resources:</span> {activityResources}
-                                                  </p>
-                                                )}
-                                              </div>
-                                            </div>
+                                          <div key={activityIndex} className={`flex items-center gap-2 ${darkMode ? 'text-[#d4f5d7]' : 'text-[#1f5133]'}`}>
+                                            <div className={`w-1.5 h-1.5 rounded-full ${darkMode ? 'bg-[#7ede56]' : 'bg-[#3a9258]'}`}></div>
+                                            <span className="truncate">{label}</span>
                                           </div>
                                         );
                                       })}
+                                      {stageActivities.length > 3 && (
+                                        <p className={`text-[11px] italic ${darkMode ? 'text-[#a3d6aa]' : 'text-[#3f6b45]'}`}>
+                                          + {stageActivities.length - 3} more updates
+                                        </p>
+                                      )}
                                     </div>
                                   ) : (
-                                    <div className={`text-center py-6 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                      <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                      <p className="text-sm mb-3">No activities recorded yet</p>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleEditStage(stage)}
-                                        className="text-xs"
-                                        style={{ borderColor: stageColor.bg, color: darkMode ? stageColor.textOnDark : stageColor.textOnLight }}
-                                      >
-                                        <Plus className="h-3 w-3 mr-1" />
-                                        Add First Activity
-                                      </Button>
-                                    </div>
+                                    <p className={`${darkMode ? 'text-[#7aa9af]' : 'text-gray-500'} italic`}>
+                                      No activities recorded yet
+                                    </p>
                                   )}
                                 </div>
-                              )}
-                            </div>
-                          );
-                        })}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
+                    </div>
+
+                    {/* Activities Display by Stage - Collapsible */}
+                    <div className="mt-8 space-y-4">
+                      <h3 className={`text-lg font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Stage Activities</h3>
+                      {['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'].map((stage) => {
+                        const stageActivities = stageDetails[stage]?.activities || [];
+                        const stageColor = getStageColor(stage);
+                        const currentIndex = ['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'].indexOf(farmStage);
+                        const stageIndex = ['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'].indexOf(stage);
+                        const isCompleted = stageIndex < currentIndex || stageDetails[stage].status === 'completed';
+                        const isCurrent = stageIndex === currentIndex;
+                        const isUpcoming = stageIndex > currentIndex && stageDetails[stage].status !== 'completed';
+                        const isExpanded = expandedStages[stage] || false;
+
+                        if (stageActivities.length === 0 && !isCurrent && !isCompleted) {
+                          return null;
+                        }
+
+                        return (
+                          <div
+                            key={stage}
+                            className={`rounded-lg border transition-all duration-200 ${darkMode ? 'bg-gray-800/30 border-gray-700' : 'bg-gray-50 border-gray-200'
+                              } ${isExpanded ? 'shadow-md' : ''}`}
+                          >
+                            {/* Stage Header - Clickable to Expand/Collapse */}
+                            <button
+                              onClick={() => toggleStageExpansion(stage)}
+                              className={`w-full p-4 flex items-center justify-between hover:bg-opacity-50 transition-colors ${darkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-100'
+                                }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className="w-3 h-3 rounded-full flex-shrink-0"
+                                  style={{ backgroundColor: stageColor.bg }}
+                                ></div>
+                                <div className="flex items-center gap-2">
+                                  <h4
+                                    className={`font-semibold text-left ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                                    style={{ color: isCurrent || isCompleted ? (darkMode ? stageColor.textOnDark : stageColor.textOnLight) : undefined }}
+                                  >
+                                    {stage.charAt(0).toUpperCase() + stage.slice(1)} Stage
+                                  </h4>
+                                  {isCurrent && (
+                                    <Badge className="bg-[#7ede56] text-white text-xs">Current</Badge>
+                                  )}
+                                  {isCompleted && (
+                                    <Badge className="bg-green-500 text-white text-xs">Completed</Badge>
+                                  )}
+                                  {stageActivities.length > 0 && (
+                                    <Badge variant="outline" className={`text-xs ${darkMode ? 'border-gray-600 text-gray-400' : 'border-gray-300 text-gray-600'}`}>
+                                      {stageActivities.length} {stageActivities.length === 1 ? 'activity' : 'activities'}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditStage(stage);
+                                  }}
+                                  className={`text-xs ${darkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'}`}
+                                >
+                                  <Edit className="h-3 w-3 mr-1" />
+                                  {stageActivities.length > 0 ? 'Edit' : 'Add'}
+                                </Button>
+                                {isExpanded ? (
+                                  <ChevronUp className={`h-4 w-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+                                ) : (
+                                  <ChevronDown className={`h-4 w-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+                                )}
+                              </div>
+                            </button>
+
+                            {/* Collapsible Content */}
+                            {isExpanded && (
+                              <div className="px-4 pb-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                                {stageActivities.length > 0 ? (
+                                  <div className="space-y-2">
+                                    {stageActivities.map((activity, activityIndex) => {
+                                      const label = getActivityLabel(activity);
+                                      const activityId = typeof activity === 'string' ? `${stage}-activity-${activityIndex}` : activity.id ?? `${stage}-activity-${activityIndex}`;
+                                      const activityDate = typeof activity === 'string' || !activity.date ? null : new Date(activity.date).toLocaleDateString();
+                                      const activityDescription = typeof activity === 'string' ? null : activity.description;
+                                      const activityResources = typeof activity === 'string' ? null : activity.resources;
+                                      return (
+                                        <div
+                                          key={activityId}
+                                          className={`p-3 rounded-md ${darkMode ? 'bg-gray-800/50' : 'bg-white'} border-l-4 transition-all hover:shadow-sm`}
+                                          style={{ borderLeftColor: stageColor.bg }}
+                                        >
+                                          <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                              <div className="flex items-center gap-2 mb-1">
+                                                {activityDate && (
+                                                  <>
+                                                    <Calendar className={`h-3 w-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                                    <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                      {activityDate}
+                                                    </span>
+                                                  </>
+                                                )}
+                                                <Badge
+                                                  className="text-xs"
+                                                  style={{ backgroundColor: stageColor.bg, color: 'white' }}
+                                                >
+                                                  {label}
+                                                </Badge>
+                                              </div>
+                                              {activityDescription && (
+                                                <p className={`text-sm mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                  {activityDescription}
+                                                </p>
+                                              )}
+                                              {activityResources && (
+                                                <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                  <span className="font-medium">Resources:</span> {activityResources}
+                                                </p>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                ) : (
+                                  <div className={`text-center py-6 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                    <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                    <p className="text-sm mb-3">No activities recorded yet</p>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleEditStage(stage)}
+                                      className="text-xs"
+                                      style={{ borderColor: stageColor.bg, color: darkMode ? stageColor.textOnDark : stageColor.textOnLight }}
+                                    >
+                                      <Plus className="h-3 w-3 mr-1" />
+                                      Add First Activity
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>
@@ -1057,12 +1119,12 @@ const FarmManagement = () => {
                 </Card>
               )
             }
-          </div >
-        </div >
-      </div >
+          </div>
+        </div>
+      </div>
 
       {/* Stage Details Dialog - Enhanced with Activity Tracking */}
-      < Dialog open={showStageDialog} onOpenChange={setShowStageDialog} >
+      <Dialog open={showStageDialog} onOpenChange={setShowStageDialog}>
         <DialogContent className={`${darkMode ? 'bg-[#002f37] border-gray-600' : ''} max-w-4xl max-h-[90vh] overflow-y-auto`}>
           <DialogHeader>
             <DialogTitle className={darkMode ? 'text-white' : ''}>

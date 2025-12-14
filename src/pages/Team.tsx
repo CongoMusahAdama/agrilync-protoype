@@ -170,6 +170,14 @@ const Team = () => {
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
                     User experience direction, product consistency, and inclusive interface design across platforms.
                   </p>
+                  <div className="flex justify-center space-x-4 mt-3">
+                    <a href="https://www.linkedin.com/in/samuel-boah" target="_blank" rel="noopener noreferrer" className="text-[#0077b5] transition-opacity hover:opacity-80">
+                      <Linkedin className="w-5 h-5" />
+                    </a>
+                    <a href="https://www.instagram.com/gentle___sammy?igsh=aTl6ZTJ0ZjIxaWo4&utm_source=qr" target="_blank" rel="noopener noreferrer" className="text-[#E1306C] transition-opacity hover:opacity-80">
+                      <Instagram className="w-5 h-5" />
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -253,6 +261,14 @@ const Team = () => {
                   <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
                     Backend systems, APIs, AI integration, system security, and data processing.
                   </p>
+                  <div className="flex justify-center space-x-4 mt-3">
+                    <a href="https://www.linkedin.com/in/kwaku-essah" target="_blank" rel="noopener noreferrer" className="text-[#0077b5] transition-opacity hover:opacity-80">
+                      <Linkedin className="w-5 h-5" />
+                    </a>
+                    <a href="https://x.com/hexstories_" target="_blank" rel="noopener noreferrer" className="text-black transition-opacity hover:opacity-80">
+                      <img src="/x-logo.png" alt="X" className="w-5 h-5 object-contain" />
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -315,6 +331,11 @@ const Team = () => {
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
                     Sales initiatives, content creation, community engagement, and partnership activations.
                   </p>
+                  <div className="flex justify-center space-x-4 mt-3">
+                    <a href="https://www.instagram.com/itz_lil_anaaaa?igsh=MWQ0c3pjajZ0aTk2aA%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" className="text-[#E1306C] transition-opacity hover:opacity-80">
+                      <Instagram className="w-5 h-5" />
+                    </a>
+                  </div>
                 </div>
 
                 {/* Vorlashie Raphael */}
@@ -336,6 +357,17 @@ const Team = () => {
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
                     Public relations, internal communication, media content, and brand visibility.
                   </p>
+                  <div className="flex justify-center space-x-4 mt-3">
+                    <a href="https://www.linkedin.com/in/raphaelvorlash" target="_blank" rel="noopener noreferrer" className="text-[#0077b5] transition-opacity hover:opacity-80">
+                      <Linkedin className="w-5 h-5" />
+                    </a>
+                    <a href="https://www.facebook.com/share/1BfjDGjJnt/" target="_blank" rel="noopener noreferrer" className="text-[#1877F2] transition-opacity hover:opacity-80">
+                      <Facebook className="w-5 h-5" />
+                    </a>
+                    <a href="https://www.instagram.com/raphaelvorlash_mawuli?igsh=MTBxajk4aGlscTdlMw==" target="_blank" rel="noopener noreferrer" className="text-[#E1306C] transition-opacity hover:opacity-80">
+                      <Instagram className="w-5 h-5" />
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -368,6 +400,14 @@ const Team = () => {
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
                     Community engagement, field agents, farmer onboarding, and regional operations.
                   </p>
+                  <div className="flex justify-center space-x-4 mt-3">
+                    <a href="http://linkedin.com/in/gabriel-wontumi-aa357928a" target="_blank" rel="noopener noreferrer" className="text-[#0077b5] transition-opacity hover:opacity-80">
+                      <Linkedin className="w-5 h-5" />
+                    </a>
+                    <a href="https://x.com/championwontumi" target="_blank" rel="noopener noreferrer" className="text-black transition-opacity hover:opacity-80">
+                      <img src="/x-logo.png" alt="X" className="w-5 h-5 object-contain" />
+                    </a>
+                  </div>
                 </div>
 
                 {/* Simons Justice */}
@@ -389,6 +429,17 @@ const Team = () => {
                   <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
                     Field research, agricultural insights, farmer outreach, and AI model training support.
                   </p>
+                  <div className="flex justify-center space-x-4 mt-3">
+                    <a href="https://www.linkedin.com/in/justice-simmons-264b29317" target="_blank" rel="noopener noreferrer" className="text-[#0077b5] transition-opacity hover:opacity-80">
+                      <Linkedin className="w-5 h-5" />
+                    </a>
+                    <a href="https://x.com/simmons_ju67046" target="_blank" rel="noopener noreferrer" className="text-black transition-opacity hover:opacity-80">
+                      <img src="/x-logo.png" alt="X" className="w-5 h-5 object-contain" />
+                    </a>
+                    <a href="https://www.facebook.com/justice.simmons.963" target="_blank" rel="noopener noreferrer" className="text-[#1877F2] transition-opacity hover:opacity-80">
+                      <Facebook className="w-5 h-5" />
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>

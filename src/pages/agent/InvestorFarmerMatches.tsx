@@ -276,7 +276,7 @@ const InvestorFarmerMatchesDashboard = () => {
       <div className={`p-6 space-y-6 min-h-screen ${darkMode ? 'bg-[#081a1c]' : 'bg-gray-50'}`}>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <Card
             className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${activeMetricFilter === 'total' ? 'ring-2 ring-white' : ''} bg-[#7c3aed]`}
             onClick={() => handleMetricClick('total')}
@@ -379,9 +379,9 @@ const InvestorFarmerMatchesDashboard = () => {
               </div>
 
               {/* Filters */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 w-full">
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className={`w-[140px] ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}>
+                  <SelectTrigger className={`w-full sm:w-[140px] ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}>
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -394,7 +394,7 @@ const InvestorFarmerMatchesDashboard = () => {
                 </Select>
 
                 <Select value={investmentTypeFilter} onValueChange={setInvestmentTypeFilter}>
-                  <SelectTrigger className={`w-[150px] ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}>
+                  <SelectTrigger className={`w-full sm:w-[150px] ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}>
                     <SelectValue placeholder="Investment Type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -407,7 +407,7 @@ const InvestorFarmerMatchesDashboard = () => {
                 </Select>
 
                 <Select value={regionFilter} onValueChange={setRegionFilter}>
-                  <SelectTrigger className={`w-[130px] ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}>
+                  <SelectTrigger className={`w-full sm:w-[130px] ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}>
                     <SelectValue placeholder="Region" />
                   </SelectTrigger>
                   <SelectContent>
@@ -421,7 +421,7 @@ const InvestorFarmerMatchesDashboard = () => {
                 </Select>
 
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className={`w-[130px] ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}>
+                  <SelectTrigger className={`w-full sm:w-[130px] ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}>
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -432,7 +432,7 @@ const InvestorFarmerMatchesDashboard = () => {
                 </Select>
 
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className={`w-[140px] ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}>
+                  <SelectTrigger className={`w-full sm:w-[140px] ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-gray-100' : ''}`}>
                     <ArrowUpDown className="h-4 w-4 mr-2" />
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
@@ -481,7 +481,75 @@ const InvestorFarmerMatchesDashboard = () => {
           <TabsContent value="matches">
             <Card className={darkMode ? 'bg-[#0b2528] border-[#1b5b65]' : ''}>
               <CardContent className="pt-6">
-                <div className="overflow-x-auto">
+
+                {/* Mobile Card List View */}
+                <div className="block sm:hidden space-y-4">
+                  {sortedMatches.map((match) => (
+                    <div key={match.id} className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-100 shadow-sm'}`}>
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${darkMode ? 'bg-green-500/20' : 'bg-green-100'}`}>
+                            <User className={`h-4 w-4 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
+                          </div>
+                          <div>
+                            <div className={`font-bold text-base ${darkMode ? 'text-white' : 'text-gray-900'}`}>{match.farmer.name}</div>
+                            <div className="flex items-center gap-1">
+                              {match.farmer.verified && <CheckCircle2 className="h-3 w-3 text-blue-500" />}
+                              <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{match.farmer.region}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <Badge className={`${getStatusBadge(match.status)} capitalize border`}>
+                          {match.status}
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-blue-50 dark:bg-blue-900/10">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${darkMode ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
+                          <Building className={`h-3 w-3 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                        </div>
+                        <span className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>{match.investor.name}</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-sm mb-4">
+                        <div>
+                          <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Category</span>
+                          <div className={darkMode ? 'text-gray-200' : 'text-gray-900'}>{match.category}</div>
+                        </div>
+                        <div>
+                          <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Investment</span>
+                          <div className="font-medium text-green-600">{match.investmentValue}</div>
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Progress</span>
+                          <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>{match.progress}%</span>
+                        </div>
+                        <Progress value={match.progress} className="h-2" />
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewMatch(match)}
+                        className={`w-full ${darkMode ? 'bg-[#7ede56] text-white border-[#7ede56] hover:bg-[#6bc947]' : 'border-[#7ede56] text-[#7ede56] hover:bg-[#7ede56] hover:text-white'}`}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </Button>
+                    </div>
+                  ))}
+                  {sortedMatches.length === 0 && (
+                    <div className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <p>No matches found.</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="bg-[#1db954] border-[#1db954]">
@@ -591,7 +659,40 @@ const InvestorFarmerMatchesDashboard = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
+                {/* Mobile Card List View for Issues */}
+                <div className="block sm:hidden space-y-4">
+                  {mockIssues.map((issue) => (
+                    <div key={issue.id} className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-100 shadow-sm'}`}>
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className={`font-mono text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>#{issue.id}</span>
+                          <span className={`${darkMode ? 'text-white' : 'text-gray-900'} font-medium`}>{issue.type}</span>
+                        </div>
+                        <Badge className={getSeverityBadge(issue.severity)}>
+                          {issue.severity}
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-y-2 text-sm mb-3 text-gray-500 dark:text-gray-400">
+                        <div>Farmer: <span className={darkMode ? 'text-gray-200' : 'text-gray-900'}>{issue.farmer}</span></div>
+                        <div>Investor: <span className={darkMode ? 'text-gray-200' : 'text-gray-900'}>{issue.investor}</span></div>
+                        <div>Date: <span className={darkMode ? 'text-gray-200' : 'text-gray-900'}>{issue.date}</span></div>
+                        <div>Status: <span className={darkMode ? 'text-gray-200' : 'text-gray-900'}>{issue.status}</span></div>
+                      </div>
+
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Issue
+                      </Button>
+                    </div>
+                  ))}
+                  {mockIssues.length === 0 && (
+                    <div className="text-center py-6 text-gray-500">No issues found</div>
+                  )}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="bg-[#1db954] border-[#1db954]">
@@ -639,7 +740,7 @@ const InvestorFarmerMatchesDashboard = () => {
 
         {/* Match Details Modal */}
         <Dialog open={showMatchModal} onOpenChange={setShowMatchModal}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 Match Details
@@ -655,9 +756,9 @@ const InvestorFarmerMatchesDashboard = () => {
             </DialogHeader>
 
             {selectedMatch && (
-              <ScrollArea className="max-h-[calc(90vh-120px)]">
+              <ScrollArea className="max-h-[calc(90vh-120px)] sm:max-h-[calc(90vh-140px)]">
                 <Tabs defaultValue="overview" className="w-full">
-                  <TabsList className="grid w-full grid-cols-4 mb-4">
+                  <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-4 h-auto">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="farmer">Farmer</TabsTrigger>
                     <TabsTrigger value="investor">Investor</TabsTrigger>
