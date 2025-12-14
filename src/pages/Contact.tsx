@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Send, Mail, Phone, MapPin, Clock, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { Send, Mail, Phone, MapPin, Clock, Facebook, Twitter, Instagram, Linkedin, Sparkles, ArrowRight, Calendar } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
@@ -26,6 +26,7 @@ const Contact = () => {
   const [formRef, formVisible] = useScrollReveal();
   const [infoRef, infoVisible] = useScrollReveal();
   const [communityRef, communityVisible] = useScrollReveal();
+  const [consultationRef, consultationVisible] = useScrollReveal();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -255,6 +256,39 @@ ${formData.message}`;
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Consultation CTA */}
+      <section ref={consultationRef} className={`py-20 bg-gradient-to-br from-[#002F37] to-[#004555] relative overflow-hidden transition-all duration-700 ${consultationVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center text-white">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6">
+            <Sparkles className="w-4 h-4" />
+            <span className="text-sm font-semibold">Book a Free Session</span>
+          </div>
+
+          <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+            Ready to Transform Your Farm?
+          </h2>
+          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+            Get expert advice and answers to all your farming questions from our agricultural specialists.
+          </p>
+
+          <Button
+            onClick={() => window.open('https://calendly.com/agrilync/consultation', '_blank')}
+            className="bg-gradient-to-r from-[#7ede56] to-[#66cc44] hover:from-[#66cc44] hover:to-[#7ede56] text-[#002F37] font-bold py-6 px-10 rounded-full text-lg shadow-2xl hover:shadow-[#7ede56]/50 transition-all duration-300 transform hover:scale-105"
+            size="lg"
+          >
+            <Calendar className="mr-2 h-6 w-6" />
+            Book Free Consultation
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+
+          <p className="text-sm text-gray-400 mt-6">
+            Free 30-minute session • No credit card required
+          </p>
         </div>
       </section>
 

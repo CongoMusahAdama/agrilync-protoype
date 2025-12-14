@@ -54,6 +54,7 @@ const Blog = () => {
   const [blogSectionRef, blogSectionVisible] = useScrollReveal();
   const [webinarSectionRef, webinarSectionVisible] = useScrollReveal();
   const [completedSectionRef, completedSectionVisible] = useScrollReveal();
+
   const [consultationSectionRef, consultationSectionVisible] = useScrollReveal();
 
   // Handle scroll to top button visibility
