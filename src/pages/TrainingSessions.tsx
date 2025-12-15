@@ -348,92 +348,98 @@ const TrainingSessions = () => {
 
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'dashboard'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'dashboard'
             ? 'bg-[#7ede56] text-[#002f37]'
             : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
             }`}
           onClick={() => handleSidebarNavigation('dashboard')}
         >
-          <Activity className="h-5 w-5 flex-shrink-0" />
+          <Activity className="h-4 w-4 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Dashboard</span>}
         </div>
+
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'settings'
-            ? 'bg-[#7ede56] text-[#002f37]'
-            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-            }`}
-          onClick={() => handleSidebarNavigation('settings')}
-        >
-          <Settings className="h-5 w-5 flex-shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Profile & Settings</span>}
-        </div>
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'farm-management'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'farm-management'
             ? 'bg-[#7ede56] text-[#002f37]'
             : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
             }`}
           onClick={() => handleSidebarNavigation('farm-management')}
         >
-          <MapPin className="h-5 w-5 flex-shrink-0" />
+          <MapPin className="h-4 w-4 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Farm Management</span>}
         </div>
+
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'farm-analytics'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'farm-analytics'
             ? 'bg-[#7ede56] text-[#002f37]'
             : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
             }`}
           onClick={() => handleSidebarNavigation('farm-analytics')}
         >
-          <BarChart3 className="h-5 w-5 flex-shrink-0" />
+          <BarChart3 className="h-4 w-4 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Farm Analytics</span>}
         </div>
+
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'investor-matches'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'investor-matches'
             ? 'bg-[#7ede56] text-[#002f37]'
             : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
             }`}
           onClick={() => handleSidebarNavigation('investor-matches')}
         >
-          <Users className="h-5 w-5 flex-shrink-0" />
+          <Users className="h-4 w-4 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Investor Matches</span>}
         </div>
+
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'training-sessions'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'training-sessions'
             ? 'bg-[#7ede56] text-[#002f37]'
             : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
             }`}
           onClick={() => handleSidebarNavigation('training-sessions')}
         >
-          <Calendar className="h-5 w-5 flex-shrink-0" />
+          <Calendar className="h-4 w-4 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Training Sessions</span>}
         </div>
+
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === 'notifications'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'notifications'
             ? 'bg-[#7ede56] text-[#002f37]'
             : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
             }`}
           onClick={() => handleSidebarNavigation('notifications')}
         >
-          <Bell className="h-5 w-5 flex-shrink-0" />
+          <Bell className="h-4 w-4 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Notifications</span>}
+        </div>
+
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'settings'
+            ? 'bg-[#7ede56] text-[#002f37]'
+            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+            }`}
+          onClick={() => handleSidebarNavigation('settings')}
+        >
+          <Settings className="h-4 w-4 flex-shrink-0" />
+          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Profile & Settings</span>}
         </div>
       </nav>
 
       {/* Log Out - Sticky at bottom */}
       <div className={`mt-auto p-4 border-t space-y-2 ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'} sticky bottom-0 ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
           onClick={toggleDarkMode}
           title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         >
-          {darkMode ? <Sun className="h-5 w-5 flex-shrink-0 text-yellow-500" /> : <Moon className="h-5 w-5 flex-shrink-0 text-gray-400" />}
+          {darkMode ? <Sun className="h-4 w-4 flex-shrink-0 text-yellow-500" /> : <Moon className="h-4 w-4 flex-shrink-0 text-gray-400" />}
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
         </div>
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
           onClick={() => navigate('/')}
         >
-          <ArrowRight className="h-5 w-5 flex-shrink-0" />
+          <ArrowRight className="h-4 w-4 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Log Out</span>}
         </div>
       </div>

@@ -18,6 +18,7 @@ import {
   Sprout,
   Sun,
   Users,
+  Settings,
   LogOut
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -31,12 +32,14 @@ type AgentNavItem = {
 };
 
 const agentNavItems: AgentNavItem[] = [
-  { id: 'profile-overview', label: 'Profile Overview', icon: Activity, path: '/dashboard/agent' },
+  { id: 'profile-overview', label: 'Dashboard', icon: Activity, path: '/dashboard/agent' },
+  { id: 'farmers-management', label: 'Farmers Management', icon: Users, path: '/dashboard/agent/farmers-management' },
   { id: 'farm-management', label: 'Farm Management', icon: Sprout, path: '/dashboard/agent/farm-management' },
   { id: 'investor-farmer-matches', label: 'Investor-Farmer Matches', icon: Handshake, path: '/dashboard/agent/investor-farmer-matches' },
   { id: 'dispute-management', label: 'Dispute Management', icon: AlertTriangle, path: '/dashboard/agent/dispute-management' },
   { id: 'training-performance', label: 'Training & Performance', icon: Calendar, path: '/dashboard/agent/training-performance' },
-  { id: 'notifications', label: 'Notifications', icon: Bell, path: '/dashboard/agent/notifications-center' }
+  { id: 'notifications', label: 'Notifications', icon: Bell, path: '/dashboard/agent/notifications-center' },
+  { id: 'profile', label: 'Profile & Settings', icon: Settings, path: '/dashboard/agent/profile' }
 ];
 
 interface AgentLayoutProps {
@@ -152,7 +155,7 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
                   : 'text-[#f4ffee] hover:bg-[#01343c]'
                 }`}
             >
-              <Icon className="h-5 w-5 flex-shrink-0" />
+              <Icon className="h-4 w-4 flex-shrink-0" />
               {(!sidebarCollapsed || mobileView) && <span>{item.label}</span>}
             </button>
           );
@@ -166,24 +169,24 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
         <button
           type="button"
           onClick={toggleDarkMode}
-          className={`flex w-full items-center gap-3 rounded-lg p-3 font-medium transition-colors ${darkMode
+          className={`flex w-full items-center gap-3 rounded-lg p-3 text-sm font-medium transition-colors ${darkMode
             ? 'text-[#002f37] hover:bg-gray-100'
             : 'text-[#f4ffee] hover:bg-[#01343c]'
             }`}
           title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         >
-          {darkMode ? <Sun className="h-5 w-5 flex-shrink-0 text-yellow-500" /> : <Moon className="h-5 w-5 flex-shrink-0 text-gray-400" />}
+          {darkMode ? <Sun className="h-4 w-4 flex-shrink-0 text-yellow-500" /> : <Moon className="h-4 w-4 flex-shrink-0 text-gray-400" />}
           {(!sidebarCollapsed || mobileView) && <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
         </button>
         <button
           type="button"
           onClick={() => navigate('/')}
-          className={`flex w-full items-center gap-3 rounded-lg p-3 font-medium transition-colors ${darkMode
+          className={`flex w-full items-center gap-3 rounded-lg p-3 text-sm font-medium transition-colors ${darkMode
             ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50 border border-red-800/50'
             : 'bg-[#0a4a52] text-white hover:bg-[#0d606b]'
             }`}
         >
-          <LogOut className="h-5 w-5 flex-shrink-0" />
+          <LogOut className="h-4 w-4 flex-shrink-0" />
           {(!sidebarCollapsed || mobileView) && <span>Log Out</span>}
         </button>
       </div>

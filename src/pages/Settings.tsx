@@ -373,12 +373,12 @@ const Settings = () => {
 
   const globalSidebarItems = [
     { key: 'dashboard', label: 'Dashboard', icon: Activity },
-    { key: 'settings', label: 'Profile & Settings', icon: SettingsIcon },
     { key: 'farm-management', label: 'Farm Management', icon: MapPin },
     { key: 'farm-analytics', label: 'Farm Analytics', icon: BarChart3 },
     { key: 'investor-matches', label: 'Investor Matches', icon: Users },
     { key: 'training-sessions', label: 'Training Sessions', icon: Calendar },
-    { key: 'notifications', label: 'Notifications', icon: Bell }
+    { key: 'notifications', label: 'Notifications', icon: Bell },
+    { key: 'settings', label: 'Profile & Settings', icon: SettingsIcon }
   ];
 
   const SidebarContent = () => (
@@ -425,7 +425,7 @@ const Settings = () => {
           return (
             <div
               key={item.key}
-              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeSidebarItem === item.key
+              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === item.key
                 ? 'bg-[#7ede56] text-[#002f37]'
                 : darkMode
                   ? 'text-[#002f37] hover:bg-gray-100'
@@ -433,7 +433,7 @@ const Settings = () => {
                 }`}
               onClick={() => handleSidebarNavigation(item.key)}
             >
-              <Icon className="h-5 w-5 flex-shrink-0" />
+              <Icon className="h-4 w-4 flex-shrink-0" />
               {(!sidebarCollapsed || isMobile) && <span className="font-medium">{item.label}</span>}
             </div>
           );
@@ -442,18 +442,18 @@ const Settings = () => {
 
       <div className={`mt-auto p-4 border-t space-y-2 ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'} ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
           onClick={toggleDarkMode}
           title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         >
-          {darkMode ? <Sun className="h-5 w-5 flex-shrink-0 text-yellow-500" /> : <Moon className="h-5 w-5 flex-shrink-0 text-gray-400" />}
+          {darkMode ? <Sun className="h-4 w-4 flex-shrink-0 text-yellow-500" /> : <Moon className="h-4 w-4 flex-shrink-0 text-gray-400" />}
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
         </div>
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
           onClick={() => navigate('/')}
         >
-          <ArrowRight className="h-5 w-5 flex-shrink-0" />
+          <ArrowRight className="h-4 w-4 flex-shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Log Out</span>}
         </div>
       </div>
