@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { Users, TrendingUp, Award, Shield, Target, Heart, Lightbulb, Handshake, Eye, Building2, ArrowUp } from 'lucide-react';
 import { Button } from '../components/ui/button'; // Added Button import
+import CountUp from '../components/CountUp';
 
 // Brand colors
 const BRAND_MAGENTA = '#921573';
@@ -144,6 +145,42 @@ const About = () => {
             <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-4">
               AgriLync is a revolutionary agricultural technology platform that connects farmers, investors, and agricultural experts in a seamless ecosystem. We bridge the gap between traditional farming practices and modern agricultural innovation, empowering farmers with the resources, knowledge, and financial support they need to thrive in today's competitive agricultural landscape.
             </p>
+
+            {/* Impact Figures */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-12 border-t pt-8 border-gray-100">
+              <div className="text-center sm:text-left transition-all duration-700 ease-in-out">
+                <div className="text-5xl sm:text-6xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
+                  <CountUp end={95} suffix="%" />
+                </div>
+                <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
+                  WhatsApp community engagement
+                </p>
+              </div>
+              <div className="text-center sm:text-left transition-all duration-700 ease-in-out">
+                <div className="text-5xl sm:text-6xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
+                  <CountUp end={8} />
+                </div>
+                <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
+                  Online webinars covering all aspects of farming
+                </p>
+              </div>
+              <div className="text-center sm:text-left transition-all duration-700 ease-in-out">
+                <div className="text-5xl sm:text-6xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
+                  <CountUp end={50} suffix="+" />
+                </div>
+                <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
+                  Signups for our waitlist
+                </p>
+              </div>
+              <div className="text-center sm:text-left transition-all duration-700 ease-in-out">
+                <div className="text-5xl sm:text-6xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
+                  <CountUp end={28} />
+                </div>
+                <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
+                  One-on-one consultations done
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

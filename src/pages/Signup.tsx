@@ -142,8 +142,8 @@ const Signup = () => {
     },
     {
       id: 'agent',
-      title: 'Lync Agent',
-      description: 'Extension officers and field agents',
+      title: 'Apply as Lync Agent',
+      description: 'Extension officer application',
       icon: <UserCheck className="h-8 w-8 text-purple-600" />,
       color: 'border-purple-200 hover:border-purple-400'
     }
@@ -886,7 +886,13 @@ const Signup = () => {
                   <Card
                     key={type.id}
                     className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${type.color}`}
-                    onClick={() => navigate(`/signup/${type.id}`)}
+                    onClick={() => {
+                      if (type.id === 'agent') {
+                        window.open('https://form.jotform.com/your-form-id', '_blank');
+                      } else {
+                        navigate(`/signup/${type.id}`);
+                      }
+                    }}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center space-x-4">

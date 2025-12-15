@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Leaf, Users, TrendingUp, MapPin, Calendar, Shield, Award, Play, MessageCircle, X, ArrowUp } from 'lucide-react';
+import { Leaf, Users, TrendingUp, MapPin, Calendar, Shield, Award, Play, MessageCircle, X, ArrowUp, Quote } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
@@ -24,6 +24,7 @@ const Index = () => {
   const [succeedHeadingRef, succeedHeadingVisible] = useScrollReveal();
   const [whoWeAreRef, whoWeAreVisible] = useScrollReveal();
   const [farmersCryingRef, farmersCryingVisible] = useScrollReveal();
+  const [successStoriesRef, successStoriesVisible] = useScrollReveal();
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showSplash, setShowSplash] = useState(false);
@@ -429,6 +430,77 @@ const Index = () => {
           <ArrowUp className="h-5 w-5 md:h-6 md:w-6" />
         </Button>
       )}
+
+      {/* Success Stories Section */}
+      <section className="py-4 sm:py-6 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-4 animate-fade-in-up transition-all duration-700 ease-in-out">
+            <h2 ref={successStoriesRef} className={"text-xl sm:text-2xl font-bold mb-2 transition-all duration-700 ease-in-out " + (successStoriesVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: '#002f37' }}>
+              Success Stories
+            </h2>
+            <div className="w-16 h-1 bg-[#7ede56] mb-3 mx-auto rounded-full"></div>
+            <p className="text-xs text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Hear from the farmers and investors transforming agriculture with AgriLync.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            {/* Story 1 */}
+            <div className="bg-[#003d47] p-5 rounded-2xl border border-[#7ede56]/20 hover:border-[#7ede56]/50 transition-all duration-300 hover:transform hover:-translate-y-1 group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-[#7ede56]/5 rounded-bl-full -mr-4 -mt-4 transition-all group-hover:bg-[#7ede56]/10"></div>
+              <Leaf className="h-6 w-6 text-[#7ede56] mb-3 opacity-80 rotate-12" />
+              <p className="text-gray-300 mb-4 leading-relaxed italic relative z-10 text-sm">
+                Finding investors for my vegetable farm was always a struggle until I joined AgriLync. Within weeks, I secured funding to expand my operations.
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-[#7ede56]/20 border border-[#7ede56] flex items-center justify-center text-[#7ede56] font-bold text-xs">
+                  GE
+                </div>
+                <div>
+                  <h4 className="font-bold text-white text-sm">Gabienu Emmanuel</h4>
+                  <p className="text-xs text-[#7ede56]">Vegetable Farmer</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Story 2 */}
+            <div className="bg-[#003d47] p-5 rounded-2xl border border-[#7ede56]/20 hover:border-[#7ede56]/50 transition-all duration-300 hover:transform hover:-translate-y-1 group relative overflow-hidden mt-0 md:mt-0">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-[#7ede56]/5 rounded-bl-full -mr-4 -mt-4 transition-all group-hover:bg-[#7ede56]/10"></div>
+              <Leaf className="h-6 w-6 text-[#7ede56] mb-3 opacity-80 -rotate-12" />
+              <p className="text-gray-300 mb-4 leading-relaxed italic relative z-10 text-sm">
+                The transparency AgriLync offers is unmatched. I can track my investments in real-time and see the actual impact on the farms.
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-[#7ede56]/20 border border-[#7ede56] flex items-center justify-center text-[#7ede56] font-bold text-xs">
+                  SM
+                </div>
+                <div>
+                  <h4 className="font-bold text-white text-sm">Sarah Mensah</h4>
+                  <p className="text-xs text-[#7ede56]">Agri-Investor, Accra</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Story 3 */}
+            <div className="bg-[#003d47] p-5 rounded-2xl border border-[#7ede56]/20 hover:border-[#7ede56]/50 transition-all duration-300 hover:transform hover:-translate-y-1 group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-[#7ede56]/5 rounded-bl-full -mr-4 -mt-4 transition-all group-hover:bg-[#7ede56]/10"></div>
+              <Leaf className="h-6 w-6 text-[#7ede56] mb-3 opacity-80 rotate-45" />
+              <p className="text-gray-300 mb-4 leading-relaxed italic relative z-10 text-sm">
+                The AI crop consultation saved my maize harvest from a pest outbreak. The advice was timely, accurate, and easy to follow.
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-[#7ede56]/20 border border-[#7ede56] flex items-center justify-center text-[#7ede56] font-bold text-xs">
+                  JB
+                </div>
+                <div>
+                  <h4 className="font-bold text-white text-sm">John Baah</h4>
+                  <p className="text-xs text-[#7ede56]">Maize Farmer, Brong Ahafo</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <Footer />
     </div>

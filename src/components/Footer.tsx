@@ -13,14 +13,14 @@ const Footer = () => {
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    
+
     setIsSubmitting(true);
     // Simulate newsletter subscription
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsSubmitting(false);
     setIsSubmitted(true);
     setEmail('');
-    
+
     // Reset success message after 3 seconds
     setTimeout(() => setIsSubmitted(false), 3000);
   };
@@ -32,9 +32,9 @@ const Footer = () => {
           {/* Logo and Brand */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <img 
-                src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png" 
-                alt="AgriLync Logo" 
+              <img
+                src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png"
+                alt="AgriLync Logo"
                 className="h-8 w-8"
               />
               <span className="font-bold text-xl">AgriLync</span>
@@ -91,6 +91,7 @@ const Footer = () => {
               <Link to="/about" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">About</Link>
               <Link to="/blog" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Blog</Link>
               <Link to="/contact" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Contact</Link>
+              <a href="https://form.jotform.com/your-form-id" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Careers</a>
               <a href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Community</a>
               <Link to="#" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Privacy Policy</Link>
             </div>
@@ -116,8 +117,8 @@ const Footer = () => {
                   className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-green-400"
                   required
                 />
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={isSubmitting}
                   className="w-full bg-green-600 hover:bg-green-700 text-white text-sm"
                 >

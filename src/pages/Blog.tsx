@@ -222,7 +222,7 @@ const Blog = () => {
       image: "/lovable-uploads/image copy 5.png",
       description: "Join us for an insightful session on smart farming investments and what every entrepreneur and investor needs to know to succeed in the agricultural sector.",
       speaker: "eyramax",
-      status: "upcoming",
+      status: "completed",
       registrationLink: "https://luma.com/q7tsnwsl"
     }
   ];

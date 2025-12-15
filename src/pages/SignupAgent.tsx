@@ -52,12 +52,9 @@ const SignupAgent = () => {
             return;
         }
 
-        // Show under development message
-        alert('🌾 Thank you for your interest in AgriLync!\n\nOur authentication system and user dashboards are currently under development and will be available very soon.\n\nStay tuned for updates!');
-        return;
-
-        // console.log('Agent Registration Data:', formData);
-        // navigate('/dashboard/agent');
+        // Show application success message
+        alert('📝 Application Submitted Successfully!\n\nThank you for your interest in becoming a Lync Agent. Your application has been received and is under review.\n\nOur team will contact you shortly regarding the next steps.');
+        navigate('/');
     };
 
     return (
@@ -77,16 +74,16 @@ const SignupAgent = () => {
                     <div className="flex items-center gap-3">
                         <UserCheck className="h-10 w-10 text-purple-600" />
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">Lync Agent Registration</h1>
-                            <p className="text-gray-600">Join as an extension officer or field agent</p>
+                            <h1 className="text-3xl font-bold text-gray-900">Lync Agent Application</h1>
+                            <p className="text-gray-600">Apply to become an extension officer or field agent</p>
                         </div>
                     </div>
                 </div>
 
                 <Card className="shadow-xl">
                     <CardHeader className="bg-gradient-to-r from-purple-50 to-white">
-                        <CardTitle className="text-2xl">Create Your Account</CardTitle>
-                        <CardDescription>Register to start managing farms and farmers</CardDescription>
+                        <CardTitle className="text-2xl">Submit Your Application</CardTitle>
+                        <CardDescription>Register your interest to manage farms and farmers</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6">
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -161,7 +158,7 @@ const SignupAgent = () => {
                                 </div>
 
                                 <div className="md:col-span-2">
-                                    <Label htmlFor="password">Password *</Label>
+                                    <Label htmlFor="password">Password (for account creation if approved) *</Label>
                                     <Input
                                         id="password"
                                         type="password"
@@ -203,7 +200,7 @@ const SignupAgent = () => {
                                 className="w-full bg-purple-600 hover:bg-purple-700 py-6 text-lg"
                                 disabled={!formData.acceptTerms || !formData.acceptDataPolicy}
                             >
-                                Create Account
+                                Submit Application
                             </Button>
                         </form>
                     </CardContent>
