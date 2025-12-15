@@ -522,7 +522,7 @@ const About = () => {
 
           <div className="relative">
             {/* Center Vertical Line */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-gray-200 hidden md:block"></div>
+            <div className="absolute left-9 md:left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-gray-200 block"></div>
 
             {/* Timeline Items */}
             <div className="space-y-12 md:space-y-0 relative">
@@ -541,14 +541,14 @@ const About = () => {
                   <div className="hidden md:block w-5/12"></div>
 
                   {/* Center Node */}
-                  <div className={`absolute left-4 md:left-1/2 transform md:-translate-x-1/2 w-10 h-10 rounded-full border-4 shadow-lg z-10 hidden md:flex items-center justify-center transition-all duration-300 ${step.status === 'completed' ? 'bg-[#7ede56] border-white' : (step.status === 'current' ? 'bg-white border-[#7ede56]' : 'bg-white border-gray-200')}`}>
+                  <div className={`absolute left-4 md:left-1/2 transform md:-translate-x-1/2 w-10 h-10 rounded-full border-4 shadow-lg z-10 flex items-center justify-center transition-all duration-300 ${step.status === 'completed' ? 'bg-[#7ede56] border-white' : (step.status === 'current' ? 'bg-white border-[#7ede56]' : 'bg-white border-gray-200')}`}>
                     {step.status === 'completed' && <Check className="w-5 h-5 text-white" />}
                     {step.status === 'current' && <div className="w-3 h-3 bg-[#7ede56] rounded-full animate-pulse"></div>}
                     {step.status === 'upcoming' && <div className="w-3 h-3 bg-gray-300 rounded-full"></div>}
                   </div>
 
                   {/* Content Card */}
-                  <div className={`w-full md:w-5/12 ml-12 md:ml-0 p-8 bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center group ${roadmapVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                  <div className={`w-auto ml-20 md:w-5/12 md:ml-0 p-8 bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center group ${roadmapVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                     style={{ transitionDelay: `${index * 150}ms` }}>
 
                     {/* Phase Label */}
