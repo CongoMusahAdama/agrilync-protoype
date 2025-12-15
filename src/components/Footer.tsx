@@ -91,7 +91,7 @@ const Footer = () => {
               <Link to="/about" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">About</Link>
               <Link to="/blog" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Blog</Link>
               <Link to="/contact" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Contact</Link>
-              <a href="https://form.jotform.com/your-form-id" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Careers</a>
+              <a href="https://form.jotform.com/253482683266062" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Careers</a>
               <a href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Community</a>
               <Link to="#" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Privacy Policy</Link>
             </div>

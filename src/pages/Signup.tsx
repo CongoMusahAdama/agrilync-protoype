@@ -888,7 +888,7 @@ const Signup = () => {
                     className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${type.color}`}
                     onClick={() => {
                       if (type.id === 'agent') {
-                        window.open('https://form.jotform.com/your-form-id', '_blank');
+                        window.open('https://form.jotform.com/253482683266062', '_blank');
                       } else {
                         navigate(`/signup/${type.id}`);
                       }

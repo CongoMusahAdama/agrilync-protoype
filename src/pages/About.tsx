@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import { Users, TrendingUp, Award, Shield, Target, Heart, Lightbulb, Handshake, Eye, Building2, ArrowUp } from 'lucide-react';
+import { Users, TrendingUp, Award, Shield, Target, Heart, Lightbulb, Handshake, Eye, Building2, ArrowUp, Rocket, Smartphone, MapPin, Search, Globe, GraduationCap, Sprout, Check } from 'lucide-react';
 import { Button } from '../components/ui/button'; // Added Button import
 import CountUp from '../components/CountUp';
 
@@ -40,6 +40,7 @@ const About = () => {
   const [serve4Ref, serve4Visible] = useScrollReveal();
   const [howWeDoItRef, howWeDoItVisible] = useScrollReveal();
   const [whyChooseUsRef, whyChooseUsVisible] = useScrollReveal();
+  const [roadmapRef, roadmapVisible] = useScrollReveal();
   const [mobileAppRef, mobileAppVisible] = useScrollReveal();
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -499,6 +500,77 @@ const About = () => {
                   </p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Our Journey to Launch Section */}
+      <section ref={roadmapRef} className={"py-10 sm:py-16 md:py-20 bg-gray-50 overflow-hidden"}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16">
+            <div className="inline-block px-4 py-1.5 rounded-full bg-[#7ede56]/20 text-[#002f37] font-semibold text-sm mb-4 animate-fade-in-up">
+              Launch Roadmap
+            </div>
+            <h2 className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-4 transition-all duration-700 ease-in-out " + (roadmapVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
+              Our Journey to Launch
+            </h2>
+            <p className={"text-gray-600 max-w-2xl mx-auto transition-all duration-700 ease-in-out " + (roadmapVisible ? " animate-fade-in-up" : " opacity-0")}>
+              Follow our progress as we revolutionize agriculture across Africa, one milestone at a time.
+            </p>
+          </div>
+
+          <div className="relative">
+            {/* Center Vertical Line */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-gray-200 hidden md:block"></div>
+
+            {/* Timeline Items */}
+            <div className="space-y-12 md:space-y-0 relative">
+              {[
+                { phase: 'PHASE 1', date: 'October 2024', title: 'Problem Release', description: 'Identified and released the core problem statement addressing agricultural inefficiencies.', status: 'completed' },
+                { phase: 'PHASE 2', date: 'Q1 2025', title: 'Dry Run Launch', description: 'Successfully launched our initial dry run to test core system functionalities.', status: 'completed' },
+                { phase: 'PHASE 3', date: 'Q2 2025', title: 'Waitlist Release', description: 'Opened early access waitlist for interested farmers and partners.', status: 'completed' },
+                { phase: 'PHASE 4', date: 'Q3 2025', title: 'Mobile App Development', description: 'Commenced comprehensive development of our mobile application for farmers.', status: 'completed' },
+                { phase: 'PHASE 5', date: 'Q4 2025', title: 'Pilot Regions Launch', description: 'Launching pilot regions for specialized farm partner investments.', status: 'current' },
+                { phase: 'PHASE 6', date: 'Q1 2026', title: 'Website Launch', description: 'Official launch of the full-featured AgriLync platform website.', status: 'upcoming' },
+                { phase: 'PHASE 7', date: 'Q1 2026', title: 'Agent Training', description: 'Lync Agent lookout and specialized training programs begin.', status: 'upcoming' },
+                { phase: 'PHASE 8', date: 'Q2 2026', title: 'Farmer Onboarding', description: 'Starting farmer onboarding and training in elected pilot regions.', status: 'upcoming' },
+                { phase: 'PHASE 9', date: 'Future', title: 'More to Come', description: 'Continuing to expand our impact and innovate for the future of agriculture.', status: 'upcoming' }
+              ].map((step, index) => (
+                <div key={index} className={`md:flex items-center justify-between w-full mb-8 ${index % 2 === 0 ? 'flex-row-reverse' : ''}`}>
+                  <div className="hidden md:block w-5/12"></div>
+
+                  {/* Center Node */}
+                  <div className={`absolute left-4 md:left-1/2 transform md:-translate-x-1/2 w-10 h-10 rounded-full border-4 shadow-lg z-10 hidden md:flex items-center justify-center transition-all duration-300 ${step.status === 'completed' ? 'bg-[#7ede56] border-white' : (step.status === 'current' ? 'bg-white border-[#7ede56]' : 'bg-white border-gray-200')}`}>
+                    {step.status === 'completed' && <Check className="w-5 h-5 text-white" />}
+                    {step.status === 'current' && <div className="w-3 h-3 bg-[#7ede56] rounded-full animate-pulse"></div>}
+                    {step.status === 'upcoming' && <div className="w-3 h-3 bg-gray-300 rounded-full"></div>}
+                  </div>
+
+                  {/* Content Card */}
+                  <div className={`w-full md:w-5/12 ml-12 md:ml-0 p-8 bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center group ${roadmapVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                    style={{ transitionDelay: `${index * 150}ms` }}>
+
+                    {/* Phase Label */}
+                    <div className="text-xs font-bold uppercase tracking-widest mb-2 text-[#7ede56]">
+                      {step.phase}
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-xl font-bold mb-3" style={{ color: BRAND_TEAL }}>{step.title}</h3>
+
+                    {/* Description */}
+                    <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-6">
+                      {step.description}
+                    </p>
+
+                    {/* Date Pill at Bottom */}
+                    <div className="inline-block px-5 py-2 rounded-full text-xs font-bold bg-[#7ede56]/10 text-[#002f37]">
+                      {step.date}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
