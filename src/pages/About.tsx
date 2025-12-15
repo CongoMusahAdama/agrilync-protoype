@@ -525,19 +525,19 @@ const About = () => {
             <div className="absolute left-9 md:left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-gray-200 block"></div>
 
             {/* Timeline Items */}
-            <div className="space-y-12 md:space-y-0 relative">
+            <div className="space-y-8 md:space-y-0 relative">
               {[
                 { phase: 'PHASE 1', date: 'October 2024', title: 'Problem Release', description: 'Identified and released the core problem statement addressing agricultural inefficiencies.', status: 'completed' },
                 { phase: 'PHASE 2', date: 'Q1 2025', title: 'Dry Run Launch', description: 'Successfully launched our initial dry run to test core system functionalities.', status: 'completed' },
                 { phase: 'PHASE 3', date: 'Q2 2025', title: 'Waitlist Release', description: 'Opened early access waitlist for interested farmers and partners.', status: 'completed' },
                 { phase: 'PHASE 4', date: 'Q3 2025', title: 'Mobile App Development', description: 'Commenced comprehensive development of our mobile application for farmers.', status: 'completed' },
-                { phase: 'PHASE 5', date: 'Q4 2025', title: 'Pilot Regions Launch', description: 'Launching pilot regions for specialized farm partner investments.', status: 'current' },
-                { phase: 'PHASE 6', date: 'Q1 2026', title: 'Website Launch', description: 'Official launch of the full-featured AgriLync platform website.', status: 'upcoming' },
+                { phase: 'PHASE 5', date: 'Q4 2025', title: 'Pilot Regions Launch', description: 'Launching pilot regions for specialized farm partner investments.', status: 'completed' },
+                { phase: 'PHASE 6', date: 'Q1 2026', title: 'Website Launch', description: 'Official launch of the full-featured AgriLync platform website.', status: 'current' },
                 { phase: 'PHASE 7', date: 'Q1 2026', title: 'Agent Training', description: 'Lync Agent lookout and specialized training programs begin.', status: 'upcoming' },
                 { phase: 'PHASE 8', date: 'Q2 2026', title: 'Farmer Onboarding', description: 'Starting farmer onboarding and training in elected pilot regions.', status: 'upcoming' },
                 { phase: 'PHASE 9', date: 'Future', title: 'More to Come', description: 'Continuing to expand our impact and innovate for the future of agriculture.', status: 'upcoming' }
               ].map((step, index) => (
-                <div key={index} className={`md:flex items-center justify-between w-full mb-8 ${index % 2 === 0 ? 'flex-row-reverse' : ''}`}>
+                <div key={index} className={`md:flex items-center justify-between w-full mb-4 ${index % 2 === 0 ? 'flex-row-reverse' : ''}`}>
                   <div className="hidden md:block w-5/12"></div>
 
                   {/* Center Node */}
@@ -548,24 +548,24 @@ const About = () => {
                   </div>
 
                   {/* Content Card */}
-                  <div className={`w-auto ml-20 md:w-5/12 md:ml-0 p-8 bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center group ${roadmapVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                  <div className={`w-auto ml-16 md:w-5/12 md:ml-0 p-5 bg-white rounded-xl shadow-md border-0 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-center group ${roadmapVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                     style={{ transitionDelay: `${index * 150}ms` }}>
 
                     {/* Phase Label */}
-                    <div className="text-xs font-bold uppercase tracking-widest mb-2 text-[#7ede56]">
+                    <div className="text-[10px] font-bold uppercase tracking-widest mb-1 text-[#7ede56]">
                       {step.phase}
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-xl font-bold mb-3" style={{ color: BRAND_TEAL }}>{step.title}</h3>
+                    <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>{step.title}</h3>
 
                     {/* Description */}
-                    <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-6">
+                    <p className="text-gray-600 text-xs leading-relaxed mb-4">
                       {step.description}
                     </p>
 
                     {/* Date Pill at Bottom */}
-                    <div className="inline-block px-5 py-2 rounded-full text-xs font-bold bg-[#7ede56]/10 text-[#002f37]">
+                    <div className="inline-block px-4 py-1.5 rounded-full text-[10px] font-bold bg-[#7ede56]/10 text-[#002f37]">
                       {step.date}
                     </div>
                   </div>

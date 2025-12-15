@@ -26,6 +26,7 @@ interface TeamMember {
   isCEO?: boolean;
   imagePosition?: string;
   borderColor?: string;
+  scale?: number;
 }
 
 // Group data structure
@@ -52,6 +53,7 @@ const coFounders: TeamMember[] = [
     initials: 'TR',
     description: 'Finance, partnerships, investor relations, financial planning, and strategic collaborations.',
     imagePosition: 'center',
+    scale: 1.15,
     borderColor: 'border-[#22c55e]' // Green for Robert
   },
   {
@@ -72,6 +74,7 @@ const coFounders: TeamMember[] = [
     image: '/lovable-uploads/boahsamuel.jpg',
     initials: 'BS',
     description: 'User experience direction, product consistency, and inclusive interface design across platforms.',
+    imagePosition: 'center 20%',
     socials: {
       linkedin: 'https://www.linkedin.com/in/samuel-boah',
       instagram: 'https://www.instagram.com/gentle___sammy?igsh=aTl6ZTJ0ZjIxaWo4&utm_source=qr'
@@ -99,6 +102,10 @@ const productTeam: TeamMember[] = [
     image: '/lovable-uploads/cecilodonkoh.jpg',
     initials: 'CO',
     description: 'Interface design, frontend development, responsive design, and user-friendly interaction.',
+    socials: {
+      linkedin: 'https://www.linkedin.com/in/cecil-odonkor-559650266?trk=contact-info',
+      twitter: 'https://x.com/terminator7845?s=21'
+    },
     borderColor: 'border-[#14b8a6]' // Teal for Cecil
   },
   {
@@ -111,7 +118,8 @@ const productTeam: TeamMember[] = [
       linkedin: 'https://www.linkedin.com/in/kwaku-essah',
       twitter: 'https://x.com/hexstories_'
     },
-    imagePosition: 'center top',
+    imagePosition: 'center 0%',
+    scale: 1.08,
     borderColor: 'border-[#ec4899]' // Pink for Kwaku
   }
 ];
@@ -190,17 +198,19 @@ const TeamMemberCard = ({ member, index = 0 }: { member: TeamMember; index?: num
     onClick={() => member.isCEO && document.dispatchEvent(new CustomEvent('openCEOModal'))}
   >
     <div className="relative aspect-square w-full bg-white rounded-xl overflow-hidden mb-5 shadow-sm hover:shadow-xl transition-all duration-500">
-      <img
-        src={member.image}
-        alt={member.name}
-        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-        style={{ objectPosition: member.imagePosition || 'center' }}
-        onError={(e) => {
-          const target = e.target as HTMLImageElement;
-          target.style.display = 'none';
-          target.parentElement!.innerHTML = `<div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-2xl font-bold">${member.initials}</div>`;
-        }}
-      />
+      <div className="w-full h-full" style={{ transform: member.scale ? `scale(${member.scale})` : 'none' }}>
+        <img
+          src={member.image}
+          alt={member.name}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          style={{ objectPosition: member.imagePosition || 'center' }}
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            target.parentElement!.innerHTML = `<div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-2xl font-bold">${member.initials}</div>`;
+          }}
+        />
+      </div>
 
       {/* Hover Overlay with Description - Bottom Gradient Style */}
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end p-6">

@@ -144,8 +144,8 @@ const Signup = () => {
       id: 'agent',
       title: 'Apply as Lync Agent',
       description: 'Extension officer application',
-      icon: <UserCheck className="h-8 w-8 text-purple-600" />,
-      color: 'border-purple-200 hover:border-purple-400'
+      icon: <UserCheck className="h-8 w-8 text-white" />,
+      color: 'bg-[#7ede56] border-none shadow-xl hover:shadow-2xl hover:scale-105 [&_h3]:!text-[#002f37] [&_p]:!text-[#002f37]/80'
     }
   ];
 
