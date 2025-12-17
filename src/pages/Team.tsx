@@ -204,6 +204,7 @@ const TeamMemberCard = ({ member, index = 0 }: { member: TeamMember; index?: num
           alt={member.name}
           className="w-full h-full object-cover transition-transform duration-700"
           style={{ objectPosition: member.imagePosition || 'center' }}
+          loading="lazy"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.style.display = 'none';
@@ -277,6 +278,8 @@ const Team = () => {
       document.removeEventListener('openCEOModal', openModalHandler);
     };
   }, []);
+
+
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });

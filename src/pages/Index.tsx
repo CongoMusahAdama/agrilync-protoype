@@ -203,7 +203,7 @@ const Index = () => {
             </div>
 
             {/* Right Side - Vertical Staggered Cards Layout */}
-            <div className="order-1 relative flex items-center justify-center min-h-[450px] sm:min-h-[550px] md:min-h-[650px] py-8 mt-4 sm:-mt-0">
+            <div className="order-1 relative flex items-center justify-center min-h-[450px] sm:min-h-[550px] md:min-h-[650px] py-8 -mt-8 sm:-mt-0">
               <div className="relative w-full max-w-sm sm:max-w-md flex items-start justify-center gap-3 sm:gap-4 px-4">
 
                 {/* Left Card - High */}

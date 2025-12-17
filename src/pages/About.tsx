@@ -45,6 +45,7 @@ const About = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isScrolledPastHero, setIsScrolledPastHero] = useState(false);
+  const [isMobile, setIsMobile] = useState(true);
 
   // Carousel auto-rotation
   useEffect(() => {
@@ -62,8 +63,17 @@ const About = () => {
       setIsScrolledPastHero(window.scrollY > heroHeight);
     };
 
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   // Scroll to top function
@@ -96,7 +106,6 @@ const About = () => {
                 height: '100%'
               }}
               onError={(e) => {
-                console.log(`Image ${index + 1} failed to load`);
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
               }}
@@ -124,7 +133,7 @@ const About = () => {
 
         {/* Navbar overlayed above image */}
         <div className="fixed top-0 left-0 right-0 z-30">
-          <Navbar variant={isScrolledPastHero ? "light" : "transparent"} />
+          <Navbar variant={isScrolledPastHero ? "light" : "transparent"} disableHover={true} />
         </div>
         <div className="relative z-20 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-end h-full pb-8 sm:pb-12 md:pb-16">
           <div className="animate-fade-in-up w-full max-w-4xl mx-auto">
@@ -610,7 +619,6 @@ const About = () => {
                 loading="eager"
                 fetchPriority="high"
                 onError={(e) => {
-                  console.log('Mobile app image failed to load');
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
                 }}
