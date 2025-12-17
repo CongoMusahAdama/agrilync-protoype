@@ -6,9 +6,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 
-const heroImages = [
-  '/lovable-uploads/image.png',
-];
+// Hero images removed as we switched to static image
 
 
 
@@ -28,14 +26,14 @@ const Index = () => {
   const [farmersCryingRef, farmersCryingVisible] = useScrollReveal();
   const [successStoriesRef, successStoriesVisible] = useScrollReveal();
 
-  const [currentSlide, setCurrentSlide] = useState(0);
+
   const [activeStory, setActiveStory] = useState(0);
   const [showSplash, setShowSplash] = useState(false);
   const [splashTimeout, setSplashTimeout] = useState<NodeJS.Timeout | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-  const [isScrolledPastHero, setIsScrolledPastHero] = useState(false);
-  const [isMobile, setIsMobile] = useState(true);
+  const [isScrolledPastHero, setIsScrolledPastHero] = useState(() => typeof window !== 'undefined' ? window.scrollY > 50 : false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
 
   // Handle scroll for navbar transparency
   useEffect(() => {
@@ -61,12 +59,7 @@ const Index = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
-    }, 6000); // 6 seconds per slide
-    return () => clearInterval(interval);
-  }, []);
+
 
   // Auto-play for Success Stories
   useEffect(() => {
@@ -262,8 +255,10 @@ const Index = () => {
           <img
             src="/lovable-uploads/countryside-workers-together-field.jpg"
             alt="AgriLync Hero"
-            className="absolute inset-0 w-full h-full object-cover opacity-100"
+            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
             style={{ objectPosition: 'center 35%' }}
+            loading="eager"
+            draggable={false}
           />
           {/* Dark Overlay gradient */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10"></div>
