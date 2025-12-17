@@ -138,48 +138,55 @@ const About = () => {
       {/* Who We Are Section */}
       <section className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <h2 ref={whoWeAreRef} className={"text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 transition-all duration-700 ease-in-out " + (whoWeAreVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
-              Who We Are
-            </h2>
-            <div className="w-16 h-0.5 bg-purple-600 mb-4 sm:mb-6"></div>
-            <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-4">
-              AgriLync is a revolutionary agricultural technology platform that connects farmers, investors, and agricultural experts in a seamless ecosystem. We bridge the gap between traditional farming practices and modern agricultural innovation, empowering farmers with the resources, knowledge, and financial support they need to thrive in today's competitive agricultural landscape.
-            </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-start">
+            {/* Left Column - Title */}
+            <div className="animate-fade-in-right transition-all duration-700 ease-in-out">
+              <h2 ref={whoWeAreRef} className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (whoWeAreVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
+                Who We Are
+              </h2>
+              <div className="w-16 h-0.5 bg-purple-600 mb-4 sm:mb-6"></div>
+            </div>
 
-            {/* Impact Figures */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-12 border-t pt-8 border-gray-100">
-              <div className="text-center sm:text-left transition-all duration-700 ease-in-out">
-                <div className="text-5xl sm:text-6xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
-                  <CountUp end={95} suffix="%" />
+            {/* Right Column - Content */}
+            <div className="space-y-6 animate-fade-in-left transition-all duration-700 ease-in-out">
+              <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-4">
+                AgriLync is a revolutionary agricultural technology platform that connects farmers, investors, and agricultural experts in a seamless ecosystem. We bridge the gap between traditional farming practices and modern agricultural innovation, empowering farmers with the resources, knowledge, and financial support they need to thrive in today's competitive agricultural landscape.
+              </p>
+
+              {/* Impact Figures */}
+              <div className="grid grid-cols-2 md:grid-cols-2 gap-8 pt-4 border-t border-gray-100">
+                <div className="text-left transition-all duration-700 ease-in-out">
+                  <div className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
+                    <CountUp end={95} suffix="%" />
+                  </div>
+                  <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
+                    WhatsApp community engagement
+                  </p>
                 </div>
-                <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
-                  WhatsApp community engagement
-                </p>
-              </div>
-              <div className="text-center sm:text-left transition-all duration-700 ease-in-out">
-                <div className="text-5xl sm:text-6xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
-                  <CountUp end={8} />
+                <div className="text-left transition-all duration-700 ease-in-out">
+                  <div className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
+                    <CountUp end={8} />
+                  </div>
+                  <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
+                    Online webinars covering all aspects of farming
+                  </p>
                 </div>
-                <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
-                  Online webinars covering all aspects of farming
-                </p>
-              </div>
-              <div className="text-center sm:text-left transition-all duration-700 ease-in-out">
-                <div className="text-5xl sm:text-6xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
-                  <CountUp end={50} suffix="+" />
+                <div className="text-left transition-all duration-700 ease-in-out">
+                  <div className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
+                    <CountUp end={50} suffix="+" />
+                  </div>
+                  <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
+                    Signups for our waitlist
+                  </p>
                 </div>
-                <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
-                  Signups for our waitlist
-                </p>
-              </div>
-              <div className="text-center sm:text-left transition-all duration-700 ease-in-out">
-                <div className="text-5xl sm:text-6xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
-                  <CountUp end={28} />
+                <div className="text-left transition-all duration-700 ease-in-out">
+                  <div className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
+                    <CountUp end={28} />
+                  </div>
+                  <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
+                    One-on-one consultations done
+                  </p>
                 </div>
-                <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
-                  One-on-one consultations done
-                </p>
               </div>
             </div>
           </div>
@@ -191,7 +198,7 @@ const About = () => {
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Vision Section */}
-            <div className="p-8 sm:p-12 text-center" style={{ backgroundColor: BRAND_TEAL }}>
+            <div className="p-8 sm:p-12 text-center rounded-2xl" style={{ backgroundColor: BRAND_TEAL }}>
               <div className="flex justify-center mb-6">
                 <Eye className="w-12 h-12 text-white" />
               </div>
@@ -207,7 +214,7 @@ const About = () => {
             </div>
 
             {/* Mission Section */}
-            <div className="p-8 sm:p-12 text-center bg-white border border-gray-200">
+            <div className="p-8 sm:p-12 text-center bg-white border border-gray-200 rounded-2xl">
               <div className="flex justify-center mb-6">
                 <Building2 className="w-12 h-12" style={{ color: BRAND_TEAL }} />
               </div>

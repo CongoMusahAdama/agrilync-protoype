@@ -10,6 +10,8 @@ const heroImages = [
   '/lovable-uploads/image.png',
 ];
 
+
+
 const Index = () => {
   const navigate = useNavigate();
 
@@ -31,6 +33,33 @@ const Index = () => {
   const [showSplash, setShowSplash] = useState(false);
   const [splashTimeout, setSplashTimeout] = useState<NodeJS.Timeout | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const [isScrolledPastHero, setIsScrolledPastHero] = useState(false);
+  const [isMobile, setIsMobile] = useState(true);
+
+  // Handle scroll for navbar transparency
+  useEffect(() => {
+    const handleScroll = () => {
+      // Hero height is roughly 90vh
+      const heroHeight = window.innerHeight * 0.9;
+      // Change navbar style earlier than full hero height for better UX
+      setIsScrolledPastHero(window.scrollY > 50);
+    };
+
+    // Initial check for mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -110,13 +139,15 @@ const Index = () => {
     navigate(path);
   };
 
+  const navbarVariant = isMobile ? 'light' : (isScrolledPastHero ? 'light' : 'transparent');
+
   return (
     <div className="min-h-screen overflow-x-hidden">
       {/* Navbar */}
-      <Navbar variant="light" />
+      <Navbar variant={navbarVariant} />
 
-      {/* Hero Section - Text Left, Images Right */}
-      <section className="relative min-h-[60vh] sm:min-h-[70vh] md:min-h-[80vh] lg:min-h-[85vh] bg-white overflow-hidden pt-16 pb-8 sm:pb-12 md:pb-16">
+      {/* MOBILE/TABLET HERO SECTION - Hidden on Desktop */}
+      <section className="relative min-h-[60vh] sm:min-h-[70vh] md:min-h-[80vh] lg:hidden bg-white overflow-hidden pt-16 pb-8 sm:pb-12 md:pb-16">
         {/* Leaf Pattern Background */}
         <div className="absolute inset-0 opacity-20 z-0">
           <div className="absolute top-10 left-10 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] rotate-12" /></div>
@@ -127,28 +158,16 @@ const Index = () => {
           <div className="absolute top-60 right-36 w-14 h-14"><Leaf className="w-full h-full text-[#7ede56] rotate-12" /></div>
           <div className="absolute top-70 left-8 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] -rotate-12" /></div>
           <div className="absolute top-80 right-12 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] rotate-45" /></div>
-          <div className="absolute top-100 left-28 w-14 h-14"><Leaf className="w-full h-full text-[#7ede56] -rotate-45" /></div>
-          <div className="absolute top-120 right-24 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] rotate-90" /></div>
-          <div className="absolute bottom-100 left-10 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] rotate-12" /></div>
-          <div className="absolute bottom-90 right-28 w-14 h-14"><Leaf className="w-full h-full text-[#7ede56] -rotate-12" /></div>
-          <div className="absolute bottom-80 left-22 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] rotate-45" /></div>
-          <div className="absolute bottom-70 right-14 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] -rotate-45" /></div>
-          <div className="absolute bottom-60 left-16 w-14 h-14"><Leaf className="w-full h-full text-[#7ede56] rotate-90" /></div>
-          <div className="absolute bottom-50 right-32 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] rotate-12" /></div>
-          <div className="absolute bottom-40 left-6 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] -rotate-12" /></div>
-          <div className="absolute bottom-30 right-18 w-14 h-14"><Leaf className="w-full h-full text-[#7ede56] rotate-45" /></div>
-          <div className="absolute bottom-20 left-34 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] -rotate-45" /></div>
-          <div className="absolute bottom-10 right-8 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] rotate-90" /></div>
         </div>
 
         {/* Main Content Container */}
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 gap-8 md:gap-12 items-center">
 
             {/* Left Side - Text Content */}
-            <div className="order-2 lg:order-1 flex flex-col justify-start animate-fade-in-up -mt-16 sm:-mt-20 md:-mt-24 lg:-mt-32">
-              <h1 ref={heroHeadingRef} className={`text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-6 sm:mb-8 transition-all duration-700 ease-in-out leading-tight text-gray-800 font-outfit ${heroHeadingVisible ? " animate-fade-in-up" : " opacity-0"}`}>
-                <span className="animate-pulse-text">Simplifying access to </span><span className="animated-purple-word">FINANCE</span> and <span className="animated-purple-word">INFORMATION</span> for smallholder farmers while leveraging AI to smart <span className="animated-purple-word">INVESTOR</span> matching
+            <div className="order-2 flex flex-col justify-start animate-fade-in-up -mt-16 sm:-mt-20 md:-mt-24">
+              <h1 ref={heroHeadingRef} className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-6 sm:mb-8 transition-all duration-700 ease-in-out leading-tight text-gray-800 font-outfit ${heroHeadingVisible ? " animate-fade-in-up" : " opacity-0"}`}>
+                Smarter Access to <span className="text-[#7ede56]">Finance</span> & <span className="text-[#7ede56]">Information</span> Through <span className="text-[#7ede56]">AI</span>
               </h1>
 
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
@@ -190,51 +209,105 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Right Side - Vertical Triptych Image Layout */}
-            <div className="order-1 lg:order-2 relative flex items-end justify-center lg:justify-end min-h-[500px] sm:min-h-[600px] md:min-h-[700px] lg:min-h-[800px] pb-4 sm:pb-6 md:pb-8 -mt-8 sm:mt-0">
-              {/* Image Panel Container - Overlapping Style */}
-              <div className="relative w-full max-w-xs sm:max-w-md lg:max-w-xl h-[500px] sm:h-[600px] md:h-[700px] lg:h-[800px] flex items-center justify-center gap-3 sm:gap-4 md:gap-6">
+            {/* Right Side - Vertical Staggered Cards Layout */}
+            <div className="order-1 relative flex items-center justify-center min-h-[450px] sm:min-h-[550px] md:min-h-[650px] py-8 mt-4 sm:-mt-0">
+              <div className="relative w-full max-w-sm sm:max-w-md flex items-start justify-center gap-3 sm:gap-4 px-4">
 
-                {/* Panel 1 - hero2.jpg - Higher Position */}
-                <div className="absolute left-0 top-[5%] w-[30%] sm:w-[32%] z-10 animate-hero-image-1">
-                  <div className="relative rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105">
+                {/* Left Card - High */}
+                <div className="w-[31%] relative z-10 animate-fade-in-up delay-0">
+                  <div className="w-full h-[280px] sm:h-[360px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
                     <img
-                      src="/lovable-uploads/hero2.jpg"
-                      alt="Hero image 1"
-                      className="w-full h-[400px] sm:h-[450px] md:h-[500px] lg:h-[550px] object-cover"
-                      loading="eager"
-                      fetchPriority="high"
+                      src="/lovable-uploads/countryside-workers-together-field.jpg"
+                      alt="AgriLync Farmer Left"
+                      className="w-full h-full object-cover"
+                      style={{ objectPosition: '20% center' }}
                     />
                   </div>
                 </div>
 
-                {/* Panel 2 - hero4.png - Lower Position (Middle - Reduced height on mobile) */}
-                <div className="absolute left-[35%] sm:left-[34%] top-[20%] w-[30%] sm:w-[32%] z-20 animate-hero-image-2">
-                  <div className="relative rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105">
+                {/* Center Card - Up Small */}
+                <div className="w-[31%] relative z-10 mt-2 sm:mt-3 animate-fade-in-up delay-100">
+                  <div className="w-full h-[280px] sm:h-[360px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
                     <img
-                      src="/lovable-uploads/hero4.png"
-                      alt="Hero image 2"
-                      className="w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[550px] object-cover"
+                      src="/lovable-uploads/countryside-workers-together-field.jpg"
+                      alt="AgriLync Farmer Center"
+                      className="w-full h-full object-cover object-center"
                       loading="eager"
                     />
                   </div>
                 </div>
 
-                {/* Panel 3 - hero3.jpg - Higher Position */}
-                <div className="absolute left-[70%] sm:left-[68%] top-[5%] w-[30%] sm:w-[32%] z-30 animate-hero-image-3">
-                  <div className="relative rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105">
+                {/* Right Card - High */}
+                <div className="w-[31%] relative z-10 animate-fade-in-up delay-200">
+                  <div className="w-full h-[280px] sm:h-[360px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
                     <img
-                      src="/lovable-uploads/hero3.jpg"
-                      alt="Hero image 3"
-                      className="w-full h-[400px] sm:h-[450px] md:h-[500px] lg:h-[550px] object-cover"
-                      loading="eager"
+                      src="/lovable-uploads/countryside-workers-together-field.jpg"
+                      alt="AgriLync Farmer Right"
+                      className="w-full h-full object-cover"
+                      style={{ objectPosition: '100% center' }}
                     />
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
         </div>
+      </section>
+
+      {/* DESKTOP HERO SECTION (NEW - ECOLAND STYLE) */}
+      <section className="hidden lg:block relative min-h-[100vh] bg-black overflow-hidden">
+        {/* Carousel Background Images */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/lovable-uploads/countryside-workers-together-field.jpg"
+            alt="AgriLync Hero"
+            className="absolute inset-0 w-full h-full object-cover opacity-100"
+            style={{ objectPosition: 'center 35%' }}
+          />
+          {/* Dark Overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10"></div>
+          {/* Bottom fade for banner integration */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/20 to-transparent z-10"></div>
+        </div>
+
+        {/* Content Container */}
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-8 h-[75vh] flex flex-col justify-center">
+          <div className="max-w-3xl pt-[420px]">
+            {/* Main Headline */}
+            <h1 className="text-5xl md:text-6xl font-extrabold text-white leading-[1.1] mb-6 animate-fade-in-left">
+              Smarter Access to <br />
+              <span className="text-[#7ede56]">Finance</span> & <span className="text-[#7ede56]">Information</span> <br />
+              Through <span className="text-[#7ede56]">AI</span>
+            </h1>
+
+            {/* Subheadline */}
+            <p className="text-xl text-gray-200 mb-24 leading-relaxed max-w-2xl animate-fade-in-up delay-100">
+              We connect smallholder farmers with AI-driven insights and smart investor matching to revolutionize the agricultural value chain.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex items-center gap-4 mt-32 animate-fade-in-up delay-200">
+              <a href="https://agrilync.netlify.app" target="_blank" rel="noopener noreferrer">
+                <Button className="bg-[#7ede56] hover:bg-[#6ed04c] text-[#002f37] px-8 py-6 text-lg font-bold rounded-full shadow-[0_0_20px_rgba(126,222,86,0.4)] hover:shadow-[0_0_30px_rgba(126,222,86,0.6)] transform hover:scale-105 transition-all duration-300">
+                  Join Waitlist
+                  <div className="ml-2 bg-[#002f37]/10 rounded-full p-1">
+                    <ArrowUp className="w-4 h-4 rotate-45" />
+                  </div>
+                </Button>
+              </a>
+
+              <Button
+                className="bg-white text-[#002f37] hover:bg-gray-100 px-8 py-6 text-lg font-bold rounded-full shadow-lg transition-all duration-300"
+                onClick={() => window.open('https://www.youtube.com/watch?v=-gOZgTW00GY', '_blank')}
+              >
+                Watch Demo
+              </Button>
+            </div>
+          </div>
+        </div>
+
+
       </section>
 
       {/* Who We Are Section */}
@@ -336,7 +409,7 @@ const Index = () => {
               <img
                 src="/lovable-uploads/889a4eaa-0299-4896-8399-849a40f5565a.png"
                 alt="AI Consultation"
-                className="shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                className="shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300 rounded-2xl"
                 onClick={() => handleFeatureClick('/who-we-are')}
               />
             </div>
@@ -348,7 +421,7 @@ const Index = () => {
               <img
                 src="/lovable-uploads/3e19a1d1-e890-436d-ba69-4227c2a1c8b1.png"
                 alt="Weather Forecast"
-                className="shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                className="shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300 rounded-2xl"
                 onClick={() => handleFeatureClick('/who-we-are')}
               />
             </div>
@@ -420,7 +493,7 @@ const Index = () => {
               <img
                 src="/lovable-uploads/d5bee012-8bd6-4f66-bd49-d60d2468bcb3.png"
                 alt="FarmPartner Investment"
-                className="shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                className="shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300 rounded-2xl"
                 onClick={() => handleFeatureClick('/who-we-are')}
               />
             </div>

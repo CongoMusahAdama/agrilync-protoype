@@ -197,12 +197,12 @@ const TeamMemberCard = ({ member, index = 0 }: { member: TeamMember; index?: num
     style={{ animationDelay: `${index * 100}ms` }}
     onClick={() => member.isCEO && document.dispatchEvent(new CustomEvent('openCEOModal'))}
   >
-    <div className="relative aspect-square w-full bg-white rounded-xl overflow-hidden mb-5 shadow-sm hover:shadow-xl transition-all duration-500">
+    <div className="relative aspect-square w-full bg-[#F6F6F6] rounded-xl overflow-hidden mb-5 shadow-sm transition-all duration-500">
       <div className="w-full h-full" style={{ transform: member.scale ? `scale(${member.scale})` : 'none' }}>
         <img
           src={member.image}
           alt={member.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-700"
           style={{ objectPosition: member.imagePosition || 'center' }}
           onError={(e) => {
             const target = e.target as HTMLImageElement;
@@ -212,16 +212,10 @@ const TeamMemberCard = ({ member, index = 0 }: { member: TeamMember; index?: num
         />
       </div>
 
-      {/* Hover Overlay with Description - Bottom Gradient Style */}
-      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end p-6">
-        <p className="text-white text-sm font-medium leading-relaxed transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-          {member.description}
-        </p>
-      </div>
     </div>
 
     <div className="space-y-1">
-      <h3 className="text-xl font-bold text-gray-900 group-hover:text-[#002F37] transition-colors">
+      <h3 className="text-xl font-bold text-gray-900 transition-colors">
         {member.name}
       </h3>
       <p className="text-[#921573] text-sm font-bold uppercase tracking-wide">
@@ -230,27 +224,29 @@ const TeamMemberCard = ({ member, index = 0 }: { member: TeamMember; index?: num
 
       {/* Social links - Always Colorful, Centered */}
       {member.socials && (
-        <div className="flex justify-center gap-3 pt-3">
-          {member.socials.linkedin && (
-            <a href={member.socials.linkedin} target="_blank" rel="noopener noreferrer" className="text-[#0077b5] hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
-              <Linkedin className="w-5 h-5" />
-            </a>
-          )}
-          {member.socials.twitter && (
-            <a href={member.socials.twitter} target="_blank" rel="noopener noreferrer" className="text-black hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
-              <img src="/x-logo.png" alt="X" className="w-4 h-4 object-contain" />
-            </a>
-          )}
-          {member.socials.instagram && (
-            <a href={member.socials.instagram} target="_blank" rel="noopener noreferrer" className="text-[#E1306C] hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
-              <Instagram className="w-5 h-5" />
-            </a>
-          )}
-          {member.socials.facebook && (
-            <a href={member.socials.facebook} target="_blank" rel="noopener noreferrer" className="text-[#1877F2] hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
-              <Facebook className="w-5 h-5" />
-            </a>
-          )}
+        <div className="flex justify-center pt-3">
+          <div className="inline-flex items-center justify-center gap-3 bg-[#e5e7eb] rounded-full px-4 py-2 shadow-sm transition-colors duration-300 hover:bg-[#d1d5db]">
+            {member.socials.linkedin && (
+              <a href={member.socials.linkedin} target="_blank" rel="noopener noreferrer" className="text-[#0077b5] hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                <Linkedin className="w-5 h-5" />
+              </a>
+            )}
+            {member.socials.twitter && (
+              <a href={member.socials.twitter} target="_blank" rel="noopener noreferrer" className="text-black hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                <img src="/x-logo.png" alt="X" className="w-5 h-5 object-contain" />
+              </a>
+            )}
+            {member.socials.instagram && (
+              <a href={member.socials.instagram} target="_blank" rel="noopener noreferrer" className="text-[#E1306C] hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                <Instagram className="w-5 h-5" />
+              </a>
+            )}
+            {member.socials.facebook && (
+              <a href={member.socials.facebook} target="_blank" rel="noopener noreferrer" className="text-[#1877F2] hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                <Facebook className="w-5 h-5" />
+              </a>
+            )}
+          </div>
         </div>
       )}
     </div>
