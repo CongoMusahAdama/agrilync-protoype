@@ -1,14 +1,33 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { X, MapPin, Leaf, Calendar, ArrowLeft, ArrowRight, ArrowUp } from 'lucide-react';
+import { Dialog, DialogContent, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { X, MapPin, Calendar, Search, ArrowLeft, ArrowRight, Filter } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 // Farm visit data with regions and crops
 const farmVisits = [
+  // 🎓 Annual Agricultural Economics Conference (Tamale, Northern Region) - FEATURED GROUP PHOTO
+  {
+    id: 5,
+    title: "Agricultural Economics Conference",
+    image: "/lovable-uploads/gallery5.jpg",
+    region: "Northern Region",
+    category: "Conference",
+    date: "October 2024",
+    description: "Participated in the 2024 Agricultural Economics & Agribusiness Conference at UDS, Tamale — focused on regenerative agriculture and agribusiness development."
+  },
+
   // 🍍 Pineapple Plantation Visit (Ahanta West, Western Region)
   {
     id: 1,
@@ -65,16 +84,7 @@ const farmVisits = [
     description: "A week-long visit to a pineapple plantation in Agono Nkwanta, Ahanta West — Western Region, Ghana."
   },
 
-  // 🎓 Annual Agricultural Economics Conference (Tamale, Northern Region)
-  {
-    id: 5,
-    title: "Agricultural Economics Conference",
-    image: "/lovable-uploads/gallery5.jpg",
-    region: "Northern Region",
-    category: "Conference",
-    date: "October 2024",
-    description: "Participated in the 2024 Agricultural Economics & Agribusiness Conference at UDS, Tamale — focused on regenerative agriculture and agribusiness development."
-  },
+  // (Moved ID 5 to top)
   {
     id: 7,
     title: "Agricultural Economics Conference",
@@ -271,31 +281,19 @@ const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState<typeof farmVisits[0] | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0);
 
-  // Scroll animation hooks
-  const [heroRef, heroVisible] = useScrollReveal();
-  const [galleryRef, galleryVisible] = useScrollReveal();
-  const [filterRef, filterVisible] = useScrollReveal();
-
-
-  // Handle scroll to top button visibility
+  // Reset carousel when filters change
   useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 300);
-    };
+    setCurrentCarouselIndex(0);
+  }, [selectedRegion, selectedCategory]);
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  // Scroll animation hooks with lower thresholds for faster triggering
+  const [heroRef, heroVisible] = useScrollReveal({ threshold: 0.05 });
+  const [filterRef, filterVisible] = useScrollReveal({ threshold: 0.05 });
+  const [galleryRef, galleryVisible] = useScrollReveal({ threshold: 0.05 });
+  const [gridRef, gridVisible] = useScrollReveal({ threshold: 0.05 });
 
-  // Scroll to top function
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
 
   // Filter farm visits based on selected region and category
   const filteredVisits = farmVisits.filter(visit => {
@@ -303,6 +301,11 @@ const Gallery = () => {
     const categoryMatch = selectedCategory === "All Categories" || visit.category === selectedCategory;
     return regionMatch && categoryMatch;
   });
+
+  // Split into Featured (1st) and Grid (Rest)
+  const featuredVisit = filteredVisits.length > 0 ? filteredVisits[0] : null;
+  const gridVisits = filteredVisits.length > 1 ? filteredVisits.slice(1) : [];
+
 
   // Open modal with selected image
   const openModal = (visit: typeof farmVisits[0]) => {
@@ -316,10 +319,12 @@ const Gallery = () => {
     if (!selectedImage) return;
 
     let newIndex;
+    const currentListIndex = farmVisits.findIndex(v => v.id === selectedImage.id);
+
     if (direction === 'prev') {
-      newIndex = currentImageIndex > 0 ? currentImageIndex - 1 : farmVisits.length - 1;
+      newIndex = currentListIndex > 0 ? currentListIndex - 1 : farmVisits.length - 1;
     } else {
-      newIndex = currentImageIndex < farmVisits.length - 1 ? currentImageIndex + 1 : 0;
+      newIndex = currentListIndex < farmVisits.length - 1 ? currentListIndex + 1 : 0;
     }
 
     setCurrentImageIndex(newIndex);
@@ -342,310 +347,315 @@ const Gallery = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isModalOpen, currentImageIndex]);
+  }, [isModalOpen, selectedImage]);
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navbar */}
+    <div className="min-h-screen bg-[#f8f9fa] font-sans text-gray-900">
+      {/* Navbar - Deep Teal Background */}
       <Navbar />
 
-      {/* Hero Section */}
-      <section ref={heroRef} className="relative pt-24 pb-16 sm:pt-28 sm:pb-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className={`transition-all duration-1000 ease-out ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-              Our Portfolio
-            </h1>
-            <div className="w-16 h-0.5 bg-purple-600 mx-auto mb-4 animate-fade-in-up" style={{ animationDelay: '0.3s' }}></div>
-            <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Explore our journey across Ghana's agricultural landscape. From pineapple plantations to academic conferences,
-              we're working together to transform agriculture through AI and technology.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-2">
-              <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
-                <MapPin className="w-4 h-4 mr-1" />
-                8 Regions
-              </Badge>
-              <Badge variant="secondary" className="bg-teal-100 text-teal-800 border-teal-200">
-                <Leaf className="w-4 h-4 mr-1" />
-                8 Categories
-              </Badge>
-              <Badge variant="secondary" className="bg-purple-100 text-purple-800 border-purple-200">
-                <Calendar className="w-4 h-4 mr-1" />
-                23+ Engagements
-              </Badge>
+      {/* Main Container */}
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 pt-28 pb-16">
+
+        {/* Header */}
+        <header ref={heroRef} className={`mb-16 transition-all duration-1000 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} text-center max-w-4xl mx-auto`}>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#002f37] mb-6 tracking-tight">
+            Our Portfolio
+          </h1>
+          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed font-medium">
+            Explore our journey across Ghana's agricultural landscape.
+            From pineapple plantations to academic conferences, we're working together to transform agriculture through AI and technology.
+          </p>
+          <div className="w-24 h-1.5 bg-[#7ede56] mx-auto mt-8 rounded-full"></div>
+        </header>
+
+        {/* Premium Filter Bar */}
+        {/* Premium Dropdown Filter Bar */}
+        <section ref={filterRef} className={`mb-16 transition-all duration-1000 delay-100 ${filterVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} `}>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-4xl mx-auto px-4">
+
+            <div className="flex items-center gap-3 text-[#002f37] font-bold mr-2 hidden md:flex">
+              <Filter className="w-5 h-5 text-[#7ede56]" />
+              <span className="text-lg">Filter By:</span>
             </div>
+
+            {/* Category Dropdown */}
+            <div className="w-full sm:w-64">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="h-14 bg-white border-2 border-gray-100 rounded-2xl shadow-sm text-base font-bold text-[#002f37] transition-all duration-300 hover:border-[#7ede56] focus:ring-[#7ede56]/20">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-gray-100 rounded-xl shadow-xl overflow-hidden">
+                  {categories.map((category) => (
+                    <SelectItem
+                      key={category}
+                      value={category}
+                      className="py-3 px-4 font-semibold text-gray-700 focus:bg-[#e8f5e9] focus:text-[#002f37] cursor-pointer"
+                    >
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Region Dropdown */}
+            <div className="w-full sm:w-64">
+              <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                <SelectTrigger className="h-14 bg-white border-2 border-gray-100 rounded-2xl shadow-sm text-base font-bold text-[#002f37] transition-all duration-300 hover:border-[#7ede56] focus:ring-[#7ede56]/20">
+                  <SelectValue placeholder="All Regions" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-gray-100 rounded-xl shadow-xl overflow-hidden">
+                  {regions.map((region) => (
+                    <SelectItem
+                      key={region}
+                      value={region}
+                      className="py-3 px-4 font-semibold text-gray-700 focus:bg-[#e8f5e9] focus:text-[#002f37] cursor-pointer"
+                    >
+                      {region}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Filter Section */}
-      <section ref={filterRef} className="py-8 bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className={`transition-all duration-1000 ease-out delay-200 ${filterVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center sm:items-end">
-              <div className="flex flex-col sm:flex-row gap-3 items-center sm:items-start">
-                <div className="flex flex-col items-center sm:items-start">
-                  <label htmlFor="region-filter" className="text-sm font-medium text-gray-700 mb-1">
-                    Filter by Region
-                  </label>
-                  <select
-                    id="region-filter"
-                    value={selectedRegion}
-                    onChange={(e) => setSelectedRegion(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-gray-700 text-center sm:text-left"
-                  >
-                    {regions.map(region => (
-                      <option key={region} value={region}>{region}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex flex-col items-center sm:items-start">
-                  <label htmlFor="category-filter" className="text-sm font-medium text-gray-700 mb-1">
-                    Filter by Category
-                  </label>
-                  <select
-                    id="category-filter"
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-gray-700 text-center sm:text-left"
-                  >
-                    {categories.map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
-                  </select>
-                </div>
+        {/* Gallery Content - CAROUSEL MODE */}
+        <section ref={galleryRef} className={`relative transition-all duration-1000 delay-200 ${galleryVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} `}>
+
+          {filteredVisits.length === 0 ? (
+            <div className="py-20 text-center bg-white rounded-3xl shadow-sm border border-gray-100">
+              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-gray-300" />
               </div>
-              <div className="flex flex-col items-center sm:items-start">
-                <label className="text-sm font-medium text-gray-700 mb-1 opacity-0">
-                  Clear
-                </label>
-                <Button
-                  onClick={() => {
-                    setSelectedRegion("All Regions");
-                    setSelectedCategory("All Categories");
-                  }}
-                  variant="outline"
-                  className="border-green-600 text-green-600 hover:bg-green-50 px-4 py-2"
-                >
-                  Clear Filters
-                </Button>
-              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No moments found</h3>
+              <p className="text-gray-500 text-base mb-6 px-4">Try adjusting your filters to explore other parts of our journey.</p>
+              <Button
+                variant="outline"
+                className="rounded-full border-[#002f37] text-[#002f37] hover:bg-[#002f37] hover:text-white transition-all duration-300"
+                onClick={() => { setSelectedRegion("All Regions"); setSelectedCategory("All Categories"); }}
+              >
+                Clear All Filters
+              </Button>
             </div>
-            <div className="mt-4 text-center">
-              <p className="text-sm text-gray-600">
-                Showing {filteredVisits.length} of {farmVisits.length} engagements
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+          ) : (
+            <>
+              {/* Featured Section (Static) */}
+              {featuredVisit && (
+                <div className="relative mb-24 group cursor-pointer" onClick={() => openModal(featuredVisit)}>
+                  <div className="overflow-hidden rounded-[2rem] bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.15)] hover:-translate-y-2">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[500px] lg:h-[600px]">
+                      {/* Image Side */}
+                      <div className="relative h-[300px] lg:h-full overflow-hidden">
+                        <img
+                          src={featuredVisit.image}
+                          alt={featuredVisit.title}
+                          loading="eager"
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-black/5 transition-colors duration-300 group-hover:bg-black/0"></div>
 
-      {/* Gallery Grid */}
-      <section ref={galleryRef} className="py-12 sm:py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="transition-all duration-1000 ease-out delay-300 opacity-100 translate-y-0">
-            {filteredVisits.length === 0 ? (
-              <div className="text-center py-16">
-                <Leaf className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">No engagements found</h3>
-                <p className="text-gray-500">Try adjusting your filters to see more results.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredVisits.map((visit, index) => (
-                  <div
-                    key={visit.id}
-                    className="group relative overflow-hidden cursor-pointer transform transition-all duration-1000 ease-out hover:scale-[1.02] hover:shadow-2xl opacity-100 translate-y-0"
-                    style={{
-                      animationDelay: `${index * 150}ms`,
-                      animationFillMode: 'both'
-                    }}
-                    onClick={() => openModal(visit)}
-                  >
-                    {/* Image Container */}
-                    <div className="relative aspect-[4/3] overflow-hidden">
-                      <img
-                        src={visit.image}
-                        alt={visit.title}
-                        className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110"
-                        loading="lazy"
-                      />
-
-                      {/* Dark Overlay on Hover */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-500 ease-out" />
-
-                      {/* Badges - Always Visible but Enhanced on Hover */}
-                      <div className="absolute top-4 left-4 z-10">
-                        <Badge className="bg-green-600/90 backdrop-blur-sm text-white border-0 shadow-lg">
-                          {visit.category}
-                        </Badge>
-                      </div>
-                      <div className="absolute top-4 right-4 z-10">
-                        <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm text-gray-700 border-0 shadow-lg">
-                          {visit.region}
-                        </Badge>
+                        <div className="absolute top-4 left-4">
+                          <Badge className="bg-white/90 text-[#002f37] backdrop-blur-md shadow-sm border-none text-xs font-bold px-3 py-1 uppercase tracking-wider">
+                            Featured
+                          </Badge>
+                        </div>
                       </div>
 
-                      {/* Caption Overlay - Fades in on Hover */}
-                      <div className="absolute inset-0 flex items-end p-6 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out">
-                        <div className="w-full">
-                          <h3 className="text-white font-semibold text-lg mb-2 drop-shadow-lg">
-                            {visit.title}
-                          </h3>
-                          <p className="text-white/90 text-sm line-clamp-2 drop-shadow-lg">
-                            {visit.description}
-                          </p>
-                          <div className="flex items-center justify-between mt-3 text-white/80 text-xs">
-                            <span className="flex items-center">
-                              <MapPin className="w-3 h-3 mr-1" />
-                              {visit.region}
-                            </span>
-                            <span className="flex items-center">
-                              <Calendar className="w-3 h-3 mr-1" />
-                              {visit.date}
-                            </span>
+                      {/* Text Side */}
+                      <div className="flex flex-col justify-center p-8 sm:p-10 lg:p-16 bg-white relative">
+                        <div className="flex items-center gap-3 mb-6">
+                          <Badge className="bg-[#002f37] text-white hover:bg-[#002f37] border-none text-sm px-3 py-1">
+                            {featuredVisit.category}
+                          </Badge>
+                          <div className="flex items-center gap-1.5 text-sm font-semibold text-[#7ede56]">
+                            <Calendar className="w-4 h-4" />
+                            <span>{featuredVisit.date}</span>
+                          </div>
+                        </div>
+
+                        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#002f37] mb-6 leading-[1.1]">
+                          {featuredVisit.title}
+                        </h2>
+
+                        <p className="text-lg text-gray-600 leading-updated mb-8 lg:mb-12 line-clamp-4 lg:line-clamp-none">
+                          {featuredVisit.description}
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-auto lg:mt-0">
+                          <Button
+                            className="rounded-full bg-[#002f37] text-white hover:bg-[#002f37]/90 px-8 py-6 text-base font-semibold shadow-lg hover:shadow-xl w-full sm:w-auto"
+                          >
+                            Read Full Story
+                          </Button>
+                          <div className="flex items-center text-gray-500 font-medium">
+                            <MapPin className="w-5 h-5 mr-2 text-[#7ede56]" />
+                            {featuredVisit.region}
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
+                </div>
+              )}
 
-      {/* Lightbox Modal */}
+              {/* Grid Section */}
+              {gridVisits.length > 0 && (
+                <div
+                  ref={gridRef}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+                >
+                  {gridVisits.map((visit, index) => (
+                    <div
+                      key={visit.id}
+                      style={{ transitionDelay: `${index * 50}ms` }}
+                      className={`group relative h-[450px] rounded-[2rem] overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all duration-700 ease-out hover:-translate-y-2 ${gridVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                        } `}
+                      onClick={() => openModal(visit)}
+                    >
+                      {/* Image */}
+                      <img
+                        src={visit.image}
+                        alt={visit.title}
+                        loading={index < 6 ? "eager" : "lazy"}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+
+                      {/* Gradient Overlay - Always present at bottom, grows on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-60 group-hover:opacity-80 transition-all duration-500 z-10" />
+
+                      {/* Category Badge (Top Left) */}
+                      <div className="absolute top-4 left-4 z-20">
+                        <Badge className="bg-white/90 text-[#002f37] backdrop-blur-md shadow-sm border-none text-xs font-bold px-3 py-1">
+                          {visit.category}
+                        </Badge>
+                      </div>
+
+                      {/* Bottom Content Wrapper (Anchored to bottom) */}
+                      <div className="absolute bottom-0 left-0 right-0 p-6 z-20 flex flex-col justify-end">
+
+                        {/* Reveal Section: Title & Description (Expands Upwards) */}
+                        <div className="max-h-0 overflow-hidden opacity-0 group-hover:max-h-[200px] group-hover:opacity-100 transition-all duration-500 ease-out">
+                          <h3 className="text-xl font-bold text-white mb-2 leading-tight drop-shadow-md transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                            {visit.title}
+                          </h3>
+                          <p className="text-gray-200 text-sm line-clamp-3 mb-4 leading-relaxed drop-shadow-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
+                            {visit.description}
+                          </p>
+                        </div>
+
+                        {/* Region & Date - Always Visible */}
+                        <div className="flex justify-between items-center pt-2 transition-colors duration-300">
+                          <span className="flex items-center gap-2 text-white/90 text-sm font-medium drop-shadow-sm">
+                            <MapPin className="w-4 h-4 text-[#7ede56]" />
+                            {visit.region}
+                          </span>
+                          <span className="flex items-center gap-2 text-white/90 text-sm font-medium drop-shadow-sm">
+                            <Calendar className="w-4 h-4 text-[#7ede56]" />
+                            {visit.date}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </section>
+      </div>
+
+      {/* Enhanced Lightbox Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-4xl w-[95vw] h-[95vh] sm:h-[90vh] p-0 bg-black/95 border-0 rounded-none sm:rounded-lg">
-          <div className="relative w-full h-full flex flex-col lg:flex-row">
-            {/* Close button */}
+        <DialogContent className="max-w-[100vw] w-screen h-screen p-0 bg-black/95 border-none shadow-none flex flex-col items-center justify-center overflow-hidden focus:outline-none">
+
+          {/* Top Bar */}
+          <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex justify-between items-center z-50 bg-gradient-to-b from-black/60 to-transparent">
+            <div className="text-white/80 text-sm font-medium">
+              {currentImageIndex + 1} / {farmVisits.length}
+            </div>
             <Button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-2 right-2 sm:top-4 sm:right-4 z-50 bg-black/70 hover:bg-black/90 text-white border-0 rounded-full w-8 h-8 sm:w-10 sm:h-10"
+              className="bg-white/10 hover:bg-white/20 text-white rounded-full w-10 h-10 backdrop-blur-md border-none"
               size="icon"
             >
-              <X className="w-4 h-4 sm:w-5 sm:h-5" />
+              <X className="w-5 h-5" />
             </Button>
+          </div>
 
-            {/* Navigation buttons - Hidden on mobile, visible on desktop */}
-            <Button
-              onClick={() => navigateImage('prev')}
-              className="hidden lg:flex absolute left-4 top-1/2 transform -translate-y-1/2 z-50 bg-black/50 hover:bg-black/70 text-white border-0"
-              size="icon"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <Button
-              onClick={() => navigateImage('next')}
-              className="hidden lg:flex absolute right-4 top-1/2 transform -translate-y-1/2 z-50 bg-black/50 hover:bg-black/70 text-white border-0"
-              size="icon"
-            >
-              <ArrowRight className="w-5 h-5" />
-            </Button>
+          {/* Navigation Arrows */}
+          <Button
+            onClick={(e) => { e.stopPropagation(); navigateImage('prev'); }}
+            className="hidden md:flex absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-50 bg-white/10 hover:bg-white/20 text-white rounded-full w-12 h-12 backdrop-blur-md border-none"
+            size="icon"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </Button>
+          <Button
+            onClick={(e) => { e.stopPropagation(); navigateImage('next'); }}
+            className="hidden md:flex absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-50 bg-white/10 hover:bg-white/20 text-white rounded-full w-12 h-12 backdrop-blur-md border-none"
+            size="icon"
+          >
+            <ArrowRight className="w-6 h-6" />
+          </Button>
 
-            {/* Image and content */}
-            {selectedImage && (
-              <>
-                {/* Image Section */}
-                <div className="flex-1 flex items-center justify-center p-2 sm:p-4 bg-black/95">
-                  <img
-                    src={selectedImage.image}
-                    alt={selectedImage.title}
-                    className="max-w-full max-h-full object-contain"
-                  />
-                </div>
+          {/* Main Content Area */}
+          {selectedImage && (
+            <div className="w-full h-full flex flex-col md:flex-row relative animate-fade-in">
 
-                {/* Content Section - Full width on mobile, sidebar on desktop */}
-                <div className="w-full lg:w-80 bg-white p-4 sm:p-6 overflow-y-auto max-h-[40vh] lg:max-h-full">
-                  <div className="space-y-3 sm:space-y-4">
-                    {/* Mobile Navigation - Only visible on mobile */}
-                    <div className="flex justify-between items-center lg:hidden mb-2">
-                      <Button
-                        onClick={() => navigateImage('prev')}
-                        className="bg-green-600 hover:bg-green-700 text-white border-0 rounded-full w-8 h-8"
-                        size="icon"
-                      >
-                        <ArrowLeft className="w-4 h-4" />
-                      </Button>
-                      <span className="text-sm text-gray-500 font-medium">
-                        {currentImageIndex + 1} of {farmVisits.length}
-                      </span>
-                      <Button
-                        onClick={() => navigateImage('next')}
-                        className="bg-green-600 hover:bg-green-700 text-white border-0 rounded-full w-8 h-8"
-                        size="icon"
-                      >
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
+              {/* Image Area */}
+              <div className="flex-1 flex items-center justify-center relative p-4 sm:p-8 md:p-12 lg:p-16 h-[60vh] md:h-full">
+                <img
+                  src={selectedImage.image}
+                  alt={selectedImage.title}
+                  className="max-w-full max-h-full object-contain shadow-2xl rounded-sm"
+                />
+              </div>
+
+              {/* Info Sidebar (Bottom on mobile, Right on Desktop) */}
+              <div className="w-full md:w-[400px] lg:w-[450px] bg-white/10 backdrop-blur-xl md:bg-[#1a1a1a] border-t md:border-t-0 md:border-l border-white/10 p-6 sm:p-8 flex flex-col justify-center h-[40vh] md:h-full overflow-y-auto">
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <Badge className="bg-[#7ede56] text-[#002f37] hover:bg-[#7ede56] border-none">
+                        {selectedImage.category}
+                      </Badge>
+                      <Badge variant="outline" className="text-gray-300 border-gray-600">
+                        {selectedImage.region}
+                      </Badge>
                     </div>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 leading-tight">
+                      {selectedImage.title}
+                    </h2>
+                    <p className="text-gray-300 text-base sm:text-lg leading-relaxed">
+                      {selectedImage.description}
+                    </p>
+                  </div>
 
-                    <div>
-                      <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
-                        {selectedImage.title}
-                      </h2>
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        <Badge className="bg-green-600 text-white text-xs">
-                          {selectedImage.category}
-                        </Badge>
-                        <Badge variant="secondary" className="bg-gray-100 text-gray-700 text-xs">
-                          {selectedImage.region}
-                        </Badge>
-                      </div>
+                  <div className="pt-6 border-t border-white/10 space-y-4">
+                    <div className="flex items-center text-gray-400">
+                      <Calendar className="w-5 h-5 mr-3 text-[#7ede56]" />
+                      <span>{selectedImage.date}</span>
                     </div>
-
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Description</h3>
-                      <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
-                        {selectedImage.description}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Engagement Details</h3>
-                      <div className="space-y-2 text-xs sm:text-sm">
-                        <div className="flex items-center text-gray-600">
-                          <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-green-600 flex-shrink-0" />
-                          <span className="truncate">{selectedImage.region}</span>
-                        </div>
-                        <div className="flex items-center text-gray-600">
-                          <Leaf className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-green-600 flex-shrink-0" />
-                          <span className="truncate">{selectedImage.category}</span>
-                        </div>
-                        <div className="flex items-center text-gray-600">
-                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-green-600 flex-shrink-0" />
-                          <span className="truncate">{selectedImage.date}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Desktop Image counter - Only visible on desktop */}
-                    <div className="hidden lg:block pt-4 border-t border-gray-200">
-                      <p className="text-xs text-gray-500">
-                        Image {currentImageIndex + 1} of {farmVisits.length}
-                      </p>
+                    <div className="flex items-center text-gray-400">
+                      <MapPin className="w-5 h-5 mr-3 text-[#7ede56]" />
+                      <span>{selectedImage.region}</span>
                     </div>
                   </div>
+
+                  {/* Mobile Nav Controls */}
+                  <div className="flex md:hidden gap-4 mt-4 pt-4 border-t border-white/10">
+                    <Button variant="outline" className="flex-1 border-white/20 text-white hover:bg-white/10" onClick={() => navigateImage('prev')}>Previous</Button>
+                    <Button variant="outline" className="flex-1 border-white/20 text-white hover:bg-white/10" onClick={() => navigateImage('next')}>Next</Button>
+                  </div>
                 </div>
-              </>
-            )}
-          </div>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
-
-      {/* Scroll to Top Button - Mobile Optimized */}
-      {showScrollTop && (
-        <Button
-          onClick={scrollToTop}
-          className="fixed bottom-6 right-4 z-50 bg-green-600 hover:bg-green-700 text-white p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 md:bottom-8 md:right-6"
-          aria-label="Scroll to top"
-          size="lg"
-        >
-          <ArrowUp className="h-5 w-5 md:h-6 md:w-6" />
-        </Button>
-      )}
 
       {/* Footer */}
       <Footer />
@@ -653,4 +663,4 @@ const Gallery = () => {
   );
 };
 
-export default Gallery; 
+export default Gallery;

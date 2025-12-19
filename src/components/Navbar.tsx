@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 
 interface NavbarProps {
-  variant?: 'transparent' | 'solid' | 'light';
+  variant?: 'transparent' | 'solid' | 'light' | 'transparent-full';
   disableHover?: boolean;
 }
 
@@ -15,24 +15,24 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
   // Color logic
   const bgClass = variant === 'transparent'
     ? (disableHover ? 'bg-transparent' : 'bg-transparent hover:bg-white/95')
-    : variant === 'light' ? 'bg-white' : 'bg-[#002f37]';
+    : variant === 'transparent-full' ? 'bg-transparent'
+      : variant === 'light' ? 'bg-white' : 'bg-[#002f37]';
 
-  const textClass = variant === 'transparent'
+  const textClass = variant === 'transparent' || variant === 'transparent-full'
     ? (disableHover ? 'text-white' : 'text-white group-hover:text-[#002f37]')
     : variant === 'light' ? 'text-gray-800' : 'text-white';
 
-  const hoverClass = variant === 'transparent'
+  const hoverClass = variant === 'transparent' || variant === 'transparent-full'
     ? (disableHover ? 'hover:text-green-300' : 'hover:text-green-300 group-hover:hover:text-[#7ede56]')
     : variant === 'light' ? 'hover:text-green-600' : 'hover:text-green-300';
-  const btnClass = variant === 'transparent'
-    ? 'bg-white text-[#002f37] border-2 border-[#002f37] hover:bg-gray-100 px-5 py-2 text-sm font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300'
-    : 'bg-white text-[#002f37] border-2 border-[#002f37] hover:bg-gray-100 px-5 py-2 text-sm font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300';
 
-  const shadowClass = variant === 'light' || variant === 'transparent' ? 'shadow-none' : 'shadow-lg';
+  const btnClass = 'bg-white text-[#002f37] border-2 border-[#002f37] hover:bg-gray-100 px-5 py-2 text-sm font-semibold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300';
+
+  const shadowClass = variant === 'light' || variant === 'transparent' || variant === 'transparent-full' ? 'shadow-none' : 'shadow-lg';
   const isFloating = variant === 'transparent';
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isFloating ? 'flex justify-center py-4 sm:py-6 px-4 pointer-events-none' : (variant === 'light' ? 'bg-white md:shadow-md' : 'bg-[#002f37] md:shadow-md')}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isFloating ? 'flex justify-center py-4 sm:py-6 px-4 pointer-events-none' : (variant === 'light' ? 'bg-white md:shadow-md' : (variant === 'transparent-full' ? 'bg-transparent' : 'bg-[#002f37] md:shadow-md'))}`}>
       <div className={`group transition-all duration-300 ${isFloating ? `${bgClass} ${shadowClass} w-full max-w-7xl rounded-full px-4 sm:px-6 lg:px-8 pointer-events-auto backdrop-blur-none hover:backdrop-blur-sm` : 'max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8'}`}>
         <div className="flex justify-between items-center h-16">
           {/* Logo */}

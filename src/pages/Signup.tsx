@@ -1,151 +1,77 @@
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Leaf, Users, TrendingUp, UserCheck, ArrowLeft, Upload, MapPin, Calendar, Phone } from 'lucide-react';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import { UserCheck, Leaf, Users, TrendingUp, ArrowLeft, ArrowRight, ChevronDown, MapPin, Upload, Check, Loader2 } from 'lucide-react';
+import { useToast } from "@/components/ui/use-toast";
 
 const Signup = () => {
   const navigate = useNavigate();
-  const [userType, setUserType] = useState('');
-  const [currentStep, setCurrentStep] = useState(1);
-  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const { toast } = useToast();
+  const [userType, setUserType] = useState<string>('');
   const [formData, setFormData] = useState({
-    // Basic Info
     fullName: '',
-    gender: '',
-    dateOfBirth: '',
-    phone: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
-
-    // Professional Info (for specific user types)
-    investorType: '',
-    investmentSize: '',
-    preferredRegion: '',
-    expectedReturnModel: '',
-    agribusinessExperience: '',
-    assignedRegion: '',
-    operationalZone: '',
-    qualification: '',
-    yearsExperience: '',
-    linkedOrganization: '',
-
-    // Additional Info
-    nationalId: null as File | null,
-    businessCertificate: null as File | null,
-    profilePhoto: null as File | null,
-    extensionAgentName: '',
-
-    // Farm Location (for growers and farmers)
+    gender: '',
+    dateOfBirth: '',
     farmRegion: '',
     farmDistrict: '',
     farmAddress: '',
-    farmLatitude: '',
-    farmLongitude: '',
-    farmSize: 0, // in hectares
-
-    // Terms
+    farmSize: '',
+    crops: [] as string[],
+    livestock: [] as string[],
+    role: '',
+    businessName: '',
+    investmentInterest: [] as string[],
+    extensionAgentName: '',
     acceptTerms: false,
     acceptDataPolicy: false
   });
 
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
+  const [imagesLoaded, setImagesLoaded] = useState(false); // Kept for safety if referenced, though unused in new layout logic directly
 
   useEffect(() => {
-    // Trigger animations after component mounts
     setImagesLoaded(true);
   }, []);
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleFileUpload = (field: string, file: File | null) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: file
-    }));
-  };
-
-  const sendOTP = () => {
-    // Simulate OTP sending
-    setOtpSent(true);
-    console.log('OTP sent to:', formData.phone);
-  };
-
-  const verifyOTP = () => {
-    // Simulate OTP verification
-    if (otpCode === '1234') { // Demo OTP
-      console.log('OTP verified successfully');
-      return true;
-    }
-    return false;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!verifyOTP()) {
-      alert('Please enter the correct OTP code');
-      return;
-    }
-
-    console.log('User Type:', userType);
-    console.log('Form Data:', formData);
-
-    // Navigate to appropriate dashboard
-    if (userType === 'grower') {
-      navigate('/dashboard/grower');
-    } else if (userType === 'investor') {
-      navigate('/dashboard/investor');
-    } else if (userType === 'farmer') {
-      navigate('/dashboard/farmer');
-    } else if (userType === 'agent') {
-      navigate('/dashboard/agent');
-    }
-  };
-
   const userTypes = [
+    {
+      id: 'agent',
+      title: 'Apply as Lync Agent',
+      description: 'Join our professional extension network',
+      icon: <UserCheck className="h-6 w-6 text-white" />,
+      color: 'bg-gradient-to-br from-[#7ede56] to-[#00b25c] border-none shadow-2xl hover:shadow-[#7ede56]/40 [&_h3]:!text-white [&_p]:!text-white/80 ring-8 ring-[#7ede56]/10'
+    },
     {
       id: 'farmer',
       title: 'Solo Farmer',
-      description: 'Independent farmers using AgriLync tools for AI advisory and weather forecast',
-      icon: <Leaf className="h-8 w-8 text-orange-600" />,
-      color: 'border-orange-200 hover:border-orange-400'
+      description: 'Direct access to tools & markets',
+      icon: <Leaf className="h-6 w-6 text-orange-600" />,
+      color: 'bg-white border-gray-100 hover:border-[#7ede56] hover:bg-white shadow-xl'
     },
     {
       id: 'grower',
       title: 'Lync Grower',
-      description: 'Farmers under smart investor matching program',
-      icon: <Users className="h-8 w-8 text-[#7ede56]" />,
-      color: 'border-green-200 hover:border-green-400'
+      description: 'Scale with smart investor matching',
+      icon: <Users className="h-6 w-6 text-green-600" />,
+      color: 'bg-white border-gray-100 hover:border-[#7ede56] hover:bg-white shadow-xl'
     },
     {
       id: 'investor',
       title: 'Lync Investor',
-      description: 'Individuals or institutions investing in farms',
-      icon: <TrendingUp className="h-8 w-8 text-blue-600" />,
-      color: 'border-blue-200 hover:border-blue-400'
-    },
-    {
-      id: 'agent',
-      title: 'Apply as Lync Agent',
-      description: 'Extension officer application',
-      icon: <UserCheck className="h-8 w-8 text-white" />,
-      color: 'bg-[#7ede56] border-none shadow-xl hover:shadow-2xl hover:scale-105 [&_h3]:!text-[#002f37] [&_p]:!text-[#002f37]/80'
+      description: 'Fund sustainable agriculture',
+      icon: <TrendingUp className="h-6 w-6 text-blue-600" />,
+      color: 'bg-white border-gray-100 hover:border-[#7ede56] hover:bg-white shadow-xl'
     }
   ];
 
@@ -155,15 +81,47 @@ const Signup = () => {
     'Bono East', 'Oti', 'Savannah', 'North East'
   ];
 
-  const farmTypes = ['Crop', 'Livestock', 'Mixed'];
-  const cropCategories = ['Maize', 'Rice', 'Cocoa', 'Cassava', 'Yam', 'Plantain', 'Tomato', 'Onion', 'Pepper'];
-  const livestockCategories = ['Poultry', 'Cattle', 'Goat', 'Sheep', 'Pig', 'Fish'];
-  const languages = ['English', 'Twi', 'Ga', 'Ewe', 'Hausa', 'Dagbani'];
-  const farmStages = ['Planting', 'Growing', 'Harvesting', 'Maintenance', 'Planning'];
-  const investmentInterests = ['Input support', 'Equipment', 'Land preparation', 'Seeds', 'Fertilizer', 'Irrigation'];
-  const investorTypes = ['Individual', 'Company', 'Organization', 'NGO'];
-  const returnModels = ['Profit share', 'Buy-back', 'Equity', 'Fixed return'];
-  const qualifications = ['Diploma', 'BSc Agriculture', 'Extension Officer', 'MSc Agriculture', 'PhD', 'Other'];
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleFileUpload = (field: string, file: File | null) => {
+    console.log(`File uploaded for ${field}:`, file);
+  };
+
+  const sendOTP = () => {
+    if (!formData.phone) {
+      toast({
+        title: "Phone number required",
+        description: "Please enter your phone number to receive OTP",
+        variant: "destructive"
+      });
+      return;
+    }
+    setOtpSent(true);
+    toast({
+      title: "OTP Sent",
+      description: "Please check your phone for the verification code",
+    });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.acceptTerms) {
+      toast({
+        title: "Terms not accepted",
+        description: "Please accept the terms and conditions to continue",
+        variant: "destructive"
+      });
+      return;
+    }
+    console.log('Form submitted:', { ...formData, userType });
+    navigate('/login');
+    toast({
+      title: "Account Created",
+      description: "Please log in with your credentials",
+    });
+  };
 
   const renderFormFields = () => {
     switch (userType) {
@@ -179,7 +137,7 @@ const Signup = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Full Name *</Label>
+                  <Label htmlFor="fullName">Full Name *</Label>
                   <Input
                     id="fullName"
                     value={formData.fullName}
@@ -190,7 +148,7 @@ const Signup = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="gender" className="text-sm font-medium text-gray-700">Gender *</Label>
+                  <Label htmlFor="gender">Gender *</Label>
                   <Select onValueChange={(value) => handleInputChange('gender', value)}>
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Select gender" />
@@ -206,7 +164,7 @@ const Signup = () => {
 
               <div className="space-y-6">
                 <div>
-                  <Label htmlFor="phone" className="text-sm font-medium text-gray-700">Phone Number *</Label>
+                  <Label htmlFor="phone">Phone Number *</Label>
                   <div className="mt-2">
                     <Input
                       id="phone"
@@ -230,7 +188,7 @@ const Signup = () => {
                   </div>
                   {otpSent && (
                     <div className="mt-4">
-                      <Label htmlFor="otp" className="text-sm font-medium text-gray-700">Enter OTP Code</Label>
+                      <Label htmlFor="otp">Enter OTP Code</Label>
                       <Input
                         id="otp"
                         value={otpCode}
@@ -246,7 +204,7 @@ const Signup = () => {
 
               <div className="space-y-6">
                 <div>
-                  <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email Address (Optional)</Label>
+                  <Label htmlFor="email">Email Address (Optional)</Label>
                   <Input
                     id="email"
                     type="email"
@@ -260,7 +218,7 @@ const Signup = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password *</Label>
+                  <Label htmlFor="password">Password *</Label>
                   <Input
                     id="password"
                     type="password"
@@ -272,7 +230,7 @@ const Signup = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Confirm Password *</Label>
+                  <Label htmlFor="confirmPassword">Confirm Password *</Label>
                   <Input
                     id="confirmPassword"
                     type="password"
@@ -295,7 +253,7 @@ const Signup = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="farmRegion" className="text-sm font-medium text-gray-700">Region *</Label>
+                  <Label htmlFor="farmRegion">Region *</Label>
                   <Select onValueChange={(value) => handleInputChange('farmRegion', value)}>
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Select region" />
@@ -308,7 +266,7 @@ const Signup = () => {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="farmDistrict" className="text-sm font-medium text-gray-700">District/Community *</Label>
+                  <Label htmlFor="farmDistrict">District/Community *</Label>
                   <Input
                     id="farmDistrict"
                     value={formData.farmDistrict}
@@ -321,7 +279,7 @@ const Signup = () => {
               </div>
 
               <div>
-                <Label htmlFor="farmAddress" className="text-sm font-medium text-gray-700">Farm Address *</Label>
+                <Label htmlFor="farmAddress">Farm Address *</Label>
                 <Input
                   id="farmAddress"
                   value={formData.farmAddress}
@@ -348,7 +306,7 @@ const Signup = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Full Name *</Label>
+                  <Label htmlFor="fullName">Full Name *</Label>
                   <Input
                     id="fullName"
                     value={formData.fullName}
@@ -359,7 +317,7 @@ const Signup = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="gender" className="text-sm font-medium text-gray-700">Gender *</Label>
+                  <Label htmlFor="gender">Gender *</Label>
                   <Select onValueChange={(value) => handleInputChange('gender', value)}>
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Select gender" />
@@ -375,7 +333,7 @@ const Signup = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="dateOfBirth" className="text-sm font-medium text-gray-700">Date of Birth *</Label>
+                  <Label htmlFor="dateOfBirth">Date of Birth *</Label>
                   <Input
                     id="dateOfBirth"
                     type="date"
@@ -386,7 +344,7 @@ const Signup = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone" className="text-sm font-medium text-gray-700">Phone Number *</Label>
+                  <Label htmlFor="phone">Phone Number *</Label>
                   <div className="mt-2">
                     <Input
                       id="phone"
@@ -410,7 +368,7 @@ const Signup = () => {
                   </div>
                   {otpSent && (
                     <div className="mt-4">
-                      <Label htmlFor="otp" className="text-sm font-medium text-gray-700">Enter OTP Code</Label>
+                      <Label htmlFor="otp">Enter OTP Code</Label>
                       <Input
                         id="otp"
                         value={otpCode}
@@ -426,7 +384,7 @@ const Signup = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email Address *</Label>
+                  <Label htmlFor="email">Email Address *</Label>
                   <Input
                     id="email"
                     type="email"
@@ -438,7 +396,7 @@ const Signup = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password *</Label>
+                  <Label htmlFor="password">Password *</Label>
                   <Input
                     id="password"
                     type="password"
@@ -461,7 +419,7 @@ const Signup = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="farmRegion" className="text-sm font-medium text-gray-700">Region *</Label>
+                  <Label htmlFor="farmRegion">Region *</Label>
                   <Select onValueChange={(value) => handleInputChange('farmRegion', value)}>
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Select region" />
@@ -474,7 +432,7 @@ const Signup = () => {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="farmDistrict" className="text-sm font-medium text-gray-700">District/Community *</Label>
+                  <Label htmlFor="farmDistrict">District/Community *</Label>
                   <Input
                     id="farmDistrict"
                     value={formData.farmDistrict}
@@ -487,7 +445,7 @@ const Signup = () => {
               </div>
 
               <div>
-                <Label htmlFor="farmAddress" className="text-sm font-medium text-gray-700">Farm Address *</Label>
+                <Label htmlFor="farmAddress">Farm Address *</Label>
                 <Input
                   id="farmAddress"
                   value={formData.farmAddress}
@@ -523,7 +481,7 @@ const Signup = () => {
                   <div className="space-y-1 text-center">
                     <Upload className="mx-auto h-12 w-12 text-gray-400" />
                     <div className="flex text-sm text-gray-600">
-                      <label htmlFor="nationalId" className="relative cursor-pointer bg-white rounded-md font-medium text-[#7ede56] hover:text-[#6bc947] focus-within:outline-none">
+                      <label htmlFor="nationalId" className="relative cursor-pointer bg-white rounded-md font-medium text-[#7ede56] hover:text-[#002f37] focus-within:outline-none">
                         <span>Upload ID</span>
                         <input
                           id="nationalId"
@@ -652,7 +610,7 @@ const Signup = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Full Name *</Label>
+                  <Label htmlFor="fullName">Full Name *</Label>
                   <Input
                     id="fullName"
                     value={formData.fullName}
@@ -663,7 +621,7 @@ const Signup = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="gender" className="text-sm font-medium text-gray-700">Gender *</Label>
+                  <Label htmlFor="gender">Gender *</Label>
                   <Select onValueChange={(value) => handleInputChange('gender', value)}>
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Select gender" />
@@ -679,7 +637,7 @@ const Signup = () => {
 
               <div className="space-y-6">
                 <div>
-                  <Label htmlFor="phone" className="text-sm font-medium text-gray-700">Phone Number *</Label>
+                  <Label htmlFor="phone">Phone Number *</Label>
                   <div className="mt-2">
                     <Input
                       id="phone"
@@ -703,7 +661,7 @@ const Signup = () => {
                   </div>
                   {otpSent && (
                     <div className="mt-4">
-                      <Label htmlFor="otp" className="text-sm font-medium text-gray-700">Enter OTP Code</Label>
+                      <Label htmlFor="otp">Enter OTP Code</Label>
                       <Input
                         id="otp"
                         value={otpCode}
@@ -719,7 +677,7 @@ const Signup = () => {
 
               <div className="space-y-6">
                 <div>
-                  <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email Address *</Label>
+                  <Label htmlFor="email">Email Address *</Label>
                   <Input
                     id="email"
                     type="email"
@@ -731,7 +689,7 @@ const Signup = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password *</Label>
+                  <Label htmlFor="password">Password *</Label>
                   <Input
                     id="password"
                     type="password"
@@ -754,328 +712,199 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar variant="light" />
+    <div className="min-h-screen w-full flex">
+      {/* Left Side - Brand Panel (Deep Teal) */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[#002f37] relative overflow-hidden flex-col justify-between p-16 text-white">
+        {/* Decorative Circles */}
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-white/5 blur-3xl"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-[#7ede56]/10 blur-3xl"></div>
 
-      <div className="flex min-h-screen">
-        {/* Left Side - Image Grid */}
-        <div className="hidden lg:flex lg:flex-1 bg-gray-50 p-6 items-center justify-center">
-          <div className="w-full max-w-3xl grid grid-cols-3 gap-3">
-            {/* Column 1 */}
-            <div className="space-y-3">
-              <div
-                className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-8'
-                  }`}
-                style={{ transitionDelay: '0.1s' }}
-              >
-                <img
-                  src="/lovable-uploads/signup1.jpg"
-                  alt="Agricultural content creation"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-              </div>
+        <div className="relative z-10">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="text-white/80 hover:text-white hover:bg-white/10 p-0 mb-6 h-auto font-normal flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Home
+          </Button>
 
-              <div
-                className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-8'
-                  }`}
-                style={{ transitionDelay: '0.3s' }}
-              >
-                <img
-                  src="/lovable-uploads/signup2.jpg"
-                  alt="Digital farming consultation"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-              </div>
-            </div>
+          <h1 className="text-5xl xl:text-6xl font-extrabold mb-4 leading-tight tracking-tight">
+            Join our growing <br />
+            <span className="text-[#7ede56]">ecosystem</span>
+          </h1>
+          <p className="text-xl text-gray-300 max-w-md leading-relaxed mb-10">
+            Start your journey with AgriLync today. Whether you're a farmer, investor, or agent, we have the tools to help you succeed.
+          </p>
 
-            {/* Column 2 */}
-            <div className="space-y-3">
-              <div
-                className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-8'
-                  }`}
-                style={{ transitionDelay: '0.2s' }}
-              >
-                <img
-                  src="/lovable-uploads/signup3.jpg"
-                  alt="Agricultural training session"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-              </div>
+          <div className="relative group overflow-hidden rounded-[2.5rem] border border-white/20 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in duration-1000 max-w-2xl max-h-[380px]">
+            <img
+              src="/lovable-uploads/signup6.jpg"
+              alt="AgriLync Ecosystem"
+              className="w-full h-full object-cover opacity-95 transition-transform duration-1000 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#002f37] via-[#002f37]/10 to-transparent"></div>
 
-              <div
-                className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-8'
-                  }`}
-                style={{ transitionDelay: '0.4s' }}
-              >
-                <img
-                  src="/lovable-uploads/signup4.jpg"
-                  alt="Farm planning and analysis"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-              </div>
-            </div>
-
-            {/* Column 3 */}
-            <div className="space-y-3">
-              <div
-                className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-8'
-                  }`}
-                style={{ transitionDelay: '0.3s' }}
-              >
-                <img
-                  src="/lovable-uploads/signup5.jpg"
-                  alt="Harvest and agricultural success"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-              </div>
-
-              <div
-                className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-8'
-                  }`}
-                style={{ transitionDelay: '0.5s' }}
-              >
-                <img
-                  src="/lovable-uploads/signup6.jpg"
-                  alt="Agricultural communication"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-              </div>
+            {/* Glossy Overlay Tag */}
+            <div className="absolute top-6 left-6 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-white text-xs font-bold uppercase tracking-widest shadow-lg">
+              Partnering for Growth
             </div>
           </div>
         </div>
 
-        {/* Right Side - Form Content */}
-        <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-8 py-8">
-          <div className="max-w-md mx-auto w-full">
-            {/* Header */}
-            <div className="mb-8">
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/')}
-                className="mb-6 text-gray-600 hover:text-gray-900"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Home
-              </Button>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Join AgriLync</h1>
-              <p className="text-gray-600">Choose your role and start your agricultural journey</p>
-            </div>
-
-            {/* User Type Selection */}
-            {!userType && (
-              <div className="space-y-4">
-                {userTypes.map((type) => (
-                  <Card
-                    key={type.id}
-                    className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${type.color}`}
-                    onClick={() => {
-                      if (type.id === 'agent') {
-                        window.open('https://form.jotform.com/253482683266062', '_blank');
-                      } else {
-                        navigate(`/signup/${type.id}`);
-                      }
-                    }}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-shrink-0">{type.icon}</div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{type.title}</h3>
-                          <p className="text-sm text-gray-600">{type.description}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-
-            {/* Registration Form */}
-            {userType && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-2xl text-center">
-                    {userTypes.find(t => t.id === userType)?.title} Registration
-                  </CardTitle>
-                  <CardDescription className="text-center">
-                    {userTypes.find(t => t.id === userType)?.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    {renderFormFields()}
-
-                    {/* Terms and Conditions */}
-                    <div className="space-y-4 border-t pt-6">
-                      <h3 className="text-lg font-semibold text-gray-900">Terms & Conditions</h3>
-
-                      <div className="space-y-3">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="acceptTerms"
-                            checked={formData.acceptTerms}
-                            onCheckedChange={(checked) => handleInputChange('acceptTerms', checked as boolean)}
-                          />
-                          <Label htmlFor="acceptTerms" className="text-sm">
-                            I accept the Terms & Conditions *
-                          </Label>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="acceptDataPolicy"
-                            checked={formData.acceptDataPolicy}
-                            onCheckedChange={(checked) => handleInputChange('acceptDataPolicy', checked as boolean)}
-                          />
-                          <Label htmlFor="acceptDataPolicy" className="text-sm">
-                            I agree to the Data Use Policy *
-                          </Label>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setUserType('')}
-                        className="flex-1"
-                      >
-                        Back
-                      </Button>
-                      <Button
-                        type="submit"
-                        className="flex-1 bg-[#7ede56] hover:bg-[#6bc947]"
-                        disabled={!formData.acceptTerms || !formData.acceptDataPolicy}
-                      >
-                        Complete Registration
-                      </Button>
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
+        {/* Testimonial / Social Proof */}
+        {/* Testimonial Removed */}
       </div>
 
-      {/* Mobile Image Section */}
-      <div className="lg:hidden bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-3 gap-3">
-            {/* Mobile Image Grid - 3 columns */}
-            <div
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.1s' }}
-            >
-              <img
-                src="/lovable-uploads/signup1.jpg"
-                alt="Agricultural content creation"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-            </div>
+      {/* Right Side - Collaborative Content Panel */}
+      <div className="w-full lg:w-1/2 bg-white flex flex-col p-8 sm:p-12 lg:p-16 xl:p-20 items-center justify-center overflow-y-auto">
 
-            <div
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.2s' }}
-            >
-              <img
-                src="/lovable-uploads/signup2.jpg"
-                alt="Digital farming consultation"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-            </div>
+        {/* Mobile Header (Back button) */}
+        <div className="lg:hidden">
+          <Button variant="ghost" onClick={() => navigate('/')} className="mb-8 pl-0 hover:bg-transparent">
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back
+          </Button>
+        </div>
 
-            <div
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.3s' }}
-            >
-              <img
-                src="/lovable-uploads/signup3.jpg"
-                alt="Agricultural training session"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-            </div>
+        <div className="max-w-xl mx-auto w-full">
 
-            <div
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.4s' }}
-            >
-              <img
-                src="/lovable-uploads/signup4.jpg"
-                alt="Farm planning and analysis"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-            </div>
-
-            <div
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.5s' }}
-            >
-              <img
-                src="/lovable-uploads/signup5.jpg"
-                alt="Harvest and agricultural success"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-            </div>
-
-            <div
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.6s' }}
-            >
+          {/* Mobile Brand Content (Visible on mobile/tablet) */}
+          <div className="lg:hidden mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
+            <h2 className="text-2xl font-extrabold text-[#002f37] mb-3 leading-tight">
+              Join our growing <br />
+              <span className="text-[#7ede56]">ecosystem</span>
+            </h2>
+            <p className="text-gray-600 mb-4 text-xs leading-relaxed max-w-sm">
+              Start your journey with AgriLync today. Whether you're a farmer, investor, or agent, we have the tools to help you succeed.
+            </p>
+            <div className="rounded-[1.5rem] overflow-hidden shadow-lg mb-4 max-h-[160px]">
               <img
                 src="/lovable-uploads/signup6.jpg"
-                alt="Agricultural communication"
+                alt="AgriLync Ecosystem"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
             </div>
           </div>
+
+          {/* Header Area */}
+          <div className="mb-8 text-center w-full">
+            {userType ? (
+              <div className="flex justify-center mb-4">
+                <Button variant="ghost" onClick={() => setUserType('')} className="hover:bg-transparent hover:text-[#002f37] text-gray-500">
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Change Role
+                </Button>
+              </div>
+            ) : null}
+
+            <h2 className="text-4xl font-extrabold text-[#002f37] mb-2 tracking-tight">
+              {userType ? `Register as ${userTypes.find(t => t.id === userType)?.title}` : 'Choose your role'}
+            </h2>
+            <p className="text-gray-600">
+              {userType ? 'Please fill in the details below to create your account.' : 'Select the account type that best describes you.'}
+            </p>
+          </div>
+
+          {/* Content: Either Role Selection OR Form */}
+          {!userType ? (
+            <div className="flex flex-col items-center gap-6 max-w-lg mx-auto w-full text-center mt-4">
+              {/* Standalone Agent Pill */}
+              <button
+                onClick={() => window.open('https://form.jotform.com/253482683266062', '_blank')}
+                className="group relative w-full h-14 rounded-full bg-[#002f37] border-[1px] border-white/10 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_40px_-10px_rgba(0,0,0,0.4)] transition-all duration-300 flex items-center justify-center gap-4 px-8 text-white font-semibold hover:border-[#7ede56]/50"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-white/10 text-[#7ede56]">
+                    <UserCheck className="w-5 h-5" />
+                  </div>
+                  <span>Apply as Lync Agent</span>
+                </div>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform opacity-60" />
+              </button>
+
+              {/* Roles Dropdown Pill */}
+              <div className="relative w-full">
+                <Select onValueChange={(val) => setUserType(val)}>
+                  <SelectTrigger
+                    className="w-full h-14 rounded-full bg-white border-[1px] border-gray-200 shadow-[0_8px_20px_-8px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_24px_-8px_rgba(0,0,0,0.1)] transition-all duration-300 px-8 text-[#002f37] font-semibold hover:border-[#7ede56]/50 focus:ring-0 focus:ring-offset-0 flex justify-center"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-full bg-blue-50 text-blue-500">
+                        <Users className="w-5 h-5" />
+                      </div>
+                      <SelectValue placeholder="Join us" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-gray-100 shadow-xl p-2">
+                    <SelectItem value="farmer" className="rounded-xl py-3 focus:bg-[#7ede56]/10 focus:text-[#002f37]">
+                      <div className="flex items-center gap-3">
+                        <Leaf className="w-4 h-4 text-orange-500" />
+                        <div>
+                          <p className="font-bold">Solo Farmer</p>
+                          <p className="text-xs text-gray-500">Direct access to tools & markets</p>
+                        </div>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="grower" className="rounded-xl py-3 focus:bg-[#7ede56]/10 focus:text-[#002f37]">
+                      <div className="flex items-center gap-3">
+                        <Users className="w-4 h-4 text-green-500" />
+                        <div>
+                          <p className="font-bold">Lync Grower</p>
+                          <p className="text-xs text-gray-500">Scale with smart investor matching</p>
+                        </div>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="investor" className="rounded-xl py-3 focus:bg-[#7ede56]/10 focus:text-[#002f37]">
+                      <div className="flex items-center gap-3">
+                        <TrendingUp className="w-4 h-4 text-blue-500" />
+                        <div>
+                          <p className="font-bold">Lync Investor</p>
+                          <p className="text-xs text-gray-500">Fund sustainable agriculture</p>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Login Link */}
+              <div className="mt-6 text-center">
+                <p className="text-gray-500">
+                  Already have an account?{' '}
+                  <span onClick={() => navigate('/login')} className="text-[#002f37] font-bold cursor-pointer hover:underline">
+                    Log in
+                  </span>
+                </p>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              {renderFormFields()}
+
+              <div className="flex gap-4 pt-4">
+                <Checkbox
+                  id="terms"
+                  checked={formData.acceptTerms}
+                  onCheckedChange={(checked) => handleInputChange('acceptTerms', checked === true)}
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    I accept the terms and conditions
+                  </label>
+                  <p className="text-sm text-muted-foreground">
+                    By creating an account, you agree to our Terms of Service and Privacy Policy.
+                  </p>
+                </div>
+              </div>
+
+              <Button type="submit" className="w-full bg-[#002f37] hover:bg-[#003f4a] text-white h-12 rounded-xl text-lg font-medium" disabled={!formData.acceptTerms}>
+                Create Account
+              </Button>
+            </form>
+          )}
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 };

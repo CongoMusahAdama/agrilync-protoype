@@ -249,7 +249,7 @@ const Index = () => {
       </section>
 
       {/* DESKTOP HERO SECTION (NEW - ECOLAND STYLE) */}
-      <section className="hidden lg:block relative min-h-[100vh] bg-black overflow-hidden">
+      <section className="hidden lg:block relative min-h-[100vh] bg-[#002f37] overflow-hidden">
         {/* Carousel Background Images */}
         <div className="absolute inset-0 z-0">
           <img

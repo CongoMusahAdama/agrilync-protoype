@@ -386,6 +386,8 @@ const Team = () => {
             <DialogTitle className="text-2xl font-bold text-center mb-4" style={{ color: BRAND_TEAL }}>
               Congo Musah Adama
             </DialogTitle>
+
+
             <div className="text-center mb-6">
               <p className="text-lg font-semibold" style={{ color: BRAND_MAGENTA }}>CEO and Founder</p>
             </div>
@@ -447,16 +449,18 @@ const Team = () => {
         </DialogContent>
       </Dialog>
 
-      {showScrollTop && (
-        <Button
-          onClick={scrollToTop}
-          className="fixed bottom-10 right-10 z-50 bg-gray-900 hover:bg-gray-800 text-white rounded-full p-3 shadow-lg transition-all duration-300"
-          aria-label="Scroll to top"
-        >
-          <ArrowUp className="w-6 h-6" />
-        </Button>
-      )}
-    </div>
+      {
+        showScrollTop && (
+          <Button
+            onClick={scrollToTop}
+            className="fixed bottom-10 right-10 z-50 bg-gray-900 hover:bg-gray-800 text-white rounded-full p-3 shadow-lg transition-all duration-300"
+            aria-label="Scroll to top"
+          >
+            <ArrowUp className="w-6 h-6" />
+          </Button>
+        )
+      }
+    </div >
   );
 };
 

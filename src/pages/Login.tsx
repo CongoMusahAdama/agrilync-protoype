@@ -5,9 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Eye, EyeOff, MessageCircle, Construction } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, MessageCircle, Construction, Star, Quote } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -40,363 +39,146 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar variant="light" />
+    <div className="min-h-screen w-full flex">
 
-      <div className="flex min-h-screen">
-        {/* Left Side - Image Grid */}
-        <div className="hidden lg:flex lg:flex-1 bg-gray-50 p-6">
-          <div className="w-full grid grid-cols-3 gap-3 h-full">
-            {/* Column 1 */}
-            <div className="space-y-4">
-              <div
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${imagesLoaded
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-8'
-                  }`}
-                style={{ transitionDelay: '0.1s' }}
-              >
-                <img
-                  src="/lovable-uploads/signup1.jpg"
-                  alt="Agricultural content creation"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-              </div>
+      {/* Left Side - Brand Panel (Deep Teal) */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[#002f37] relative overflow-hidden flex-col justify-between p-16 text-white">
+        {/* Decorative Circles */}
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-white/5 blur-3xl"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-[#7ede56]/10 blur-3xl"></div>
 
-              <div
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${imagesLoaded
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-8'
-                  }`}
-                style={{ transitionDelay: '0.3s' }}
-              >
-                <img
-                  src="/lovable-uploads/signup2.jpg"
-                  alt="Digital farming consultation"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-              </div>
-            </div>
+        <div className="relative z-20">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="text-white/80 hover:text-white hover:bg-white/10 p-0 mb-12 h-auto font-normal flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Home
+          </Button>
+        </div>
 
-            {/* Column 2 */}
-            <div className="space-y-4">
-              <div
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${imagesLoaded
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-8'
-                  }`}
-                style={{ transitionDelay: '0.2s' }}
-              >
-                <img
-                  src="/lovable-uploads/signup3.jpg"
-                  alt="Agricultural training session"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-              </div>
+        <div className="flex-1 flex flex-col justify-center relative z-10">
+          <h1 className="text-6xl font-bold mb-6 leading-tight">
+            Welcome to the <br />
+            <span className="text-[#7ede56]">AgriLync Community</span>
+          </h1>
+          <p className="text-lg text-gray-300 max-w-md leading-relaxed">
+            Empower your agricultural journey with smart insights, trusted connections, and innovative tools designed to help you grow, succeed, and make lasting impact.
+          </p>
+        </div>
 
-              <div
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${imagesLoaded
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-8'
-                  }`}
-                style={{ transitionDelay: '0.4s' }}
-              >
-                <img
-                  src="/lovable-uploads/signup4.jpg"
-                  alt="Farm planning and analysis"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-              </div>
-            </div>
+        {/* Testimonial Removed as per user request */}
+      </div>
 
-            {/* Column 3 */}
-            <div className="space-y-4">
-              <div
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${imagesLoaded
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-8'
-                  }`}
-                style={{ transitionDelay: '0.3s' }}
-              >
-                <img
-                  src="/lovable-uploads/signup5.jpg"
-                  alt="Harvest and agricultural success"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-              </div>
+      {/* Right Side - Login Form */}
+      <div className="w-full lg:w-1/2 bg-white flex flex-col justify-center items-center p-8 sm:p-12 lg:p-24 overflow-y-auto">
+        <div className="w-full max-w-md space-y-8">
 
-              <div
-                className={`relative overflow-hidden rounded-lg shadow-lg h-72 transition-all duration-700 ease-out ${imagesLoaded
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-8'
-                  }`}
-                style={{ transitionDelay: '0.5s' }}
-              >
-                <img
-                  src="/lovable-uploads/signup6.jpg"
-                  alt="Agricultural communication"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+          {/* Mobile Header (Back button) */}
+          <div className="lg:hidden">
+            <Button variant="ghost" onClick={() => navigate('/')} className="mb-8 pl-0 hover:bg-transparent">
+              <ArrowLeft className="w-4 h-4 mr-2" /> Back
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-4xl font-bold text-[#002f37]">Welcome back!</h2>
+            <p className="text-gray-500">
+              Your agricultural journey provides you with the building blocks necessary to create true success.
+            </p>
+          </div>
+
+          {/* Under Development Message (Kept as per "content" request) */}
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <Construction className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-yellow-800 mb-1">Under Development</h3>
+                <p className="text-sm text-yellow-700">
+                  Login is currently disabled. Join our WhatsApp community!
+                </p>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Right Side - Login Form */}
-        <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-8 py-8">
-          <div className="max-w-md mx-auto w-full">
-            {/* Header */}
-            <div className="text-center mb-8">
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/')}
-                className="mb-6 text-gray-600 hover:text-gray-900"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Home
-              </Button>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-              <p className="text-gray-600">Sign in to your AgriLync account</p>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="Enter your email"
+                disabled
+                className="h-12 bg-gray-50 border-gray-200 focus:border-[#002f37] focus:ring-[#002f37]"
+              />
             </div>
 
-            {/* Login Form */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl text-center">Sign In</CardTitle>
-                <CardDescription className="text-center">
-                  Access your dashboard and continue your agricultural journey
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Under Development Message */}
-                <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <Construction className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-yellow-800 mb-1">Under Development</h3>
-                      <p className="text-sm text-yellow-700">
-                        Our login system is currently under development. We're working hard to bring you the best experience.
-                        In the meantime, join our WhatsApp community to stay updated and connect with fellow farmers!
-                      </p>
-                    </div>
-                  </div>
-                  {/* WhatsApp Icon Button */}
-                  <div className="mt-4 flex justify-center">
-                    <a
-                      href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center w-12 h-12 bg-green-500 hover:bg-green-600 text-white rounded-full transition-colors shadow-md hover:shadow-lg"
-                      title="Join Our WhatsApp Community"
-                    >
-                      <MessageCircle className="h-6 w-6" />
-                    </a>
-                  </div>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      placeholder="Enter your email address"
-                      required
-                      disabled
-                      className="cursor-not-allowed opacity-60"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="password">Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        type={showPassword ? 'text' : 'password'}
-                        value={formData.password}
-                        onChange={(e) => handleInputChange('password', e.target.value)}
-                        placeholder="Enter your password"
-                        required
-                        disabled
-                        className="cursor-not-allowed opacity-60"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                        disabled
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4 text-gray-400" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-gray-400" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="rememberMe"
-                        checked={formData.rememberMe}
-                        onCheckedChange={(checked) => handleInputChange('rememberMe', checked as boolean)}
-                        disabled
-                        className="cursor-not-allowed opacity-60"
-                      />
-                      <Label htmlFor="rememberMe" className="text-sm opacity-60">
-                        Remember me
-                      </Label>
-                    </div>
-                    <Link
-                      to="/forgot-password"
-                      className="text-sm text-gray-400 cursor-not-allowed pointer-events-none"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full bg-gray-400 text-white cursor-not-allowed"
-                    disabled={true}
-                  >
-                    Sign In (Disabled)
-                  </Button>
-
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600">
-                      Don't have an account?{' '}
-                      <Link
-                        to="/signup"
-                        className="text-[#7ede56] hover:text-[#6bc947] font-medium"
-                      >
-                        Sign up here
-                      </Link>
-                    </p>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-
-            {/* Footer */}
-            <div className="text-center mt-8 text-sm text-gray-500">
-              <p>© 2025 AgriLync Program. All rights reserved.</p>
-              <p>Developed by AfriqNova and Anchor Ashland Desert LLC</p>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  placeholder="Enter your password"
+                  disabled
+                  className="h-12 bg-gray-50 border-gray-200 focus:border-[#002f37] focus:ring-[#002f37]"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-gray-400" />
+                  )}
+                </Button>
+              </div>
             </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="rememberMe"
+                  checked={formData.rememberMe}
+                  onCheckedChange={(checked) => handleInputChange('rememberMe', checked as boolean)}
+                  className="border-gray-300 text-[#002f37] focus:ring-[#002f37]"
+                  disabled
+                />
+                <Label htmlFor="rememberMe" className="text-sm font-normal text-gray-600">Remember me</Label>
+              </div>
+              <Link to="/forgot-password" className="text-sm font-medium text-[#002f37] hover:underline">
+                Forgot password?
+              </Link>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-12 bg-[#002f37] hover:bg-[#002f37]/90 text-white font-semibold text-lg rounded-lg shadow-lg"
+              disabled
+            >
+              Sign In
+            </Button>
+          </form>
+
+          <div className="text-center pt-4">
+            <p className="text-gray-600">
+              Don't have an account?{' '}
+              <Link to="/signup" className="text-[#002f37] font-bold hover:underline">
+                Create free account
+              </Link>
+            </p>
           </div>
         </div>
       </div>
-
-      {/* Mobile Image Section */}
-      <div className="lg:hidden bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-3 gap-3">
-            {/* Mobile Image Grid - 3 columns */}
-            <div
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.1s' }}
-            >
-              <img
-                src="/lovable-uploads/signup1.jpg"
-                alt="Agricultural content creation"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-            </div>
-
-            <div
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.2s' }}
-            >
-              <img
-                src="/lovable-uploads/signup2.jpg"
-                alt="Digital farming consultation"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-            </div>
-
-            <div
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.3s' }}
-            >
-              <img
-                src="/lovable-uploads/signup3.jpg"
-                alt="Agricultural training session"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-            </div>
-
-            <div
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.4s' }}
-            >
-              <img
-                src="/lovable-uploads/signup4.jpg"
-                alt="Farm planning and analysis"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-            </div>
-
-            <div
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.5s' }}
-            >
-              <img
-                src="/lovable-uploads/signup5.jpg"
-                alt="Harvest and agricultural success"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-            </div>
-
-            <div
-              className={`relative overflow-hidden rounded-lg shadow-lg h-48 transition-all duration-700 ease-out ${imagesLoaded
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-8'
-                }`}
-              style={{ transitionDelay: '0.6s' }}
-            >
-              <img
-                src="/lovable-uploads/signup6.jpg"
-                alt="Agricultural communication"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <Footer />
     </div>
   );
 };
