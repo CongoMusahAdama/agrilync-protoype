@@ -122,8 +122,38 @@
   animation: fadeIn 0.8s ease-out;
 }
 
+@keyframes fadeInStable {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in-stable {
+  animation: fadeInStable 0.5s ease-out both;
+}
+
 .animate-fade-in-up {
   animation: fadeInUp 1s ease-out 0.2s both;
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-left {
+  animation: fadeInLeft 0.5s ease-out both;
 }
 
 .animate-fade-in-right {
@@ -528,59 +558,7 @@
 }
 
 /* Hero Image Animations */
-@keyframes heroImage1 {
-  0% {
-    opacity: 0;
-    transform: translate(-100px, 0) scale(0.8);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translate(0, 0) scale(1);
-  }
-}
-
-@keyframes heroImage2 {
-  0% {
-    opacity: 0;
-    transform: translate(0, 100px) scale(0.8);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translate(0, 0) scale(1);
-  }
-}
-
-@keyframes heroImage3 {
-  0% {
-    opacity: 0;
-    transform: translate(100px, 0) scale(0.8);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translate(0, 0) scale(1);
-  }
-}
-
-.animate-hero-image-1 {
-  animation: heroImage1 1s ease-out forwards;
-  animation-delay: 0.2s;
-  opacity: 0;
-}
-
-.animate-hero-image-2 {
-  animation: heroImage2 1s ease-out forwards;
-  animation-delay: 0.4s;
-  opacity: 0;
-}
-
-.animate-hero-image-3 {
-  animation: heroImage3 1s ease-out forwards;
-  animation-delay: 0.6s;
-  opacity: 0;
-}
+/* Unused hero image animations removed to avoid confusion */
 
 /* Animated Purple Words */
 .animated-purple-word {

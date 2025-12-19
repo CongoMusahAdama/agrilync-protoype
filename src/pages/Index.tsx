@@ -158,8 +158,8 @@ const Index = () => {
           <div className="grid grid-cols-1 gap-8 md:gap-12 items-center">
 
             {/* Left Side - Text Content */}
-            <div className="order-2 flex flex-col justify-start animate-fade-in-up -mt-16 sm:-mt-20 md:-mt-24">
-              <h1 ref={heroHeadingRef} className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-6 sm:mb-8 transition-all duration-700 ease-in-out leading-tight text-gray-800 font-outfit ${heroHeadingVisible ? " animate-fade-in-up" : " opacity-0"}`}>
+            <div className="order-2 flex flex-col justify-start animate-fade-in-left -mt-16 sm:-mt-20 md:-mt-24">
+              <h1 ref={heroHeadingRef} className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-6 sm:mb-8 transition-all duration-700 ease-in-out leading-tight text-gray-800 font-outfit ${heroHeadingVisible ? " animate-fade-in-left" : " opacity-0"}`}>
                 Smarter Access to <span className="text-[#7ede56]">Finance</span> & <span className="text-[#7ede56]">Information</span> Through <span className="text-[#7ede56]">AI</span>
               </h1>
 
@@ -207,7 +207,7 @@ const Index = () => {
               <div className="relative w-full max-w-sm sm:max-w-md flex items-start justify-center gap-3 sm:gap-4 px-4">
 
                 {/* Left Card - High */}
-                <div className="w-[31%] relative z-10 animate-fade-in-up delay-0">
+                <div className="w-[31%] relative z-10 animate-fade-in-stable delay-0">
                   <div className="w-full h-[280px] sm:h-[360px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
                     <img
                       src="/lovable-uploads/countryside-workers-together-field.jpg"
@@ -219,7 +219,7 @@ const Index = () => {
                 </div>
 
                 {/* Center Card - Up Small */}
-                <div className="w-[31%] relative z-10 mt-2 sm:mt-3 animate-fade-in-up delay-100">
+                <div className="w-[31%] relative z-10 mt-2 sm:mt-3 animate-fade-in-stable delay-100">
                   <div className="w-full h-[280px] sm:h-[360px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
                     <img
                       src="/lovable-uploads/countryside-workers-together-field.jpg"
@@ -231,7 +231,7 @@ const Index = () => {
                 </div>
 
                 {/* Right Card - High */}
-                <div className="w-[31%] relative z-10 animate-fade-in-up delay-200">
+                <div className="w-[31%] relative z-10 animate-fade-in-stable delay-200">
                   <div className="w-full h-[280px] sm:h-[360px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
                     <img
                       src="/lovable-uploads/countryside-workers-together-field.jpg"
@@ -249,7 +249,7 @@ const Index = () => {
       </section>
 
       {/* DESKTOP HERO SECTION (NEW - ECOLAND STYLE) */}
-      <section className="hidden lg:block relative min-h-[100vh] bg-[#002f37] overflow-hidden">
+      <section className="hidden lg:block relative min-h-[100vh] bg-gray-900/5 overflow-hidden">
         {/* Carousel Background Images */}
         <div className="absolute inset-0 z-0">
           <img
@@ -277,12 +277,12 @@ const Index = () => {
             </h1>
 
             {/* Subheadline */}
-            <p className="text-xl text-gray-200 mb-24 leading-relaxed max-w-2xl animate-fade-in-up delay-100">
+            <p className="text-xl text-gray-200 mb-24 leading-relaxed max-w-2xl animate-fade-in-left delay-100">
               We connect smallholder farmers with AI-driven insights and smart investor matching to revolutionize the agricultural value chain.
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex items-center gap-4 mt-32 animate-fade-in-up delay-200">
+            <div className="flex items-center gap-4 mt-32 animate-fade-in-left delay-200">
               <a href="https://agrilync.netlify.app" target="_blank" rel="noopener noreferrer">
                 <Button className="bg-[#7ede56] hover:bg-[#6ed04c] text-[#002f37] px-8 py-6 text-lg font-bold rounded-full shadow-[0_0_20px_rgba(126,222,86,0.4)] hover:shadow-[0_0_30px_rgba(126,222,86,0.6)] transform hover:scale-105 transition-all duration-300">
                   Join Waitlist
