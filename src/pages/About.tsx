@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import { Users, TrendingUp, Award, Shield, Target, Heart, Lightbulb, Handshake, Eye, Building2, ArrowUp, Rocket, Smartphone, MapPin, Search, Globe, GraduationCap, Sprout, Check } from 'lucide-react';
+import { Users, TrendingUp, Award, Shield, Target, Heart, Lightbulb, Handshake, Eye, Building2, ArrowUp, Rocket, Smartphone, MapPin, Search, Globe, GraduationCap, Sprout, Check, Flag } from 'lucide-react';
 import { Button } from '../components/ui/button'; // Added Button import
 import CountUp from '../components/CountUp';
 
@@ -41,6 +41,7 @@ const About = () => {
   const [howWeDoItRef, howWeDoItVisible] = useScrollReveal();
   const [whyChooseUsRef, whyChooseUsVisible] = useScrollReveal();
   const [roadmapRef, roadmapVisible] = useScrollReveal();
+  const [milestoneRef, milestoneVisible] = useScrollReveal();
   const [mobileAppRef, mobileAppVisible] = useScrollReveal();
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -196,6 +197,24 @@ const About = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Milestones Section */}
+      <section ref={milestoneRef} className={"py-10 sm:py-16 md:py-20 bg-white transition-all duration-700 ease-in-out " + (milestoneVisible ? " animate-fade-in-up" : " opacity-0 text-white")}>
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+          <div className="animate-fade-in-right transition-all duration-700 ease-in-out mb-6">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2" style={{ color: BRAND_TEAL }}>
+              Milestones
+            </h2>
+            <div className="w-16 h-0.5 bg-purple-600"></div>
+          </div>
+
+          <div className="animate-fade-in-left transition-all duration-700 ease-in-out">
+            <p className="text-gray-700 leading-relaxed text-sm sm:text-base max-w-4xl">
+              Founded in October 2024, AgriLync has evolved from a strategic dry run into a comprehensive platform that is actively impacting farmers, investors, and key actors across the agricultural value chain.
+            </p>
           </div>
         </div>
       </section>

@@ -617,3 +617,27 @@
   animation: shineText 3s linear infinite;
   font-weight: 900;
 }
+
+/* Hero Glow Animation for "Smarter Access" */
+@keyframes heroGlow {
+  0% {
+    color: #7ede56;
+    text-shadow: 0 0 10px rgba(126, 222, 86, 0.2);
+  }
+
+  50% {
+    color: #a3f482;
+    text-shadow: 0 0 20px rgba(126, 222, 86, 0.6);
+    transform: scale(1.02);
+  }
+
+  100% {
+    color: #7ede56;
+    text-shadow: 0 0 10px rgba(126, 222, 86, 0.2);
+  }
+}
+
+.animate-hero-glow {
+  display: inline-block;
+  animation: heroGlow 3s ease-in-out infinite;
+}

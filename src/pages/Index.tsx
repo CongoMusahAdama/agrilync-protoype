@@ -158,9 +158,9 @@ const Index = () => {
           <div className="grid grid-cols-1 gap-8 md:gap-12 items-center">
 
             {/* Left Side - Text Content */}
-            <div className="order-2 flex flex-col justify-start animate-fade-in-left -mt-16 sm:-mt-20 md:-mt-24">
+            <div className="order-2 flex flex-col justify-start text-left animate-fade-in-left -mt-16 sm:-mt-20 md:-mt-24">
               <h1 ref={heroHeadingRef} className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-6 sm:mb-8 transition-all duration-700 ease-in-out leading-tight text-gray-800 font-outfit ${heroHeadingVisible ? " animate-fade-in-left" : " opacity-0"}`}>
-                Smarter Access to <span className="text-[#7ede56]">Finance</span> & <span className="text-[#7ede56]">Information</span> Through <span className="text-[#7ede56]">AI</span>
+                <span className="animate-hero-glow">Smarter Access</span> to <span className="text-[#7ede56]">Finance</span> & <span className="text-[#7ede56]">Information</span> Through <span className="text-[#7ede56]">AI</span>
               </h1>
 
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
@@ -270,14 +270,14 @@ const Index = () => {
         <div className="relative z-20 w-full max-w-7xl mx-auto px-8 h-[75vh] flex flex-col justify-center">
           <div className="max-w-3xl pt-[420px]">
             {/* Main Headline */}
-            <h1 className="text-5xl md:text-6xl font-extrabold text-white leading-[1.1] mb-6 animate-fade-in-left">
-              Smarter Access to <br />
+            <h1 className="text-5xl md:text-6xl font-extrabold text-white leading-[1.1] mb-6 text-left animate-fade-in-left">
+              <span className="animate-hero-glow">Smarter Access</span> to <br />
               <span className="text-[#7ede56]">Finance</span> & <span className="text-[#7ede56]">Information</span> <br />
               Through <span className="text-[#7ede56]">AI</span>
             </h1>
 
             {/* Subheadline */}
-            <p className="text-xl text-gray-200 mb-24 leading-relaxed max-w-2xl animate-fade-in-left delay-100">
+            <p className="text-xl text-gray-200 mb-24 leading-relaxed max-w-2xl text-left animate-fade-in-left delay-100">
               We connect smallholder farmers with AI-driven insights and smart investor matching to revolutionize the agricultural value chain.
             </p>
 
