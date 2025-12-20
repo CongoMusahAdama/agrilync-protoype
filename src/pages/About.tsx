@@ -40,8 +40,6 @@ const About = () => {
   const [serve4Ref, serve4Visible] = useScrollReveal();
   const [howWeDoItRef, howWeDoItVisible] = useScrollReveal();
   const [whyChooseUsRef, whyChooseUsVisible] = useScrollReveal();
-  const [roadmapRef, roadmapVisible] = useScrollReveal();
-  const [milestoneRef, milestoneVisible] = useScrollReveal();
   const [mobileAppRef, mobileAppVisible] = useScrollReveal();
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -201,23 +199,7 @@ const About = () => {
         </div>
       </section>
 
-      {/* Milestones Section */}
-      <section ref={milestoneRef} className={"py-10 sm:py-16 md:py-20 bg-white transition-all duration-700 ease-in-out " + (milestoneVisible ? " animate-fade-in-up" : " opacity-0 text-white")}>
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-          <div className="animate-fade-in-right transition-all duration-700 ease-in-out mb-6">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2" style={{ color: BRAND_TEAL }}>
-              Milestones
-            </h2>
-            <div className="w-16 h-0.5 bg-purple-600"></div>
-          </div>
 
-          <div className="animate-fade-in-left transition-all duration-700 ease-in-out">
-            <p className="text-gray-700 leading-relaxed text-sm sm:text-base max-w-4xl">
-              Founded in October 2024, AgriLync has evolved from a strategic dry run into a comprehensive platform that is actively impacting farmers, investors, and key actors across the agricultural value chain.
-            </p>
-          </div>
-        </div>
-      </section>
 
       {/* Vision & Mission Section */}
       <section className="py-10 sm:py-16 md:py-20 bg-white">
@@ -538,76 +520,7 @@ const About = () => {
         </div>
       </section>
 
-      {/* Our Journey to Launch Section */}
-      <section ref={roadmapRef} className={"py-10 sm:py-16 md:py-20 bg-gray-50 overflow-hidden"}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 sm:mb-16">
-            <div className="inline-block px-4 py-1.5 rounded-full bg-[#7ede56]/20 text-[#002f37] font-semibold text-sm mb-4 animate-fade-in-up">
-              Launch Roadmap
-            </div>
-            <h2 className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-4 transition-all duration-700 ease-in-out " + (roadmapVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
-              Our Journey to Launch
-            </h2>
-            <p className={"text-gray-600 max-w-2xl mx-auto transition-all duration-700 ease-in-out " + (roadmapVisible ? " animate-fade-in-up" : " opacity-0")}>
-              Follow our progress as we revolutionize agriculture across Africa, one milestone at a time.
-            </p>
-          </div>
 
-          <div className="relative">
-            {/* Center Vertical Line */}
-            <div className="absolute left-9 md:left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-gray-200 block"></div>
-
-            {/* Timeline Items */}
-            <div className="space-y-8 md:space-y-0 relative">
-              {[
-                { phase: 'PHASE 1', date: 'October 2024', title: 'Problem Release', description: 'Identified and released the core problem statement addressing agricultural inefficiencies.', status: 'completed' },
-                { phase: 'PHASE 2', date: 'Q1 2025', title: 'Dry Run Launch', description: 'Successfully launched our initial dry run to test core system functionalities.', status: 'completed' },
-                { phase: 'PHASE 3', date: 'Q2 2025', title: 'Waitlist Release', description: 'Opened early access waitlist for interested farmers and partners.', status: 'completed' },
-                { phase: 'PHASE 4', date: 'Q3 2025', title: 'Mobile App Development', description: 'Commenced comprehensive development of our mobile application for farmers.', status: 'completed' },
-                { phase: 'PHASE 5', date: 'Q4 2025', title: 'Pilot Regions Launch', description: 'Launching pilot regions for specialized farm partner investments.', status: 'completed' },
-                { phase: 'PHASE 6', date: 'Q1 2026', title: 'Website Launch', description: 'Official launch of the full-featured AgriLync platform website.', status: 'current' },
-                { phase: 'PHASE 7', date: 'Q1 2026', title: 'Agent Training', description: 'Lync Agent lookout and specialized training programs begin.', status: 'upcoming' },
-                { phase: 'PHASE 8', date: 'Q2 2026', title: 'Farmer Onboarding', description: 'Starting farmer onboarding and training in elected pilot regions.', status: 'upcoming' },
-                { phase: 'PHASE 9', date: 'Future', title: 'More to Come', description: 'Continuing to expand our impact and innovate for the future of agriculture.', status: 'upcoming' }
-              ].map((step, index) => (
-                <div key={index} className={`md:flex items-center justify-between w-full mb-4 ${index % 2 === 0 ? 'flex-row-reverse' : ''}`}>
-                  <div className="hidden md:block w-5/12"></div>
-
-                  {/* Center Node */}
-                  <div className={`absolute left-4 md:left-1/2 transform md:-translate-x-1/2 w-10 h-10 rounded-full border-4 shadow-lg z-10 flex items-center justify-center transition-all duration-300 ${step.status === 'completed' ? 'bg-[#7ede56] border-white' : (step.status === 'current' ? 'bg-white border-[#7ede56]' : 'bg-white border-gray-200')}`}>
-                    {step.status === 'completed' && <Check className="w-5 h-5 text-white" />}
-                    {step.status === 'current' && <div className="w-3 h-3 bg-[#7ede56] rounded-full animate-pulse"></div>}
-                    {step.status === 'upcoming' && <div className="w-3 h-3 bg-gray-300 rounded-full"></div>}
-                  </div>
-
-                  {/* Content Card */}
-                  <div className={`w-auto ml-16 md:w-5/12 md:ml-0 p-5 bg-white rounded-xl shadow-md border-0 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-center group ${roadmapVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-                    style={{ transitionDelay: `${index * 150}ms` }}>
-
-                    {/* Phase Label */}
-                    <div className="text-[10px] font-bold uppercase tracking-widest mb-1 text-[#7ede56]">
-                      {step.phase}
-                    </div>
-
-                    {/* Title */}
-                    <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>{step.title}</h3>
-
-                    {/* Description */}
-                    <p className="text-gray-600 text-xs leading-relaxed mb-4">
-                      {step.description}
-                    </p>
-
-                    {/* Date Pill at Bottom */}
-                    <div className="inline-block px-4 py-1.5 rounded-full text-[10px] font-bold bg-[#7ede56]/10 text-[#002f37]">
-                      {step.date}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Mobile App Development Section */}
       <section ref={mobileAppRef} className={"py-10 sm:py-16 md:py-20 bg-white transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0")}>
