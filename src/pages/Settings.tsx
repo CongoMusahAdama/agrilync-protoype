@@ -347,6 +347,7 @@ const Settings = () => {
   const [activeProfileSection, setActiveProfileSection] = useState<string>('personal');
   const [completedSections, setCompletedSections] = useState<string[]>([]);
   const { darkMode, toggleDarkMode } = useDarkMode();
+  const sidebarDarkMode = !darkMode;
   const isMobile = useIsMobile();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -382,8 +383,9 @@ const Settings = () => {
   ];
 
   const SidebarContent = () => (
-    <>
-      <div className={`p-4 border-b ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'}`}>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Logo/App Name */}
+      <div className={`p-4 border-b flex-shrink-0 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <img
@@ -392,15 +394,13 @@ const Settings = () => {
               className="h-8 w-8"
             />
             {(!sidebarCollapsed || isMobile) && (
-              <span className={`text-xl font-bold ${darkMode ? 'text-[#002f37]' : 'text-[#f4ffee]'}`}>
-                AgriLync
-              </span>
+              <span className={`text-xl font-bold ${sidebarDarkMode ? 'text-[#f4ffee]' : 'text-[#002f37]'}`}>AgriLync</span>
             )}
           </div>
           {!isMobile && (
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className={`p-2 rounded-lg ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'} transition-colors`}
+              className={`p-2 rounded-lg ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'} transition-colors`}
             >
               {sidebarCollapsed ? (
                 <ChevronRight className="h-5 w-5" aria-label="Expand sidebar" />
@@ -413,51 +413,46 @@ const Settings = () => {
       </div>
 
       <SidebarProfileCard
-        sidebarCollapsed={sidebarCollapsed}
+        sidebarCollapsed={sidebarCollapsed && !isMobile}
         isMobile={isMobile}
         darkMode={darkMode}
         userType={userType}
       />
 
-      <nav className="flex-1 p-4 space-y-2">
-        {globalSidebarItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <div
-              key={item.key}
-              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === item.key
-                ? 'bg-[#7ede56] text-[#002f37]'
-                : darkMode
-                  ? 'text-[#002f37] hover:bg-gray-100'
-                  : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-                }`}
-              onClick={() => handleSidebarNavigation(item.key)}
-            >
-              <Icon className="h-4 w-4 flex-shrink-0" />
-              {(!sidebarCollapsed || isMobile) && <span className="font-medium">{item.label}</span>}
-            </div>
-          );
-        })}
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        {globalSidebarItems.map((item) => (
+          <div
+            key={item.key}
+            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === item.key
+              ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+              : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
+              }`}
+            onClick={() => handleSidebarNavigation(item.key)}
+          >
+            <item.icon className="h-4 w-4 shrink-0" />
+            {(!sidebarCollapsed || isMobile) && <span className="font-medium">{item.label}</span>}
+          </div>
+        ))}
       </nav>
 
-      <div className={`mt-auto p-4 border-t space-y-2 ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'} ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
+      <div className={`mt-auto p-4 border-t space-y-2 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'} ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
           onClick={toggleDarkMode}
           title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         >
-          {darkMode ? <Sun className="h-4 w-4 flex-shrink-0 text-yellow-500" /> : <Moon className="h-4 w-4 flex-shrink-0 text-gray-400" />}
+          {darkMode ? <Sun className="h-4 w-4 shrink-0 text-yellow-500" /> : <Moon className="h-4 w-4 shrink-0 text-gray-400" />}
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
         </div>
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
           onClick={() => navigate('/')}
         >
-          <ArrowRight className="h-4 w-4 flex-shrink-0" />
+          <ArrowRight className="h-4 w-4 shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Log Out</span>}
         </div>
       </div>
-    </>
+    </div>
   );
 
   const renderProfileSettings = () => {
@@ -684,7 +679,7 @@ const Settings = () => {
                         <Label className={`text-sm font-semibold mb-3 block ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                           Upload ID Document <span className="text-red-500">*</span>
                         </Label>
-                        <div className={`border-2 border-dashed rounded-lg p-8 text-center ${darkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-300 bg-gray-50'}`}>
+                        <div className={`border-2 border-dashed rounded-lg p-8 text-center ${darkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-50 bg-gray-50'}`}>
                           <Upload className={`h-12 w-12 mx-auto mb-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                           <p className={`text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                             Upload a clear photo or scan of your ID document
@@ -1380,7 +1375,7 @@ const Settings = () => {
           <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
             <SheetContent
               side="left"
-              className={`w-[280px] p-0 ${darkMode ? 'bg-white' : 'bg-[#002f37]'} overflow-y-auto`}
+              className={`w-[280px] p-0 ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'} overflow-y-auto`}
             >
               <SidebarContent />
             </SheetContent>
@@ -1388,7 +1383,7 @@ const Settings = () => {
         )}
 
         {!isMobile && (
-          <div className={`${sidebarCollapsed ? 'w-16' : 'w-64'} ${darkMode ? 'bg-white' : 'bg-[#002f37]'} flex-shrink-0 transition-all duration-300 border-r ${darkMode ? 'border-gray-200/60' : 'border-[#00404a]'}`}>
+          <div className={`${sidebarCollapsed ? 'w-16' : 'w-64'} ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'} flex-shrink-0 transition-all duration-300 border-r ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
             <div className="flex flex-col h-full sticky top-0 overflow-hidden">
               <SidebarContent />
             </div>

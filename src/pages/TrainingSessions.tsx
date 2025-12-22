@@ -50,6 +50,7 @@ const TrainingSessions = () => {
   const [regionFilter, setRegionFilter] = useState('all');
   const [modeFilter, setModeFilter] = useState('all');
   const { darkMode, toggleDarkMode } = useDarkMode();
+  const sidebarDarkMode = !darkMode;
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
@@ -310,9 +311,9 @@ const TrainingSessions = () => {
   };
 
   const SidebarContent = () => (
-    <>
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Logo/App Name */}
-      <div className={`p-4 border-b ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'}`}>
+      <div className={`p-4 border-b flex-shrink-0 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <img
@@ -321,13 +322,13 @@ const TrainingSessions = () => {
               className="h-8 w-8"
             />
             {(!sidebarCollapsed || isMobile) && (
-              <span className={`text-xl font-bold ${darkMode ? 'text-[#002f37]' : 'text-[#f4ffee]'}`}>AgriLync</span>
+              <span className={`text-xl font-bold ${sidebarDarkMode ? 'text-[#f4ffee]' : 'text-[#002f37]'}`}>AgriLync</span>
             )}
           </div>
           {!isMobile && (
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className={`p-2 rounded-lg ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'} transition-colors`}
+              className={`p-2 rounded-lg ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'} transition-colors`}
             >
               {sidebarCollapsed ? (
                 <ChevronRight className="h-5 w-5" aria-label="Expand sidebar" />
@@ -340,7 +341,7 @@ const TrainingSessions = () => {
       </div>
 
       <SidebarProfileCard
-        sidebarCollapsed={sidebarCollapsed}
+        sidebarCollapsed={sidebarCollapsed && !isMobile}
         isMobile={isMobile}
         darkMode={darkMode}
         userType={userType}
@@ -348,102 +349,101 @@ const TrainingSessions = () => {
 
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'dashboard'
-            ? 'bg-[#7ede56] text-[#002f37]'
-            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'dashboard'
+            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
             }`}
           onClick={() => handleSidebarNavigation('dashboard')}
         >
-          <Activity className="h-4 w-4 flex-shrink-0" />
+          <Activity className="h-4 w-4 shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Dashboard</span>}
         </div>
 
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'farm-management'
-            ? 'bg-[#7ede56] text-[#002f37]'
-            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'farm-management'
+            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
             }`}
           onClick={() => handleSidebarNavigation('farm-management')}
         >
-          <MapPin className="h-4 w-4 flex-shrink-0" />
+          <Leaf className="h-4 w-4 shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Farm Management</span>}
         </div>
 
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'farm-analytics'
-            ? 'bg-[#7ede56] text-[#002f37]'
-            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'farm-analytics'
+            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
             }`}
           onClick={() => handleSidebarNavigation('farm-analytics')}
         >
-          <BarChart3 className="h-4 w-4 flex-shrink-0" />
+          <BarChart3 className="h-4 w-4 shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Farm Analytics</span>}
         </div>
 
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'investor-matches'
-            ? 'bg-[#7ede56] text-[#002f37]'
-            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'investor-matches'
+            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
             }`}
           onClick={() => handleSidebarNavigation('investor-matches')}
         >
-          <Users className="h-4 w-4 flex-shrink-0" />
+          <Users className="h-4 w-4 shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Investor Matches</span>}
         </div>
 
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'training-sessions'
-            ? 'bg-[#7ede56] text-[#002f37]'
-            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'training-sessions'
+            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
             }`}
           onClick={() => handleSidebarNavigation('training-sessions')}
         >
-          <Calendar className="h-4 w-4 flex-shrink-0" />
+          <Calendar className="h-4 w-4 shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Training Sessions</span>}
         </div>
 
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'notifications'
-            ? 'bg-[#7ede56] text-[#002f37]'
-            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'notifications'
+            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
             }`}
           onClick={() => handleSidebarNavigation('notifications')}
         >
-          <Bell className="h-4 w-4 flex-shrink-0" />
+          <Bell className="h-4 w-4 shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Notifications</span>}
         </div>
 
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'settings'
-            ? 'bg-[#7ede56] text-[#002f37]'
-            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'settings'
+            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
             }`}
           onClick={() => handleSidebarNavigation('settings')}
         >
-          <Settings className="h-4 w-4 flex-shrink-0" />
+          <Settings className="h-4 w-4 shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Profile & Settings</span>}
         </div>
       </nav>
 
-      {/* Log Out - Sticky at bottom */}
-      <div className={`mt-auto p-4 border-t space-y-2 ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'} sticky bottom-0 ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
+      <div className={`mt-auto p-4 border-t space-y-2 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'} ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
           onClick={toggleDarkMode}
           title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         >
-          {darkMode ? <Sun className="h-4 w-4 flex-shrink-0 text-yellow-500" /> : <Moon className="h-4 w-4 flex-shrink-0 text-gray-400" />}
+          {darkMode ? <Sun className="h-4 w-4 shrink-0 text-yellow-500" /> : <Moon className="h-4 w-4 shrink-0 text-gray-400" />}
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
         </div>
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
           onClick={() => navigate('/')}
         >
-          <ArrowRight className="h-4 w-4 flex-shrink-0" />
+          <ArrowRight className="h-4 w-4 shrink-0" />
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Log Out</span>}
         </div>
       </div>
-    </>
+    </div>
   );
 
   return (
@@ -451,19 +451,14 @@ const TrainingSessions = () => {
       <div className="flex h-full">
         {isMobile && (
           <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-            <SheetContent
-              side="left"
-              className={`w-[280px] p-0 ${darkMode ? 'bg-white' : 'bg-[#002f37]'} overflow-y-auto`}
-            >
-              <div className="flex flex-col h-full">
-                <SidebarContent />
-              </div>
+            <SheetContent side="left" className={`w-[280px] p-0 ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
+              <SidebarContent />
             </SheetContent>
           </Sheet>
         )}
 
         {!isMobile && (
-          <div className={`${sidebarCollapsed ? 'w-16' : 'w-64'} ${darkMode ? 'bg-white' : 'bg-[#002f37]'} flex-shrink-0 transition-all duration-300 border-r ${darkMode ? 'border-gray-200/60' : 'border-[#00404a]'}`}>
+          <div className={`${sidebarCollapsed ? 'w-16' : 'w-64'} ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'} flex-shrink-0 transition-all duration-300 border-r ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
             <div className="flex flex-col h-full sticky top-0 overflow-hidden">
               <SidebarContent />
             </div>

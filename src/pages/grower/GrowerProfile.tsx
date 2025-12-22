@@ -36,6 +36,7 @@ import {
 const GrowerProfile: React.FC = () => {
     const navigate = useNavigate();
     const { darkMode, toggleDarkMode } = useDarkMode();
+    const sidebarDarkMode = !darkMode;
     const isMobile = useIsMobile();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -81,8 +82,9 @@ const GrowerProfile: React.FC = () => {
     };
 
     const SidebarContent = () => (
-        <>
-            <div className={`p-4 border-b ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'}`}>
+        <div className="flex flex-col h-full overflow-hidden">
+            {/* Logo/App Name */}
+            <div className={`p-4 border-b flex-shrink-0 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
                 <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                         <img
@@ -91,15 +93,13 @@ const GrowerProfile: React.FC = () => {
                             className="h-8 w-8"
                         />
                         {(!sidebarCollapsed || isMobile) && (
-                            <span className={`text-xl font-bold ${darkMode ? 'text-[#002f37]' : 'text-[#f4ffee]'}`}>
-                                AgriLync
-                            </span>
+                            <span className={`text-xl font-bold ${sidebarDarkMode ? 'text-[#f4ffee]' : 'text-[#002f37]'}`}>AgriLync</span>
                         )}
                     </div>
                     {!isMobile && (
                         <button
                             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                            className={`p-2 rounded-lg ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'} transition-colors`}
+                            className={`p-2 rounded-lg ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'} transition-colors`}
                         >
                             {sidebarCollapsed ? (
                                 <ChevronRight className="h-5 w-5" aria-label="Expand sidebar" />
@@ -113,51 +113,46 @@ const GrowerProfile: React.FC = () => {
 
 
             <SidebarProfileCard
-                sidebarCollapsed={sidebarCollapsed}
+                sidebarCollapsed={sidebarCollapsed && !isMobile}
                 isMobile={isMobile}
                 darkMode={darkMode}
                 userType="grower"
             />
 
-            <nav className="flex-1 p-4 space-y-2">
-                {globalSidebarItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                        <div
-                            key={item.key}
-                            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 text-sm ${activeSidebarItem === item.key
-                                ? 'bg-[#7ede56] text-[#002f37]'
-                                : darkMode
-                                    ? 'text-[#002f37] hover:bg-gray-100'
-                                    : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
-                                }`}
-                            onClick={() => handleSidebarNavigation(item.key)}
-                        >
-                            <Icon className="h-4 w-4 flex-shrink-0" />
-                            {(!sidebarCollapsed || isMobile) && <span className="font-medium">{item.label}</span>}
-                        </div>
-                    );
-                })}
+            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+                {globalSidebarItems.map((item) => (
+                    <div
+                        key={item.key}
+                        className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === item.key
+                            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+                            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
+                            }`}
+                        onClick={() => handleSidebarNavigation(item.key)}
+                    >
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        {(!sidebarCollapsed || isMobile) && <span className="font-medium">{item.label}</span>}
+                    </div>
+                ))}
             </nav>
 
-            <div className={`mt-auto p-4 border-t space-y-2 ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'} ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
+            <div className={`mt-auto p-4 border-t space-y-2 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'} ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
                 <div
-                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
+                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
                     onClick={toggleDarkMode}
                     title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                 >
-                    {darkMode ? <Sun className="h-4 w-4 flex-shrink-0 text-yellow-500" /> : <Moon className="h-4 w-4 flex-shrink-0 text-gray-400" />}
+                    {darkMode ? <Sun className="h-4 w-4 shrink-0 text-yellow-500" /> : <Moon className="h-4 w-4 shrink-0 text-gray-400" />}
                     {(!sidebarCollapsed || isMobile) && <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
                 </div>
                 <div
-                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'}`}
+                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
                     onClick={() => navigate('/')}
                 >
-                    <LogOut className="h-4 w-4 flex-shrink-0" />
+                    <LogOut className="h-4 w-4 shrink-0" />
                     {(!sidebarCollapsed || isMobile) && <span className="font-medium">Log Out</span>}
                 </div>
             </div>
-        </>
+        </div>
     );
 
     return (
@@ -165,24 +160,15 @@ const GrowerProfile: React.FC = () => {
             <div className="flex h-full">
                 {isMobile && (
                     <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-                        <SheetContent
-                            side="left"
-                            className={`w-[280px] p-0 ${darkMode ? 'bg-white' : 'bg-[#002f37]'} overflow-y-auto`}
-                        >
-                            <div className="flex h-full flex-col">
-                                <SidebarContent />
-                            </div>
+                        <SheetContent side="left" className={`w-[280px] p-0 ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
+                            <SidebarContent />
                         </SheetContent>
                     </Sheet>
                 )}
 
                 {!isMobile && (
-                    <div
-                        className={`${sidebarCollapsed ? 'w-16' : 'w-64'} ${darkMode ? 'bg-white' : 'bg-[#002f37]'
-                            } flex-shrink-0 border-r transition-all duration-300 ${darkMode ? 'border-gray-200/60' : 'border-[#00404a]'
-                            } fixed left-0 top-0 h-screen z-30`}
-                    >
-                        <div className="flex h-full flex-col">
+                    <div className={`${sidebarCollapsed ? 'w-16' : 'w-64'} ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'} flex-shrink-0 transition-all duration-300 border-r ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
+                        <div className="flex flex-col h-full sticky top-0 overflow-hidden">
                             <SidebarContent />
                         </div>
                     </div>

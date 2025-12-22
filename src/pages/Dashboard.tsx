@@ -56,6 +56,7 @@ const Dashboard = () => {
   const { userType } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  // For grower dashboard, sidebar is always expanded (static)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSidebarItem, setActiveSidebarItem] = useState('dashboard');
   const [isLoaded, setIsLoaded] = useState(false);
@@ -64,6 +65,7 @@ const Dashboard = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [farmStage, setFarmStage] = useState<string>('planning');
   const { darkMode, toggleDarkMode } = useDarkMode();
+  const sidebarDarkMode = !darkMode;
   const isMobile = useIsMobile();
 
   // Show welcome modal on first login (check localStorage)
@@ -108,37 +110,6 @@ const Dashboard = () => {
         break;
       case 'notifications':
         navigate(`/dashboard/${userType}/notifications`);
-        break;
-      case 'settings':
-        navigate(`/dashboard/${userType}/settings`);
-        break;
-      default:
-        navigate(`/dashboard/${userType}`);
-    }
-    switch (item) {
-      case 'dashboard':
-        navigate(`/dashboard/${userType}`);
-        break;
-      case 'settings':
-        navigate(`/dashboard/${userType}/settings`);
-        break;
-      case 'farm-analytics':
-        navigate(`/dashboard/${userType}/farm-analytics`);
-        break;
-      case 'investor-matches':
-        navigate(`/dashboard/${userType}/investor-matches`);
-        break;
-      case 'training-sessions':
-        navigate(`/dashboard/${userType}/training-sessions`);
-        break;
-      case 'farm-management':
-        navigate(`/dashboard/${userType}/farm-management`);
-        break;
-      case 'notifications':
-        navigate(`/dashboard/${userType}/notifications`);
-        break;
-      case 'settings':
-        navigate(`/dashboard/${userType}/settings`);
         break;
       default:
         navigate(`/dashboard/${userType}`);
@@ -480,7 +451,7 @@ const Dashboard = () => {
   const SidebarContent = () => (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Logo/App Name */}
-      <div className={`p-4 border-b flex-shrink-0 ${darkMode ? 'border-gray-200' : 'border-[#002f37] border-opacity-20'}`}>
+      <div className={`p-4 border-b flex-shrink-0 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <img
@@ -489,13 +460,14 @@ const Dashboard = () => {
               className="h-8 w-8"
             />
             {(!sidebarCollapsed || isMobile) && (
-              <span className={`text-xl font-bold ${darkMode ? 'text-[#002f37]' : 'text-[#f4ffee]'}`}>AgriLync</span>
+              <span className={`text-xl font-bold ${sidebarDarkMode ? 'text-[#f4ffee]' : 'text-[#002f37]'}`}>AgriLync</span>
             )}
           </div>
-          {!isMobile && (
+          {/* Collapse button hidden for grower dashboard - sidebar is static */}
+          {!isMobile && userType !== 'grower' && (
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className={`p-2 rounded-lg ${darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'} transition-colors`}
+              className={`p-2 rounded-lg ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'} transition-colors`}
             >
               {sidebarCollapsed ? (
                 <ChevronRight className="h-5 w-5" aria-label="Expand sidebar" />
@@ -514,11 +486,12 @@ const Dashboard = () => {
         userType={userType}
       />
 
+      {/* Navigation - static layout with no shifting on click */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'dashboard'
-            ? 'bg-[#7ede56] text-[#002f37]'
-            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'dashboard'
+            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
             }`}
           onClick={() => handleSidebarNavigation('dashboard')}
         >
@@ -527,9 +500,9 @@ const Dashboard = () => {
         </div>
 
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'farm-management'
-            ? 'bg-[#7ede56] text-[#002f37]'
-            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'farm-management'
+            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
             }`}
           onClick={() => handleSidebarNavigation('farm-management')}
         >
@@ -538,9 +511,9 @@ const Dashboard = () => {
         </div>
 
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'farm-analytics'
-            ? 'bg-[#7ede56] text-[#002f37]'
-            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'farm-analytics'
+            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
             }`}
           onClick={() => handleSidebarNavigation('farm-analytics')}
         >
@@ -549,9 +522,9 @@ const Dashboard = () => {
         </div>
 
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'investor-matches'
-            ? 'bg-[#7ede56] text-[#002f37]'
-            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'investor-matches'
+            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
             }`}
           onClick={() => handleSidebarNavigation('investor-matches')}
         >
@@ -560,9 +533,9 @@ const Dashboard = () => {
         </div>
 
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'training-sessions'
-            ? 'bg-[#7ede56] text-[#002f37]'
-            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'training-sessions'
+            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
             }`}
           onClick={() => handleSidebarNavigation('training-sessions')}
         >
@@ -571,9 +544,9 @@ const Dashboard = () => {
         </div>
 
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'notifications'
-            ? 'bg-[#7ede56] text-[#002f37]'
-            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'notifications'
+            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
             }`}
           onClick={() => handleSidebarNavigation('notifications')}
         >
@@ -582,9 +555,9 @@ const Dashboard = () => {
         </div>
 
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === 'settings'
-            ? 'bg-[#7ede56] text-[#002f37]'
-            : darkMode ? 'text-[#002f37] hover:bg-gray-100' : 'text-[#f4ffee] hover:bg-[#002f37] hover:bg-opacity-80'
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'settings'
+            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
+            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
             }`}
           onClick={() => handleSidebarNavigation('settings')}
         >
@@ -592,6 +565,24 @@ const Dashboard = () => {
           {(!sidebarCollapsed || isMobile) && <span className="font-medium">Profile & Settings</span>}
         </div>
       </nav>
+
+      <div className={`mt-auto p-4 border-t space-y-2 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'} ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
+          onClick={toggleDarkMode}
+          title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {darkMode ? <Sun className="h-4 w-4 shrink-0 text-yellow-500" /> : <Moon className="h-4 w-4 shrink-0 text-gray-400" />}
+          {(!sidebarCollapsed || isMobile) && <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
+        </div>
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
+          onClick={() => navigate('/')}
+        >
+          <ArrowRight className="h-4 w-4 shrink-0" />
+          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Log Out</span>}
+        </div>
+      </div>
     </div>
   );
 
@@ -602,17 +593,17 @@ const Dashboard = () => {
         {/* Mobile Sidebar */}
         {isMobile && (
           <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-            <SheetContent side="left" className={`w-[280px] p-0 ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
+            <SheetContent side="left" className={`w-[280px] p-0 ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
               <SidebarContent />
             </SheetContent>
           </Sheet>
         )}
 
-        {/* Desktop Sidebar */}
+        {/* Desktop Sidebar - Static for grower (no transitions), collapsible for others */}
         {!isMobile && (
-          <div className={`${sidebarCollapsed ? 'w-16' : 'w-64'} ${darkMode ? 'bg-white' : 'bg-[#002f37]'} flex-shrink-0 transition-all duration-300 border-r ${darkMode ? 'border-gray-200/60' : 'border-[#00404a]'}`}>
+          <div className={`${userType === 'grower' ? 'w-64' : (sidebarCollapsed ? 'w-16' : 'w-64')} ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'} flex-shrink-0 ${userType !== 'grower' ? 'transition-all duration-300' : ''} border-r ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
             <div className="fixed h-full bg-inherit z-10">
-              <div style={{ width: sidebarCollapsed ? '4rem' : '16rem' }} className="h-full transition-[width] duration-300">
+              <div style={{ width: userType === 'grower' ? '16rem' : (sidebarCollapsed ? '4rem' : '16rem') }} className={`h-full ${userType !== 'grower' ? 'transition-[width] duration-300' : ''}`}>
                 <SidebarContent />
               </div>
             </div>
@@ -650,7 +641,7 @@ const Dashboard = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className={`flex items-center gap-2 ${darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white' : ''}`}
+                  className={`flex items-center gap-2 ${darkMode ? 'bg-transparent border-gray-600 text-white hover:bg-gray-800 hover:text-white' : ''}`}
                   onClick={() => navigate(`/dashboard/${userType}/notifications`)}
                 >
                   <Bell className="h-4 w-4" />
@@ -824,7 +815,12 @@ const Dashboard = () => {
                     </p>
                   </div>
                   <div className="flex justify-end mt-4">
-                    <a href="#" className="text-sm font-medium text-white hover:underline">View matches</a>
+                    <button
+                      onClick={() => navigate(`/dashboard/${userType}/investor-matches`)}
+                      className="text-sm font-medium text-white hover:underline bg-transparent border-none p-0 cursor-pointer"
+                    >
+                      View matches
+                    </button>
                   </div>
                 </div>
               </Card>
@@ -849,7 +845,12 @@ const Dashboard = () => {
                     </p>
                   </div>
                   <div className="flex justify-end mt-4">
-                    <a href="#" className="text-sm font-medium text-white hover:underline">View sessions</a>
+                    <button
+                      onClick={() => navigate(`/dashboard/${userType}/training-sessions`)}
+                      className="text-sm font-medium text-white hover:underline bg-transparent border-none p-0 cursor-pointer"
+                    >
+                      View sessions
+                    </button>
                   </div>
                 </div>
               </Card>
@@ -898,7 +899,12 @@ const Dashboard = () => {
                     </p>
                   </div>
                   <div className="flex justify-end mt-4">
-                    <a href="#" className="text-sm font-medium text-white hover:underline">View investments</a>
+                    <button
+                      onClick={() => navigate(`/dashboard/${userType}/investor-matches?tab=investments`)}
+                      className="text-sm font-medium text-white hover:underline bg-transparent border-none p-0 cursor-pointer"
+                    >
+                      View investments
+                    </button>
                   </div>
                 </div>
               </Card>
@@ -1339,7 +1345,7 @@ const Dashboard = () => {
                     <CardContent>
                       <div className="grid grid-cols-2 gap-4">
                         <Button
-                          className={`h-20 flex flex-col gap-2 ${darkMode ? 'text-white' : 'text-[#002f37]'}`}
+                          className={`h-20 flex flex-col gap-2 ${darkMode ? 'bg-[#01424d] !text-white hover:bg-[#02596b]' : 'text-[#002f37]'}`}
                           onClick={() => {
                             if (userType === 'farmer' || userType === 'grower') {
                               navigate(`/dashboard/${userType}/farm-management?create=true`);
@@ -1348,8 +1354,8 @@ const Dashboard = () => {
                             }
                           }}
                         >
-                          <Plus className={`h-5 w-5 ${darkMode ? 'text-white' : ''}`} />
-                          <span className={`text-sm ${darkMode ? 'text-white' : ''}`}>
+                          <Plus className={`h-5 w-5 ${darkMode ? '!text-white' : ''}`} />
+                          <span className={`text-sm ${darkMode ? '!text-white' : ''}`}>
                             {userType === 'farmer' ? `Add ${getFarmTypeLabelSingular()}` : userType === 'investor' ? 'New Investment' : userType === 'agent' ? 'Add Farmer' : 'Create a project for your farm'}
                           </span>
                         </Button>
