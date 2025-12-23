@@ -70,7 +70,7 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
       description={subtitle}
       headerActions={headerActions}
     >
-      <div className="space-y-8 px-3 py-6 sm:px-6">
+      <div className="space-y-8 px-2 py-4 sm:px-6 sm:py-8">
         {children}
       </div>
     </DashboardLayout>

@@ -47,7 +47,7 @@ const AgentNotifications: React.FC = () => {
       activeSection="notifications"
       title="Notifications & Updates"
     >
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="space-y-8">
         {/* Summary Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {summaryCards.map((card, idx) => (

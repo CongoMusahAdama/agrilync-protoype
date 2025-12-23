@@ -64,6 +64,23 @@ export const TrainingPerformanceContent = () => {
   const { darkMode } = useDarkMode();
   const [trainingFilter, setTrainingFilter] = useState('all');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [consultationRequests, setConsultationRequests] = useState([
+    { id: 1, farmer: 'Kwame Mensah', region: 'Ashanti', mode: 'In-person', date: '2024-11-15', time: '10:00 AM', status: 'Pending', purpose: 'Cocoa Farm Inspection' },
+    { id: 2, farmer: 'Ama Serwaa', region: 'Ashanti', mode: 'Virtual', date: '2024-11-16', time: '2:00 PM', status: 'Pending', purpose: 'Pest Control Advice' },
+    { id: 3, farmer: 'Kofi Boateng', region: 'Ashanti', mode: 'In-person', date: '2024-11-18', time: '9:00 AM', status: 'Confirmed', purpose: 'Soil Testing' },
+  ]);
+
+  const handleConsultationAction = (id: number, action: 'accept' | 'decline' | 'reschedule') => {
+    setConsultationRequests(prev => prev.map(req => {
+      if (req.id === id) {
+        if (action === 'accept') return { ...req, status: 'Confirmed' };
+        if (action === 'decline') return { ...req, status: 'Declined' };
+        // Reschedule logic would typically open a modal, simplifying for now
+        if (action === 'reschedule') return { ...req, status: 'Reschedule Requested' };
+      }
+      return req;
+    }));
+  };
 
   React.useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
@@ -77,13 +94,13 @@ export const TrainingPerformanceContent = () => {
   const summaryCards = [
     { title: 'Available', value: '12', icon: GraduationCap, color: 'bg-blue-600' },
     { title: 'Upcoming', value: '3', icon: Calendar, color: 'bg-orange-600' },
-    { title: 'Completed', value: '5', icon: CheckCircle, color: 'bg-emerald-600' },
+    { title: 'Consultations', value: '8', icon: Handshake, color: 'bg-teal-600' }, // New Metric Card
     { title: 'Score', value: '89%', icon: TrendingUp, color: 'bg-purple-600' },
     { title: 'Reports', value: '48', icon: FileText, color: 'bg-indigo-600' },
   ];
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-8">
       {/* 1. Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-6">
         {summaryCards.map((card, idx) => (
@@ -113,6 +130,89 @@ export const TrainingPerformanceContent = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column (2/3 width) */}
         <div className="lg:col-span-2 space-y-8">
+          {/* Incoming Consultation Requests Section */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Incoming Consultation Requests</h2>
+            </div>
+            <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} overflow-hidden`}>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className={darkMode ? 'bg-gray-800/50' : 'bg-gray-50'}>
+                    <TableRow className={darkMode ? 'border-gray-800 hover:bg-transparent' : 'border-gray-100 hover:bg-transparent'}>
+                      <TableHead className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Farmer</TableHead>
+                      <TableHead className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Purpose & location</TableHead>
+                      <TableHead className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Date & Time</TableHead>
+                      <TableHead className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Mode</TableHead>
+                      <TableHead className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Status</TableHead>
+                      <TableHead className={`text-right ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {consultationRequests.map((req) => (
+                      <TableRow key={req.id} className={darkMode ? 'border-gray-800 hover:bg-gray-800/20' : 'border-gray-50 hover:bg-gray-50'}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-3">
+                            <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                              {req.farmer.split(' ').map(n => n[0]).join('')}
+                            </div>
+                            <span className={darkMode ? 'text-gray-200' : 'text-gray-900'}>{req.farmer}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className={`text-xs font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{req.purpose}</span>
+                            <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{req.region}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className={`flex flex-col text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            <span>{req.date}</span>
+                            <span>{req.time}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={`text-[10px] ${req.mode === 'Virtual' ? 'border-purple-500 text-purple-500' : 'border-blue-500 text-blue-500'}`}>
+                            {req.mode}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={`text-[10px] ${req.status === 'Confirmed' ? 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20' :
+                              req.status === 'Declined' ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20' :
+                                req.status === 'Reschedule Requested' ? 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20' :
+                                  'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20'
+                            }`}>
+                            {req.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {req.status === 'Pending' && (
+                            <div className="flex justify-end gap-2">
+                              <Button size="sm" className="h-7 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px]" onClick={() => handleConsultationAction(req.id, 'accept')}>
+                                Accept
+                              </Button>
+                              <Button size="sm" variant="outline" className="h-7 border-red-500 text-red-500 hover:bg-red-500/10 text-[10px]" onClick={() => handleConsultationAction(req.id, 'decline')}>
+                                Decline
+                              </Button>
+                              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleConsultationAction(req.id, 'reschedule')}>
+                                <Clock className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          {req.status !== 'Pending' && (
+                            <span className={`text-xs italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                              {req.status === 'Confirmed' ? 'Scheduled' : 'Action Taken'}
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </Card>
+          </section>
+
 
           {/* 2. Available Trainings List */}
           <section>

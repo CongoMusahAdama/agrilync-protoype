@@ -264,13 +264,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                         </button>
 
                                         {/* AI Advisory Action - Circular Center Button */}
-                                        <div className="relative -top-5 px-1">
+                                        <div className="relative -top-4 sm:-top-5 px-1">
                                             <button
                                                 onClick={() => navigate(`/dashboard/grower/training-sessions?tab=advisory`)}
-                                                className="h-14 w-14 rounded-full bg-[#7ede56] shadow-lg flex items-center justify-center text-[#002f37] border-4 border-[#002f37] active:scale-90 transition-transform group"
+                                                className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-[#7ede56] shadow-lg flex items-center justify-center text-[#002f37] border-4 border-[#002f37] active:scale-90 transition-transform group"
                                             >
                                                 <div className="bg-[#002f37] rounded-full p-2 group-hover:bg-[#003c47] transition-colors">
-                                                    <Bot className="h-6 w-6 text-[#7ede56]" />
+                                                    <Bot className="h-5 w-5 sm:h-6 sm:w-6 text-[#7ede56]" />
                                                 </div>
                                             </button>
                                         </div>

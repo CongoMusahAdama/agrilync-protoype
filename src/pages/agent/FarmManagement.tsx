@@ -221,7 +221,7 @@ const FarmManagement: React.FC = () => {
             activeSection="farm-management"
             title="Farm Management"
         >
-            <div className="max-w-7xl mx-auto space-y-8">
+            <div className="space-y-8">
                 {/* Summary Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
                     {[
