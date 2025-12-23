@@ -59,7 +59,6 @@ const FarmMonitoring: React.FC = () => {
     <AgentLayout
       activeSection="farm-monitoring"
       title="Farm Monitoring"
-      subtitle="Plan field visits, verify farm status, and keep investor reports up to date."
     >
       <Card className={`transition-colors ${cardClass}`}>
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

@@ -77,14 +77,12 @@ const FarmersManagement: React.FC = () => {
     <AgentLayout
       activeSection="farmers-management"
       title="Farmers Management"
-      subtitle="Verify, onboard, and support the growers under your supervision."
       headerActions={headerActions}
     >
       <Card className={`transition-colors ${cardClass}`}>
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className={`text-xl ${titleClass}`}>Grower Directory</CardTitle>
-            <CardDescription className={descClass}>Filter by region, verification status, or farm type to triage tasks quickly.</CardDescription>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative w-full sm:w-64">

@@ -403,7 +403,7 @@ const AgentDashboard: React.FC = () => {
               ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
               : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
           >
-            Farmers
+            Directory
           </TabsTrigger>
           <TabsTrigger
             value="farms"
@@ -411,7 +411,7 @@ const AgentDashboard: React.FC = () => {
               ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
               : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
           >
-            Farms
+            Field Ops
           </TabsTrigger>
           <TabsTrigger
             value="matches"
@@ -419,7 +419,7 @@ const AgentDashboard: React.FC = () => {
               ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
               : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
           >
-            Matches
+            Partnerships
           </TabsTrigger>
           <TabsTrigger
             value="performance"
@@ -427,7 +427,7 @@ const AgentDashboard: React.FC = () => {
               ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
               : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
           >
-            Performance
+            Training & Perf.
           </TabsTrigger>
         </TabsList>
 

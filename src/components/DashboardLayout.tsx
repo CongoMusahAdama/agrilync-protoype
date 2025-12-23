@@ -89,13 +89,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                 onNavigate={(item) => {
                                     setMobileSidebarOpen(false);
                                     const routes: Record<string, string> = {
-                                        'dashboard': `/dashboard/${userType}`,
-                                        'settings': `/dashboard/${userType}/settings`,
+                                        'dashboard': userType === 'agent' ? '/dashboard/agent' : `/dashboard/${userType}`,
+                                        'settings': userType === 'agent' ? '/dashboard/agent/profile' : `/dashboard/${userType}/settings`,
                                         'farm-analytics': `/dashboard/${userType}/farm-analytics`,
-                                        'investor-matches': `/dashboard/${userType}/investor-matches`,
-                                        'training-sessions': `/dashboard/${userType}/training-sessions`,
-                                        'farm-management': `/dashboard/${userType}/farm-management`,
-                                        'notifications': `/dashboard/${userType}/notifications`
+                                        'investor-matches': userType === 'agent' ? '/dashboard/agent/investor-farmer-matches' : `/dashboard/${userType}/investor-matches`,
+                                        'training-sessions': userType === 'agent' ? '/dashboard/agent/training-performance' : `/dashboard/${userType}/training-sessions`,
+                                        'farm-management': userType === 'agent' ? '/dashboard/agent/farm-management' : `/dashboard/${userType}/farm-management`,
+                                        'notifications': userType === 'agent' ? '/dashboard/agent/notifications-center' : `/dashboard/${userType}/notifications`,
+                                        'farmers-management': '/dashboard/agent/farmers-management',
+                                        'dispute-management': '/dashboard/agent/dispute-management',
                                     };
                                     if (routes[item]) {
                                         navigate(routes[item]);

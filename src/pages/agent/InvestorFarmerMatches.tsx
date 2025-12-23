@@ -161,7 +161,7 @@ const mockIssues = [
   { id: 104, farmer: 'Kwesi D.', investor: 'FarmersFirst', type: 'Payment delay', date: '15 Oct', severity: 'Low', status: 'Resolved' },
 ];
 
-const InvestorFarmerMatchesDashboard = () => {
+const InvestorFarmerMatchesDashboard: React.FC = () => {
   const { darkMode } = useDarkMode();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -175,6 +175,12 @@ const InvestorFarmerMatchesDashboard = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [updateNotes, setUpdateNotes] = useState('');
   const [activeTab, setActiveTab] = useState<'matches' | 'issues'>('matches');
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Calculate metrics
   const totalMatches = mockMatches.length;
@@ -271,96 +277,40 @@ const InvestorFarmerMatchesDashboard = () => {
     <AgentLayout
       activeSection="investor-farmer-matches"
       title="Investor Matches"
-      subtitle="Find and manage investor-farmer partnerships in your region"
     >
       <div className={`p-6 space-y-6 min-h-screen ${darkMode ? 'bg-[#081a1c]' : 'bg-gray-50'}`}>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${activeMetricFilter === 'total' ? 'ring-2 ring-white' : ''} bg-[#7c3aed]`}
-            onClick={() => handleMetricClick('total')}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-white/20">
-                  <Briefcase className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">{totalMatches}</p>
-                  <p className="text-xs text-white/80">Total Matches</p>
-                </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
+          {[
+            { label: 'Total Matches', value: totalMatches, icon: Briefcase, color: 'bg-purple-600', filter: 'total' },
+            { label: 'Pending Updates', value: pendingMatches, icon: RefreshCw, color: 'bg-orange-600', filter: 'pending' },
+            { label: 'Active Projects', value: activeInvestments, icon: DollarSign, color: 'bg-emerald-600', filter: 'active' },
+            { label: 'Completed', value: completedPartnerships, icon: CheckCircle, color: 'bg-blue-600', filter: 'completed' },
+            { label: 'Flagged Issues', value: flaggedIssues, icon: AlertTriangle, color: 'bg-red-600', filter: 'flagged' },
+          ].map((item, index) => (
+            <Card
+              key={item.label}
+              className={`${item.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-700 relative overflow-hidden ${activeMetricFilter === item.filter ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent' : ''} ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              style={{ transitionDelay: `${index * 100}ms` }}
+              onClick={() => handleMetricClick(item.filter)}
+            >
+              {/* Background Decoration */}
+              <div className="absolute inset-0 opacity-10 pointer-events-none">
+                <item.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
               </div>
-            </CardContent>
-          </Card>
 
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${activeMetricFilter === 'pending' ? 'ring-2 ring-white' : ''} bg-[#f97316]`}
-            onClick={() => handleMetricClick('pending')}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-white/20">
-                  <RefreshCw className="h-5 w-5 text-white" />
+              <div className="p-3 sm:p-5 flex flex-col h-full relative z-10 text-left">
+                <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
+                  <item.icon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                  <p className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">{item.label}</p>
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">{pendingMatches}</p>
-                  <p className="text-xs text-white/80">Pending</p>
+                <div className="flex-1 flex items-center">
+                  <p className="text-2xl sm:text-4xl font-bold text-white">{item.value}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${activeMetricFilter === 'active' ? 'ring-2 ring-white' : ''} bg-[#1db954]`}
-            onClick={() => handleMetricClick('active')}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-white/20">
-                  <DollarSign className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">{activeInvestments}</p>
-                  <p className="text-xs text-white/80">Active Projects</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${activeMetricFilter === 'completed' ? 'ring-2 ring-white' : ''} bg-[#3b82f6]`}
-            onClick={() => handleMetricClick('completed')}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-white/20">
-                  <CheckCircle className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">{completedPartnerships}</p>
-                  <p className="text-xs text-white/80">Completed</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${activeMetricFilter === 'flagged' ? 'ring-2 ring-white' : ''} bg-[#ef4444]`}
-            onClick={() => handleMetricClick('flagged')}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-white/20">
-                  <AlertTriangle className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">{flaggedIssues}</p>
-                  <p className="text-xs text-white/80">Active Disputes</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            </Card>
+          ))}
         </div>
 
         {/* Search, Filter & Sorting Bar */}
@@ -461,19 +411,19 @@ const InvestorFarmerMatchesDashboard = () => {
 
         {/* Matches and Issues Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'matches' | 'issues')} className="w-full">
-          <TabsList className={`grid w-full grid-cols-2 mb-4 ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-100'}`}>
+          <TabsList className={`flex w-full mb-6 p-1 gap-1 rounded-xl h-auto ${darkMode ? 'bg-[#0b2528] border border-[#1b5b65]' : 'bg-gray-100 border border-gray-200 shadow-sm'}`}>
             <TabsTrigger
               value="matches"
-              className={`${darkMode ? 'data-[state=active]:bg-[#1b5b65] data-[state=active]:text-white' : ''}`}
+              className={`flex-1 py-3 text-[10px] font-black uppercase tracking-wider h-11 rounded-lg transition-all ${darkMode ? 'data-[state=active]:bg-[#1b5b65] data-[state=active]:text-white' : 'data-[state=active]:bg-white data-[state=active]:text-emerald-600'}`}
             >
               Active Partnerships ({sortedMatches.length})
             </TabsTrigger>
             <TabsTrigger
               value="issues"
-              className={`${darkMode ? 'data-[state=active]:bg-[#1b5b65] data-[state=active]:text-white' : ''}`}
+              className={`flex-1 py-3 text-[10px] font-black uppercase tracking-wider h-11 rounded-lg transition-all ${darkMode ? 'data-[state=active]:bg-[#1b5b65] data-[state=active]:text-white' : 'data-[state=active]:bg-white data-[state=active]:text-emerald-600'}`}
             >
               <AlertTriangle className="h-4 w-4 mr-2 inline" />
-              Dispute Resolution ({mockIssues.filter(i => i.status !== 'Resolved').length})
+              Resolution Center ({mockIssues.filter(i => i.status !== 'Resolved').length})
             </TabsTrigger>
           </TabsList>
 
@@ -482,32 +432,63 @@ const InvestorFarmerMatchesDashboard = () => {
             <Card className={darkMode ? 'bg-[#0b2528] border-[#1b5b65]' : ''}>
               <CardContent className="pt-6">
 
-                <div className="block sm:hidden space-y-3">
+                {/* Mobile Card List View */}
+                <div className="block sm:hidden space-y-4">
                   {sortedMatches.map((match) => (
-                    <div
-                      key={match.id}
-                      onClick={() => handleViewMatch(match)}
-                      className={`p-4 rounded-xl border transition-all ${darkMode ? 'bg-[#0f3035] border-[#1b5b65]' : 'bg-white border-gray-100 shadow-sm'}`}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <p className={`font-bold text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{match.farmer.name}</p>
-                          <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{match.investor.name}</p>
+                    <div key={match.id} className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-100 shadow-sm'}`}>
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${darkMode ? 'bg-green-500/20' : 'bg-green-100'}`}>
+                            <User className={`h-4 w-4 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
+                          </div>
+                          <div>
+                            <div className={`font-bold text-base ${darkMode ? 'text-white' : 'text-gray-900'}`}>{match.farmer.name}</div>
+                            <div className="flex items-center gap-1">
+                              {match.farmer.verified && <CheckCircle2 className="h-3 w-3 text-blue-500" />}
+                              <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{match.farmer.region}</span>
+                            </div>
+                          </div>
                         </div>
-                        <Badge className={`${getStatusBadge(match.status)} rounded text-[10px] px-2 py-0.5 border-none`}>
+                        <Badge className={`${getStatusBadge(match.status)} capitalize border`}>
                           {match.status}
                         </Badge>
                       </div>
-                      <div className="flex justify-between items-center text-xs mt-3">
-                        <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Progress: {match.progress}%</span>
-                        <span className={`font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{match.investmentValue}</span>
+
+                      <div className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-blue-50 dark:bg-blue-900/10">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${darkMode ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
+                          <Building className={`h-3 w-3 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                        </div>
+                        <span className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>{match.investor.name}</span>
                       </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-800 h-1.5 rounded-full mt-2">
-                        <div
-                          className="bg-emerald-500 h-full rounded-full"
-                          style={{ width: `${match.progress}%` }}
-                        />
+
+                      <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-sm mb-4">
+                        <div>
+                          <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Category</span>
+                          <div className={darkMode ? 'text-gray-200' : 'text-gray-900'}>{match.category}</div>
+                        </div>
+                        <div>
+                          <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Investment</span>
+                          <div className="font-medium text-green-600">{match.investmentValue}</div>
+                        </div>
                       </div>
+
+                      <div className="mb-4">
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Progress</span>
+                          <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>{match.progress}%</span>
+                        </div>
+                        <Progress value={match.progress} className="h-2" />
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewMatch(match)}
+                        className={`w-full ${darkMode ? 'bg-[#7ede56] text-white border-[#7ede56] hover:bg-[#6bc947]' : 'border-[#7ede56] text-[#7ede56] hover:bg-[#7ede56] hover:text-white'}`}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </Button>
                     </div>
                   ))}
                   {sortedMatches.length === 0 && (
@@ -521,7 +502,7 @@ const InvestorFarmerMatchesDashboard = () => {
                 <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="bg-emerald-600 border-emerald-600">
+                      <tr className="bg-[#1db954] border-[#1db954]">
                         <th className="text-left py-3 px-4 text-sm font-medium text-white">Investor</th>
                         <th className="text-left py-3 px-4 text-sm font-medium text-white">Farmer</th>
                         <th className="text-left py-3 px-4 text-sm font-medium text-white">Category</th>
@@ -590,33 +571,15 @@ const InvestorFarmerMatchesDashboard = () => {
                             </Badge>
                           </td>
                           <td className="py-3 px-4">
-                            <div className="flex items-center gap-1">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleViewMatch(match)}
-                                className={`${darkMode ? 'bg-[#7ede56] text-white border-[#7ede56] hover:bg-[#6bc947]' : 'border-[#7ede56] text-[#7ede56] hover:bg-[#7ede56] hover:text-white'}`}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => { setSelectedMatch(match); setShowUploadModal(true); }}
-                                className={darkMode ? 'border-[#1b5b65] text-gray-300 hover:bg-[#1b5b65]' : ''}
-                                title="Submit Report"
-                              >
-                                <Upload className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-red-500 border-red-100 hover:bg-red-50"
-                                title="Flag Dispute"
-                              >
-                                <Flag className="h-4 w-4" />
-                              </Button>
-                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewMatch(match)}
+                              className={`${darkMode ? 'bg-[#7ede56] text-white border-[#7ede56] hover:bg-[#6bc947]' : 'border-[#7ede56] text-[#7ede56] hover:bg-[#7ede56] hover:text-white'}`}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -635,106 +598,91 @@ const InvestorFarmerMatchesDashboard = () => {
 
           {/* Flagged Issues Tab */}
           <TabsContent value="issues">
-            <Card className={darkMode ? 'bg-[#0b2528] border-[#1b5b65]' : ''}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className={`text-lg flex items-center gap-2 ${darkMode ? 'text-white' : ''}`}>
-                    <AlertTriangle className="h-5 w-5 text-red-500" />
-                    Conflict Management
-                  </CardTitle>
-                  <Badge variant="destructive">{mockIssues.filter(i => i.status !== 'Resolved').length} Open</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="block sm:hidden space-y-4">
-                  {mockIssues.map((issue) => (
-                    <div key={issue.id} className={`p-5 rounded-3xl border transition-all duration-300 ${darkMode ? 'bg-red-500/5 border-red-500/20' : 'bg-white border-red-100 shadow-xl shadow-red-100/30'}`}>
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
-                            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {mockIssues.map((issue) => (
+                <Card
+                  key={issue.id}
+                  className={`relative overflow-hidden border-none shadow-lg transition-all hover:scale-[1.02] ${darkMode ? 'bg-[#0b2528]' : 'bg-white'}`}
+                >
+                  {/* Severity Indicator Bar */}
+                  <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${issue.severity === 'High' ? 'bg-red-500' : issue.severity === 'Medium' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+
+                  <CardContent className="p-5">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <p className={`text-[10px] font-black uppercase tracking-widest ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Case #{issue.id}</p>
+                        <h3 className={`text-lg font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{issue.type}</h3>
+                      </div>
+                      <Badge className={`${getSeverityBadge(issue.severity)} rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider border-none shadow-sm`}>
+                        {issue.severity} Priority
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-4 mb-6">
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                            <Briefcase className="h-4 w-4 text-blue-600" />
                           </div>
                           <div>
-                            <span className={`font-mono text-[10px] block opacity-50 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>CASE #{issue.id}</span>
-                            <span className={`${darkMode ? 'text-white' : 'text-gray-900'} font-bold text-sm`}>{issue.type}</span>
+                            <p className="text-[9px] uppercase font-bold text-gray-400 leading-none mb-1">Investor</p>
+                            <p className={`text-sm font-bold leading-none ${darkMode ? 'text-white' : 'text-gray-900'}`}>{issue.investor}</p>
                           </div>
                         </div>
-                        <Badge className={`${getSeverityBadge(issue.severity)} rounded-full text-[10px] font-bold`}>
-                          {issue.severity}
+                        <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center">
+                            <User className="h-4 w-4 text-emerald-600" />
+                          </div>
+                          <div>
+                            <p className="text-[9px] uppercase font-bold text-gray-400 leading-none mb-1">Farmer</p>
+                            <p className={`text-sm font-bold leading-none ${darkMode ? 'text-white' : 'text-gray-900'}`}>{issue.farmer}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs px-1">
+                        <div className="flex items-center gap-1.5 text-gray-500">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span>Logged: {issue.date}</span>
+                        </div>
+                        <Badge variant="outline" className={`font-bold border-none ${issue.status === 'Resolved' ? 'text-emerald-500 bg-emerald-500/10' : 'text-amber-500 bg-amber-500/10'}`}>
+                          {issue.status}
                         </Badge>
                       </div>
+                    </div>
 
-                      <div className={`grid grid-cols-2 gap-3 mb-4 p-3 rounded-2xl ${darkMode ? 'bg-white/5' : 'bg-gray-50'}`}>
-                        <div>
-                          <p className="text-[10px] uppercase font-bold text-gray-400 leading-none mb-1">Farmer</p>
-                          <p className={`text-xs font-bold ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>{issue.farmer}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] uppercase font-bold text-gray-400 leading-none mb-1">Investor</p>
-                          <p className={`text-xs font-bold ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>{issue.investor}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between mb-4 px-1">
-                        <span className={`text-[10px] font-bold uppercase tracking-widest text-gray-400`}>Current Status</span>
-                        <Badge variant="outline" className="rounded-full text-[10px] border-orange-500/20 text-orange-500 font-bold bg-orange-500/5">{issue.status}</Badge>
-                      </div>
-
-                      <Button variant="outline" size="sm" className="w-full rounded-2xl border-emerald-500 text-emerald-600 bg-emerald-500/5 hover:bg-emerald-500 hover:text-white h-11 font-bold uppercase tracking-wider text-xs">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Initiate Mediation
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        size="sm"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase tracking-wider text-[10px] h-10 shadow-lg shadow-emerald-600/20"
+                      >
+                        Mediate
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={`font-bold uppercase tracking-wider text-[10px] h-10 ${darkMode ? 'border-[#1b5b65] text-gray-300 hover:bg-[#1b5b65]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                      >
+                        Details
                       </Button>
                     </div>
-                  ))}
-                  {mockIssues.length === 0 && (
-                    <div className="text-center py-6 text-gray-500">No issues found</div>
-                  )}
-                </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
 
-                {/* Desktop Table View */}
-                <div className="hidden sm:block overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="bg-[#1db954] border-[#1db954]">
-                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Issue ID</th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Farmer</th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Investor</th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Type</th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Date</th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Severity</th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Status</th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-white">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {mockIssues.map((issue) => (
-                        <tr key={issue.id} className={`border-b transition-colors ${darkMode ? 'border-[#1b5b65]/50 hover:bg-[#0f3035]' : 'border-gray-100 hover:bg-gray-50'}`}>
-                          <td className={`py-3 px-4 font-mono text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>#{issue.id}</td>
-                          <td className={`py-3 px-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{issue.farmer}</td>
-                          <td className={`py-3 px-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{issue.investor}</td>
-                          <td className={`py-3 px-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{issue.type}</td>
-                          <td className={`py-3 px-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{issue.date}</td>
-                          <td className="py-3 px-4">
-                            <Badge className={getSeverityBadge(issue.severity)}>{issue.severity}</Badge>
-                          </td>
-                          <td className="py-3 px-4">
-                            <Badge variant={issue.status === 'Resolved' ? 'secondary' : 'outline'}>
-                              {issue.status}
-                            </Badge>
-                          </td>
-                          <td className="py-3 px-4">
-                            <Button variant="outline" size="sm" className="text-emerald-600 border-emerald-100 hover:bg-emerald-50">
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              Mediate
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            {mockIssues.length === 0 && (
+              <Card className={`p-12 text-center border-dashed ${darkMode ? 'bg-transparent border-[#1b5b65]' : 'bg-gray-50 border-gray-200'}`}>
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                    <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                  </div>
+                  <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>All Quiet Here</h3>
+                  <p className="text-gray-500 max-w-sm">No unresolved issues or disputes at the moment. Great job keeping the ecosystem running smoothly!</p>
                 </div>
-              </CardContent>
-            </Card>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
 
@@ -751,7 +699,7 @@ const InvestorFarmerMatchesDashboard = () => {
                 )}
               </DialogTitle>
               <DialogDescription>
-                Detailed oversight of investor-farmer partnership transparency and accountability
+                View and manage investor-farmer partnership details
               </DialogDescription>
             </DialogHeader>
 
@@ -872,7 +820,7 @@ const InvestorFarmerMatchesDashboard = () => {
                       {/* Quick Actions Card */}
                       <Card>
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-medium text-gray-500">Monitoring Actions</CardTitle>
+                          <CardTitle className="text-sm font-medium text-gray-500">Quick Actions</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
                           <Button className="w-full justify-start bg-[#7ede56] hover:bg-[#6bc947] text-white" onClick={() => setShowUploadModal(true)}>
@@ -889,7 +837,7 @@ const InvestorFarmerMatchesDashboard = () => {
                           </Button>
                           <Button className="w-full justify-start text-blue-600 border-blue-200 hover:bg-blue-50" variant="outline">
                             <CheckCircle className="h-4 w-4 mr-2" />
-                            Verify Completion
+                            Complete Match
                           </Button>
                         </CardContent>
                       </Card>
@@ -1009,9 +957,9 @@ const InvestorFarmerMatchesDashboard = () => {
         <Dialog open={showUploadModal} onOpenChange={setShowUploadModal}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Submit Monitoring Update</DialogTitle>
+              <DialogTitle>Upload Progress Update</DialogTitle>
               <DialogDescription>
-                Provide accountability notes, field photos, or progress reports for this partnership
+                Add notes, photos, or reports for this match
               </DialogDescription>
             </DialogHeader>
 

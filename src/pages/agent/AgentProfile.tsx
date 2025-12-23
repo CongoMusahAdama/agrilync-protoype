@@ -40,7 +40,6 @@ const AgentProfile: React.FC = () => {
         <AgentLayout
             activeSection="profile"
             title="Profile & Settings"
-            subtitle="Manage your account information and preferences"
         >
             <div className="max-w-5xl mx-auto">
                 {/* Header with Actions */}

@@ -63,34 +63,49 @@ import {
 export const TrainingPerformanceContent = () => {
   const { darkMode } = useDarkMode();
   const [trainingFilter, setTrainingFilter] = useState('all');
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const sectionCardClass = darkMode
     ? 'border border-[#124b53] bg-[#0b2528] text-gray-100 shadow-lg'
     : 'border-none bg-white text-gray-900 shadow-sm';
 
   const summaryCards = [
-    { title: 'Available', value: '12', icon: GraduationCap, color: 'text-blue-600', bg: 'bg-blue-50/50', border: 'border-blue-100' },
-    { title: 'Upcoming', value: '3', icon: Calendar, color: 'text-orange-600', bg: 'bg-orange-50/50', border: 'border-orange-100' },
-    { title: 'Completed', value: '5', icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50/50', border: 'border-emerald-100' },
-    { title: 'Score', value: '89%', icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50/50', border: 'border-purple-100' },
-    { title: 'Reports', value: '48', icon: FileText, color: 'text-indigo-600', bg: 'bg-indigo-50/50', border: 'border-indigo-100' },
+    { title: 'Available', value: '12', icon: GraduationCap, color: 'bg-blue-600' },
+    { title: 'Upcoming', value: '3', icon: Calendar, color: 'bg-orange-600' },
+    { title: 'Completed', value: '5', icon: CheckCircle, color: 'bg-emerald-600' },
+    { title: 'Score', value: '89%', icon: TrendingUp, color: 'bg-purple-600' },
+    { title: 'Reports', value: '48', icon: FileText, color: 'bg-indigo-600' },
   ];
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* 1. Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-6">
         {summaryCards.map((card, idx) => (
-          <Card key={idx} className={`border ${card.border} shadow-none transition-all hover:shadow-sm cursor-pointer ${darkMode ? 'bg-gray-900/40 border-gray-800' : card.bg}`}>
-            <CardContent className="p-3 flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${card.bg} ${card.color}`}>
-                <card.icon className="h-4 w-4" />
+          <Card
+            key={idx}
+            className={`${card.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-700 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+            style={{ transitionDelay: `${idx * 100}ms` }}
+          >
+            {/* Background Decoration */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none">
+              <card.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
+            </div>
+
+            <div className="p-3 sm:p-5 flex flex-col h-full relative z-10">
+              <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
+                <card.icon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                <p className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">{card.title}</p>
               </div>
-              <div className="flex flex-col">
-                <p className={`text-lg font-black leading-none ${darkMode ? 'text-white' : 'text-gray-900'}`}>{card.value}</p>
-                <p className={`text-[9px] font-bold uppercase tracking-wider mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{card.title}</p>
+              <div className="flex-1 flex items-center">
+                <p className="text-2xl sm:text-4xl font-bold text-white">{card.value}</p>
               </div>
-            </CardContent>
+            </div>
           </Card>
         ))}
       </div>
@@ -315,7 +330,6 @@ const TrainingPerformance = () => {
     <AgentLayout
       activeSection="training-performance"
       title="Training & Performance"
-      subtitle="Track your skills, schedule, and performance metrics."
     >
       <TrainingPerformanceContent />
     </AgentLayout>

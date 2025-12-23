@@ -221,45 +221,36 @@ const FarmManagement: React.FC = () => {
             activeSection="farm-management"
             title="Farm Management"
         >
-            <div className="mb-6 sm:mb-8">
-                <h2 className={`text-xl sm:text-2xl font-bold mb-1 sm:mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    Management Hub
-                </h2>
-                <p className={`text-sm sm:text-base ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Oversee growers, verify registrations, and log field activities.
-                </p>
-            </div>
-
-            <div className="space-y-8">
-                {/* Summary Cards - Premium Sliding Style */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="max-w-7xl mx-auto space-y-8">
+                {/* Summary Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
                     {[
-                        { label: 'Total Farmers', value: metrics.total, icon: Users, color: 'bg-[#1db954]', delay: 0, status: null },
-                        { label: 'Verified', value: metrics.verified, icon: CheckCircle, color: 'bg-emerald-600', delay: 100, status: 'Verified' },
-                        { label: 'Pending', value: metrics.pending, icon: Clock, color: 'bg-yellow-500', delay: 200, status: 'Pending' },
-                        { label: 'Active Farms', value: metrics.active, icon: TrendingUp, color: 'bg-blue-600', delay: 300, status: 'In Progress' },
-                        { label: 'Matched', value: metrics.matched, icon: Coins, color: 'bg-purple-600', delay: 400, status: 'Matched' }
+                        { label: 'Total Farmers', value: metrics.total, icon: Users, color: 'bg-emerald-600', status: null },
+                        { label: 'Verified', value: metrics.verified, icon: CheckCircle, color: 'bg-blue-600', status: 'Verified' },
+                        { label: 'Pending', value: metrics.pending, icon: Clock, color: 'bg-orange-600', status: 'Pending' },
+                        { label: 'Active Farms', value: metrics.active, icon: TrendingUp, color: 'bg-indigo-600', status: 'In Progress' },
+                        { label: 'Matched', value: metrics.matched, icon: Coins, color: 'bg-purple-600', status: 'Matched' }
                     ].map((item, idx) => (
                         <Card
                             key={item.label}
-                            className={`cursor-pointer transition-all hover:shadow-xl hover:scale-105 relative overflow-hidden text-white border-0 ${item.color} ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} ${(statusFilter === item.status && item.status !== null) || (statusFilter === null && item.status === null) ? 'ring-2 ring-white ring-offset-2 ring-offset-[#002f37]' : ''}`}
-                            style={{ transitionDuration: '500ms', transitionDelay: `${item.delay}ms` }}
+                            className={`${item.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-700 relative overflow-hidden ${(statusFilter === item.status && item.status !== null) || (statusFilter === null && item.status === null) ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent' : ''} ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                            style={{ transitionDelay: `${idx * 100}ms` }}
                             onClick={() => handleCardClick(item.status)}
                         >
+                            {/* Background Decoration */}
                             <div className="absolute inset-0 opacity-10 pointer-events-none">
-                                <item.icon className="absolute -right-2 -bottom-2 h-16 w-16 text-white rotate-12" />
+                                <item.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
                             </div>
-                            <CardContent className="p-5 relative z-10">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-white/20">
-                                        <item.icon className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <p className="text-2xl font-bold">{item.value}</p>
-                                        <p className="text-xs opacity-80">{item.label}</p>
-                                    </div>
+
+                            <div className="p-3 sm:p-5 flex flex-col h-full relative z-10 text-left">
+                                <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
+                                    <item.icon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                                    <p className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">{item.label}</p>
                                 </div>
-                            </CardContent>
+                                <div className="flex-1 flex items-center">
+                                    <p className="text-2xl sm:text-4xl font-bold text-white">{item.value}</p>
+                                </div>
+                            </div>
                         </Card>
                     ))}
                 </div>

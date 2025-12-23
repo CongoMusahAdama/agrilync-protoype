@@ -17,7 +17,8 @@ import {
     Sprout,
     Handshake,
     AlertTriangle,
-    Briefcase
+    Briefcase,
+    GraduationCap
 } from 'lucide-react';
 import SidebarProfileCard from './SidebarProfileCard';
 import { useDarkMode } from '@/contexts/DarkModeContext';
@@ -67,11 +68,11 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     const navItems = userType === 'agent'
         ? [
             { id: 'dashboard', label: 'Dashboard', icon: Home },
-            { id: 'farm-management', label: 'Farm Management', icon: Leaf },
-            { id: 'investor-matches', label: 'Investor Matches', icon: Users },
-            { id: 'dispute-management', label: 'Dispute Management', icon: AlertTriangle },
-            { id: 'training-sessions', label: 'Training Sessions', icon: Calendar },
-            { id: 'notifications', label: 'Notifications', icon: Bell },
+            { id: 'farm-management', label: 'Field Operations', icon: Sprout },
+            { id: 'investor-matches', label: 'Partnership Manager', icon: Handshake },
+            { id: 'dispute-management', label: 'Resolution Center', icon: AlertTriangle },
+            { id: 'training-sessions', label: 'Training & Performance', icon: GraduationCap },
+            { id: 'notifications', label: 'Alert Center', icon: Bell },
             { id: 'settings', label: 'Profile & Settings', icon: Settings },
         ]
         : [
