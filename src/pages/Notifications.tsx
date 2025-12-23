@@ -6,13 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { useIsMobile } from '@/hooks/use-mobile';
-import SidebarProfileCard from '@/components/SidebarProfileCard';
+import DashboardLayout from '@/components/DashboardLayout';
 import {
-  ArrowLeft,
-  ArrowRight,
-  Bell,
   Search,
   Filter,
   CheckCircle,
@@ -22,19 +17,8 @@ import {
   Clock,
   CheckCheck,
   Trash2,
-  Moon,
-  Sun,
-  Settings,
-  Users,
-  MapPin,
-  UserCheck,
-  BarChart3,
-  TrendingUp,
-  Activity,
-  ChevronLeft,
-  ChevronRight,
   Leaf,
-  Menu
+  Bell
 } from 'lucide-react';
 
 const Notifications = () => {
@@ -44,31 +28,7 @@ const Notifications = () => {
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const { darkMode, toggleDarkMode } = useDarkMode();
-  const sidebarDarkMode = !darkMode;
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const isMobile = useIsMobile();
-  const [activeSidebarItem, setActiveSidebarItem] = useState('notifications');
 
-  // Handle sidebar navigation
-  const handleSidebarNavigation = (item: string) => {
-    setActiveSidebarItem(item);
-    if (isMobile) {
-      setMobileSidebarOpen(false);
-    }
-    const routes: { [key: string]: string } = {
-      'dashboard': `/dashboard/${userType}`,
-      'settings': `/dashboard/${userType}/settings`,
-      'farm-analytics': `/dashboard/${userType}/farm-analytics`,
-      'investor-matches': `/dashboard/${userType}/investor-matches`,
-      'training-sessions': `/dashboard/${userType}/training-sessions`,
-      'farm-management': `/dashboard/${userType}/farm-management`,
-      'notifications': `/dashboard/${userType}/notifications`
-    };
-    if (routes[item]) {
-      navigate(routes[item]);
-    }
-  };
 
   // Mock data for notifications
   const mockNotifications = [
@@ -199,361 +159,197 @@ const Notifications = () => {
 
   const unreadCount = mockNotifications.filter(n => n.status === 'unread').length;
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* Logo/App Name */}
-      <div className={`p-4 border-b flex-shrink-0 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <img
-              src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png"
-              alt="AgriLync Logo"
-              className="h-8 w-8"
-            />
-            {(!sidebarCollapsed || isMobile) && (
-              <span className={`text-xl font-bold ${sidebarDarkMode ? 'text-[#f4ffee]' : 'text-[#002f37]'}`}>AgriLync</span>
-            )}
-          </div>
-          {!isMobile && (
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className={`p-2 rounded-lg ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'} transition-colors`}
-            >
-              {sidebarCollapsed ? (
-                <ChevronRight className="h-5 w-5" aria-label="Expand sidebar" />
-              ) : (
-                <ChevronLeft className="h-5 w-5" aria-label="Collapse sidebar" />
-              )}
-            </button>
-          )}
-        </div>
-      </div>
-
-      <SidebarProfileCard
-        sidebarCollapsed={sidebarCollapsed && !isMobile}
-        isMobile={isMobile}
-        darkMode={darkMode}
-        userType={userType}
-      />
-
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {[
-          { key: 'dashboard', label: 'Dashboard', icon: Activity },
-          { key: 'farm-management', label: 'Farm Management', icon: MapPin },
-          { key: 'farm-analytics', label: 'Farm Analytics', icon: BarChart3 },
-          { key: 'investor-matches', label: 'Investor Matches', icon: Users },
-          { key: 'training-sessions', label: 'Training Sessions', icon: Calendar },
-          { key: 'notifications', label: 'Notifications', icon: Bell },
-          { key: 'settings', label: 'Profile & Settings', icon: Settings }
-        ].map((item) => (
-          <div
-            key={item.key}
-            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${activeSidebarItem === item.key
-              ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
-              : sidebarDarkMode
-                ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent'
-                : 'text-gray-700 hover:bg-gray-100 border-l-4 border-transparent'
-              }`}
-            onClick={() => handleSidebarNavigation(item.key)}
-          >
-            <item.icon className="h-4 w-4 flex-shrink-0" />
-            {(!sidebarCollapsed || isMobile) && <span className="font-medium">{item.label}</span>}
-          </div>
-        ))}
-      </nav>
-
-      {/* Log Out - Sticky at bottom */}
-      <div className={`mt-auto p-4 border-t space-y-2 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'} sticky bottom-0 ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-gray-700 hover:bg-gray-100'}`}
-          onClick={toggleDarkMode}
-          title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-        >
-          {darkMode ? <Sun className="h-4 w-4 flex-shrink-0 text-yellow-500" /> : <Moon className="h-4 w-4 flex-shrink-0 text-gray-400" />}
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
-        </div>
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-gray-700 hover:bg-gray-100'}`}
-          onClick={() => navigate('/')}
-        >
-          <ArrowRight className="h-4 w-4 flex-shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Log Out</span>}
-        </div>
-      </div>
-    </div>
-  );
 
   return (
-    <div className={`h-screen overflow-hidden transition-colors ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
-      <div className="flex h-full">
-        {isMobile && (
-          <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-            <SheetContent
-              side="left"
-              className={`w-[280px] p-0 ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'} overflow-y-auto`}
+    <DashboardLayout activeSidebarItem="notifications" title="Notifications" description="Manage your updates and alerts">
+      <div className="w-full p-3 sm:p-4 md:p-6">
+        {/* Search and Filter */}
+        <div className="mb-6 flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+              <Input
+                placeholder="Search notifications..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={`pl-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500' : ''}`}
+              />
+            </div>
+          </div>
+          <div className="w-full sm:w-48">
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className={darkMode ? 'bg-[#002f37] border-gray-600 text-white' : ''}>
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+                <SelectItem value="all" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>All Types</SelectItem>
+                <SelectItem value="system" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>System</SelectItem>
+                <SelectItem value="investment" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Investment</SelectItem>
+                <SelectItem value="training" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Training</SelectItem>
+                <SelectItem value="alert" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Alert</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-full sm:w-48">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className={darkMode ? 'bg-[#002f37] border-gray-600 text-white' : ''}>
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+                <SelectItem value="all" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>All Status</SelectItem>
+                <SelectItem value="unread" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Unread</SelectItem>
+                <SelectItem value="read" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Read</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="flex gap-2 mb-6">
+          <Badge className="bg-[#7ede56] text-[#002f37]">All</Badge>
+          <Badge className={darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}>High Priority</Badge>
+          <Badge className={darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}>System Alerts</Badge>
+        </div>
+
+        {/* Notification Stats - Aligned with Farm Management style */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8">
+          {/* Total Notifications - Green */}
+          <Card className="hover:shadow-md transition-shadow bg-[#7ede56] border-none shadow-lg">
+            <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
+              <div className="flex flex-col gap-0.5 sm:gap-1">
+                <span className="text-[10px] sm:text-xs font-medium text-white/90 uppercase tracking-wider">Total</span>
+                <span className="text-xl sm:text-3xl font-bold text-white">{mockNotifications.length}</span>
+              </div>
+              <div className="h-8 w-8 sm:h-12 sm:w-12 rounded-full bg-white/20 flex items-center justify-center">
+                <Bell className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Unread - Red */}
+          <Card className="hover:shadow-md transition-shadow bg-[#ff6347] border-none shadow-lg">
+            <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
+              <div className="flex flex-col gap-0.5 sm:gap-1">
+                <span className="text-[10px] sm:text-xs font-medium text-white/90 uppercase tracking-wider">Unread</span>
+                <span className="text-xl sm:text-3xl font-bold text-white">{unreadCount}</span>
+              </div>
+              <div className="h-8 w-8 sm:h-12 sm:w-12 rounded-full bg-white/20 flex items-center justify-center">
+                <AlertCircle className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* High Priority - Orange */}
+          <Card className="hover:shadow-md transition-shadow bg-[#ffa500] border-none shadow-lg">
+            <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
+              <div className="flex flex-col gap-0.5 sm:gap-1">
+                <span className="text-[10px] sm:text-xs font-medium text-white/90 uppercase tracking-wider">Priority</span>
+                <span className="text-xl sm:text-3xl font-bold text-white">
+                  {mockNotifications.filter(n => n.priority === 'high').length}
+                </span>
+              </div>
+              <div className="h-8 w-8 sm:h-12 sm:w-12 rounded-full bg-white/20 flex items-center justify-center">
+                <AlertCircle className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Today - Purple */}
+          <Card className="hover:shadow-md transition-shadow bg-[#9333ea] border-none shadow-lg">
+            <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
+              <div className="flex flex-col gap-0.5 sm:gap-1">
+                <span className="text-[10px] sm:text-xs font-medium text-white/90 uppercase tracking-wider">Today</span>
+                <span className="text-xl sm:text-3xl font-bold text-white">
+                  {mockNotifications.filter(n => new Date(n.date).toDateString() === new Date().toDateString()).length}
+                </span>
+              </div>
+              <div className="h-8 w-8 sm:h-12 sm:w-12 rounded-full bg-white/20 flex items-center justify-center">
+                <Calendar className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Notifications List */}
+        <div className="space-y-4">
+          {filteredNotifications.map((notification) => (
+            <Card
+              key={notification.id}
+              className={`hover:shadow-md transition-shadow ${notification.status === 'unread'
+                ? `border-l-4 border-l-[#7ede56] ${darkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`
+                : ''
+                } ${darkMode ? 'bg-[#002f37] border-gray-600' : ''}`}
             >
-              <div className="flex flex-col h-full">
-                <SidebarContent />
-              </div>
-            </SheetContent>
-          </Sheet>
-        )}
-
-        {!isMobile && (
-          <div className={`${sidebarCollapsed ? 'w-16' : 'w-64'} ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'} flex-shrink-0 transition-all duration-300 border-r ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
-            <div className="flex flex-col h-full sticky top-0 overflow-hidden">
-              <SidebarContent />
-            </div>
-          </div>
-        )}
-
-        {/* Main Content */}
-        <div className={`flex-1 overflow-y-auto transition-colors ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
-          {/* Top Header */}
-          <div className={`${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white border-gray-200'} border-b px-3 sm:px-6 py-3 sm:py-4 transition-colors sticky top-0 z-20`}>
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-                {isMobile && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setMobileSidebarOpen(true)}
-                    className={`p-2 ${darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100'}`}
-                  >
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                )}
-                <div className="min-w-0 flex-1">
-                  <h1 className={`text-lg sm:text-2xl font-bold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    Notifications
-                  </h1>
-                  <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Stay updated with your farm activities
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`flex items-center gap-1 sm:gap-2 rounded-full p-2 ${darkMode ? 'text-gray-300 hover:bg-gray-800 hover:text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-                  onClick={toggleDarkMode}
-                  title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                >
-                  {darkMode ? (
-                    <Sun className="h-5 w-5 text-yellow-400" />
-                  ) : (
-                    <Moon className="h-5 w-5 text-gray-600" />
-                  )}
-                  <span className="hidden sm:inline ml-1">{darkMode ? 'Light' : 'Dark'}</span>
-                </Button>
-                {unreadCount > 0 && (
-                  <Badge className="bg-red-500 text-white">
-                    {unreadCount} unread
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="w-full p-3 sm:p-4 md:p-6">
-            {/* Search and Filter */}
-            <div className="mb-6 flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-                  <Input
-                    placeholder="Search notifications..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`pl-10 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500' : ''}`}
-                  />
-                </div>
-              </div>
-              <div className="w-full sm:w-48">
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className={darkMode ? 'bg-[#002f37] border-gray-600 text-white' : ''}>
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Filter by type" />
-                  </SelectTrigger>
-                  <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
-                    <SelectItem value="all" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>All Types</SelectItem>
-                    <SelectItem value="system" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>System</SelectItem>
-                    <SelectItem value="investment" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Investment</SelectItem>
-                    <SelectItem value="training" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Training</SelectItem>
-                    <SelectItem value="alert" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Alert</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="w-full sm:w-48">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className={darkMode ? 'bg-[#002f37] border-gray-600 text-white' : ''}>
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
-                    <SelectItem value="all" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>All Status</SelectItem>
-                    <SelectItem value="unread" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Unread</SelectItem>
-                    <SelectItem value="read" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Read</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="flex gap-2 mb-6">
-              <Badge className="bg-[#7ede56] text-[#002f37]">All</Badge>
-              <Badge className={darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}>High Priority</Badge>
-              <Badge className={darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}>System Alerts</Badge>
-            </div>
-
-            {/* Notification Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
-              <Card className="bg-[#7ede56] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                  <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
-                  <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
-                  <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
-                  <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
-                </div>
-                <div className="flex items-center justify-between relative z-10">
-                  <div>
-                    <p className="text-sm font-medium text-white">Total Notifications</p>
-                    <p className="text-2xl font-bold text-white">{mockNotifications.length}</p>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 mt-1">
+                    {getTypeIcon(notification.type)}
                   </div>
-                  <Bell className="h-8 w-8 text-white" />
-                </div>
-              </Card>
-
-              <Card className="bg-[#ff6347] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                  <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
-                  <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
-                  <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
-                  <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
-                </div>
-                <div className="flex items-center justify-between relative z-10">
-                  <div>
-                    <p className="text-sm font-medium text-white">Unread</p>
-                    <p className="text-2xl font-bold text-white">{unreadCount}</p>
-                  </div>
-                  <AlertCircle className="h-8 w-8 text-white" />
-                </div>
-              </Card>
-
-              <Card className="bg-[#ffa500] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                  <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
-                  <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
-                  <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
-                  <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
-                </div>
-                <div className="flex items-center justify-between relative z-10">
-                  <div>
-                    <p className="text-sm font-medium text-white">High Priority</p>
-                    <p className="text-2xl font-bold text-white">
-                      {mockNotifications.filter(n => n.priority === 'high').length}
-                    </p>
-                  </div>
-                  <AlertCircle className="h-8 w-8 text-white" />
-                </div>
-              </Card>
-
-              <Card className="bg-[#921573] rounded-lg p-4 sm:p-6 shadow-lg relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                  <Leaf className="absolute top-2 right-2 h-16 w-16 text-white rotate-12" />
-                  <Leaf className="absolute bottom-4 left-4 h-12 w-12 text-white -rotate-12" />
-                  <Leaf className="absolute top-1/2 right-8 h-10 w-10 text-white rotate-45" />
-                  <Leaf className="absolute bottom-8 right-4 h-8 w-8 text-white -rotate-45" />
-                </div>
-                <div className="flex items-center justify-between relative z-10">
-                  <div>
-                    <p className="text-sm font-medium text-white">Today</p>
-                    <p className="text-2xl font-bold text-white">
-                      {mockNotifications.filter(n => new Date(n.date).toDateString() === new Date().toDateString()).length}
-                    </p>
-                  </div>
-                  <Calendar className="h-8 w-8 text-white" />
-                </div>
-              </Card>
-            </div>
-
-            {/* Notifications List */}
-            <div className="space-y-4">
-              {filteredNotifications.map((notification) => (
-                <Card
-                  key={notification.id}
-                  className={`hover:shadow-md transition-shadow ${notification.status === 'unread'
-                    ? `border-l-4 border-l-[#7ede56] ${darkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`
-                    : ''
-                    } ${darkMode ? 'bg-[#002f37] border-gray-600' : ''}`}
-                >
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0 mt-1">
-                        {getTypeIcon(notification.type)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{notification.title}</h3>
-                              {notification.status === 'unread' && (
-                                <div className="w-2 h-2 bg-[#7ede56] rounded-full"></div>
-                              )}
-                              <Badge className={getPriorityColor(notification.priority)}>
-                                {notification.priority}
-                              </Badge>
-                            </div>
-                            <p className={`mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{notification.description}</p>
-                            <div className={`flex items-center gap-4 text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                              <div className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                <span>{new Date(notification.date).toLocaleDateString()}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                <span>{notification.time}</span>
-                              </div>
-                            </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <h3 className={`font-semibold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>{notification.title}</h3>
+                          {notification.status === 'unread' && (
+                            <div className="w-2 h-2 bg-[#7ede56] rounded-full flex-shrink-0"></div>
+                          )}
+                          <Badge className={`${getPriorityColor(notification.priority)} text-[10px] sm:text-xs`}>
+                            {notification.priority}
+                          </Badge>
+                        </div>
+                        <p className={`mb-3 text-sm sm:text-base ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{notification.description}</p>
+                        <div className={`flex flex-wrap items-center gap-4 text-[10px] sm:text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>{new Date(notification.date).toLocaleDateString()}</span>
                           </div>
-                          <div className="flex flex-col gap-2 ml-4">
-                            <Button
-                              size="sm"
-                              className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
-                            >
-                              {notification.action}
-                            </Button>
-                            {notification.status === 'unread' && (
-                              <Button variant="outline" size="sm" className={darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white' : ''}>
-                                Mark as Read
-                              </Button>
-                            )}
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            <span>{notification.time}</span>
                           </div>
                         </div>
                       </div>
+                      <div className="flex flex-row sm:flex-col gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                        <Button
+                          size="sm"
+                          className="flex-1 sm:flex-none bg-[#7ede56] hover:bg-[#6bc947] text-[#002f37] font-bold text-xs"
+                        >
+                          {notification.action}
+                        </Button>
+                        {notification.status === 'unread' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className={`flex-1 sm:flex-none text-xs ${darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white' : ''}`}
+                          >
+                            Mark Read
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
 
-              {filteredNotifications.length === 0 && (
-                <Card className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
-                  <CardContent className="p-8 sm:p-12 text-center">
-                    <Bell className={`h-12 w-12 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-300'}`} />
-                    <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>No notifications found</h3>
-                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                      {searchTerm || typeFilter !== 'all' || statusFilter !== 'all'
-                        ? 'Try adjusting your search or filter criteria'
-                        : 'You\'re all caught up! New notifications will appear here.'
-                      }
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
+          {filteredNotifications.length === 0 && (
+            <Card className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+              <CardContent className="p-8 sm:p-12 text-center">
+                <Bell className={`h-12 w-12 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-300'}`} />
+                <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>No notifications found</h3>
+                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                  {searchTerm || typeFilter !== 'all' || statusFilter !== 'all'
+                    ? 'Try adjusting your search or filter criteria'
+                    : 'You\'re all caught up! New notifications will appear here.'
+                  }
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 

@@ -52,14 +52,16 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({
   userType
 }) => {
   const profile = profileMapping[userType ?? 'grower'] || profileMapping['grower'];
+  // Inverse theming: sidebar is light when app is dark, so profile card should be dark
+  const sidebarDarkMode = !darkMode;
 
   return (
     <div
-      className={`px-4 py-3 border-b ${darkMode ? 'border-gray-200/50' : 'border-[#063840]/20'} ${sidebarCollapsed && !isMobile ? 'flex justify-center' : ''
+      className={`px-4 py-3 border-b ${sidebarDarkMode ? 'border-gray-200/50' : 'border-[#063840]/20'} ${sidebarCollapsed && !isMobile ? 'flex justify-center' : ''
         }`}
     >
       <div
-        className={`w-full flex flex-col items-center gap-2.5 rounded-2xl p-3.5 shadow-sm transition-colors ${darkMode ? 'bg-[#f4ffee] text-[#002f37]' : 'bg-[#082b2f] text-white'
+        className={`w-full flex flex-col items-center gap-2.5 rounded-2xl p-3.5 shadow-sm transition-colors ${sidebarDarkMode ? 'bg-[#082b2f] text-white' : 'bg-[#f4ffee] text-[#002f37]'
           } ${sidebarCollapsed && !isMobile ? 'px-2 py-3' : ''}`}
       >
         <Avatar className={`${sidebarCollapsed && !isMobile ? 'h-12 w-12' : 'h-16 w-16'}`}>
@@ -74,43 +76,7 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({
         {(!sidebarCollapsed || isMobile) && (
           <div className="flex flex-col items-center gap-1 text-center">
             <span className="text-sm font-semibold truncate max-w-[150px]">{profile.name}</span>
-            <span className={`text-xs ${darkMode ? 'text-[#285d64]' : 'text-[#b8e4e9]'}`}>{profile.location}</span>
-            {userType === 'agent' && (
-              <div className="mt-1 flex flex-col items-center gap-1 text-[11px]">
-                {profile.id && (
-                  <span
-                    className={`rounded-full px-2 py-0.5 font-medium ${darkMode ? 'bg-[#e3f8ed] text-[#045c42]' : 'bg-[#0f3a41] text-white'
-                      }`}
-                  >
-                    ID: {profile.id}
-                  </span>
-                )}
-                {profile.contact && (
-                  <span
-                    className={`rounded-full px-2 py-0.5 ${darkMode ? 'bg-[#f4ffee] text-[#0c3b38]' : 'bg-[#0f3a41] text-white'
-                      }`}
-                  >
-                    {profile.contact}
-                  </span>
-                )}
-                {profile.districts && (
-                  <div
-                    className={`flex flex-wrap justify-center gap-1 ${darkMode ? 'text-[#045c42]' : 'text-[#b8e4e9]'
-                      }`}
-                  >
-                    {profile.districts.map((district) => (
-                      <span
-                        key={district}
-                        className={`rounded-full border px-2 py-0.5 ${darkMode ? 'border-[#8cd5b8] text-[#0c3b38]' : 'border-[#0f3a41] text-white'
-                          }`}
-                      >
-                        {district}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+            <span className={`text-xs ${sidebarDarkMode ? 'text-[#b8e4e9]' : 'text-[#285d64]'}`}>{profile.location}</span>
           </div>
         )}
       </div>

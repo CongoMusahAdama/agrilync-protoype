@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -71,6 +71,9 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                                 <DialogTitle className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                                     {farmer.name}
                                 </DialogTitle>
+                                <DialogDescription className="sr-only">
+                                    Detailed information and statistics for farmer {farmer.name}.
+                                </DialogDescription>
                                 <div className="flex items-center gap-2 mt-1">
                                     <Eye className="h-4 w-4 text-[#7ede56]" />
                                     <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>

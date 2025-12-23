@@ -9,11 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import SidebarProfileCard from '@/components/SidebarProfileCard';
+import DashboardLayout from '@/components/DashboardLayout';
 import {
   ArrowLeft,
   ArrowRight,
-  Calendar,
   Clock,
   MapPin,
   Users,
@@ -39,7 +38,14 @@ import {
   MessageCircle,
   Phone,
   Mail,
-  Star
+  Star,
+  Calendar,
+  Upload,
+  Paperclip,
+  Send,
+  MoreHorizontal,
+  CheckCircle,
+  Image as ImageIcon
 } from 'lucide-react';
 
 const TrainingSessions = () => {
@@ -51,11 +57,17 @@ const TrainingSessions = () => {
   const [modeFilter, setModeFilter] = useState('all');
   const { darkMode, toggleDarkMode } = useDarkMode();
   const sidebarDarkMode = !darkMode;
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
   const [activeSidebarItem, setActiveSidebarItem] = useState('training-sessions');
   const [activeTab, setActiveTab] = useState<'available' | 'schedule' | 'advisory'>('available');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab === 'advisory') {
+      setActiveTab('advisory');
+    }
+  }, []);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [selectedTraining, setSelectedTraining] = useState<any>(null);
   const [aiPrompt, setAiPrompt] = useState('');
@@ -88,25 +100,6 @@ const TrainingSessions = () => {
     }
   ]);
 
-  // Handle sidebar navigation
-  const handleSidebarNavigation = (item: string) => {
-    setActiveSidebarItem(item);
-    if (isMobile) {
-      setMobileSidebarOpen(false);
-    }
-    const routes: { [key: string]: string } = {
-      'dashboard': `/dashboard/${userType}`,
-      'settings': `/dashboard/${userType}/settings`,
-      'farm-analytics': `/dashboard/${userType}/farm-analytics`,
-      'investor-matches': `/dashboard/${userType}/investor-matches`,
-      'training-sessions': `/dashboard/${userType}/training-sessions`,
-      'farm-management': `/dashboard/${userType}/farm-management`,
-      'notifications': `/dashboard/${userType}/notifications`
-    };
-    if (routes[item]) {
-      navigate(routes[item]);
-    }
-  };
 
   // Mock data for training sessions
   const mockSessions = [
@@ -309,638 +302,526 @@ const TrainingSessions = () => {
         return <BookOpen className="h-4 w-4" />;
     }
   };
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [infestationDetails, setInfestationDetails] = useState('');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* Logo/App Name */}
-      <div className={`p-4 border-b flex-shrink-0 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <img
-              src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png"
-              alt="AgriLync Logo"
-              className="h-8 w-8"
-            />
-            {(!sidebarCollapsed || isMobile) && (
-              <span className={`text-xl font-bold ${sidebarDarkMode ? 'text-[#f4ffee]' : 'text-[#002f37]'}`}>AgriLync</span>
-            )}
-          </div>
-          {!isMobile && (
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className={`p-2 rounded-lg ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'} transition-colors`}
-            >
-              {sidebarCollapsed ? (
-                <ChevronRight className="h-5 w-5" aria-label="Expand sidebar" />
-              ) : (
-                <ChevronLeft className="h-5 w-5" aria-label="Collapse sidebar" />
-              )}
-            </button>
-          )}
-        </div>
-      </div>
+  const handleAnalyzeInfestation = () => {
+    if (!infestationDetails.trim() && !selectedImage) return;
 
-      <SidebarProfileCard
-        sidebarCollapsed={sidebarCollapsed && !isMobile}
-        isMobile={isMobile}
-        darkMode={darkMode}
-        userType={userType}
-      />
+    setIsAnalyzing(true);
+    setTimeout(() => {
+      const response = {
+        id: aiHistory.length + 1,
+        question: `Analysis Report: ${infestationDetails || 'Image Upload'}`,
+        response: `Our AI has analyzed your report. Based on the patterns detected, this appears to be early-stage ${userType === 'grower' ? 'Fall Armyworm infestation' : 'Newcastle Disease'}. 
 
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'dashboard'
-            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
-            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
-            }`}
-          onClick={() => handleSidebarNavigation('dashboard')}
-        >
-          <Activity className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Dashboard</span>}
-        </div>
+Recommended Action:
+1. Isolate the affected ${userType === 'grower' ? 'crops' : 'livestock'} immediately.
+2. Apply ${userType === 'grower' ? 'Neem-based organic pesticide' : 'Virkon-S disinfection'}.
+3. I have notified Agent Kwame Mensah to schedule an emergency visit.`,
+        timestamp: 'Just now',
+        type: 'analysis'
+      };
+      setAiHistory([response, ...aiHistory]);
+      setIsAnalyzing(false);
+      setInfestationDetails('');
+      setSelectedImage(null);
+      setActiveTab('advisory');
+    }, 2000);
+  };
 
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'farm-management'
-            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
-            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
-            }`}
-          onClick={() => handleSidebarNavigation('farm-management')}
-        >
-          <Leaf className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Farm Management</span>}
-        </div>
-
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'farm-analytics'
-            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
-            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
-            }`}
-          onClick={() => handleSidebarNavigation('farm-analytics')}
-        >
-          <BarChart3 className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Farm Analytics</span>}
-        </div>
-
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'investor-matches'
-            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
-            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
-            }`}
-          onClick={() => handleSidebarNavigation('investor-matches')}
-        >
-          <Users className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Investor Matches</span>}
-        </div>
-
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'training-sessions'
-            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
-            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
-            }`}
-          onClick={() => handleSidebarNavigation('training-sessions')}
-        >
-          <Calendar className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Training Sessions</span>}
-        </div>
-
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'notifications'
-            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
-            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
-            }`}
-          onClick={() => handleSidebarNavigation('notifications')}
-        >
-          <Bell className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Notifications</span>}
-        </div>
-
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'settings'
-            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
-            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
-            }`}
-          onClick={() => handleSidebarNavigation('settings')}
-        >
-          <Settings className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Profile & Settings</span>}
-        </div>
-      </nav>
-
-      <div className={`mt-auto p-4 border-t space-y-2 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'} ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
-          onClick={toggleDarkMode}
-          title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-        >
-          {darkMode ? <Sun className="h-4 w-4 shrink-0 text-yellow-500" /> : <Moon className="h-4 w-4 shrink-0 text-gray-400" />}
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
-        </div>
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
-          onClick={() => navigate('/')}
-        >
-          <ArrowRight className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Log Out</span>}
-        </div>
-      </div>
-    </div>
-  );
 
   return (
-    <div className={`h-screen overflow-hidden transition-colors ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
-      <div className="flex h-full">
-        {isMobile && (
-          <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-            <SheetContent side="left" className={`w-[280px] p-0 ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
-              <SidebarContent />
-            </SheetContent>
-          </Sheet>
-        )}
+    <DashboardLayout activeSidebarItem="training-sessions" title="Training Sessions" description="Discover and manage your learning opportunities">
 
-        {!isMobile && (
-          <div className={`${sidebarCollapsed ? 'w-16' : 'w-64'} ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'} flex-shrink-0 transition-all duration-300 border-r ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
-            <div className="flex flex-col h-full sticky top-0 overflow-hidden">
-              <SidebarContent />
-            </div>
+      <div className="w-full p-3 sm:p-4 md:p-6 max-w-7xl mx-auto">
+        <div className="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className={`p-1 flex bg-opacity-50 backdrop-blur-sm rounded-xl border ${darkMode ? 'bg-[#01343c] border-gray-700' : 'bg-white border-gray-200 shadow-sm'}`}>
+            {[
+              { id: 'available', label: 'Marketplace', icon: BookOpen },
+              { id: 'advisory', label: 'AI Advisory', icon: Bot },
+              { id: 'schedule', label: 'My Learning', icon: Calendar }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === tab.id
+                  ? 'bg-[#7ede56] text-[#002f37] shadow-[0_4px_12px_rgba(126,222,86,0.3)]'
+                  : darkMode
+                    ? 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                    : 'text-gray-600 hover:text-[#002f37] hover:bg-gray-100'
+                  }`}
+              >
+                <tab.icon className={`h-4 w-4 ${activeTab === tab.id ? 'animate-pulse' : ''}`} />
+                {tab.label}
+              </button>
+            ))}
           </div>
-        )}
 
-        {/* Main Content */}
-        <div className={`flex-1 overflow-y-auto transition-colors ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
-          {/* Top Header */}
-          <div className={`${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white border-gray-200'} border-b px-3 sm:px-6 py-3 sm:py-4 transition-colors sticky top-0 z-20`}>
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-                {isMobile && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setMobileSidebarOpen(true)}
-                    className={`p-2 ${darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100'}`}
-                  >
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                )}
-                <div className="min-w-0 flex-1">
-                  <h1 className={`text-lg sm:text-2xl font-bold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>Training Sessions</h1>
-                  <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Discover and manage your learning opportunities</p>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className={`px-4 py-1.5 rounded-full ${darkMode ? 'border-[#7ede56] text-[#7ede56]' : 'border-[#002f37] text-[#002f37]'}`}>
+              {activeTab === 'available' ? `${filteredSessions.length} Programs Available` :
+                activeTab === 'schedule' ? `${registeredTrainings.length} Active Courses` : 'AI Advisor Online'}
+            </Badge>
+          </div>
+        </div>
+
+        {activeTab === 'available' && (
+          <div className="space-y-6">
+            <Card className={darkMode ? 'bg-[#002f37] border border-gray-700' : 'bg-white shadow-sm'}>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col lg:flex-row gap-4 lg:items-end">
+                  <div className="flex-1 space-y-2">
+                    <label className={`text-xs uppercase tracking-wide ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Search trainings</label>
+                    <Input
+                      placeholder="Search by title, trainer, or keywords"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className={`${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500' : ''}`}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
+                    <div className="space-y-2">
+                      <label className={`text-xs uppercase tracking-wide ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Category</label>
+                      <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                        <SelectTrigger className={`${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : ''}`}>
+                          <SelectValue placeholder="All categories" />
+                        </SelectTrigger>
+                        <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+                          <SelectItem value="all">All</SelectItem>
+                          {trainingCategories.map((category) => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className={`text-xs uppercase tracking-wide ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Region</label>
+                      <Select value={regionFilter} onValueChange={setRegionFilter}>
+                        <SelectTrigger className={`${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : ''}`}>
+                          <SelectValue placeholder="All regions" />
+                        </SelectTrigger>
+                        <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+                          <SelectItem value="all">All</SelectItem>
+                          {trainingRegions.map((region) => (
+                            <SelectItem key={region} value={region}>
+                              {region}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className={`text-xs uppercase tracking-wide ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Mode</label>
+                      <Select value={modeFilter} onValueChange={setModeFilter}>
+                        <SelectTrigger className={`${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : ''}`}>
+                          <SelectValue placeholder="All modes" />
+                        </SelectTrigger>
+                        <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+                          <SelectItem value="all">All</SelectItem>
+                          {trainingModes.map((mode) => (
+                            <SelectItem key={mode} value={mode}>
+                              {mode}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`flex items-center gap-1 sm:gap-2 rounded-full p-2 ${darkMode ? 'text-gray-300 hover:bg-gray-800 hover:text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-                  onClick={toggleDarkMode}
-                  title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                >
-                  {darkMode ? (
-                    <Sun className="h-5 w-5 text-yellow-400" />
-                  ) : (
-                    <Moon className="h-5 w-5 text-gray-600" />
-                  )}
-                  <span className="hidden sm:inline ml-1">{darkMode ? 'Light' : 'Dark'}</span>
-                </Button>
-              </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredSessions.map((session, index) => {
+                const occupancy = Math.round((session.currentParticipants / session.maxParticipants) * 100);
+                return (
+                  <Card
+                    key={session.id}
+                    className={`transition-all duration-300 ${darkMode ? 'bg-[#002f37] border-gray-700' : 'bg-white shadow-md'} hover:-translate-y-1 hover:shadow-lg`}
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <Badge className="bg-[#7ede56] text-[#002f37] text-xs">{session.category}</Badge>
+                        <Badge className={`text-xs ${getStatusColor(session.status)}`}>
+                          {session.status === 'upcoming' ? 'Open for Registration' : session.status}
+                        </Badge>
+                      </div>
+                      <CardTitle className={`text-lg mt-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {session.title}
+                      </CardTitle>
+                      <CardDescription className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
+                        {session.description}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div className={`flex items-center gap-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          <Calendar className="h-4 w-4" />
+                          <span>{new Date(session.date).toLocaleDateString()}</span>
+                        </div>
+                        <div className={`flex items-center gap-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          <Clock className="h-4 w-4" />
+                          <span>{session.time}</span>
+                        </div>
+                        <div className={`flex items-center gap-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {getTypeIcon(session.mode)}
+                          <span>{session.mode}</span>
+                        </div>
+                        <div className={`flex items-center gap-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          <MapPin className="h-4 w-4" />
+                          <span>{session.region}</span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Trainer</p>
+                          <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{session.instructor}</p>
+                        </div>
+                        <div>
+                          <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Organizer</p>
+                          <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{session.organization}</p>
+                        </div>
+                      </div>
+                      <div>
+                        <p className={`text-sm mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {session.currentParticipants} of {session.maxParticipants} seats filled
+                        </p>
+                        <div className={`w-full h-2 rounded-full overflow-hidden ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                          <div
+                            className="h-full bg-gradient-to-r from-[#7ede56] to-[#6bc947] transition-all duration-300"
+                            style={{ width: `${occupancy}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Button
+                          variant="outline"
+                          className={`text-xs ${darkMode ? 'border-transparent bg-[#01424d] text-white hover:bg-[#01525f]' : 'text-[#002f37] hover:bg-gray-100'}`}
+                          onClick={() => {
+                            setSelectedTraining(session);
+                            setShowDetailsDialog(true);
+                          }}
+                        >
+                          View Details
+                        </Button>
+                        <Button className="bg-[#7ede56] hover:bg-[#6bc947] text-[#002f37] text-xs px-4">
+                          Register
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+              {filteredSessions.length === 0 && (
+                <Card className={`col-span-full ${darkMode ? 'bg-[#002f37] border-gray-700' : 'bg-white shadow'} `}>
+                  <CardContent className="p-8 text-center">
+                    <BookOpen className={`h-10 w-10 mx-auto mb-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                    <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      No trainings match your filters
+                    </h3>
+                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                      Try adjusting your filters or check back later for new programs tailored to your farm.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
+        )}
 
-          <div className="w-full p-3 sm:p-4 md:p-6">
-            <div className="mb-6">
-              <div className={`flex flex-wrap gap-2 p-1 rounded-full ${darkMode ? 'bg-[#01343c]' : 'bg-white shadow-sm border border-gray-200'}`}>
-                {[
-                  { id: 'available', label: 'Available Trainings' },
-                  { id: 'schedule', label: 'My Schedule' },
-                  { id: 'advisory', label: 'Advisory Sessions' }
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${activeTab === tab.id
-                      ? 'bg-[#7ede56] text-[#002f37]'
-                      : darkMode
-                        ? 'text-gray-300 hover:bg-[#0f515b]'
-                        : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+        {activeTab === 'schedule' && (
+          <Card className={darkMode ? 'bg-[#002f37] border border-gray-700' : 'bg-white shadow-sm'}>
+            <CardHeader className="pb-4">
+              <CardTitle className={darkMode ? 'text-white' : 'text-gray-900'}>My Training Schedule</CardTitle>
+              <CardDescription className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
+                Track the trainings you have registered for, monitor completion status, and access materials.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                  <thead className={darkMode ? 'bg-[#01343c]' : 'bg-gray-50'}>
+                    <tr>
+                      {['Training Title', 'Date', 'Mode', 'Status', 'Trainer', 'Actions'].map((header) => (
+                        <th
+                          key={header}
+                          scope="col"
+                          className={`px-4 py-3 text-left font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}
+                        >
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className={darkMode ? 'divide-y divide-gray-700' : 'divide-y divide-gray-200'}>
+                    {registeredTrainings.map((training) => (
+                      <tr key={training.id} className={darkMode ? 'hover:bg-[#01343c]' : 'hover:bg-gray-50'}>
+                        <td className={`px-4 py-3 font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {training.title}
+                        </td>
+                        <td className={darkMode ? 'px-4 py-3 text-gray-300' : 'px-4 py-3 text-gray-600'}>
+                          {training.date}
+                        </td>
+                        <td className={darkMode ? 'px-4 py-3 text-gray-300' : 'px-4 py-3 text-gray-600'}>
+                          {training.mode}
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge
+                            className={`text-xs ${training.status === 'Completed'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+                              : training.status === 'Upcoming'
+                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
+                                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300'
+                              }`}
+                          >
+                            {training.status}
+                          </Badge>
+                        </td>
+                        <td className={darkMode ? 'px-4 py-3 text-gray-300' : 'px-4 py-3 text-gray-600'}>
+                          {training.trainer}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" className={`text-xs ${darkMode ? 'border-transparent bg-[#01424d] text-white hover:bg-[#01525f]' : 'text-[#002f37] hover:bg-gray-100'}`}>
+                              View Details
+                            </Button>
+                            {training.status === 'Completed' ? (
+                              <Button size="sm" className="bg-[#7ede56] hover:bg-[#6bc947] text-[#002f37] text-xs">
+                                Download Certificate
+                              </Button>
+                            ) : (
+                              <Button variant="outline" size="sm" className={`text-xs ${darkMode ? 'border-gray-600 text-white hover:bg-gray-800' : ''}`}>
+                                Reschedule
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {activeTab === 'advisory' && (
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            {/* Left Rail: Infestation Upload & Tools */}
+            <div className="xl:col-span-1 space-y-6">
+              <Card className={`overflow-hidden border-none shadow-xl ${darkMode ? 'bg-[#01343c]/50' : 'bg-white'}`}>
+                <div className="bg-gradient-to-r from-[#7ede56] to-[#6bc947] p-4 text-[#002f37]">
+                  <h3 className="font-bold flex items-center gap-2">
+                    <Upload className="h-5 w-5" />
+                    Instant Diagnosis
+                  </h3>
+                  <p className="text-xs opacity-80 mt-1">Upload a photo for AI-powered pest & disease analysis</p>
+                </div>
+                <CardContent className="p-6 space-y-4">
+                  <div
+                    className={`aspect-video rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${darkMode ? 'border-gray-700 bg-black/20 hover:border-[#7ede56]/50' : 'border-gray-300 bg-gray-50 hover:border-[#7ede56]'
+                      }`}
+                    onClick={() => setSelectedImage('mock_image_path')}
+                  >
+                    {selectedImage ? (
+                      <div className="relative w-full h-full p-2">
+                        <div className="w-full h-full rounded-lg bg-[#7ede56]/10 flex items-center justify-center border border-[#7ede56]/30">
+                          <ImageIcon className="h-12 w-12 text-[#7ede56]" />
+                        </div>
+                        <Badge className="absolute top-4 right-4 bg-[#7ede56] text-[#002f37]">Image Selected</Badge>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="p-3 rounded-full bg-[#7ede56]/10">
+                          <ImageIcon className="h-8 w-8 text-[#7ede56]" />
+                        </div>
+                        <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Drop your photo here</p>
+                        <p className="text-xs text-gray-500">Supports JPG, PNG (Max 5MB)</p>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className={`text-xs font-bold uppercase ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Additional Context</label>
+                    <textarea
+                      placeholder="Describe the symptoms or changes you've noticed..."
+                      value={infestationDetails}
+                      onChange={(e) => setInfestationDetails(e.target.value)}
+                      className={`w-full h-24 p-3 rounded-xl border transition-all resize-none outline-none focus:ring-2 focus:ring-[#7ede56] ${darkMode ? 'bg-[#002f37] border-gray-700 text-white placeholder:text-gray-600' : 'bg-white border-gray-200 text-gray-900'
+                        }`}
+                    />
+                  </div>
+
+                  <Button
+                    className="w-full bg-[#7ede56] hover:bg-[#6bc947] text-[#002f37] font-bold h-12 rounded-xl flex items-center justify-center gap-2 group"
+                    onClick={handleAnalyzeInfestation}
+                    disabled={isAnalyzing || (!infestationDetails.trim() && !selectedImage)}
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <div className="h-4 w-4 border-2 border-[#002f37]/30 border-t-[#002f37] rounded-full animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <Bot className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                        Run AI Analysis
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className={`p-4 border-none shadow-lg ${darkMode ? 'bg-gradient-to-br from-[#01343c] to-[#002f37]' : 'bg-gradient-to-br from-[#7ede56]/5 to-white'}`}>
+                <h4 className={`text-sm font-bold mb-3 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <CheckCircle className="h-4 w-4 text-[#7ede56]" />
+                  AI Capabilities
+                </h4>
+                <div className="space-y-3">
+                  {[
+                    'Instant Pest Identification',
+                    'Real-time Soil Health Advice',
+                    'Climate Impact Forecasting',
+                    'Integrated Management Plans'
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="h-1.5 w-1.5 rounded-full bg-[#7ede56]" />
+                      <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
             </div>
 
-            {activeTab === 'available' && (
-              <div className="space-y-6">
-                <Card className={darkMode ? 'bg-[#002f37] border border-gray-700' : 'bg-white shadow-sm'}>
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="flex flex-col lg:flex-row gap-4 lg:items-end">
-                      <div className="flex-1 space-y-2">
-                        <label className={`text-xs uppercase tracking-wide ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Search trainings</label>
-                        <Input
-                          placeholder="Search by title, trainer, or keywords"
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className={`${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500' : ''}`}
-                        />
+            {/* Main Center: AI Chat Assistant */}
+            <div className="xl:col-span-2 flex flex-col h-[700px]">
+              <Card className={`flex-1 flex flex-col border-none shadow-2xl overflow-hidden ${darkMode ? 'bg-[#01343c]/30' : 'bg-gray-50/50'}`}>
+                {/* Chat Header */}
+                <div className={`p-4 flex items-center justify-between border-b ${darkMode ? 'border-gray-700/50 bg-[#01343c]/50' : 'bg-white border-gray-100'}`}>
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#7ede56] to-[#6bc947] flex items-center justify-center">
+                        <Bot className="h-6 w-6 text-[#002f37]" />
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
-                        <div className="space-y-2">
-                          <label className={`text-xs uppercase tracking-wide ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Category</label>
-                          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                            <SelectTrigger className={`${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : ''}`}>
-                              <SelectValue placeholder="All categories" />
-                            </SelectTrigger>
-                            <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
-                              <SelectItem value="all">All</SelectItem>
-                              {trainingCategories.map((category) => (
-                                <SelectItem key={category} value={category}>
-                                  {category}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                      <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-[#7ede56] rounded-full border-2 border-white dark:border-[#01343c]" />
+                    </div>
+                    <div>
+                      <h3 className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>AkuafoAdanfo</h3>
+                      <p className="text-[10px] text-[#7ede56] font-bold uppercase tracking-wider">Online & Analyzing</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
+                    <MoreHorizontal className="h-5 w-5" />
+                  </Button>
+                </div>
+
+                {/* Chat Messages */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                  {aiHistory.map((entry) => (
+                    <div key={entry.id} className="space-y-4">
+                      {/* User Message */}
+                      <div className="flex justify-end pr-8">
+                        <div className={`max-w-[80%] p-4 rounded-2xl rounded-tr-none shadow-sm ${darkMode ? 'bg-[#7ede56] text-[#002f37]' : 'bg-[#002f37] text-white'
+                          }`}>
+                          <p className="text-sm leading-relaxed">{entry.question}</p>
+                          <p className={`text-[10px] mt-2 opacity-60 text-right`}>{entry.timestamp}</p>
                         </div>
-                        <div className="space-y-2">
-                          <label className={`text-xs uppercase tracking-wide ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Region</label>
-                          <Select value={regionFilter} onValueChange={setRegionFilter}>
-                            <SelectTrigger className={`${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : ''}`}>
-                              <SelectValue placeholder="All regions" />
-                            </SelectTrigger>
-                            <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
-                              <SelectItem value="all">All</SelectItem>
-                              {trainingRegions.map((region) => (
-                                <SelectItem key={region} value={region}>
-                                  {region}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <label className={`text-xs uppercase tracking-wide ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Mode</label>
-                          <Select value={modeFilter} onValueChange={setModeFilter}>
-                            <SelectTrigger className={`${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : ''}`}>
-                              <SelectValue placeholder="All modes" />
-                            </SelectTrigger>
-                            <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
-                              <SelectItem value="all">All</SelectItem>
-                              {trainingModes.map((mode) => (
-                                <SelectItem key={mode} value={mode}>
-                                  {mode}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                      </div>
+
+                      {/* AI Response */}
+                      <div className="flex justify-start pl-8">
+                        <div className={`max-w-[85%] p-5 rounded-2xl rounded-tl-none border shadow-md relative ${darkMode ? 'bg-[#01343c] border-gray-700 text-white' : 'bg-white border-gray-100 text-gray-800'
+                          }`}>
+                          <div className={`absolute -left-10 top-0 h-8 w-8 rounded-full flex items-center justify-center ${darkMode ? 'bg-[#01424d]' : 'bg-gray-100'
+                            }`}>
+                            <Bot className="h-5 w-5 text-[#7ede56]" />
+                          </div>
+                          <p className="text-sm leading-relaxed whitespace-pre-line">{entry.response}</p>
+                          <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700/50">
+                            <button className="text-[10px] font-bold text-[#7ede56] hover:underline">Apply Recommendation</button>
+                            <button className="text-[10px] font-bold text-gray-400 hover:text-white transition-colors">Not Helpful</button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {filteredSessions.map((session, index) => {
-                    const occupancy = Math.round((session.currentParticipants / session.maxParticipants) * 100);
-                    return (
-                      <Card
-                        key={session.id}
-                        className={`transition-all duration-300 ${darkMode ? 'bg-[#002f37] border-gray-700' : 'bg-white shadow-md'} hover:-translate-y-1 hover:shadow-lg`}
-                      >
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center justify-between">
-                            <Badge className="bg-[#7ede56] text-[#002f37] text-xs">{session.category}</Badge>
-                            <Badge className={`text-xs ${getStatusColor(session.status)}`}>
-                              {session.status === 'upcoming' ? 'Open for Registration' : session.status}
-                            </Badge>
-                          </div>
-                          <CardTitle className={`text-lg mt-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {session.title}
-                          </CardTitle>
-                          <CardDescription className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
-                            {session.description}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="grid grid-cols-2 gap-3 text-sm">
-                            <div className={`flex items-center gap-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                              <Calendar className="h-4 w-4" />
-                              <span>{new Date(session.date).toLocaleDateString()}</span>
-                            </div>
-                            <div className={`flex items-center gap-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                              <Clock className="h-4 w-4" />
-                              <span>{session.time}</span>
-                            </div>
-                            <div className={`flex items-center gap-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                              {getTypeIcon(session.mode)}
-                              <span>{session.mode}</span>
-                            </div>
-                            <div className={`flex items-center gap-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                              <MapPin className="h-4 w-4" />
-                              <span>{session.region}</span>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-3 text-sm">
-                            <div>
-                              <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Trainer</p>
-                              <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{session.instructor}</p>
-                            </div>
-                            <div>
-                              <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Organizer</p>
-                              <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{session.organization}</p>
-                            </div>
-                          </div>
-                          <div>
-                            <p className={`text-sm mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                              {session.currentParticipants} of {session.maxParticipants} seats filled
-                            </p>
-                            <div className={`w-full h-2 rounded-full overflow-hidden ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
-                              <div
-                                className="h-full bg-gradient-to-r from-[#7ede56] to-[#6bc947] transition-all duration-300"
-                                style={{ width: `${occupancy}%` }}
-                              />
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Button
-                              variant="outline"
-                              className={`text-xs ${darkMode ? 'border-transparent bg-[#01424d] text-white hover:bg-[#01525f]' : 'text-[#002f37] hover:bg-gray-100'}`}
-                              onClick={() => {
-                                setSelectedTraining(session);
-                                setShowDetailsDialog(true);
-                              }}
-                            >
-                              View Details
-                            </Button>
-                            <Button className="bg-[#7ede56] hover:bg-[#6bc947] text-[#002f37] text-xs px-4">
-                              Register
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                  {filteredSessions.length === 0 && (
-                    <Card className={`col-span-full ${darkMode ? 'bg-[#002f37] border-gray-700' : 'bg-white shadow'} `}>
-                      <CardContent className="p-8 text-center">
-                        <BookOpen className={`h-10 w-10 mx-auto mb-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-                        <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                          No trainings match your filters
-                        </h3>
-                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                          Try adjusting your filters or check back later for new programs tailored to your farm.
-                        </p>
-                      </CardContent>
-                    </Card>
+                  ))}
+                  {isAnalyzing && (
+                    <div className="flex justify-start pl-8 animate-pulse">
+                      <div className={`p-4 rounded-2xl bg-gray-200/20 dark:bg-white/5`}>
+                        <div className="flex gap-1">
+                          <div className="h-1.5 w-1.5 rounded-full bg-[#7ede56] animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <div className="h-1.5 w-1.5 rounded-full bg-[#7ede56] animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <div className="h-1.5 w-1.5 rounded-full bg-[#7ede56] animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
-              </div>
-            )}
 
-            {activeTab === 'schedule' && (
-              <Card className={darkMode ? 'bg-[#002f37] border border-gray-700' : 'bg-white shadow-sm'}>
-                <CardHeader className="pb-4">
-                  <CardTitle className={darkMode ? 'text-white' : 'text-gray-900'}>My Training Schedule</CardTitle>
-                  <CardDescription className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
-                    Track the trainings you have registered for, monitor completion status, and access materials.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-                      <thead className={darkMode ? 'bg-[#01343c]' : 'bg-gray-50'}>
-                        <tr>
-                          {['Training Title', 'Date', 'Mode', 'Status', 'Trainer', 'Actions'].map((header) => (
-                            <th
-                              key={header}
-                              scope="col"
-                              className={`px-4 py-3 text-left font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}
-                            >
-                              {header}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody className={darkMode ? 'divide-y divide-gray-700' : 'divide-y divide-gray-200'}>
-                        {registeredTrainings.map((training) => (
-                          <tr key={training.id} className={darkMode ? 'hover:bg-[#01343c]' : 'hover:bg-gray-50'}>
-                            <td className={`px-4 py-3 font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                              {training.title}
-                            </td>
-                            <td className={darkMode ? 'px-4 py-3 text-gray-300' : 'px-4 py-3 text-gray-600'}>
-                              {training.date}
-                            </td>
-                            <td className={darkMode ? 'px-4 py-3 text-gray-300' : 'px-4 py-3 text-gray-600'}>
-                              {training.mode}
-                            </td>
-                            <td className="px-4 py-3">
-                              <Badge
-                                className={`text-xs ${training.status === 'Completed'
-                                  ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
-                                  : training.status === 'Upcoming'
-                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
-                                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300'
-                                  }`}
-                              >
-                                {training.status}
-                              </Badge>
-                            </td>
-                            <td className={darkMode ? 'px-4 py-3 text-gray-300' : 'px-4 py-3 text-gray-600'}>
-                              {training.trainer}
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-2">
-                                <Button variant="outline" size="sm" className={`text-xs ${darkMode ? 'border-transparent bg-[#01424d] text-white hover:bg-[#01525f]' : 'text-[#002f37] hover:bg-gray-100'}`}>
-                                  View Details
-                                </Button>
-                                {training.status === 'Completed' ? (
-                                  <Button size="sm" className="bg-[#7ede56] hover:bg-[#6bc947] text-[#002f37] text-xs">
-                                    Download Certificate
-                                  </Button>
-                                ) : (
-                                  <Button variant="outline" size="sm" className={`text-xs ${darkMode ? 'border-gray-600 text-white hover:bg-gray-800' : ''}`}>
-                                    Reschedule
-                                  </Button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {activeTab === 'advisory' && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className={darkMode ? 'bg-[#002f37] border border-gray-700' : 'bg-white shadow-sm'}>
-                  <CardHeader>
-                    <CardTitle className={darkMode ? 'text-white' : 'text-gray-900'}>AI Advisory Assistant</CardTitle>
-                    <CardDescription className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
-                      Get instant recommendations on crops, pests, soil health, and climate based on your questions.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700 bg-[#01343c]' : 'border-gray-200 bg-gray-50'}`}>
-                      <div className="flex items-center gap-3 mb-3">
-                        <Bot className={`h-6 w-6 ${darkMode ? 'text-[#7ede56]' : 'text-[#0b8a62]'}`} />
-                        <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Ask AkuafoAdanfo (AI Advisor)</p>
-                      </div>
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <Input
-                          placeholder="Ask AkuafoAdanfo about pests, crop stress, or livestock health..."
-                          value={aiPrompt}
-                          onChange={(e) => setAiPrompt(e.target.value)}
-                          className={`${darkMode ? 'bg-[#002f37] border-gray-600 text-white placeholder:text-gray-500' : ''}`}
-                        />
-                        <Button
-                          className="bg-[#7ede56] hover:bg-[#6bc947] text-[#002f37]"
-                          onClick={() => {
-                            if (!aiPrompt.trim()) return;
+                {/* Chat Input */}
+                <div className={`p-4 border-t ${darkMode ? 'border-gray-700/50' : 'bg-white border-gray-100'}`}>
+                  <div className="flex items-center gap-2 max-w-4xl mx-auto">
+                    <button className={`p-2 rounded-xl transition-colors ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100'}`}>
+                      <Paperclip className="h-5 w-5" />
+                    </button>
+                    <div className="flex-1 relative">
+                      <Input
+                        placeholder="Type your message..."
+                        value={aiPrompt}
+                        onChange={(e) => setAiPrompt(e.target.value)}
+                        className={`h-12 rounded-xl border-none pr-12 text-sm ${darkMode ? 'bg-[#002f37] text-white placeholder:text-gray-600' : 'bg-gray-100 text-gray-900 border-none'
+                          }`}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && aiPrompt.trim()) {
                             const newEntry = {
                               id: aiHistory.length + 1,
                               question: aiPrompt,
-                              response:
-                                'AkuafoAdanfo is analysing your request. I will detect possible pest or disease issues, suggest treatments, and notify your regional extension agent if an inspection is required.',
+                              response: 'AkuafoAdanfo is processing your request. I will provide details shortly. Your local agent has also been updated.',
                               timestamp: 'Just now'
                             };
                             setAiHistory([newEntry, ...aiHistory]);
                             setAiPrompt('');
-                          }}
-                        >
-                          Ask
-                        </Button>
-                      </div>
-                      <div className="flex items-center gap-2 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                        <Mic className="h-3.5 w-3.5" />
-                        Voice input in Twi, Ewe, and English coming soon. Simply say “AkuafoAdanfo check my cocoa leaves.”
-                      </div>
+                          }
+                        }}
+                      />
+                      <button
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg bg-[#7ede56] text-[#002f37] flex items-center justify-center"
+                        onClick={() => {
+                          if (!aiPrompt.trim()) return;
+                          const newEntry = {
+                            id: aiHistory.length + 1,
+                            question: aiPrompt,
+                            response: 'AkuafoAdanfo is processing your request. I will provide details shortly. Your local agent has also been updated.',
+                            timestamp: 'Just now'
+                          };
+                          setAiHistory([newEntry, ...aiHistory]);
+                          setAiPrompt('');
+                        }}
+                      >
+                        <Send className="h-4 w-4" />
+                      </button>
                     </div>
-
-                    <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
-                      {aiHistory.map((entry) => (
-                        <div
-                          key={entry.id}
-                          className={`rounded-lg p-4 border ${darkMode ? 'border-gray-700 bg-[#01343c]' : 'border-gray-200 bg-white shadow-sm'}`}
-                        >
-                          <p className={`text-xs mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{entry.timestamp}</p>
-                          <p className={`text-sm font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{entry.question}</p>
-                          <p className={`text-sm leading-6 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{entry.response}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className={darkMode ? 'bg-[#002f37] border border-gray-700' : 'bg-white shadow-sm'}>
-                  <CardHeader>
-                    <CardTitle className={darkMode ? 'text-white' : 'text-gray-900'}>Human Advisory & Booking</CardTitle>
-                    <CardDescription className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
-                      Book sessions with extension agents, track upcoming consultations, and review past feedback.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                      <h3 className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Upcoming Sessions</h3>
-                      <div className={`space-y-3 max-h-32 overflow-y-auto pr-1 ${darkMode ? '' : ''}`}>
-                        {bookedSessions.map((session) => (
-                          <div
-                            key={session.id}
-                            className={`p-3 rounded-lg border ${darkMode ? 'border-gray-700 bg-[#01343c]' : 'border-gray-200 bg-gray-50'}`}
-                          >
-                            <div className="flex items-center justify-between text-sm">
-                              <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{session.advisor}</p>
-                              <Badge className="bg-[#7ede56] text-[#002f37] text-xs">{session.status}</Badge>
-                            </div>
-                            <div className={`flex items-center gap-2 text-xs mt-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                              <Calendar className="h-3.5 w-3.5" />
-                              {session.date} • {session.time} • {session.mode}
-                            </div>
-                          </div>
-                        ))}
-                        {bookedSessions.length === 0 && (
-                          <p className={darkMode ? 'text-gray-400 text-sm' : 'text-gray-600 text-sm'}>No sessions booked yet.</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <h3 className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Available Advisors</h3>
-                      <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-                        {advisors.map((advisor) => (
-                          <div
-                            key={advisor.id}
-                            className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700 bg-[#01343c]' : 'border-gray-200 bg-white shadow-sm'}`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{advisor.name}</p>
-                                <p className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{advisor.specialization}</p>
-                              </div>
-                              <div className="flex items-center gap-2 text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'}">
-                                <MapPin className="h-3.5 w-3.5" />
-                                {advisor.region}
-                              </div>
-                            </div>
-                            <div className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                              {advisor.availability}
-                            </div>
-                            <div className="flex items-center gap-2 mt-3">
-                              <Button
-                                size="sm"
-                                className="bg-[#7ede56] hover:bg-[#6bc947] text-[#002f37] text-xs"
-                                onClick={() =>
-                                  setBookedSessions([
-                                    ...bookedSessions,
-                                    {
-                                      id: bookedSessions.length + 1,
-                                      advisor: advisor.name,
-                                      specialization: advisor.specialization,
-                                      region: advisor.region,
-                                      mode: advisor.mode,
-                                      date: 'Pending confirmation with Ashanti team',
-                                      time: 'To be scheduled',
-                                      status: 'Requested'
-                                    }
-                                  ])
-                                }
-                              >
-                                Request Visit
-                              </Button>
-                              <Button variant="outline" size="sm" className={`text-xs ${darkMode ? 'border-gray-600 text-white hover:bg-gray-800' : ''}`}>
-                                Contact
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700 bg-[#01343c]' : 'border-gray-200 bg-gray-50'}`}>
-                      <p className={`text-sm font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Share Feedback</p>
-                      <p className={`text-xs mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                        Help us improve advisory quality. Rate your last session and leave suggestions for the advisor.
-                      </p>
-                      <div className="flex items-center gap-2">
-                        {[...Array(5)].map((_, index) => (
-                          <Star key={index} className={`h-4 w-4 ${darkMode ? 'text-[#7ede56]' : 'text-[#facc15]'}`} />
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+                    <button className="h-12 w-12 rounded-xl bg-[#7ede56]/10 text-[#7ede56] flex items-center justify-center hover:bg-[#7ede56]/20 transition-colors">
+                      <Mic className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              </Card>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>{selectedTraining?.title}</DialogTitle>
+            <DialogTitle>{selectedTraining?.title || 'Training Details'}</DialogTitle>
             <DialogDescription>
-              {selectedTraining?.description}
+              {selectedTraining?.description || 'Review the details of this training session below.'}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -988,7 +869,7 @@ const TrainingSessions = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </DashboardLayout>
   );
 };
 

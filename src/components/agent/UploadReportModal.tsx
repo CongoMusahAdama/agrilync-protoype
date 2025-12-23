@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -69,9 +69,9 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
                         <Upload className="h-6 w-6 text-purple-500" />
                         Upload Field Report
                     </DialogTitle>
-                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        Upload field visit report for {farmer.name}
-                    </p>
+                    <DialogDescription className="sr-only">
+                        Upload field visit report details and attachments for {farmer.name}.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-6 py-4">

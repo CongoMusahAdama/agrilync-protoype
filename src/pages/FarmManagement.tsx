@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import SidebarProfileCard from '@/components/SidebarProfileCard';
+import DashboardLayout from '@/components/DashboardLayout';
 import {
   ArrowLeft,
   ArrowRight,
@@ -43,8 +43,10 @@ import {
   Menu
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 const FarmManagement = () => {
+  const { darkMode } = useDarkMode();
   const { userType } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -97,10 +99,6 @@ const FarmManagement = () => {
     startDate: '',
     description: ''
   });
-  const { darkMode, toggleDarkMode } = useDarkMode();
-  const sidebarDarkMode = !darkMode;
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
   const [activeSidebarItem, setActiveSidebarItem] = useState('farm-management');
   const [showStageDialog, setShowStageDialog] = useState(false);
@@ -382,540 +380,344 @@ const FarmManagement = () => {
     }
   };
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* Logo/App Name */}
-      <div className={`p-4 border-b flex-shrink-0 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <img
-              src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png"
-              alt="AgriLync Logo"
-              className="h-8 w-8"
-            />
-            {(!sidebarCollapsed || isMobile) && (
-              <span className={`text-xl font-bold ${sidebarDarkMode ? 'text-[#f4ffee]' : 'text-[#002f37]'}`}>AgriLync</span>
-            )}
-          </div>
-          {!isMobile && (
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className={`p-2 rounded-lg ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'} transition-colors`}
-            >
-              {sidebarCollapsed ? (
-                <ChevronRight className="h-5 w-5" aria-label="Expand sidebar" />
-              ) : (
-                <ChevronLeft className="h-5 w-5" aria-label="Collapse sidebar" />
-              )}
-            </button>
-          )}
-        </div>
-      </div>
 
-      <SidebarProfileCard
-        sidebarCollapsed={sidebarCollapsed}
-        isMobile={isMobile}
-        darkMode={darkMode}
-        userType={userType}
-      />
-
-      {/* Navigation - static layout with no shifting on click */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'dashboard'
-            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
-            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
-            }`}
-          onClick={() => handleSidebarNavigation('dashboard')}
-        >
-          <Activity className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Dashboard</span>}
-        </div>
-
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'farm-management'
-            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
-            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
-            }`}
-          onClick={() => handleSidebarNavigation('farm-management')}
-        >
-          <Sprout className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Farm Management</span>}
-        </div>
-
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'farm-analytics'
-            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
-            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
-            }`}
-          onClick={() => handleSidebarNavigation('farm-analytics')}
-        >
-          <BarChart3 className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Farm Analytics</span>}
-        </div>
-
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'investor-matches'
-            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
-            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
-            }`}
-          onClick={() => handleSidebarNavigation('investor-matches')}
-        >
-          <Users className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Investor Matches</span>}
-        </div>
-
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'training-sessions'
-            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
-            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
-            }`}
-          onClick={() => handleSidebarNavigation('training-sessions')}
-        >
-          <Calendar className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Training Sessions</span>}
-        </div>
-
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'notifications'
-            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
-            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
-            }`}
-          onClick={() => handleSidebarNavigation('notifications')}
-        >
-          <Bell className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Notifications</span>}
-        </div>
-
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${activeSidebarItem === 'settings'
-            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37]'
-            : sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent' : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
-            }`}
-          onClick={() => handleSidebarNavigation('settings')}
-        >
-          <Settings className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Profile & Settings</span>}
-        </div>
-      </nav>
-
-      {/* Log Out - Sticky at bottom */}
-      <div className={`mt-auto p-4 border-t space-y-2 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'} ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
-          onClick={toggleDarkMode}
-          title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-        >
-          {darkMode ? <Sun className="h-4 w-4 shrink-0 text-yellow-500" /> : <Moon className="h-4 w-4 shrink-0 text-gray-400" />}
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
-        </div>
-        <div
-          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
-          onClick={() => navigate('/')}
-        >
-          <ArrowRight className="h-4 w-4 shrink-0" />
-          {(!sidebarCollapsed || isMobile) && <span className="font-medium">Log Out</span>}
-        </div>
-      </div>
-    </div>
-  );
 
   return (
-    <div className={`h-screen overflow-hidden ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
-      <div className="flex h-full">
-        {isMobile && (
-          <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-            <SheetContent side="left" className={`w-[280px] p-0 ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
-              <SidebarContent />
-            </SheetContent>
-          </Sheet>
-        )}
+    <DashboardLayout
+      activeSidebarItem="farm-management"
+      title="Farm Management"
+      subtitle="Manage your crops and livestock"
+    >
+      <div className="w-full">
+        {/* Stats Cards - Matching Main Dashboard Style */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6 mb-6">
+          {/* Total Items - Green */}
+          <Card className="hover:shadow-md transition-shadow bg-[#7ede56] border-none">
+            <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
+              <div className="flex flex-col gap-0.5 sm:gap-1">
+                <span className="text-[10px] sm:text-xs font-medium text-white/90">Total Items</span>
+                <span className="text-xl sm:text-2xl font-bold text-white">{farmProjects.length}</span>
+              </div>
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-white/20 flex items-center justify-center">
+                <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Desktop Sidebar - Static for grower (no transitions), collapsible for others */}
-        {!isMobile && (
-          <div className={`${userType === 'grower' ? 'w-64' : (sidebarCollapsed ? 'w-16' : 'w-64')} ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'} flex-shrink-0 ${userType !== 'grower' ? 'transition-all duration-300' : ''} border-r ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
-            <div className="flex flex-col h-full sticky top-0 overflow-hidden">
-              <SidebarContent />
-            </div>
-          </div>
-        )}
+          {/* Crops - Orange */}
+          <Card className="hover:shadow-md transition-shadow bg-[#ffa500] border-none">
+            <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
+              <div className="flex flex-col gap-0.5 sm:gap-1">
+                <span className="text-[10px] sm:text-xs font-medium text-white/90">Crops</span>
+                <span className="text-xl sm:text-2xl font-bold text-white">
+                  {farmProjects.filter(p => p.type === 'crop').length}
+                </span>
+              </div>
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-white/20 flex items-center justify-center">
+                <Leaf className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Main Content */}
-        <div className={`flex-1 overflow-y-auto transition-colors ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
-          {/* Top Header & Sticky Action Bar */}
-          <div className="sticky top-0 z-20">
-            {/* Header Title Bar */}
-            <div className={`${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white border-gray-200'} border-b px-3 sm:px-6 py-3 sm:py-4 transition-colors`}>
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-                  {isMobile && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setMobileSidebarOpen(true)}
-                      className={`p-2 ${darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100'}`}
-                    >
-                      <Menu className="h-5 w-5" />
-                    </Button>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <h1 className={`text-lg sm:text-2xl font-bold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>Farm Management</h1>
-                    <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Manage your crops and livestock</p>
+          {/* Livestock - Blue */}
+          <Card className="hover:shadow-md transition-shadow bg-[#3b82f6] border-none">
+            <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
+              <div className="flex flex-col gap-0.5 sm:gap-1">
+                <span className="text-[10px] sm:text-xs font-medium text-white/90">Livestock</span>
+                <span className="text-xl sm:text-2xl font-bold text-white">
+                  {farmProjects.filter(p => p.type === 'livestock').length}
+                </span>
+              </div>
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-white/20 flex items-center justify-center">
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Equipment - Purple */}
+          <Card className="hover:shadow-md transition-shadow bg-[#9333ea] border-none">
+            <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
+              <div className="flex flex-col gap-0.5 sm:gap-1">
+                <span className="text-[10px] sm:text-xs font-medium text-white/90">Equipment</span>
+                <span className="text-xl sm:text-2xl font-bold text-white">
+                  {farmProjects.filter(p => p.type === 'equipment').length}
+                </span>
+              </div>
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-white/20 flex items-center justify-center">
+                <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Total Investment - Pink/Magenta */}
+          <Card className="hover:shadow-md transition-shadow bg-[#921573] border-none overflow-hidden">
+            <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
+              <div className="flex flex-col gap-0.5 sm:gap-1 min-w-0">
+                <span className="text-[10px] sm:text-xs font-medium text-white/90">Investment</span>
+                <span className="text-lg sm:text-2xl font-bold text-white truncate">
+                  ₵{farmProjects.reduce((sum, item) => sum + item.investment, 0).toLocaleString()}
+                </span>
+              </div>
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        {/* Stage Activities Section (Tabbed) */}
+        {
+          (userType === 'farmer' || userType === 'grower') && (
+            <Card className={`mb-8 transition-colors ${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white border-gray-200'} shadow-md`}>
+              <CardHeader className="border-b border-gray-100 dark:border-gray-800 pb-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                  <div>
+                    <CardTitle className={`flex items-center gap-2 text-lg sm:text-xl ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <Leaf className={`h-5 w-5 sm:h-6 sm:w-6 ${darkMode ? 'text-[#7ede56]' : 'text-[#0b8a62]'}`} />
+                      Stage Activities
+                    </CardTitle>
+                    <CardDescription className="text-xs sm:text-sm mt-1">
+                      Manage activities for each stage of your farming cycle
+                    </CardDescription>
                   </div>
-                </div>
-                <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`flex items-center gap-1 sm:gap-2 rounded-full p-2 ${darkMode ? 'text-white hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-                    onClick={toggleDarkMode}
-                    title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                    onClick={() => setShowCreateProjectDialog(true)}
+                    className="bg-[#7ede56] hover:bg-[#6bc947] text-white w-full sm:w-auto"
                   >
-                    {darkMode ? (
-                      <Sun className="h-5 w-5 text-yellow-400" />
-                    ) : (
-                      <Moon className="h-5 w-5 text-gray-600" />
-                    )}
-                    <span className="hidden sm:inline ml-1">{darkMode ? 'Light' : 'Dark'}</span>
+                    <Plus className="h-4 w-4 mr-2 !text-white" />
+                    <span className="!text-white">Create Project</span>
                   </Button>
                 </div>
-              </div>
-            </div>
 
+                {/* Horizontal Tabs */}
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                  {['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'].map((stage) => {
+                    const isActive = activeStageTab === stage;
+                    const isCurrentStage = farmStage === stage;
 
-          </div>
-
-          <div className="w-full p-3 sm:p-4 md:p-6">
-            {/* Stats Cards - Matching Main Dashboard Style */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              {/* Total Items - Green */}
-              <Card className="hover:shadow-md transition-shadow bg-[#7ede56] border-none">
-                <CardContent className="p-4 flex flex-row items-center justify-between space-y-0">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs font-medium text-white/90">Total Items</span>
-                    <span className="text-2xl font-bold text-white">{farmProjects.length}</span>
-                  </div>
-                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-white" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Crops - Orange */}
-              <Card className="hover:shadow-md transition-shadow bg-[#ffa500] border-none">
-                <CardContent className="p-4 flex flex-row items-center justify-between space-y-0">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs font-medium text-white/90">Crops</span>
-                    <span className="text-2xl font-bold text-white">
-                      {farmProjects.filter(p => p.type === 'crop').length}
-                    </span>
-                  </div>
-                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
-                    <Leaf className="h-5 w-5 text-white" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Livestock - Blue */}
-              <Card className="hover:shadow-md transition-shadow bg-[#3b82f6] border-none">
-                <CardContent className="p-4 flex flex-row items-center justify-between space-y-0">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs font-medium text-white/90">Livestock</span>
-                    <span className="text-2xl font-bold text-white">
-                      {farmProjects.filter(p => p.type === 'livestock').length}
-                    </span>
-                  </div>
-                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
-                    <TrendingUp className="h-5 w-5 text-white" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Equipment - Purple */}
-              <Card className="hover:shadow-md transition-shadow bg-[#9333ea] border-none">
-                <CardContent className="p-4 flex flex-row items-center justify-between space-y-0">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs font-medium text-white/90">Equipment</span>
-                    <span className="text-2xl font-bold text-white">
-                      {farmProjects.filter(p => p.type === 'equipment').length}
-                    </span>
-                  </div>
-                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-white" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Total Investment - Pink/Magenta */}
-              <Card className="hover:shadow-md transition-shadow bg-[#921573] border-none">
-                <CardContent className="p-4 flex flex-row items-center justify-between space-y-0">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs font-medium text-white/90">Total Investment</span>
-                    <span className="text-2xl font-bold text-white">
-                      GHS {farmProjects.reduce((sum, item) => sum + item.investment, 0).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
-                    <TrendingUp className="h-5 w-5 text-white" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            {/* Stage Activities Section (Tabbed) */}
-            {
-              (userType === 'farmer' || userType === 'grower') && (
-                <Card className={`mb-8 transition-colors ${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white border-gray-200'} shadow-md`}>
-                  <CardHeader className="border-b border-gray-100 dark:border-gray-800 pb-0">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                      <div>
-                        <CardTitle className={`flex items-center gap-2 text-xl ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                          <Leaf className={`h-6 w-6 ${darkMode ? 'text-[#7ede56]' : 'text-[#0b8a62]'}`} />
-                          Stage Activities
-                        </CardTitle>
-                        <CardDescription className="text-sm mt-1">
-                          Manage activities for each stage of your farming cycle
-                        </CardDescription>
-                      </div>
-                      <Button
-                        onClick={() => setShowCreateProjectDialog(true)}
-                        className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
-                      >
-                        <Plus className="h-4 w-4 mr-2 !text-white" />
-                        <span className="!text-white">Create Project</span>
-                      </Button>
-                    </div>
-
-                    {/* Horizontal Tabs */}
-                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-                      {['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'].map((stage) => {
-                        const isActive = activeStageTab === stage;
-                        const isCurrentStage = farmStage === stage;
-
-                        return (
-                          <button
-                            key={stage}
-                            onClick={() => setActiveStageTab(stage)}
-                            className={`
+                    return (
+                      <button
+                        key={stage}
+                        onClick={() => setActiveStageTab(stage)}
+                        className={`
                               relative px-4 py-3 text-sm font-medium whitespace-nowrap transition-all border-b-2 
                               ${isActive
-                                ? 'border-[#7ede56] text-[#7ede56]'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                              }
+                            ? 'border-[#7ede56] text-[#7ede56]'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                          }
                             `}
-                          >
-                            <span className="flex items-center gap-2">
-                              {stage.charAt(0).toUpperCase() + stage.slice(1)}
-                              {isCurrentStage && (
-                                <Badge className="h-5 px-1.5 bg-[#7ede56] text-white text-[10px]">Current</Badge>
-                              )}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="pt-6 min-h-[300px]">
-                    {/* Active Stage Content */}
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {activeStageTab.charAt(0).toUpperCase() + activeStageTab.slice(1)} Activities
-                          </h3>
-                          {farmStage === activeStageTab ? (
-                            <Badge className="bg-[#7ede56] text-white">Current Stage</Badge>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setFarmStage(activeStageTab)}
-                              className={`h-7 text-xs ${darkMode ? 'border-[#7ede56] text-[#7ede56] hover:bg-[#7ede56]/10' : 'border-[#7ede56] text-[#0b8a62] hover:bg-[#7ede56]/10'}`}
-                            >
-                              Set as Current
-                            </Button>
+                      >
+                        <span className="flex items-center gap-2">
+                          {stage.charAt(0).toUpperCase() + stage.slice(1)}
+                          {isCurrentStage && (
+                            <Badge className="h-5 px-1.5 bg-[#7ede56] text-white text-[10px]">Current</Badge>
                           )}
-                        </div>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </CardHeader>
+
+              <CardContent className="pt-6 min-h-[300px]">
+                {/* Active Stage Content */}
+                <div className="space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-3">
+                      <h3 className={`text-base sm:text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {activeStageTab.charAt(0).toUpperCase() + activeStageTab.slice(1)} Activities
+                      </h3>
+                      {farmStage === activeStageTab ? (
+                        <Badge className="bg-[#7ede56] text-white text-[10px] sm:text-xs">Current</Badge>
+                      ) : (
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleEditStage(activeStageTab)}
-                          className={`${darkMode ? 'border-gray-600 text-gray-300 hover:text-white hover:bg-gray-800' : ''}`}
+                          onClick={() => setFarmStage(activeStageTab)}
+                          className={`h-7 px-2 text-[10px] sm:text-xs ${darkMode ? 'border-[#7ede56] text-[#7ede56] hover:bg-[#7ede56]/10' : 'border-[#7ede56] text-[#0b8a62] hover:bg-[#7ede56]/10'}`}
                         >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Manage Activities
+                          Set as Current
                         </Button>
+                      )}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditStage(activeStageTab)}
+                      className={`w-full sm:w-auto text-xs sm:text-sm ${darkMode ? 'border-gray-600 text-[#7ede56] hover:text-[#7ede56] hover:bg-[#7ede56]/10' : ''}`}
+                    >
+                      <Edit className="h-3.5 w-3.5 mr-2" />
+                      Manage Activities
+                    </Button>
+                  </div>
+
+                  {stageDetails[activeStageTab]?.activities && stageDetails[activeStageTab].activities.length > 0 ? (
+                    <div className="space-y-3">
+                      {stageDetails[activeStageTab].activities.map((activity: any, index: number) => {
+                        const activityId = typeof activity === 'string' ? `${activeStageTab}-activity-${index}` : activity.id ?? `${activeStageTab}-activity-${index}`;
+                        const activityDate = typeof activity === 'string' || !activity.date ? null : new Date(activity.date).toLocaleDateString();
+                        const activityDescription = typeof activity === 'string' ? null : activity.description;
+                        const label = getActivityLabel(activity);
+
+                        return (
+                          <div
+                            key={activityId}
+                            className={`p-4 rounded-lg border-l-4 ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'}`}
+                            style={{ borderLeftColor: getStageColor(activeStageTab).bg }}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <Badge
+                                    className="text-xs"
+                                    style={{ backgroundColor: getStageColor(activeStageTab).bg, color: 'white' }}
+                                  >
+                                    {label}
+                                  </Badge>
+                                  {activityDate && (
+                                    <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                      {activityDate}
+                                    </span>
+                                  )}
+                                </div>
+                                {activityDescription && (
+                                  <p className={`text-sm mt-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    {activityDescription}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className={`text-center py-12 border-2 border-dashed rounded-xl ${darkMode ? 'border-gray-700 bg-gray-800/20' : 'border-gray-200 bg-gray-50'}`}>
+                      <Activity className={`h-12 w-12 mx-auto mb-3 opacity-20 ${darkMode ? 'text-white' : 'text-gray-900'}`} />
+                      <p className={`text-base font-medium mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>No activities yet</p>
+                      <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        There are no activities recorded for the {activeStageTab} stage.
+                      </p>
+                      <Button
+                        onClick={() => handleEditStage(activeStageTab)}
+                        className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Activity
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )
+        }
+
+
+
+        {/* Farm Projects List */}
+        {
+          farmProjects.length > 0 ? (
+            <div className="space-y-4">
+              {farmProjects.map((project) => (
+                <Card key={project.id} className={`hover:shadow-md transition-shadow ${darkMode ? 'bg-[#002f37] border-gray-600' : ''}`}>
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                      <div className="flex-1 w-full min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                          <div className="flex items-center gap-2">
+                            {getTypeIcon(project.type)}
+                            <h3 className={`text-lg sm:text-xl font-semibold truncate max-w-[150px] sm:max-w-none ${darkMode ? 'text-white' : 'text-gray-900'}`}>{project.name}</h3>
+                          </div>
+                          <div className="flex gap-2">
+                            <Badge variant="outline" className={`text-[10px] sm:text-xs ${darkMode ? 'border-gray-700 text-gray-300' : ''}`}>
+                              {project.type.charAt(0).toUpperCase() + project.type.slice(1)}
+                            </Badge>
+                            <Badge className="bg-[#7ede56] text-white text-[10px] sm:text-xs">
+                              {project.currentStage.charAt(0).toUpperCase() + project.currentStage.slice(1)}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+                          <div>
+                            <p className={`text-[10px] sm:text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Category</p>
+                            <p className={`text-xs sm:text-sm font-semibold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>{project.category}</p>
+                          </div>
+                          <div>
+                            <p className={`text-[10px] sm:text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Area/Qty</p>
+                            <p className={`text-xs sm:text-sm font-semibold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>{project.area}</p>
+                          </div>
+                          <div className="col-span-2 sm:col-span-1">
+                            <p className={`text-[10px] sm:text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Investment</p>
+                            <p className={`text-xs sm:text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>₵{project.investment.toLocaleString()}</p>
+                          </div>
+                        </div>
+
+                        <div className={`flex items-center gap-4 text-[10px] sm:text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          <div className="flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            <span>Started: {new Date(project.startDate).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+
+                        {project.description && (
+                          <div className={`rounded-lg p-3 ${darkMode ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
+                            <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'} line-clamp-2 sm:line-clamp-none`}>
+                              <span className="font-medium">Description:</span> {project.description}
+                            </p>
+                          </div>
+                        )}
                       </div>
 
-                      {stageDetails[activeStageTab]?.activities && stageDetails[activeStageTab].activities.length > 0 ? (
-                        <div className="space-y-3">
-                          {stageDetails[activeStageTab].activities.map((activity: any, index: number) => {
-                            const activityId = typeof activity === 'string' ? `${activeStageTab}-activity-${index}` : activity.id ?? `${activeStageTab}-activity-${index}`;
-                            const activityDate = typeof activity === 'string' || !activity.date ? null : new Date(activity.date).toLocaleDateString();
-                            const activityDescription = typeof activity === 'string' ? null : activity.description;
-                            const label = getActivityLabel(activity);
-
-                            return (
-                              <div
-                                key={activityId}
-                                className={`p-4 rounded-lg border-l-4 ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'}`}
-                                style={{ borderLeftColor: getStageColor(activeStageTab).bg }}
-                              >
-                                <div className="flex items-start justify-between">
-                                  <div>
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <Badge
-                                        className="text-xs"
-                                        style={{ backgroundColor: getStageColor(activeStageTab).bg, color: 'white' }}
-                                      >
-                                        {label}
-                                      </Badge>
-                                      {activityDate && (
-                                        <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                          {activityDate}
-                                        </span>
-                                      )}
-                                    </div>
-                                    {activityDescription && (
-                                      <p className={`text-sm mt-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        {activityDescription}
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <div className={`text-center py-12 border-2 border-dashed rounded-xl ${darkMode ? 'border-gray-700 bg-gray-800/20' : 'border-gray-200 bg-gray-50'}`}>
-                          <Activity className={`h-12 w-12 mx-auto mb-3 opacity-20 ${darkMode ? 'text-white' : 'text-gray-900'}`} />
-                          <p className={`text-base font-medium mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>No activities yet</p>
-                          <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            There are no activities recorded for the {activeStageTab} stage.
-                          </p>
-                          <Button
-                            onClick={() => handleEditStage(activeStageTab)}
-                            className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
-                          >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Activity
-                          </Button>
-                        </div>
-                      )}
+                      <div className="flex flex-row sm:flex-col gap-2 w-full sm:w-auto shrink-0">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setFarmStage(project.currentStage);
+                          }}
+                          className={`flex-1 sm:flex-none flex items-center justify-center gap-2 h-9 text-xs sm:text-sm ${outlineButtonClasses}`}
+                        >
+                          <Eye className="h-4 w-4" />
+                          <span className="inline sm:hidden lg:inline">Journey</span>
+                          <span className="hidden sm:inline lg:hidden">View</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setFarmProjects(farmProjects.filter(p => p.id !== project.id));
+                          }}
+                          className={`flex-1 sm:flex-none flex items-center justify-center gap-2 h-9 text-xs sm:text-sm ${darkMode ? 'border-gray-700 text-red-400 hover:bg-gray-800 hover:text-red-300' : 'text-red-600 hover:text-red-700'}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              )
-            }
-
-
-
-            {/* Farm Projects List */}
-            {
-              farmProjects.length > 0 ? (
-                <div className="space-y-4">
-                  {farmProjects.map((project) => (
-                    <Card key={project.id} className={`hover:shadow-md transition-shadow ${darkMode ? 'bg-[#002f37] border-gray-600' : ''}`}>
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="flex items-center gap-2">
-                                {getTypeIcon(project.type)}
-                                <h3 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{project.name}</h3>
-                              </div>
-                              <Badge variant="outline" className={darkMode ? 'border-gray-700 text-gray-300' : ''}>
-                                {project.type.charAt(0).toUpperCase() + project.type.slice(1)}
-                              </Badge>
-                              <Badge className="bg-[#7ede56] text-white">
-                                {project.currentStage.charAt(0).toUpperCase() + project.currentStage.slice(1)}
-                              </Badge>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                              <div>
-                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Category</p>
-                                <p className={`text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{project.category}</p>
-                              </div>
-                              <div>
-                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Area/Quantity</p>
-                                <p className={`text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{project.area}</p>
-                              </div>
-                              <div>
-                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Investment</p>
-                                <p className={`text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>GHS {project.investment.toLocaleString()}</p>
-                              </div>
-                            </div>
-
-                            <div className={`flex items-center gap-6 text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                              <div className="flex items-center gap-2">
-                                <Calendar className={`h-4 w-4 ${darkMode ? 'text-gray-500' : ''}`} />
-                                <span>Started: {new Date(project.startDate).toLocaleDateString()}</span>
-                              </div>
-                            </div>
-
-                            {project.description && (
-                              <div className={`rounded-lg p-3 ${darkMode ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
-                                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                  <span className="font-medium">Description:</span> {project.description}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex flex-col gap-2 ml-4">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setFarmStage(project.currentStage);
-                                // Navigate to project details or open journey tracking
-                              }}
-                              className={`flex items-center gap-2 ${outlineButtonClasses}`}
-                            >
-                              <Eye className="h-4 w-4" />
-                              View Journey
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                // Handle delete project
-                                setFarmProjects(farmProjects.filter(p => p.id !== project.id));
-                              }}
-                              className={`flex items-center gap-2 ${darkMode ? 'border-gray-700 text-red-400 hover:bg-gray-800 hover:text-red-300' : 'text-red-600 hover:text-red-700'}`}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
-                  <CardContent className="p-12 text-center">
-                    <Leaf className={`h-12 w-12 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-300'}`} />
-                    <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>No farm projects yet</h3>
-                    <p className={`mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      Create your first farm project to start tracking your farming journey from planning to harvest
-                    </p>
-                    <Button
-                      onClick={() => setShowCreateProjectDialog(true)}
-                      className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Your First Farm Project
-                    </Button>
-                  </CardContent>
-                </Card>
-              )
-            }
-          </div>
-        </div>
+              ))}
+            </div>
+          ) : (
+            <Card className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+              <CardContent className="p-12 text-center">
+                <Leaf className={`h-12 w-12 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-300'}`} />
+                <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>No farm projects yet</h3>
+                <p className={`mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Create your first farm project to start tracking your farming journey from planning to harvest
+                </p>
+                <Button
+                  onClick={() => setShowCreateProjectDialog(true)}
+                  className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Farm Project
+                </Button>
+              </CardContent>
+            </Card>
+          )
+        }
       </div>
 
       {/* Stage Details Dialog - Enhanced with Activity Tracking */}
@@ -931,9 +733,9 @@ const FarmManagement = () => {
           </DialogHeader>
           <div className="space-y-6 py-4">
             {/* Stage Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="stage-date" className={darkMode ? 'text-gray-300' : ''}>
+                <Label htmlFor="stage-date" className={`text-sm ${darkMode ? 'text-gray-300' : ''}`}>
                   Stage Start Date
                 </Label>
                 <Input
@@ -951,11 +753,11 @@ const FarmManagement = () => {
                       });
                     }
                   }}
-                  className={darkMode ? 'bg-[#002f37] border-gray-600 text-white' : ''}
+                  className={`mt-1.5 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : ''}`}
                 />
               </div>
               <div>
-                <Label htmlFor="stage-status" className={darkMode ? 'text-gray-300' : ''}>Status</Label>
+                <Label htmlFor="stage-status" className={`text-sm ${darkMode ? 'text-gray-300' : ''}`}>Status</Label>
                 <Select
                   value={selectedStage ? stageDetails[selectedStage]?.status || 'pending' : 'pending'}
                   onValueChange={(value) => {
@@ -970,7 +772,7 @@ const FarmManagement = () => {
                     }
                   }}
                 >
-                  <SelectTrigger className={darkMode ? 'bg-[#002f37] border-gray-600 text-white' : ''}>
+                  <SelectTrigger className={`mt-1.5 ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : ''}`}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
@@ -1118,26 +920,26 @@ const FarmManagement = () => {
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex flex-row sm:flex-row gap-2">
             <Button
               variant="outline"
               onClick={() => setShowStageDialog(false)}
-              className={darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white' : ''}
+              className={`flex-1 sm:flex-none ${darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white' : ''}`}
             >
               Close
             </Button>
             <Button
               onClick={handleSaveStageDetails}
-              className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
+              className="flex-1 sm:flex-none bg-[#7ede56] hover:bg-[#6bc947] text-white"
             >
-              Save All Details
+              Save Details
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog >
+      </Dialog>
 
       {/* Create Farm Project Dialog - Enhanced */}
-      < Dialog open={showCreateProjectDialog} onOpenChange={setShowCreateProjectDialog} >
+      <Dialog open={showCreateProjectDialog} onOpenChange={setShowCreateProjectDialog}>
         <DialogContent className={`${darkMode ? 'bg-[#002f37] border-gray-600' : ''} max-w-4xl max-h-[85vh] overflow-y-auto`}>
           <DialogHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3">
@@ -1155,8 +957,8 @@ const FarmManagement = () => {
 
           <div className="space-y-4 py-4">
             {/* Project Name & Type */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
                 <Label htmlFor="project-name" className={`flex items-center gap-1 text-sm ${darkMode ? 'text-gray-300' : ''}`}>
                   <span className="text-red-500">*</span>
                   Project Name
@@ -1216,7 +1018,7 @@ const FarmManagement = () => {
             </div>
 
             {/* Area, Investment & Start Date */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="project-area" className={`flex items-center gap-1 text-sm ${darkMode ? 'text-gray-300' : ''}`}>
                   <span className="text-red-500">*</span>
@@ -1246,7 +1048,7 @@ const FarmManagement = () => {
                   />
                 </div>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
                 <Label htmlFor="project-start-date" className={`text-sm ${darkMode ? 'text-gray-300' : ''}`}>
                   Start Date
                 </Label>
@@ -1276,25 +1078,25 @@ const FarmManagement = () => {
             </div>
 
             {/* Submit Actions */}
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex flex-row sm:flex-row items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
               <Button
                 variant="outline"
                 onClick={() => setShowCreateProjectDialog(false)}
-                className={darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white' : ''}
+                className={`flex-1 sm:flex-none ${darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white' : ''}`}
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleCreateProject}
-                className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
+                className="flex-1 sm:flex-none bg-[#7ede56] hover:bg-[#6bc947] text-white"
               >
                 Create Project
               </Button>
             </div>
           </div>
         </DialogContent>
-      </Dialog >
-    </div >
+      </Dialog>
+    </DashboardLayout>
   );
 };
 

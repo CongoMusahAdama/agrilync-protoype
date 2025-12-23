@@ -67,7 +67,12 @@ import {
   AlertCircle,
   ArrowUpRight,
   Check,
-  Info
+  Info,
+  UserCheck,
+  DollarSign,
+  TrendingUp,
+  BarChart3,
+  ClipboardCheck
 } from 'lucide-react';
 import {
   Bar,
@@ -98,6 +103,13 @@ const AgentDashboard: React.FC = () => {
   const [viewDisputeModalOpen, setViewDisputeModalOpen] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState<any>(null);
   const [viewVisitModalOpen, setViewVisitModalOpen] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
 
   // Notification State
   const [notificationFilter, setNotificationFilter] = useState<'all' | 'alert' | 'update'>('all');
@@ -167,39 +179,39 @@ const AgentDashboard: React.FC = () => {
       id: 'farmers-management',
       title: 'Farmers Onboarded',
       value: agentProfile.stats.farmersOnboarded,
-      subtitle: 'Total growers on your roster',
-      color: 'bg-[#1db954]',
-      textColor: 'text-white',
+      color: 'bg-emerald-600',
       icon: Users,
-      path: '/dashboard/agent/farmers-management'
+      path: '/dashboard/agent/farm-management'
     },
     {
       id: 'farm-monitoring',
       title: 'Active Farms',
       value: agentProfile.stats.activeFarms,
-      subtitle: 'Farms under monitoring',
-      color: 'bg-[#f97316]',
-      textColor: 'text-white',
+      color: 'bg-[#ffa500]',
       icon: Sprout,
-      path: '/dashboard/agent/farm-monitoring'
+      path: '/dashboard/agent/farm-management'
     },
     {
       id: 'investor-farmer-matches',
       title: 'Investor Matches',
       value: agentProfile.stats.investorMatches,
-      subtitle: 'Active partnerships',
-      color: 'bg-[#7c3aed]',
-      textColor: 'text-white',
+      color: 'bg-[#ff6347]',
       icon: Handshake,
       path: '/dashboard/agent/investor-farmer-matches'
+    },
+    {
+      id: 'reports-submitted',
+      title: 'Reports Filed',
+      value: agentProfile.stats.reportsThisMonth,
+      color: 'bg-[#921573]',
+      icon: ClipboardCheck,
+      path: '/dashboard/agent/farm-management'
     },
     {
       id: 'dispute-management',
       title: 'Pending Disputes',
       value: agentProfile.stats.pendingDisputes,
-      subtitle: 'Issues to resolve',
-      color: 'bg-[#ef4444]',
-      textColor: 'text-white',
+      color: 'bg-[#1d9bf0]',
       icon: AlertTriangle,
       path: '/dashboard/agent/dispute-management'
     }
@@ -284,47 +296,137 @@ const AgentDashboard: React.FC = () => {
   return (
     <AgentLayout
       activeSection="profile-overview"
-      title={`${getGreeting()}, ${agentProfile.name.split(' ')[0]}!`}
-      subtitle="Track your field operations and grower support pipeline."
+      title="Dashboard"
     >
-      {/* Stats Overview - Simplified to 4 cards */}
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mb-8">
-        {highlightCards.map((card) => (
-          <button
+      <div className="mb-6 sm:mb-8">
+        <h2 className={`text-xl sm:text-2xl font-bold mb-1 sm:mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+          {getGreeting()}, {agentProfile.name.split(' ')[0]}!
+        </h2>
+        <p className={`text-sm sm:text-base ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          Track your field operations and grower support pipeline.
+        </p>
+      </div>
+
+      {/* Key Metric Cards - 6-column Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-6 mb-8">
+        {/* Verification Queue - Deep Teal */}
+        <Card
+          className={`bg-[#002f37] rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-700 cursor-pointer hover:scale-105 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+          style={{ transitionDelay: '0ms' }}
+          onClick={() => navigate('/dashboard/agent/farm-management')}
+        >
+          {/* Background Decoration */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute -right-4 -bottom-4 opacity-10">
+              <UserCheck className="h-24 w-24 sm:h-32 sm:w-32 text-white rotate-12" />
+            </div>
+            {/* Subtle pulsating circles for "active queue" feel */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-emerald-500/10 rounded-full animate-pulse pointer-events-none" />
+          </div>
+
+          <div className="flex flex-col h-full relative z-10">
+            <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-white/10">
+                <UserCheck className="h-4 w-4 sm:h-6 sm:w-6 text-emerald-400" />
+              </div>
+              <p className="text-[10px] sm:text-sm font-medium text-white uppercase tracking-wider">Verification Queue</p>
+            </div>
+            <div className="flex-1 flex flex-col justify-center">
+              <div className="flex items-baseline gap-1 sm:gap-2 mb-0.5 sm:mb-2 text-white">
+                <p className="text-2xl sm:text-4xl font-bold">{agentFarmers.filter(f => f.status === 'pending').length + 3}</p>
+                <span className="text-[10px] sm:text-xs font-medium uppercase tracking-widest text-emerald-400">Backlog</span>
+              </div>
+              <p className="text-[10px] sm:text-sm text-white/80 line-clamp-1 italic">Growers awaiting accreditation</p>
+            </div>
+            <div className="mt-2 sm:mt-4 flex items-center justify-between">
+              <div className="flex -space-x-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-[#002f37] bg-gray-500 overflow-hidden`}>
+                    <img src={`https://i.pravatar.cc/150?u=${i + 10}`} alt="Farmer" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+              <div className="text-[10px] sm:text-xs text-[#7ede56] font-bold flex items-center gap-1">
+                Process <ArrowUpRight className="h-3 w-3" />
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Other Metric Cards */}
+        {highlightCards.map((card, index) => (
+          <Card
             key={card.id}
-            type="button"
+            className={`${card.color} rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-700 cursor-pointer hover:scale-105 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              }`}
+            style={{ transitionDelay: `${(index + 1) * 100}ms` }}
             onClick={() => navigate(card.path)}
-            className={`relative overflow-hidden rounded-xl p-4 text-left shadow-md transition-all hover:shadow-xl hover:scale-105 ${card.color} ${card.textColor}`}
           >
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-white/20 p-2">
-                <card.icon className="h-5 w-5" />
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none">
+              <card.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
+            </div>
+
+            <div className="flex flex-col h-full relative z-10">
+              <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
+                <card.icon className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                <p className="text-[10px] sm:text-sm font-medium text-white">{card.title}</p>
               </div>
-              <div>
-                <p className="text-2xl font-bold">{card.value}</p>
-                <p className="text-xs opacity-80">{card.title}</p>
+              <div className="flex-1 flex items-center">
+                <p className="text-2xl sm:text-4xl font-bold text-white">{card.value}</p>
               </div>
-            </div >
-          </button>
+              <div className="flex justify-end mt-2 sm:mt-4">
+                <div className="text-[10px] sm:text-sm font-medium text-white hover:underline flex items-center gap-1">
+                  View <ArrowUpRight className="h-3 w-3" />
+                </div>
+              </div>
+            </div>
+          </Card>
         ))}
       </div>
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className={`w-full justify-start overflow-x-auto whitespace-nowrap scrollbar-hide flex ${darkMode ? 'bg-[#0b2528] border border-[#124b53]' : 'bg-gray-100'}`}>
-          <TabsTrigger value="overview" className={`flex-1 min-w-[100px] ${darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : ''}`}>
+        <TabsList className={`w-full justify-start overflow-x-auto whitespace-nowrap scrollbar-hide flex p-1 gap-1 rounded-xl mb-6 ${darkMode ? 'bg-[#003c47]/50 border border-gray-700' : 'bg-gray-100/50 border border-gray-200'}`}>
+          <TabsTrigger
+            value="overview"
+            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all font-bold uppercase tracking-wider text-[10px] ${darkMode
+              ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
+              : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
+          >
             Overview
           </TabsTrigger>
-          <TabsTrigger value="farmers" className={`flex-1 min-w-[100px] ${darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : ''}`}>
+          <TabsTrigger
+            value="farmers"
+            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all font-bold uppercase tracking-wider text-[10px] ${darkMode
+              ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
+              : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
+          >
             Farmers
           </TabsTrigger>
-          <TabsTrigger value="farms" className={`flex-1 min-w-[100px] ${darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : ''}`}>
+          <TabsTrigger
+            value="farms"
+            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all font-bold uppercase tracking-wider text-[10px] ${darkMode
+              ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
+              : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
+          >
             Farms
           </TabsTrigger>
-          <TabsTrigger value="matches" className={`flex-1 min-w-[100px] ${darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : ''}`}>
+          <TabsTrigger
+            value="matches"
+            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all font-bold uppercase tracking-wider text-[10px] ${darkMode
+              ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
+              : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
+          >
             Matches
           </TabsTrigger>
-          <TabsTrigger value="performance" className={`flex-1 min-w-[100px] ${darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : ''}`}>
+          <TabsTrigger
+            value="performance"
+            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all font-bold uppercase tracking-wider text-[10px] ${darkMode
+              ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
+              : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
+          >
             Performance
           </TabsTrigger>
         </TabsList>

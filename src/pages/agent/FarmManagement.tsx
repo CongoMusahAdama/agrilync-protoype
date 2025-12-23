@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { mockFarmers, regions, farmCategories } from '@/data/mockFarmData';
@@ -31,7 +32,8 @@ import {
     MapPin,
     Calendar,
     FileText,
-    ClipboardList
+    ClipboardList,
+    Phone
 } from 'lucide-react';
 
 // Mock data for field visits
@@ -60,6 +62,12 @@ const FarmManagement: React.FC = () => {
     // Field visit logging state
     const [activeTab, setActiveTab] = useState<'farmers' | 'visits'>('farmers');
     const [fieldVisitModalOpen, setFieldVisitModalOpen] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    React.useEffect(() => {
+        const timer = setTimeout(() => setIsLoaded(true), 100);
+        return () => clearTimeout(timer);
+    }, []);
     const [visitLogs, setVisitLogs] = useState(mockFieldVisits);
     const [visitForm, setVisitForm] = useState({
         farmerId: '',
@@ -212,91 +220,48 @@ const FarmManagement: React.FC = () => {
         <AgentLayout
             activeSection="farm-management"
             title="Farm Management"
-            subtitle="Manage farmers, verify registrations, and monitor farm activities"
         >
-            <div className="space-y-6">
-                {/* Summary Cards */}
+            <div className="mb-6 sm:mb-8">
+                <h2 className={`text-xl sm:text-2xl font-bold mb-1 sm:mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    Management Hub
+                </h2>
+                <p className={`text-sm sm:text-base ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Oversee growers, verify registrations, and log field activities.
+                </p>
+            </div>
+
+            <div className="space-y-8">
+                {/* Summary Cards - Premium Sliding Style */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    <Card
-                        className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${statusFilter === null ? 'ring-2 ring-white' : ''} bg-[#1db954]`}
-                        onClick={() => handleCardClick(null)}
-                    >
-                        <CardContent className="p-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-white/20">
-                                    <Users className="h-5 w-5 text-white" />
-                                </div>
-                                <div>
-                                    <p className="text-2xl font-bold text-white">{metrics.total}</p>
-                                    <p className="text-xs text-white/80">Total Farmers</p>
-                                </div>
+                    {[
+                        { label: 'Total Farmers', value: metrics.total, icon: Users, color: 'bg-[#1db954]', delay: 0, status: null },
+                        { label: 'Verified', value: metrics.verified, icon: CheckCircle, color: 'bg-emerald-600', delay: 100, status: 'Verified' },
+                        { label: 'Pending', value: metrics.pending, icon: Clock, color: 'bg-yellow-500', delay: 200, status: 'Pending' },
+                        { label: 'Active Farms', value: metrics.active, icon: TrendingUp, color: 'bg-blue-600', delay: 300, status: 'In Progress' },
+                        { label: 'Matched', value: metrics.matched, icon: Coins, color: 'bg-purple-600', delay: 400, status: 'Matched' }
+                    ].map((item, idx) => (
+                        <Card
+                            key={item.label}
+                            className={`cursor-pointer transition-all hover:shadow-xl hover:scale-105 relative overflow-hidden text-white border-0 ${item.color} ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} ${(statusFilter === item.status && item.status !== null) || (statusFilter === null && item.status === null) ? 'ring-2 ring-white ring-offset-2 ring-offset-[#002f37]' : ''}`}
+                            style={{ transitionDuration: '500ms', transitionDelay: `${item.delay}ms` }}
+                            onClick={() => handleCardClick(item.status)}
+                        >
+                            <div className="absolute inset-0 opacity-10 pointer-events-none">
+                                <item.icon className="absolute -right-2 -bottom-2 h-16 w-16 text-white rotate-12" />
                             </div>
-                        </CardContent>
-                    </Card>
-                    <Card
-                        className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${statusFilter === 'Verified' ? 'ring-2 ring-white' : ''} bg-emerald-600`}
-                        onClick={() => handleCardClick('Verified')}
-                    >
-                        <CardContent className="p-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-white/20">
-                                    <CheckCircle className="h-5 w-5 text-white" />
+                            <CardContent className="p-5 relative z-10">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 rounded-lg bg-white/20">
+                                        <item.icon className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-2xl font-bold">{item.value}</p>
+                                        <p className="text-xs opacity-80">{item.label}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-2xl font-bold text-white">{metrics.verified}</p>
-                                    <p className="text-xs text-white/80">Verified</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card
-                        className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${statusFilter === 'Pending' ? 'ring-2 ring-white' : ''} bg-yellow-500`}
-                        onClick={() => handleCardClick('Pending')}
-                    >
-                        <CardContent className="p-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-white/20">
-                                    <Clock className="h-5 w-5 text-white" />
-                                </div>
-                                <div>
-                                    <p className="text-2xl font-bold text-white">{metrics.pending}</p>
-                                    <p className="text-xs text-white/80">Pending</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card
-                        className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${statusFilter === 'In Progress' ? 'ring-2 ring-white' : ''} bg-blue-600`}
-                        onClick={() => handleCardClick('In Progress')}
-                    >
-                        <CardContent className="p-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-white/20">
-                                    <TrendingUp className="h-5 w-5 text-white" />
-                                </div>
-                                <div>
-                                    <p className="text-2xl font-bold text-white">{metrics.active}</p>
-                                    <p className="text-xs text-white/80">Active Farms</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card
-                        className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${statusFilter === 'Matched' ? 'ring-2 ring-white' : ''} bg-purple-600`}
-                        onClick={() => handleCardClick('Matched')}
-                    >
-                        <CardContent className="p-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-white/20">
-                                    <Coins className="h-5 w-5 text-white" />
-                                </div>
-                                <div>
-                                    <p className="text-2xl font-bold text-white">{metrics.matched}</p>
-                                    <p className="text-xs text-white/80">Matched</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
+                    ))}
                 </div>
 
                 {/* Tabs for Farmers Directory and Field Visit Logs */}
@@ -320,39 +285,43 @@ const FarmManagement: React.FC = () => {
 
                     {/* Farmers Directory Tab */}
                     <TabsContent value="farmers" className="space-y-4">
-                        {/* Search & Filter Bar */}
-                        <Card className={sectionCardClass}>
-                            <div className="p-4">
-                                <div className="flex flex-col lg:flex-row gap-4">
-                                    <div className="flex-1 relative">
-                                        <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                                        <Input placeholder="Search by farmer name or phone..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className={`pl-10 ${inputBaseClasses}`} />
+                        {/* Improved Filter Bar - Modern Glassmorphism */}
+                        <Card className={`${sectionCardClass} border-0 shadow-lg overflow-hidden`}>
+                            <div className="p-4 sm:p-6">
+                                <div className="flex flex-col xl:flex-row gap-4 xl:items-center justify-between">
+                                    <div className="relative flex-1 group">
+                                        <Search className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${darkMode ? 'text-gray-500 group-focus-within:text-[#1db954]' : 'text-gray-400 group-focus-within:text-[#1db954]'}`} />
+                                        <Input
+                                            placeholder="Search by name, phone or Lync ID..."
+                                            className={`pl-10 h-11 ${inputBaseClasses} ${darkMode ? 'bg-white/5 border-white/10 focus:ring-emerald-500/50' : 'bg-gray-50'}`}
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                        />
                                     </div>
-                                    <div className="flex flex-wrap gap-3">
+                                    <div className="flex flex-wrap items-center gap-3">
                                         <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-                                            <SelectTrigger className={`w-40 ${inputBaseClasses}`}><SelectValue placeholder="Region" /></SelectTrigger>
+                                            <SelectTrigger className={`w-full sm:w-40 h-11 ${inputBaseClasses} ${darkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50'}`}>
+                                                <SelectValue placeholder="Region" />
+                                            </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all">All Regions</SelectItem>
-                                                {regions.map(region => (<SelectItem key={region} value={region}>{region}</SelectItem>))}
+                                                {regions.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                                             </SelectContent>
                                         </Select>
                                         <Select value={selectedFarmType} onValueChange={setSelectedFarmType}>
-                                            <SelectTrigger className={`w-40 ${inputBaseClasses}`}><SelectValue placeholder="Farm Type" /></SelectTrigger>
+                                            <SelectTrigger className={`w-full sm:w-40 h-11 ${inputBaseClasses} ${darkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50'}`}>
+                                                <SelectValue placeholder="Farm Type" />
+                                            </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all">All Types</SelectItem>
                                                 <SelectItem value="Crop">Crop</SelectItem>
                                                 <SelectItem value="Livestock">Livestock</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                                            <SelectTrigger className={`w-40 ${inputBaseClasses}`}><SelectValue placeholder="Category" /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All Categories</SelectItem>
-                                                {Object.entries(farmCategories).map(([type, categories]) => categories.map(category => (<SelectItem key={category} value={category}>{category}</SelectItem>)))}
-                                            </SelectContent>
-                                        </Select>
                                         <Select value={selectedStatus} onValueChange={(val) => { setSelectedStatus(val); setStatusFilter(null); }}>
-                                            <SelectTrigger className={`w-40 ${inputBaseClasses}`}><SelectValue placeholder="Status" /></SelectTrigger>
+                                            <SelectTrigger className={`w-full sm:w-40 h-11 ${inputBaseClasses} ${darkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50'}`}>
+                                                <SelectValue placeholder="Status" />
+                                            </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all">All Statuses</SelectItem>
                                                 <SelectItem value="Pending">Pending</SelectItem>
@@ -361,111 +330,163 @@ const FarmManagement: React.FC = () => {
                                                 <SelectItem value="In Progress">In Progress</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        <Button variant="outline" size="sm" onClick={resetFilters} className={darkMode ? 'border-[#1b5b65] hover:bg-[#0d3036]' : ''}>
-                                            <X className="h-4 w-4 mr-2" />Reset
-                                        </Button>
-                                        <Button size="sm" onClick={() => setIsAddFarmerModalOpen(true)} className="bg-[#1db954] hover:bg-[#17a447] text-white">
-                                            <Plus className="h-4 w-4 mr-2" />Add Farmer
-                                        </Button>
+                                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={resetFilters}
+                                                className={`h-11 w-11 ${darkMode ? 'border-white/10 bg-white/5 hover:bg-white/10 text-gray-400' : 'bg-white text-gray-500'}`}
+                                                title="Reset Filters"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                            <Button onClick={() => setIsAddFarmerModalOpen(true)} className="h-11 flex-1 sm:flex-none px-6 bg-[#1db954] hover:bg-[#17a447] text-white shadow-lg shadow-emerald-500/20">
+                                                <Plus className="h-4 w-4 mr-2" />Add Farmer
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
-                                {statusFilter && (
-                                    <div className="mt-3 flex items-center gap-2">
-                                        <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Filtering by:</span>
-                                        <Badge className={getStatusBadgeColor(statusFilter)}>{statusFilter}</Badge>
+                                {(statusFilter || searchQuery || selectedStatus !== 'all' || selectedRegion !== 'all' || selectedFarmType !== 'all') && (
+                                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                                        <span className={`text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Active Filters:</span>
+                                        {statusFilter && <Badge className="bg-emerald-500/10 text-emerald-500 border-0 hover:bg-emerald-500/20">{statusFilter}</Badge>}
+                                        {selectedRegion !== 'all' && <Badge variant="outline" className="border-gray-500/30 text-gray-500">{selectedRegion}</Badge>}
+                                        {selectedFarmType !== 'all' && <Badge variant="outline" className="border-gray-500/30 text-gray-500">{selectedFarmType}</Badge>}
                                     </div>
                                 )}
                             </div>
                         </Card>
 
-                        {/* Farmers Table */}
-                        <Card className={sectionCardClass}>
-                            <div className="p-6">
-                                <div className="flex items-center justify-between mb-6">
+                        {/* Farmers Table - Premium Interactive Style */}
+                        <Card className={`${sectionCardClass} border-0 shadow-xl overflow-hidden`}>
+                            <div className="overflow-hidden">
+                                <div className="p-6 border-b border-white/5 flex items-center justify-between bg-emerald-500/5">
                                     <div>
-                                        <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Farmers Directory</h3>
-                                        <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{filteredFarmers.length} {filteredFarmers.length === 1 ? 'farmer' : 'farmers'} found</p>
+                                        <h3 className={`text-lg font-bold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>Grower Directory</h3>
+                                        <p className={`text-xs mt-1 font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            Displaying {filteredFarmers.length} registered farmers
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Badge variant="outline" className={`${darkMode ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border-emerald-100 text-emerald-700'} border px-3 py-1`}>
+                                            <div className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse" />
+                                            Live Update
+                                        </Badge>
                                     </div>
                                 </div>
 
                                 <div className="overflow-x-auto">
-                                    <table className="w-full">
-                                        <thead>
-                                            <tr className="bg-[#1db954] border-[#1db954]">
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">#</th>
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Lync ID</th>
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Farmer</th>
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Phone</th>
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Location</th>
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Farm Details</th>
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Status</th>
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Last Visit</th>
-                                                <th className="text-right py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
+                                    <Table>
+                                        <TableHeader className="bg-emerald-600 dark:bg-emerald-700">
+                                            <TableRow className="border-0 hover:bg-transparent">
+                                                <TableHead className="w-12 text-center text-white font-bold h-12">#</TableHead>
+                                                <TableHead className="text-white font-bold h-12">Farmer Details</TableHead>
+                                                <TableHead className="text-white font-bold h-12">Location</TableHead>
+                                                <TableHead className="text-white font-bold h-12">Farm Info</TableHead>
+                                                <TableHead className="text-white font-bold h-12">Status</TableHead>
+                                                <TableHead className="text-white font-bold h-12">Last Visit</TableHead>
+                                                <TableHead className="text-right text-white font-bold h-12 pr-6">Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
                                             {filteredFarmers.map((farmer, index) => (
-                                                <tr key={farmer.id} className={`border-b transition-colors ${darkMode ? 'border-[#1b5b65]/50 hover:bg-[#0f3035]' : 'border-gray-100 hover:bg-gray-50'} ${index % 2 === 0 ? (darkMode ? 'bg-[#0b2528]' : 'bg-white') : (darkMode ? 'bg-[#0d2d31]' : 'bg-gray-50/50')}`}>
-                                                    <td className={`py-4 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                        {index + 1}
-                                                    </td>
-                                                    <td className={`py-4 px-4 text-sm font-mono ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                                                        {generateLyncId(farmer.id)}
-                                                    </td>
-                                                    <td className="py-4 px-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-white ${farmer.status === 'Verified' ? 'bg-emerald-500' : farmer.status === 'Pending' ? 'bg-yellow-500' : farmer.status === 'Matched' ? 'bg-purple-500' : 'bg-blue-500'}`}>
-                                                                {farmer.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                                <TableRow
+                                                    key={farmer.id}
+                                                    className={`group transition-all duration-300 border-b ${darkMode ? 'border-white/5 hover:bg-emerald-500/5' : 'hover:bg-gray-50'} ${index % 2 === 0 ? (darkMode ? 'bg-transparent' : 'bg-white') : (darkMode ? 'bg-white/2' : 'bg-gray-50/30')}`}
+                                                >
+                                                    <TableCell className="text-center font-mono text-xs text-gray-500">
+                                                        {(index + 1).toString().padStart(2, '0')}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="relative">
+                                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-bold text-white shadow-lg transition-transform group-hover:scale-110 group-hover:rotate-3 ${farmer.status === 'Verified' ? 'bg-emerald-500' : farmer.status === 'Pending' ? 'bg-amber-500' : 'bg-indigo-500'}`}>
+                                                                    {farmer.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                                                </div>
+                                                                {farmer.status === 'Verified' && (
+                                                                    <div className="absolute -right-1 -bottom-1 bg-white rounded-full p-0.5 shadow-sm">
+                                                                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                                                                    </div>
+                                                                )}
                                                             </div>
-                                                            <span className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{farmer.name}</span>
+                                                            <div>
+                                                                <p className={`font-bold text-sm ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{farmer.name}</p>
+                                                                <p className={`text-xs font-mono mt-0.5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{generateLyncId(farmer.id)}</p>
+                                                            </div>
                                                         </div>
-                                                    </td>
-                                                    <td className={`py-4 px-4 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                        {farmer.phone}
-                                                    </td>
-                                                    <td className={`py-4 px-4 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                        <div className="text-sm">
-                                                            <div className="font-medium">{farmer.region}</div>
-                                                            <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>{farmer.community}</div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex flex-col">
+                                                            <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{farmer.region}</span>
+                                                            <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{farmer.community}</span>
                                                         </div>
-                                                    </td>
-                                                    <td className={`py-4 px-4 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                        <div className="text-sm">
-                                                            <div className="font-medium">{farmer.farmType}</div>
-                                                            <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>{farmer.category}</div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex flex-col">
+                                                            <Badge variant="outline" className={`w-fit text-[10px] uppercase font-bold tracking-wider mb-1 px-1.5 py-0 ${darkMode ? 'border-indigo-500/30 text-indigo-400' : 'border-indigo-200 text-indigo-700 bg-indigo-50'}`}>
+                                                                {farmer.farmType}
+                                                            </Badge>
+                                                            <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{farmer.category}</span>
                                                         </div>
-                                                    </td>
-                                                    <td className="py-4 px-4">
-                                                        <Badge variant="outline" className={`${getStatusBadgeColor(farmer.status)} text-xs font-medium`}>{farmer.status}</Badge>
-                                                    </td>
-                                                    <td className={`py-4 px-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                        {new Date(farmer.lastVisit).toLocaleDateString()}
-                                                    </td>
-                                                    <td className="py-4 px-4">
-                                                        <div className="flex items-center justify-end gap-2">
-                                                            <button onClick={() => handleViewFarmer(farmer)} className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300' : 'text-cyan-600 hover:bg-cyan-50 hover:text-cyan-700'}`} title="View Profile">
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Badge className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border-0 ring-1 ring-inset ${farmer.status === 'Verified' ? 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20' :
+                                                            farmer.status === 'Pending' ? 'bg-amber-500/10 text-amber-500 ring-amber-500/20' :
+                                                                farmer.status === 'Matched' ? 'bg-indigo-500/10 text-indigo-500 ring-indigo-500/20' :
+                                                                    'bg-blue-500/10 text-blue-500 ring-blue-500/20'
+                                                            }`}>
+                                                            {farmer.status}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-2">
+                                                            <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                                                            <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                                {new Date(farmer.lastVisit).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                            </span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <div className="flex items-center justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                            <Button
+                                                                size="icon"
+                                                                variant="ghost"
+                                                                onClick={() => handleViewFarmer(farmer)}
+                                                                className={`h-8 w-8 rounded-lg ${darkMode ? 'hover:bg-emerald-500/20 hover:text-emerald-400' : 'hover:bg-emerald-50 hover:text-emerald-600'}`}
+                                                            >
                                                                 <Eye className="w-4 h-4" />
-                                                            </button>
-                                                            <button onClick={() => handleEditFarmer(farmer)} className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-orange-400 hover:bg-orange-500/20 hover:text-orange-300' : 'text-orange-600 hover:bg-orange-50 hover:text-orange-700'}`} title="Edit">
+                                                            </Button>
+                                                            <Button
+                                                                size="icon"
+                                                                variant="ghost"
+                                                                onClick={() => handleEditFarmer(farmer)}
+                                                                className={`h-8 w-8 rounded-lg ${darkMode ? 'hover:bg-amber-500/20 hover:text-amber-400' : 'hover:bg-amber-50 hover:text-amber-600'}`}
+                                                            >
                                                                 <Edit className="w-4 h-4" />
-                                                            </button>
-                                                            <button onClick={() => handleUploadReport(farmer)} className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-purple-400 hover:bg-purple-500/20 hover:text-purple-300' : 'text-purple-600 hover:bg-purple-50 hover:text-purple-700'}`} title="Upload Report">
+                                                            </Button>
+                                                            <Button
+                                                                size="icon"
+                                                                variant="ghost"
+                                                                onClick={() => handleUploadReport(farmer)}
+                                                                className={`h-8 w-8 rounded-lg ${darkMode ? 'hover:bg-indigo-500/20 hover:text-indigo-400' : 'hover:bg-indigo-50 hover:text-indigo-600'}`}
+                                                            >
                                                                 <Upload className="w-4 h-4" />
-                                                            </button>
+                                                            </Button>
                                                         </div>
-                                                    </td>
-                                                </tr>
+                                                    </TableCell>
+                                                </TableRow>
                                             ))}
-                                        </tbody>
-                                    </table>
+                                        </TableBody>
+                                    </Table>
 
                                     {filteredFarmers.length === 0 && (
-                                        <div className={`text-center py-16 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                            <div className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                                                <Users className="h-10 w-10 opacity-50" />
+                                        <div className={`text-center py-20 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            <div className={`w-20 h-20 mx-auto mb-6 rounded-[2rem] flex items-center justify-center rotate-12 transition-transform hover:rotate-0 duration-500 ${darkMode ? 'bg-white/5 text-emerald-400' : 'bg-emerald-50 text-emerald-500'}`}>
+                                                <Users className="h-10 w-10 opacity-40" />
                                             </div>
-                                            <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>No farmers found</h3>
-                                            <p className="text-sm">Try adjusting your search criteria or filters</p>
+                                            <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>No growers discovered</h3>
+                                            <p className="text-sm max-w-xs mx-auto opacity-70">We couldn't find any farmers matching your current search parameters. Try resetting your filters.</p>
+                                            <Button variant="link" onClick={resetFilters} className="mt-4 text-[#1db954]">Reset all filters</Button>
                                         </div>
                                     )}
                                 </div>
@@ -477,88 +498,95 @@ const FarmManagement: React.FC = () => {
                         </div>
                     </TabsContent>
 
-                    {/* Field Visit Logs Tab */}
-                    <TabsContent value="visits">
-                        <Card className={sectionCardClass}>
-                            <div className="p-6">
-                                <div className="flex items-center justify-between mb-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-lg ${darkMode ? 'bg-emerald-500/20' : 'bg-emerald-100'}`}>
-                                            <ClipboardList className={`h-5 w-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                                        </div>
-                                        <div>
-                                            <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Field Visit Logs</h3>
-                                            <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{visitLogs.length} visits logged</p>
-                                        </div>
-                                    </div>
-                                    <Button onClick={() => handleLogVisit()} className="bg-[#1db954] hover:bg-[#17a447] text-white">
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Log Field Visit
-                                    </Button>
-                                </div>
+                    {/* Field Visit Logs Tab - Journal Entry Style */}
+                    <TabsContent value="visits" className="space-y-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <div>
+                                <h3 className={`text-xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>Field Activities</h3>
+                                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Chronological record of recent farm inspections</p>
+                            </div>
+                            <Button onClick={() => handleLogVisit()} className="bg-[#1db954] hover:bg-[#17a447] text-white shadow-lg shadow-emerald-500/20">
+                                <Plus className="h-4 w-4 mr-2" />
+                                New Journal Entry
+                            </Button>
+                        </div>
 
-                                <div className="overflow-x-auto">
-                                    <table className="w-full">
-                                        <thead>
-                                            <tr className="bg-[#1db954] border-[#1db954]">
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">#</th>
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Lync ID</th>
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Farmer</th>
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Phone</th>
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Date</th>
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Purpose</th>
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Notes</th>
-                                                <th className="text-left py-4 px-4 text-xs font-semibold uppercase tracking-wider text-white">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {visitLogs.map((visit, index) => (
-                                                <tr key={visit.id} className={`border-b transition-colors ${darkMode ? 'border-[#1b5b65]/50 hover:bg-[#0f3035]' : 'border-gray-100 hover:bg-gray-50'} ${index % 2 === 0 ? (darkMode ? 'bg-[#0b2528]' : 'bg-white') : (darkMode ? 'bg-[#0d2d31]' : 'bg-gray-50/50')}`}>
-                                                    <td className={`py-4 px-4 text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                        {index + 1}
-                                                    </td>
-                                                    <td className={`py-4 px-4 text-sm font-mono ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                                                        {visit.lyncId}
-                                                    </td>
-                                                    <td className={`py-4 px-4 font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                                                        {visit.farmerName}
-                                                    </td>
-                                                    <td className={`py-4 px-4 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                        {visit.phone}
-                                                    </td>
-                                                    <td className={`py-4 px-4 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                        {new Date(visit.date).toLocaleDateString()}
-                                                    </td>
-                                                    <td className={`py-4 px-4`}>
-                                                        <Badge variant="outline" className={darkMode ? 'border-[#1b5b65] text-cyan-400' : 'border-cyan-200 text-cyan-700 bg-cyan-50'}>
+                        <div className="relative pl-8 space-y-6 before:absolute before:left-3 before:top-2 before:bottom-0 before:w-0.5 before:bg-gradient-to-b before:from-emerald-500 before:via-emerald-500/50 before:to-transparent">
+                            {visitLogs.map((visit, index) => (
+                                <div key={visit.id} className="relative group">
+                                    {/* Timeline Node */}
+                                    <div className={`absolute -left-8 top-1.5 w-7 h-7 rounded-full border-4 flex items-center justify-center z-10 transition-transform group-hover:scale-110 ${darkMode ? 'bg-[#002f37] border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-white border-emerald-500 shadow-md'
+                                        }`}>
+                                        <div className={`w-1.5 h-1.5 rounded-full ${visit.status === 'Completed' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                    </div>
+
+                                    <Card className={`${sectionCardClass} border-0 shadow-lg overflow-hidden transition-all duration-300 group-hover:shadow-emerald-500/5 group-hover:translate-x-1`}>
+                                        <div className="p-5">
+                                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                                <div className="flex-1 space-y-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <Badge variant="outline" className={`text-[10px] font-mono px-2 py-0.5 ${darkMode ? 'bg-white/5 border-white/10 text-emerald-400' : 'bg-gray-50 text-emerald-600'}`}>
+                                                            {visit.lyncId}
+                                                        </Badge>
+                                                        <h4 className={`font-bold transition-colors ${darkMode ? 'text-gray-100 group-hover:text-emerald-400' : 'text-gray-900 group-hover:text-emerald-600'}`}>
+                                                            {visit.farmerName}
+                                                        </h4>
+                                                        <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>•</span>
+                                                        <Badge className={`text-[10px] uppercase tracking-widest ${darkMode ? 'bg-emerald-500/10 text-emerald-400 border-0' : 'bg-emerald-50 text-emerald-700'}`}>
                                                             {visit.purpose}
                                                         </Badge>
-                                                    </td>
-                                                    <td className={`py-4 px-4 text-sm max-w-xs truncate ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} title={visit.notes}>
+                                                    </div>
+                                                    <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                                         {visit.notes}
-                                                    </td>
-                                                    <td className={`py-4 px-4`}>
-                                                        <Badge className={darkMode ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-700'}>
-                                                            {visit.status}
-                                                        </Badge>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-
-                                    {visitLogs.length === 0 && (
-                                        <div className={`text-center py-16 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                            <div className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                                                <ClipboardList className="h-10 w-10 opacity-50" />
+                                                    </p>
+                                                    <div className="flex flex-wrap items-center gap-4 pt-2">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <Calendar className="w-3.5 h-3.5 text-gray-500" />
+                                                            <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                {new Date(visit.date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <Phone className="w-3.5 h-3.5 text-gray-500" />
+                                                            <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                {visit.phone}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col items-end gap-3 min-w-[120px]">
+                                                    <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ring-1 ring-inset ${visit.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20' : 'bg-amber-500/10 text-amber-500 ring-amber-500/20'
+                                                        }`}>
+                                                        {visit.status}
+                                                    </div>
+                                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-white/10">
+                                                            <Edit className="w-4 h-4 text-gray-400" />
+                                                        </Button>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-emerald-500/20">
+                                                            <CheckCircle className="w-4 h-4 text-emerald-400" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>No visits logged yet</h3>
-                                            <p className="text-sm">Log your first field visit to get started</p>
                                         </div>
-                                    )}
+                                    </Card>
                                 </div>
-                            </div>
-                        </Card>
+                            ))}
+
+                            {visitLogs.length === 0 && (
+                                <div className={`text-center py-20 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    <div className={`w-20 h-20 mx-auto mb-6 rounded-[2rem] flex items-center justify-center rotate-12 ${darkMode ? 'bg-white/5 text-emerald-400' : 'bg-emerald-50 text-emerald-500'}`}>
+                                        <ClipboardList className="h-10 w-10 opacity-40" />
+                                    </div>
+                                    <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>Journal is empty</h3>
+                                    <p className="text-sm max-w-xs mx-auto opacity-70">No field visits have been recorded yet. Start by logging your first inspection.</p>
+                                    <Button onClick={() => handleLogVisit()} className="mt-6 bg-[#1db954]">
+                                        Log First Visit
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
                     </TabsContent>
                 </Tabs>
             </div>
@@ -568,25 +596,32 @@ const FarmManagement: React.FC = () => {
             <EditFarmerModal open={editModalOpen} onOpenChange={setEditModalOpen} farmer={selectedFarmer} />
             <UploadReportModal open={uploadModalOpen} onOpenChange={setUploadModalOpen} farmer={selectedFarmer} />
 
-            {/* Field Visit Modal */}
+            {/* Field Visit Modal - Premium Style */}
             <Dialog open={fieldVisitModalOpen} onOpenChange={setFieldVisitModalOpen}>
-                <DialogContent className={`max-w-lg ${darkMode ? 'bg-[#0b2528] border-[#1b5b65]' : ''}`}>
-                    <DialogHeader>
-                        <DialogTitle className={darkMode ? 'text-white' : ''}>Log Field Visit</DialogTitle>
-                        <DialogDescription className={darkMode ? 'text-gray-400' : ''}>
-                            Record details of your farm visit
-                        </DialogDescription>
-                    </DialogHeader>
+                <DialogContent className={`max-w-2xl p-0 overflow-hidden border-0 ${darkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
+                    <div className="bg-emerald-600 p-6 text-white relative">
+                        <DialogHeader>
+                            <DialogTitle className="text-2xl font-bold flex items-center gap-3">
+                                <ClipboardList className="h-6 w-6" />
+                                Log Field Visit
+                            </DialogTitle>
+                            <DialogDescription className="text-emerald-100/80 mt-1">
+                                Record your findings and observations for grower oversight
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none translate-x-1/4 translate-y-1/4">
+                            <ClipboardList className="h-40 w-40 rotate-12" />
+                        </div>
+                    </div>
 
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                    <div className="p-5 sm:p-8 space-y-4 sm:space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div className="space-y-2">
-                                <Label className={darkMode ? 'text-gray-300' : ''}>Farmer Name *</Label>
+                                <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Grower Name *</Label>
                                 <Input
                                     value={visitForm.farmerName}
                                     onChange={(e) => {
                                         const newName = e.target.value;
-                                        // Auto-match farmer by name and phone
                                         const matchedFarmer = mockFarmers.find(f =>
                                             f.name.toLowerCase() === newName.toLowerCase() &&
                                             (visitForm.phone === '' || f.phone === visitForm.phone)
@@ -599,65 +634,68 @@ const FarmManagement: React.FC = () => {
                                         });
                                     }}
                                     placeholder="Enter farmer name"
-                                    className={inputBaseClasses}
+                                    className={`h-11 ${inputBaseClasses}`}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className={darkMode ? 'text-gray-300' : ''}>Lync ID (Auto-generated)</Label>
-                                <Input
-                                    value={visitForm.lyncId}
-                                    disabled
-                                    placeholder="Auto-filled when farmer matches"
-                                    className={`${inputBaseClasses} ${darkMode ? 'bg-[#0a2225] text-gray-400' : 'bg-gray-100 text-gray-500'} cursor-not-allowed`}
-                                />
-                                {visitForm.lyncId && (
-                                    <p className={`text-xs ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>✓ Farmer matched</p>
-                                )}
+                                <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Lync ID Identification</Label>
+                                <div className={`h-11 flex items-center px-3 rounded-lg border font-mono text-sm ${visitForm.lyncId
+                                    ? (darkMode ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700')
+                                    : (darkMode ? 'bg-white/5 border-white/10 text-gray-500 italic' : 'bg-gray-50 border-gray-200 text-gray-400 italic')
+                                    }`}>
+                                    {visitForm.lyncId || 'Select a registered grower...'}
+                                    {visitForm.lyncId && <CheckCircle className="w-4 h-4 ml-auto text-emerald-500" />}
+                                </div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div className="space-y-2">
-                                <Label className={darkMode ? 'text-gray-300' : ''}>Phone Number</Label>
-                                <Input
-                                    value={visitForm.phone}
-                                    onChange={(e) => {
-                                        const newPhone = e.target.value;
-                                        // Auto-match farmer by phone and name
-                                        const matchedFarmer = mockFarmers.find(f =>
-                                            f.phone === newPhone &&
-                                            (visitForm.farmerName === '' || f.name.toLowerCase() === visitForm.farmerName.toLowerCase())
-                                        );
-                                        setVisitForm({
-                                            ...visitForm,
-                                            phone: newPhone,
-                                            lyncId: matchedFarmer ? generateLyncId(matchedFarmer.id) : visitForm.lyncId,
-                                            farmerId: matchedFarmer?.id || visitForm.farmerId,
-                                            farmerName: matchedFarmer?.name || visitForm.farmerName
-                                        });
-                                    }}
-                                    placeholder="+233 XX XXX XXXX"
-                                    className={inputBaseClasses}
-                                />
+                                <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Contact Number</Label>
+                                <div className="relative group">
+                                    <Phone className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${darkMode ? 'text-gray-500 group-focus-within:text-emerald-500' : 'text-gray-400 group-focus-within:text-emerald-500'}`} />
+                                    <Input
+                                        value={visitForm.phone}
+                                        onChange={(e) => {
+                                            const newPhone = e.target.value;
+                                            const matchedFarmer = mockFarmers.find(f =>
+                                                f.phone === newPhone &&
+                                                (visitForm.farmerName === '' || f.name.toLowerCase() === visitForm.farmerName.toLowerCase())
+                                            );
+                                            setVisitForm({
+                                                ...visitForm,
+                                                phone: newPhone,
+                                                lyncId: matchedFarmer ? generateLyncId(matchedFarmer.id) : visitForm.lyncId,
+                                                farmerId: matchedFarmer?.id || visitForm.farmerId,
+                                                farmerName: matchedFarmer?.name || visitForm.farmerName
+                                            });
+                                        }}
+                                        placeholder="+233 XX XXX XXXX"
+                                        className={`pl-10 h-11 ${inputBaseClasses}`}
+                                    />
+                                </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className={darkMode ? 'text-gray-300' : ''}>Visit Date *</Label>
-                                <Input
-                                    type="date"
-                                    value={visitForm.date}
-                                    onChange={(e) => setVisitForm({ ...visitForm, date: e.target.value })}
-                                    className={inputBaseClasses}
-                                />
+                                <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Visit Date *</Label>
+                                <div className="relative group">
+                                    <Calendar className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${darkMode ? 'text-gray-500 group-focus-within:text-emerald-500' : 'text-gray-400 group-focus-within:text-emerald-500'}`} />
+                                    <Input
+                                        type="date"
+                                        value={visitForm.date}
+                                        onChange={(e) => setVisitForm({ ...visitForm, date: e.target.value })}
+                                        className={`pl-10 h-11 ${inputBaseClasses}`}
+                                    />
+                                </div>
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label className={darkMode ? 'text-gray-300' : ''}>Purpose of Visit *</Label>
+                            <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Primary Inspection Purpose *</Label>
                             <Select value={visitForm.purpose} onValueChange={(val) => setVisitForm({ ...visitForm, purpose: val })}>
-                                <SelectTrigger className={inputBaseClasses}>
-                                    <SelectValue placeholder="Select purpose" />
+                                <SelectTrigger className={`h-11 ${inputBaseClasses}`}>
+                                    <SelectValue placeholder="Select purpose of this visit" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className={darkMode ? 'bg-[#002f37] border-white/10 text-white' : ''}>
                                     <SelectItem value="Crop Inspection">Crop Inspection</SelectItem>
                                     <SelectItem value="Soil Assessment">Soil Assessment</SelectItem>
                                     <SelectItem value="Equipment Check">Equipment Check</SelectItem>
@@ -671,23 +709,30 @@ const FarmManagement: React.FC = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <Label className={darkMode ? 'text-gray-300' : ''}>Visit Notes / Report *</Label>
+                            <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Observation Details & Recommendations *</Label>
                             <Textarea
                                 value={visitForm.notes}
                                 onChange={(e) => setVisitForm({ ...visitForm, notes: e.target.value })}
-                                placeholder="Describe your observations, findings, and any recommendations..."
+                                placeholder="Log your observations, any issues identified, and recommended actions for the farmer..."
                                 rows={4}
-                                className={inputBaseClasses}
+                                className={`${inputBaseClasses} resize-none pt-3`}
                             />
                         </div>
 
-                        <div className="flex gap-3 justify-end pt-4">
-                            <Button variant="outline" onClick={() => setFieldVisitModalOpen(false)} className={darkMode ? 'border-[#1b5b65] hover:bg-[#0d3036]' : ''}>
+                        <div className="flex gap-4 justify-end pt-4">
+                            <Button
+                                variant="ghost"
+                                onClick={() => setFieldVisitModalOpen(false)}
+                                className={`px-6 h-11 ${darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : ''}`}
+                            >
                                 Cancel
                             </Button>
-                            <Button onClick={handleSubmitVisit} className="bg-[#1db954] hover:bg-[#17a447] text-white">
-                                <FileText className="h-4 w-4 mr-2" />
-                                Submit Visit Log
+                            <Button
+                                onClick={handleSubmitVisit}
+                                className="px-8 h-11 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                            >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Archive Journal Entry
                             </Button>
                         </div>
                     </div>

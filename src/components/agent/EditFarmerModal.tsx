@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,6 +48,9 @@ const EditFarmerModal: React.FC<EditFarmerModalProps> = ({ open, onOpenChange, f
                             <Edit className="h-6 w-6 text-[#1db954]" />
                             Edit Farmer Profile
                         </DialogTitle>
+                        <DialogDescription className="sr-only">
+                            Make changes to the farmer's profile information here.
+                        </DialogDescription>
 
                     </div>
                 </DialogHeader>
