@@ -236,7 +236,8 @@ const Blog = () => {
       description: "Join us for an insightful session on smart farming investments and what every entrepreneur and investor needs to know to succeed in the agricultural sector.",
       speaker: "eyramax",
       status: "completed",
-      registrationLink: "https://luma.com/q7tsnwsl"
+      registrationLink: "https://luma.com/q7tsnwsl",
+      pdfLink: "https://drive.google.com/file/d/1SS6YK0htLNajYWUjZDzJcpKdR8pX8xp3/view?usp=drive_link"
     }
   ];
 
@@ -653,14 +654,27 @@ const Blog = () => {
                   <p className="text-gray-600 mb-6 text-sm leading-relaxed">
                     {webinar.description}
                   </p>
-                  <Button
-                    variant="outline"
-                    className="w-full border-2 border-[#921573] text-[#921573] hover:bg-[#921573] hover:text-white rounded-full transition-all duration-300"
-                    onClick={() => webinar.recordingLink && window.open(webinar.recordingLink, '_blank')}
-                  >
-                    <Play className="mr-2 h-4 w-4" />
-                    {webinar.recordingLink ? 'Watch Recording' : 'Recording Coming Soon'}
-                  </Button>
+                  <div className="flex flex-col gap-3">
+                    <Button
+                      variant="outline"
+                      className="w-full border-2 border-[#921573] text-[#921573] hover:bg-[#921573] hover:text-white rounded-full transition-all duration-300"
+                      onClick={() => webinar.recordingLink && window.open(webinar.recordingLink, '_blank')}
+                    >
+                      <Play className="mr-2 h-4 w-4" />
+                      {webinar.recordingLink ? 'Watch Recording' : 'Recording Coming Soon'}
+                    </Button>
+
+                    {(webinar as any).pdfLink && (
+                      <Button
+                        variant="default"
+                        className="w-full bg-[#002F37] text-white hover:bg-[#004555] rounded-full transition-all duration-300"
+                        onClick={() => window.open((webinar as any).pdfLink, '_blank')}
+                      >
+                        <BookOpen className="mr-2 h-4 w-4" />
+                        View Webinar Source
+                      </Button>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             ))}
