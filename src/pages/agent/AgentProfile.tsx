@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AgentLayout from './AgentLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,13 +11,44 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { User, MapPin, Briefcase, FileText, Upload } from 'lucide-react';
-import { agentProfile } from './agent-data';
+import { useAuth } from '@/contexts/AuthContext';
 
 const AgentProfile: React.FC = () => {
     const navigate = useNavigate();
     const { darkMode } = useDarkMode();
+    const { agent, loading } = useAuth();
     const [activeTab, setActiveTab] = useState('personal');
     const [isEditing, setIsEditing] = useState(false);
+    const { updateAgent } = useAuth();
+    const [formData, setFormData] = useState<any>({});
+
+    React.useEffect(() => {
+        if (agent) {
+            setFormData(agent);
+        }
+    }, [agent]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFormData({ ...formData, [e.target.id]: e.target.value });
+    };
+
+    const handleSave = async () => {
+        try {
+            await updateAgent(formData);
+            toast.success('Profile updated successfully');
+            setIsEditing(false);
+        } catch (err) {
+            toast.error('Failed to update profile');
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
+            </div>
+        );
+    }
 
     const sectionCardClass = darkMode
         ? 'border border-[#124b53] bg-[#0b2528] text-gray-100'
@@ -63,10 +95,7 @@ const AgentProfile: React.FC = () => {
                         {isEditing && (
                             <Button
                                 className="bg-[#1db954] hover:bg-[#17a447] text-white"
-                                onClick={() => {
-                                    // Save logic here
-                                    setIsEditing(false);
-                                }}
+                                onClick={handleSave}
                             >
                                 Save Changes
                             </Button>
@@ -122,8 +151,12 @@ const AgentProfile: React.FC = () => {
                                             Profile Picture
                                         </Label>
                                         <div className="flex items-center gap-4">
-                                            <div className={`w-24 h-24 rounded-full flex items-center justify-center border-4 border-[#1db954] ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                                                <User className={`h-12 w-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                            <div className={`w-24 h-24 rounded-full flex items-center justify-center border-4 border-[#1db954] overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+                                                {formData.avatar ? (
+                                                    <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <User className={`h-12 w-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                                )}
                                             </div>
                                             <div>
                                                 <input
@@ -132,6 +165,16 @@ const AgentProfile: React.FC = () => {
                                                     className="hidden"
                                                     id="profile-picture"
                                                     disabled={!isEditing}
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            const reader = new FileReader();
+                                                            reader.onloadend = () => {
+                                                                setFormData({ ...formData, avatar: reader.result as string });
+                                                            };
+                                                            reader.readAsDataURL(file);
+                                                        }
+                                                    }}
                                                 />
                                                 <label
                                                     htmlFor="profile-picture"
@@ -155,8 +198,9 @@ const AgentProfile: React.FC = () => {
                                                 Full Name <span className="text-red-500">*</span>
                                             </Label>
                                             <Input
-                                                id="fullName"
-                                                defaultValue={agentProfile.name}
+                                                id="name"
+                                                value={formData?.name || ''}
+                                                onChange={handleInputChange}
                                                 disabled={!isEditing}
                                                 className={`${inputBaseClasses}`}
                                             />
@@ -169,6 +213,8 @@ const AgentProfile: React.FC = () => {
                                                 id="email"
                                                 type="email"
                                                 placeholder="agent@agrilync.com"
+                                                value={formData?.email || ''}
+                                                onChange={handleInputChange}
                                                 disabled={!isEditing}
                                                 className={`${inputBaseClasses}`}
                                             />
@@ -178,9 +224,10 @@ const AgentProfile: React.FC = () => {
                                                 Phone Number <span className="text-red-500">*</span>
                                             </Label>
                                             <Input
-                                                id="phone"
+                                                id="contact"
                                                 type="tel"
-                                                defaultValue={agentProfile.contact}
+                                                value={formData?.contact || ''}
+                                                onChange={handleInputChange}
                                                 disabled={!isEditing}
                                                 className={`${inputBaseClasses}`}
                                             />
@@ -217,7 +264,7 @@ const AgentProfile: React.FC = () => {
                                             </Label>
                                             <Input
                                                 id="agentId"
-                                                defaultValue={agentProfile.agentId}
+                                                defaultValue={agent?.agentId}
                                                 disabled
                                                 className={`${inputBaseClasses} cursor-not-allowed`}
                                             />
@@ -288,7 +335,7 @@ const AgentProfile: React.FC = () => {
                                             </Label>
                                             <Select disabled={!isEditing}>
                                                 <SelectTrigger className={`${inputBaseClasses}`}>
-                                                    <SelectValue placeholder={agentProfile.region} />
+                                                    <SelectValue placeholder={agent?.region} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="ashanti">Ashanti</SelectItem>

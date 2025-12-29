@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import AgentLayout from './AgentLayout';
-import { agentAssignedFarms } from './agent-data';
 import { useDarkMode } from '@/contexts/DarkModeContext';
+import api from '@/utils/api';
+import { toast } from 'sonner';
 import {
   Card,
   CardContent,
@@ -36,14 +37,32 @@ const statusStyles: Record<string, string> = {
 
 const FarmMonitoring: React.FC = () => {
   const { darkMode } = useDarkMode();
+  const [farms, setFarms] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [farmStatusFilter, setFarmStatusFilter] = useState<'all' | 'verified' | 'scheduled' | 'needs-attention'>('all');
 
+  React.useEffect(() => {
+    const fetchFarms = async () => {
+      try {
+        const res = await api.get('/farms');
+        setFarms(res.data);
+      } catch (err) {
+        console.error('Error fetching farms:', err);
+        toast.error('Failed to load farms');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFarms();
+  }, []);
+
   const filteredFarms = useMemo(() => {
-    return agentAssignedFarms.filter((farm) => {
+    return farms.filter((farm) => {
       if (farmStatusFilter === 'all') return true;
       return farm.status === farmStatusFilter;
     });
-  }, [farmStatusFilter]);
+  }, [farms, farmStatusFilter]);
 
   const cardClass = darkMode ? 'bg-[#002f37] border-gray-600 border' : 'bg-white';
   const titleClass = darkMode ? 'text-white' : 'text-gray-900';
@@ -146,9 +165,9 @@ const FarmMonitoring: React.FC = () => {
               </TableHeader>
               <TableBody>
                 {filteredFarms.map((farm) => (
-                  <TableRow key={farm.id} className={tableRowClass}>
-                    <TableCell className={`font-medium ${tableCellClass}`}>{farm.id}</TableCell>
-                    <TableCell className={tableCellClass}>{farm.farmerName}</TableCell>
+                  <TableRow key={farm._id || farm.id} className={tableRowClass}>
+                    <TableCell className={`font-medium ${tableCellClass}`}>{farm.farmId || farm.id}</TableCell>
+                    <TableCell className={tableCellClass}>{farm.farmer?.name || farm.farmerName}</TableCell>
                     <TableCell className={tableCellClass}>{farm.crop}</TableCell>
                     <TableCell>
                       <Badge className={`capitalize ${statusStyles[farm.status]}`}>

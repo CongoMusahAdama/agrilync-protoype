@@ -29,23 +29,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AgentLayout from './agent/AgentLayout';
 import AddFarmerModal from '@/components/agent/AddFarmerModal';
 import ViewFarmerModal from '@/components/agent/ViewFarmerModal';
-import EditFarmerModal from '@/components/agent/EditFarmerModal';
 import ViewMatchModal from '@/components/agent/ViewMatchModal';
 import ReviewMatchModal from '@/components/agent/ReviewMatchModal';
 import ViewDisputeModal from '@/components/agent/ViewDisputeModal';
 import ViewVisitDetailsModal from '@/components/agent/ViewVisitDetailsModal';
+import VerificationQueueModal from '@/components/agent/VerificationQueueModal';
 import { TrainingPerformanceContent } from './agent/TrainingPerformance';
-import {
-  agentProfile,
-  agentFarmers,
-  agentAssignedFarms,
-  agentMatches,
-  agentDisputes,
-  agentTrainings,
-  agentPerformanceTrend,
-  agentNotifications,
-  scheduledVisits
-} from './agent/agent-data';
 import { Button } from '@/components/ui/button';
 import {
   Users,
@@ -84,12 +73,17 @@ import {
 } from 'recharts';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 
+import { useAuth } from '@/contexts/AuthContext';
+import api from '@/utils/api';
+import { toast } from 'sonner';
+
 const AgentDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { darkMode } = useDarkMode();
+  const { agent } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [farmerSearch, setFarmerSearch] = useState('');
-  const [farmerStatusFilter, setFarmerStatusFilter] = useState<'all' | 'active' | 'pending' | 'inactive'>('all');
+  const [farmerStatusFilter, setFarmerStatusFilter] = useState<'all' | 'Completed' | 'Pending' | 'inactive'>('all');
   const [farmStatusFilter, setFarmStatusFilter] = useState<'all' | 'verified' | 'scheduled' | 'needs-attention'>('all');
   const [selectedFarmer, setSelectedFarmer] = useState<any>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -103,17 +97,55 @@ const AgentDashboard: React.FC = () => {
   const [viewDisputeModalOpen, setViewDisputeModalOpen] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState<any>(null);
   const [viewVisitModalOpen, setViewVisitModalOpen] = useState(false);
+  const [pendingFarmers, setPendingFarmers] = useState<any[]>([]);
+  const [verificationQueueModalOpen, setVerificationQueueModalOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  React.useEffect(() => {
-    const timer = setTimeout(() => setIsLoaded(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
+  // Data states
+  // Data states
+  const [stats, setStats] = useState<any>({});
+  const [farmers, setFarmers] = useState<any[]>([]);
+  const [farms, setFarms] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
+  const [matches, setMatches] = useState<any[]>([]);
+  const [disputes, setDisputes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  const fetchData = async () => {
+    try {
+      const [statsRes, farmersRes, farmsRes, notificationsRes, matchesRes, activitiesRes, disputesRes, pendingRes] = await Promise.all([
+        api.get('/agents/stats'),
+        api.get('/farmers'),
+        api.get('/farms'),
+        api.get('/notifications'),
+        api.get('/matches'),
+        api.get('/activities'),
+        api.get('/disputes'),
+        api.get('/farmers/queue/pending')
+      ]);
+      setStats(statsRes.data);
+      setFarmers(farmersRes.data);
+      setFarms(farmsRes.data);
+      setNotifications(notificationsRes.data);
+      setMatches(matchesRes.data);
+      setDisputes(disputesRes.data);
+      setPendingFarmers(pendingRes.data);
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      toast.error('Failed to load dashboard data');
+    } finally {
+      setIsLoaded(true);
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchData();
+  }, []);
 
   // Notification State
   const [notificationFilter, setNotificationFilter] = useState<'all' | 'alert' | 'update'>('all');
-  const [notifications, setNotifications] = useState(agentNotifications);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -121,10 +153,21 @@ const AgentDashboard: React.FC = () => {
     setNotifications(notifications.map(n => ({ ...n, read: true })));
   };
 
-  const toggleReadStatus = (id: number) => {
-    setNotifications(notifications.map(n =>
-      n.id === id ? { ...n, read: !n.read } : n
-    ));
+  const toggleReadStatus = async (id: string, type?: string) => {
+    try {
+      await api.put(`/notifications/${id}`);
+      setNotifications(notifications.map(n =>
+        n._id === id ? { ...n, read: true } : n
+      ));
+
+      // Actionable notifications
+      if (type === 'verification') {
+        setActiveTab('farmers');
+        setFarmerStatusFilter('Pending');
+      }
+    } catch (err) {
+      console.error('Error marking notification as read:', err);
+    }
   };
 
   const filteredNotifications = notifications.filter(n => {
@@ -174,19 +217,52 @@ const AgentDashboard: React.FC = () => {
     setEditModalOpen(true);
   };
 
+  const filteredFarmers = useMemo(() => {
+    return farmers.map(f => {
+      let displayStatus = f.status;
+      if (displayStatus === 'active') displayStatus = 'Completed';
+      if (displayStatus === 'pending') displayStatus = 'Pending';
+      return { ...f, displayStatus };
+    }).filter((farmer) => {
+      const searchValue = farmerSearch.toLowerCase();
+      const matchesSearch =
+        farmer.name?.toLowerCase().includes(searchValue) ||
+        (farmer.region && farmer.region.toLowerCase().includes(searchValue)) ||
+        (farmer.community && farmer.community.toLowerCase().includes(searchValue));
+      const matchesStatus =
+        farmerStatusFilter === 'all' ? true : farmer.displayStatus === farmerStatusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [farmers, farmerSearch, farmerStatusFilter]);
+
+  const filteredFarms = useMemo(() => {
+    return farms.filter((farm) => {
+      if (farmStatusFilter === 'all') return true;
+      return farm.status === farmStatusFilter;
+    });
+  }, [farms, farmStatusFilter]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
+
   const highlightCards = [
     {
       id: 'farmers-management',
       title: 'Farmers Onboarded',
-      value: agentProfile.stats.farmersOnboarded,
+      value: farmers.length || 0,
       color: 'bg-emerald-600',
       icon: Users,
-      path: '/dashboard/agent/farm-management'
+      path: '/dashboard/agent/farmers-management'
     },
     {
       id: 'farm-monitoring',
       title: 'Active Farms',
-      value: agentProfile.stats.activeFarms,
+      value: stats?.activeFarms || 0,
       color: 'bg-[#ffa500]',
       icon: Sprout,
       path: '/dashboard/agent/farm-management'
@@ -194,7 +270,7 @@ const AgentDashboard: React.FC = () => {
     {
       id: 'investor-farmer-matches',
       title: 'Investor Matches',
-      value: agentProfile.stats.investorMatches,
+      value: stats?.investorMatches || 0,
       color: 'bg-[#ff6347]',
       icon: Handshake,
       path: '/dashboard/agent/investor-farmer-matches'
@@ -202,7 +278,7 @@ const AgentDashboard: React.FC = () => {
     {
       id: 'reports-submitted',
       title: 'Reports Filed',
-      value: agentProfile.stats.reportsThisMonth,
+      value: stats?.reportsThisMonth || 0,
       color: 'bg-[#921573]',
       icon: ClipboardCheck,
       path: '/dashboard/agent/farm-management'
@@ -210,7 +286,7 @@ const AgentDashboard: React.FC = () => {
     {
       id: 'dispute-management',
       title: 'Pending Disputes',
-      value: agentProfile.stats.pendingDisputes,
+      value: stats?.pendingDisputes || 0,
       color: 'bg-[#1d9bf0]',
       icon: AlertTriangle,
       path: '/dashboard/agent/dispute-management'
@@ -222,6 +298,8 @@ const AgentDashboard: React.FC = () => {
     pending: 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
     inactive: 'bg-slate-500/10 text-slate-600 dark:bg-slate-500/20 dark:text-slate-300',
     verified: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
+    Completed: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
+    Pending: 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
     scheduled: 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
     'needs-attention': 'bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
     'Pending Funding': 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
@@ -233,25 +311,6 @@ const AgentDashboard: React.FC = () => {
     Resolved: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300'
   };
 
-  const filteredFarmers = useMemo(() => {
-    return agentFarmers.filter((farmer) => {
-      const searchValue = farmerSearch.toLowerCase();
-      const matchesSearch =
-        farmer.name.toLowerCase().includes(searchValue) ||
-        farmer.region.toLowerCase().includes(searchValue) ||
-        farmer.community.toLowerCase().includes(searchValue);
-      const matchesStatus =
-        farmerStatusFilter === 'all' ? true : farmer.status === farmerStatusFilter;
-      return matchesSearch && matchesStatus;
-    });
-  }, [farmerSearch, farmerStatusFilter]);
-
-  const filteredFarms = useMemo(() => {
-    return agentAssignedFarms.filter((farm) => {
-      if (farmStatusFilter === 'all') return true;
-      return farm.status === farmStatusFilter;
-    });
-  }, [farmStatusFilter]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -300,7 +359,7 @@ const AgentDashboard: React.FC = () => {
     >
       <div className="mb-6 sm:mb-8">
         <h2 className={`text-xl sm:text-2xl font-bold mb-1 sm:mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-          {getGreeting()}, {agentProfile.name.split(' ')[0]}!
+          {getGreeting()}, {agent?.name?.split(' ')[0] || 'Agent'}!
         </h2>
         <p className={`text-sm sm:text-base ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
           Track your field operations and grower support pipeline.
@@ -314,7 +373,7 @@ const AgentDashboard: React.FC = () => {
           className={`bg-[#002f37] rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-700 cursor-pointer hover:scale-105 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           style={{ transitionDelay: '0ms' }}
-          onClick={() => navigate('/dashboard/agent/farm-management')}
+          onClick={() => setVerificationQueueModalOpen(true)}
         >
           {/* Background Decoration */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -334,7 +393,7 @@ const AgentDashboard: React.FC = () => {
             </div>
             <div className="flex-1 flex flex-col justify-center">
               <div className="flex items-baseline gap-1 sm:gap-2 mb-0.5 sm:mb-2 text-white">
-                <p className="text-2xl sm:text-4xl font-bold">{agentFarmers.filter(f => f.status === 'pending').length + 3}</p>
+                <p className="text-2xl sm:text-4xl font-bold">{pendingFarmers.length}</p>
                 <span className="text-[10px] sm:text-xs font-medium uppercase tracking-widest text-emerald-400">Backlog</span>
               </div>
               <p className="text-[10px] sm:text-sm text-white/80 line-clamp-1 italic">Growers awaiting accreditation</p>
@@ -435,6 +494,50 @@ const AgentDashboard: React.FC = () => {
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Recent Activity */}
+            <Card className={`${sectionCardClass} transition-colors h-[500px] flex flex-col`}>
+              <CardHeader className="pb-3 border-b border-gray-100 dark:border-gray-800">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className={`h-5 w-5 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
+                  <CardTitle className={darkMode ? 'text-gray-100' : ''}>Recent Activity</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0 flex-1 overflow-hidden">
+                <div className="h-full overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                  {activities.length > 0 ? (
+                    activities.map((activity, index) => (
+                      <div key={activity._id || index} className="flex gap-4 relative">
+                        {index !== activities.length - 1 && (
+                          <div className={`absolute left-[19px] top-8 bottom-0 w-0.5 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`} />
+                        )}
+                        <div className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-4 ${darkMode ? 'border-[#0b2528] bg-gray-800' : 'border-white bg-gray-50'
+                          }`}>
+                          {activity.type === 'training' ? <Users className="h-4 w-4 text-emerald-500" /> :
+                            activity.type === 'report' ? <FileText className="h-4 w-4 text-blue-500" /> :
+                              activity.type === 'verification' ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> :
+                                activity.type === 'dispute' ? <AlertTriangle className="h-4 w-4 text-amber-500" /> :
+                                  <Info className="h-4 w-4 text-blue-500" />}
+                        </div>
+                        <div className="flex-1 pt-1 pb-4">
+                          <p className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{activity.title}</p>
+                          <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                            {new Date(activity.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-center p-6 opacity-60">
+                      <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-3">
+                        <ClipboardCheck className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <p className="text-sm font-medium text-gray-500">No recent activity</p>
+                      <p className="text-xs text-gray-400">Your recent actions will appear here</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Notifications Hub */}
             <Card className={`${sectionCardClass} transition-colors h-[500px] flex flex-col`}>
               <CardHeader className="pb-3 border-b border-gray-100 dark:border-gray-800">
@@ -486,8 +589,8 @@ const AgentDashboard: React.FC = () => {
                   {filteredNotifications.length > 0 ? (
                     filteredNotifications.map((notification) => (
                       <div
-                        key={notification.id}
-                        onClick={() => toggleReadStatus(notification.id)}
+                        key={notification._id}
+                        onClick={() => toggleReadStatus(notification._id, notification.type)}
                         className={`group relative flex items-start gap-4 rounded-xl p-3 transition-all cursor-pointer border ${darkMode
                           ? notification.read
                             ? 'bg-transparent border-transparent hover:bg-[#0f3035]'
@@ -523,14 +626,14 @@ const AgentDashboard: React.FC = () => {
                               {notification.type}
                             </span>
                             <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                              {notification.time}
+                              {new Date(notification.createdAt).toLocaleDateString()}
                             </span>
                           </div>
                           <h4 className={`text-sm font-semibold mb-1 leading-snug ${darkMode
                             ? notification.read ? 'text-gray-400' : 'text-gray-100'
                             : notification.read ? 'text-gray-600' : 'text-gray-900'
                             }`}>
-                            {notification.title}
+                            {notification.message}
                           </h4>
 
                           {/* Action Link (appearing on hover) */}
@@ -568,7 +671,7 @@ const AgentDashboard: React.FC = () => {
                       Reports Submitted
                     </span>
                     <span className={`text-2xl font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                      {agentProfile.stats.reportsThisMonth}
+                      {stats?.reportsThisMonth || 0}
                     </span>
                   </div>
                 </div>
@@ -578,7 +681,7 @@ const AgentDashboard: React.FC = () => {
                       Training Sessions
                     </span>
                     <span className={`text-2xl font-bold ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-                      {agentProfile.stats.trainingsAttended}
+                      {stats?.trainingsAttended || 0}
                     </span>
                   </div>
                 </div>
@@ -588,7 +691,7 @@ const AgentDashboard: React.FC = () => {
                       Field Visits
                     </span>
                     <span className={`text-2xl font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>
-                      {agentAssignedFarms.length}
+                      {farms.length}
                     </span>
                   </div>
                 </div>
@@ -627,8 +730,8 @@ const AgentDashboard: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Farmers</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="Completed">Completed</SelectItem>
+                      <SelectItem value="Pending">Pending</SelectItem>
                       <SelectItem value="inactive">Inactive</SelectItem>
                     </SelectContent>
                   </Select>
@@ -639,92 +742,95 @@ const AgentDashboard: React.FC = () => {
                         Add Farmer
                       </Button>
                     }
+                    onSuccess={fetchData}
                   />
                 </div>
               </div>
-              <div className={`rounded-lg overflow-hidden overflow-x-auto ${darkMode ? 'bg-[#0b2528]' : 'bg-white'}`}>
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-[#1db954] border-[#1db954]">
-                      <TableHead className="w-12 pl-6">
-                        <div className="flex items-center justify-center w-5 h-5 rounded border-2 border-white/50"></div>
-                      </TableHead>
-                      <TableHead className="text-white font-medium">FARMER NAME</TableHead>
-                      <TableHead className="text-white font-medium">REGION</TableHead>
-                      <TableHead className="text-white font-medium">LOCATION</TableHead>
-                      <TableHead className="text-white font-medium">FARM TYPE</TableHead>
-                      <TableHead className="text-white font-medium">STATUS</TableHead>
-                      <TableHead className="text-right text-white font-medium pr-6">ACTIONS</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredFarmers.map((farmer, index) => (
-                      <TableRow
-                        key={farmer.name}
-                        className={`border-b transition-colors ${darkMode
-                          ? 'border-[#124b53] hover:bg-[#0d3036]'
-                          : 'border-gray-100 hover:bg-gray-50'
-                          }`}
-                      >
-                        <TableCell className="pl-6">
-                          <div className={`flex items-center justify-center w-5 h-5 rounded ${index % 3 === 0
-                            ? 'bg-[#FDB022] border-2 border-[#FDB022]'
-                            : 'border-2 border-gray-300'
-                            }`}>
-                            {index % 3 === 0 && (
-                              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className={`py-4 ${darkMode ? 'text-gray-200' : 'text-gray-700'} font-medium`}>
-                          {farmer.name}
-                        </TableCell>
-                        <TableCell className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                          {farmer.region}
-                        </TableCell>
-                        <TableCell className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                          {farmer.community}
-                        </TableCell>
-                        <TableCell className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                          {farmer.farmType}
-                        </TableCell>
-                        <TableCell>
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${farmer.status === 'active'
-                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'
-                            : farmer.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300'
-                              : 'bg-gray-100 text-gray-600 dark:bg-gray-500/20 dark:text-gray-300'
-                            }`}>
-                            {farmer.status}
-                          </span>
-                        </TableCell>
-                        <TableCell className="pr-6">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => handleViewFarmer(farmer)}
-                              className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${darkMode
-                                ? 'bg-cyan-600 hover:bg-cyan-500'
-                                : 'bg-cyan-600 hover:bg-cyan-700'
-                                }`}
-                              title="View Details"
-                            >
-                              <Eye className="w-4 h-4 text-white" />
-                            </button>
-                            <button
-                              onClick={() => handleEditFarmer(farmer)}
-                              className="w-8 h-8 rounded-full bg-[#E91E63] hover:bg-[#C2185B] flex items-center justify-center transition-colors"
-                              title="Edit"
-                            >
-                              <Edit className="w-4 h-4 text-white" />
-                            </button>
-                          </div>
-                        </TableCell>
+              <div className={`rounded-lg overflow-hidden ${darkMode ? 'bg-[#0b2528]' : 'bg-white'}`}>
+                <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+                  <Table>
+                    <TableHeader className="sticky top-0 z-10">
+                      <TableRow className="bg-[#1db954] border-[#1db954]">
+                        <TableHead className="w-12 pl-6">
+                          <div className="flex items-center justify-center w-5 h-5 rounded border-2 border-white/50"></div>
+                        </TableHead>
+                        <TableHead className="text-white font-medium">FARMER NAME</TableHead>
+                        <TableHead className="text-white font-medium">REGION</TableHead>
+                        <TableHead className="text-white font-medium">LOCATION</TableHead>
+                        <TableHead className="text-white font-medium">FARM TYPE</TableHead>
+                        <TableHead className="text-white font-medium">STATUS</TableHead>
+                        <TableHead className="text-right text-white font-medium pr-6">ACTIONS</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredFarmers.map((farmer, index) => (
+                        <TableRow
+                          key={farmer._id || index}
+                          className={`border-b transition-colors ${darkMode
+                            ? 'border-[#124b53] hover:bg-[#0d3036]'
+                            : 'border-gray-100 hover:bg-gray-50'
+                            }`}
+                        >
+                          <TableCell className="pl-6">
+                            <div className={`flex items-center justify-center w-5 h-5 rounded ${index % 3 === 0
+                              ? 'bg-[#FDB022] border-2 border-[#FDB022]'
+                              : 'border-2 border-gray-300'
+                              }`}>
+                              {index % 3 === 0 && (
+                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className={`py-4 ${darkMode ? 'text-gray-200' : 'text-gray-700'} font-medium`}>
+                            {farmer.name}
+                          </TableCell>
+                          <TableCell className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                            {farmer.region}
+                          </TableCell>
+                          <TableCell className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                            {farmer.community}
+                          </TableCell>
+                          <TableCell className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                            {farmer.farmType}
+                          </TableCell>
+                          <TableCell>
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${farmer.displayStatus === 'Completed'
+                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'
+                              : farmer.displayStatus === 'Pending'
+                                ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300'
+                                : 'bg-gray-100 text-gray-600 dark:bg-gray-500/20 dark:text-gray-300'
+                              }`}>
+                              {farmer.displayStatus}
+                            </span>
+                          </TableCell>
+                          <TableCell className="pr-6">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => handleViewFarmer(farmer)}
+                                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${darkMode
+                                  ? 'bg-cyan-600 hover:bg-cyan-500'
+                                  : 'bg-cyan-600 hover:bg-cyan-700'
+                                  }`}
+                                title="View Details"
+                              >
+                                <Eye className="w-4 h-4 text-white" />
+                              </button>
+                              <button
+                                onClick={() => handleEditFarmer(farmer)}
+                                className="w-8 h-8 rounded-full bg-[#E91E63] hover:bg-[#C2185B] flex items-center justify-center transition-colors"
+                                title="Edit"
+                              >
+                                <Edit className="w-4 h-4 text-white" />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -760,45 +866,43 @@ const AgentDashboard: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {scheduledVisits.map((visit) => (
-                      <TableRow key={visit.id} className={darkMode ? 'border-gray-700 hover:bg-[#0f3035]' : 'hover:bg-gray-50'}>
-                        <TableCell className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{visit.farmer}</TableCell>
-                        <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{visit.farm}</TableCell>
+                    {farms.filter(f => f.nextVisit).map((farm) => (
+                      <TableRow key={farm._id} className={darkMode ? 'border-gray-700 hover:bg-[#0f3035]' : 'hover:bg-gray-50'}>
+                        <TableCell className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{farm.farmer?.name || 'N/A'}</TableCell>
+                        <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{farm.name}</TableCell>
                         <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
                           <div className="flex flex-col">
-                            <span>{visit.date}</span>
-                            <span className="text-xs opacity-70">{visit.time}</span>
+                            <span>{farm.nextVisit}</span>
+                            <span className="text-xs opacity-70">09:00 AM</span>
                           </div>
                         </TableCell>
-                        <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{visit.purpose}</TableCell>
+                        <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{farm.crop} Inspection</TableCell>
                         <TableCell>
-                          <Badge className={visit.status === 'Confirmed'
-                            ? 'bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'
-                            : 'bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20'}>
-                            {visit.status}
+                          <Badge className="bg-blue-500/10 text-blue-600 hover:bg-blue-500/20">
+                            Scheduled
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            {visit.status === 'Pending' ? (
-                              <>
-                                <Button size="sm" variant="outline" className="text-green-600 border-green-200 hover:bg-green-50">Accept</Button>
-                                <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-700">Reschedule</Button>
-                              </>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className={darkMode ? 'text-gray-300' : 'text-gray-600'}
-                                onClick={() => handleViewVisit(visit)}
-                              >
-                                Details
-                              </Button>
-                            )}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className={darkMode ? 'text-gray-300' : 'text-gray-600'}
+                              onClick={() => handleViewVisit(farm)}
+                            >
+                              Details
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
                     ))}
+                    {farms.filter(f => f.nextVisit).length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                          No upcoming visits scheduled
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -834,7 +938,7 @@ const AgentDashboard: React.FC = () => {
                 <CardHeader>
                   <CardTitle className={darkMode ? 'text-gray-100' : ''}>Active Farms</CardTitle>
                   <CardDescription className={darkMode ? 'text-gray-400' : ''}>
-                    Monitoring {agentAssignedFarms.length} assigned farms
+                    Monitoring {farms.length} assigned farms
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -882,7 +986,7 @@ const AgentDashboard: React.FC = () => {
         <TabsContent value="matches" className="space-y-6">
 
           {/* Pending Approvals Section */}
-          {agentMatches.some(m => m.approvalStatus === 'pending') && (
+          {matches.some(m => m.approvalStatus === 'pending') && (
             <Card className={`${sectionCardClass} border-purple-200 dark:border-purple-900/50 transition-colors mb-6`}>
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
@@ -906,10 +1010,10 @@ const AgentDashboard: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {agentMatches.filter(m => m.approvalStatus === 'pending').map((match) => (
+                      {matches.filter(m => m.approvalStatus === 'pending').map((match) => (
                         <TableRow key={match.id} className={darkMode ? 'border-purple-900/30' : 'border-purple-100'}>
                           <TableCell className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{match.investor}</TableCell>
-                          <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{match.farmer}</TableCell>
+                          <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{match.farmer?.name || 'N/A'}</TableCell>
                           <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{match.value}</TableCell>
                           <TableCell>
                             <div className="flex gap-2">
@@ -961,10 +1065,10 @@ const AgentDashboard: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {agentMatches.filter(m => m.approvalStatus !== 'pending').map((match) => (
-                      <TableRow key={`${match.investor}-${match.farmer}`} className={tableBodyRowClass}>
+                    {matches.filter(m => m.approvalStatus !== 'pending').map((match) => (
+                      <TableRow key={match._id} className={tableBodyRowClass}>
                         <TableCell className={`${tableCellClass} font-medium`}>{match.investor}</TableCell>
-                        <TableCell className={tableCellClass}>{match.farmer}</TableCell>
+                        <TableCell className={tableCellClass}>{match.farmer?.name || 'N/A'}</TableCell>
                         <TableCell className={tableCellClass}>{match.farmType}</TableCell>
                         <TableCell className={tableCellClass}>{match.matchDate}</TableCell>
                         <TableCell className={tableCellClass}>{match.value}</TableCell>
@@ -985,6 +1089,13 @@ const AgentDashboard: React.FC = () => {
                         </TableCell>
                       </TableRow>
                     ))}
+                    {matches.filter(m => m.approvalStatus !== 'pending').length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                          No active investments found
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -1000,7 +1111,7 @@ const AgentDashboard: React.FC = () => {
 
       {/* Modals */}
       <ViewFarmerModal open={viewModalOpen} onOpenChange={setViewModalOpen} farmer={selectedFarmer} />
-      <EditFarmerModal open={editModalOpen} onOpenChange={setEditModalOpen} farmer={selectedFarmer} />
+      <AddFarmerModal open={editModalOpen} onOpenChange={setEditModalOpen} farmer={selectedFarmer} isEditMode={true} onSuccess={fetchData} />
       <ViewMatchModal open={viewMatchModalOpen} onOpenChange={setViewMatchModalOpen} match={selectedMatch} />
       <ReviewMatchModal
         open={reviewMatchModalOpen}
@@ -1011,6 +1122,16 @@ const AgentDashboard: React.FC = () => {
       />
       <ViewDisputeModal open={viewDisputeModalOpen} onOpenChange={setViewDisputeModalOpen} dispute={selectedDispute} />
       <ViewVisitDetailsModal open={viewVisitModalOpen} onOpenChange={setViewVisitModalOpen} visit={selectedVisit} />
+      <VerificationQueueModal
+        open={verificationQueueModalOpen}
+        onOpenChange={setVerificationQueueModalOpen}
+        pendingFarmers={pendingFarmers}
+        agent={agent}
+        darkMode={darkMode}
+        onSuccess={fetchData}
+        onView={handleViewFarmer}
+        onEdit={handleEditFarmer}
+      />
     </AgentLayout>
   );
 };

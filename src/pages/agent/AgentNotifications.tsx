@@ -1,7 +1,8 @@
 import React from 'react';
 import AgentLayout from './AgentLayout';
-import { agentNotifications } from './agent-data';
 import { useDarkMode } from '@/contexts/DarkModeContext';
+import api from '@/utils/api';
+import { toast } from 'sonner';
 import {
   Card,
   CardContent,
@@ -15,18 +16,50 @@ import { AlertTriangle, FileText, Bell } from 'lucide-react';
 const AgentNotifications: React.FC = () => {
   const { darkMode } = useDarkMode();
   const [filter, setFilter] = React.useState('all');
+  const [notifications, setNotifications] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const [isLoaded, setIsLoaded] = React.useState(false);
 
   React.useEffect(() => {
-    const timer = setTimeout(() => setIsLoaded(true), 100);
-    return () => clearTimeout(timer);
+    const fetchNotifications = async () => {
+      try {
+        const res = await api.get('/notifications');
+        setNotifications(res.data);
+        setIsLoaded(true);
+      } catch (err) {
+        console.error('Error fetching notifications:', err);
+        toast.error('Failed to load notifications');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
   }, []);
 
+  const toggleReadStatus = async (id: string) => {
+    try {
+      await api.put(`/notifications/${id}`);
+      setNotifications(notifications.map(n =>
+        (n._id === id || n.id === id) ? { ...n, read: true } : n
+      ));
+    } catch (err) {
+      toast.error('Failed to update notification');
+    }
+  };
+
   // Stats calculation
-  const total = agentNotifications.length;
-  const unread = agentNotifications.filter(n => !n.read).length;
-  const actionRequired = agentNotifications.filter(n => n.type === 'action').length;
-  const alerts = agentNotifications.filter(n => n.type === 'alert').length;
+  // Stats calculation
+  const filteredNotifications = notifications.filter(n => {
+    if (filter === 'unread') return !n.read;
+    if (filter === 'all') return true;
+    return n.type === filter;
+  });
+
+  const total = notifications.length;
+  const unread = notifications.filter(n => !n.read).length;
+  const actionRequired = notifications.filter(n => n.type === 'action').length;
+  const alerts = notifications.filter(n => n.type === 'alert').length;
 
   const summaryCards = [
     { title: 'Total Alerts', value: total, icon: Bell, type: 'all', color: 'bg-slate-600' },
@@ -81,10 +114,10 @@ const AgentNotifications: React.FC = () => {
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
-              {agentNotifications.map((notification) => (
+              {filteredNotifications.map((notification) => (
                 <li
-                  key={notification.id}
-                  className={`flex items-start gap-4 rounded-2xl border p-4 shadow-sm ${notificationItemClass}`}
+                  key={notification._id || notification.id}
+                  className={`flex items-start gap-4 rounded-2xl border p-4 shadow-sm ${notificationItemClass} ${!notification.read ? 'border-l-4 border-l-emerald-500' : ''}`}
                 >
                   <span
                     className={`mt-1 flex h-10 w-10 items-center justify-center rounded-xl ${notification.type === 'alert'
@@ -104,13 +137,26 @@ const AgentNotifications: React.FC = () => {
                   </span>
                   <div className="flex-1">
                     <p className={`text-sm font-semibold ${notificationTitleClass}`}>{notification.title}</p>
-                    <p className={`mt-1 text-xs uppercase tracking-wide ${notificationTimeClass}`}>{notification.time}</p>
+                    <p className={`mt-1 text-xs uppercase tracking-wide ${notificationTimeClass}`}>
+                      {new Date(notification.createdAt).toLocaleString()}
+                    </p>
                   </div>
-                  <Button variant="ghost" size="sm" className={darkMode ? 'text-emerald-300 hover:bg-[#0d3036] hover:text-emerald-200' : 'text-emerald-600 hover:text-emerald-700'}>
-                    View
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={darkMode ? 'text-emerald-300 hover:bg-[#0d3036] hover:text-emerald-200' : 'text-emerald-600 hover:text-emerald-700'}
+                    onClick={() => toggleReadStatus(notification._id || notification.id)}
+                  >
+                    {notification.read ? 'View' : 'Mark as Read'}
                   </Button>
                 </li>
               ))}
+              {filteredNotifications.length === 0 && (
+                <div className="text-center py-12 text-gray-500">
+                  <Bell className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                  <p>No notifications found</p>
+                </div>
+              )}
             </ul>
           </CardContent>
         </Card>

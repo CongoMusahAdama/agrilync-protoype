@@ -30,7 +30,11 @@ import {
   FileCheck,
   Eye,
   Mail,
-  Upload
+  Upload,
+  Phone,
+  MessageCircle,
+  Copy,
+  UserCheck
 } from 'lucide-react';
 
 const InvestorMatches = () => {

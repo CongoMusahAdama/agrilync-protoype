@@ -22,7 +22,6 @@ import {
   LogOut
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { agentProfile } from './agent-data';
 
 type AgentNavItem = {
   id: string;

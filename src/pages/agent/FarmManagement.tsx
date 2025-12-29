@@ -1,21 +1,26 @@
 import React, { useState, useMemo } from 'react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+import { useAuth } from '@/contexts/AuthContext';
+import api from '@/utils/api';
+import { toast } from 'sonner';
 import AgentLayout from './AgentLayout';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import AddFarmerModal from '@/components/agent/AddFarmerModal';
 import ViewFarmerModal from '@/components/agent/ViewFarmerModal';
-import EditFarmerModal from '@/components/agent/EditFarmerModal';
 import UploadReportModal from '@/components/agent/UploadReportModal';
+import VerificationQueueModal from '@/components/agent/VerificationQueueModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { mockFarmers, regions, farmCategories } from '@/data/mockFarmData';
 import {
     Search,
     Users,
@@ -33,20 +38,21 @@ import {
     Calendar,
     FileText,
     ClipboardList,
-    Phone
+    Phone,
+    Timer,
+    Camera,
+    Download,
+    FileSpreadsheet,
+    Loader2
 } from 'lucide-react';
-
-// Mock data for field visits
-const mockFieldVisits = [
-    { id: 1, farmerId: 'F001', farmerName: 'Kwame Mensah', lyncId: 'LYG0000001', phone: '+233 24 123 4567', date: '2024-11-28', purpose: 'Crop Inspection', notes: 'Maize crop showing healthy growth. No pest issues detected.', status: 'Completed' },
-    { id: 2, farmerId: 'F002', farmerName: 'Ama Asante', lyncId: 'LYG0000002', phone: '+233 20 987 6543', date: '2024-11-25', purpose: 'Soil Assessment', notes: 'Soil pH levels optimal. Recommended additional fertilizer application.', status: 'Completed' },
-    { id: 3, farmerId: 'F003', farmerName: 'Kofi Boateng', lyncId: 'LYG0000003', phone: '+233 27 555 1234', date: '2024-11-22', purpose: 'Equipment Check', notes: 'Irrigation system functioning well. Minor repairs needed on drip lines.', status: 'Completed' },
-    { id: 4, farmerId: 'F004', farmerName: 'Akosua Nyarko', lyncId: 'LYG0000004', phone: '+233 55 444 3333', date: '2024-11-20', purpose: 'Harvest Monitoring', notes: 'Cassava harvest 80% complete. Quality exceeds expectations.', status: 'Completed' },
-    { id: 5, farmerId: 'F005', farmerName: 'Yaw Adjei', lyncId: 'LYG0000005', phone: '+233 24 777 8888', date: '2024-11-18', purpose: 'Training Follow-up', notes: 'Farmer successfully implementing new planting techniques from training session.', status: 'Completed' },
-];
+import { Checkbox } from '@/components/ui/checkbox';
 
 const FarmManagement: React.FC = () => {
     const { darkMode } = useDarkMode();
+    const { agent } = useAuth();
+    const [farmers, setFarmers] = useState<any[]>([]);
+    const [farms, setFarms] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRegion, setSelectedRegion] = useState<string>('all');
     const [selectedFarmType, setSelectedFarmType] = useState<string>('all');
@@ -58,49 +64,87 @@ const FarmManagement: React.FC = () => {
     const [viewModalOpen, setViewModalOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
+    const [pendingFarmers, setPendingFarmers] = useState<any[]>([]);
+    const [verificationQueueModalOpen, setVerificationQueueModalOpen] = useState(false);
 
     // Field visit logging state
     const [activeTab, setActiveTab] = useState<'farmers' | 'visits'>('farmers');
     const [fieldVisitModalOpen, setFieldVisitModalOpen] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
 
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [farmersRes, farmsRes, pendingRes] = await Promise.all([
+                api.get('/farmers'),
+                api.get('/farms'),
+                api.get('/farmers/queue/pending')
+            ]);
+            setFarmers(farmersRes.data);
+            setFarms(farmsRes.data);
+            setPendingFarmers(pendingRes.data);
+            setIsLoaded(true);
+        } catch (err) {
+            toast.error('Failed to load farm management data');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     React.useEffect(() => {
-        const timer = setTimeout(() => setIsLoaded(true), 100);
-        return () => clearTimeout(timer);
+        fetchData();
     }, []);
-    const [visitLogs, setVisitLogs] = useState(mockFieldVisits);
+
+    const [visitLogs, setVisitLogs] = useState<any[]>([]);
+    const [selectedVisits, setSelectedVisits] = useState<Set<string>>(new Set());
+    const [isExporting, setIsExporting] = useState<'pdf' | 'excel' | null>(null);
     const [visitForm, setVisitForm] = useState({
         farmerId: '',
         farmerName: '',
         lyncId: '',
         phone: '',
         date: new Date().toISOString().split('T')[0],
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        hoursSpent: '1',
         purpose: '',
-        notes: ''
+        notes: '',
+        challenges: '',
+        status: 'Completed',
+        isEditing: false,
+        editingId: ''
     });
+    const [visitImages, setVisitImages] = useState<string[]>([]);
+    const [selectedVisit, setSelectedVisit] = useState<any>(null);
+    const [visitDetailModalOpen, setVisitDetailModalOpen] = useState(false);
 
     const metrics = useMemo(() => {
-        const total = mockFarmers.length;
-        const verified = mockFarmers.filter(f => f.status === 'Verified').length;
-        const pending = mockFarmers.filter(f => f.status === 'Pending').length;
-        const active = mockFarmers.filter(f => f.status === 'In Progress').length;
-        const matched = mockFarmers.filter(f => f.investmentMatched).length;
-        return { total, verified, pending, active, matched };
-    }, []);
+        const total = farmers.length;
+        const verified = farmers.filter(f => f.status === 'active').length;
+        const pending = pendingFarmers.length; // From verification queue
+        const activeCount = farms.filter(f => f.status === 'verified').length;
+        const matched = farmers.filter(f => f.investmentStatus === 'Matched').length;
+        return { total, verified, pending, active: activeCount, matched };
+    }, [farmers, farms, pendingFarmers]);
 
     const filteredFarmers = useMemo(() => {
-        return mockFarmers.filter(farmer => {
+        return farmers.map(f => {
+            let displayStatus = f.status;
+            if (displayStatus === 'active') displayStatus = 'Completed';
+            if (displayStatus === 'pending') displayStatus = 'Pending';
+            return { ...f, displayStatus };
+        }).filter(farmer => {
             const matchesSearch =
-                farmer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                farmer.phone.includes(searchQuery);
+                farmer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (farmer.phone && farmer.phone.includes(searchQuery));
             const matchesRegion = selectedRegion === 'all' || farmer.region === selectedRegion;
             const matchesFarmType = selectedFarmType === 'all' || farmer.farmType === selectedFarmType;
-            const matchesCategory = selectedCategory === 'all' || farmer.category === selectedCategory;
+            const matchesCategory = selectedCategory === 'all' || true;
             const filterStatus = statusFilter || selectedStatus;
-            const matchesStatus = filterStatus === 'all' || farmer.status === filterStatus;
+
+            const matchesStatus = filterStatus === 'all' || farmer.displayStatus === filterStatus;
             return matchesSearch && matchesRegion && matchesFarmType && matchesCategory && matchesStatus;
         });
-    }, [searchQuery, selectedRegion, selectedFarmType, selectedCategory, selectedStatus, statusFilter]);
+    }, [farmers, searchQuery, selectedRegion, selectedFarmType, selectedCategory, selectedStatus, statusFilter]);
 
     const resetFilters = () => {
         setSearchQuery('');
@@ -112,13 +156,17 @@ const FarmManagement: React.FC = () => {
     };
 
     const handleCardClick = (status: string | null) => {
-        setStatusFilter(status);
-        setSelectedStatus('all');
+        if (status === 'Pending') {
+            setVerificationQueueModalOpen(true);
+        } else {
+            setStatusFilter(status);
+            setSelectedStatus('all');
+        }
     };
 
     const getStatusBadgeColor = (status: string) => {
         switch (status) {
-            case 'Verified':
+            case 'Completed':
                 return darkMode ? 'bg-emerald-500/20 text-emerald-300 border-0' : 'bg-emerald-100 text-emerald-700';
             case 'Pending':
                 return darkMode ? 'bg-yellow-500/20 text-yellow-300 border-0' : 'bg-yellow-100 text-yellow-700';
@@ -152,7 +200,6 @@ const FarmManagement: React.FC = () => {
         const confirmed = window.confirm(`Verify farmer: ${farmer.name}?\n\nThis will change their status from Pending to Verified.`);
         if (confirmed) {
             alert(`Farmer ${farmer.name} has been verified successfully!`);
-            // In a real app, you would update the farmer status here
         }
     };
 
@@ -161,17 +208,23 @@ const FarmManagement: React.FC = () => {
         setUploadModalOpen(true);
     };
 
-    // Field visit handlers
     const handleLogVisit = (farmer?: any) => {
+        setVisitImages([]);
         if (farmer) {
             setVisitForm({
-                farmerId: farmer.id,
+                farmerId: farmer._id,
                 farmerName: farmer.name,
-                lyncId: generateLyncId(farmer.id),
-                phone: farmer.phone,
+                lyncId: generateLyncId(farmer._id),
+                phone: farmer.phone || '',
                 date: new Date().toISOString().split('T')[0],
+                time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+                hoursSpent: '1',
                 purpose: '',
-                notes: ''
+                notes: '',
+                challenges: '',
+                status: 'Completed',
+                isEditing: false,
+                editingId: ''
             });
         } else {
             setVisitForm({
@@ -180,32 +233,199 @@ const FarmManagement: React.FC = () => {
                 lyncId: '',
                 phone: '',
                 date: new Date().toISOString().split('T')[0],
+                time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+                hoursSpent: '1',
                 purpose: '',
-                notes: ''
+                notes: '',
+                challenges: '',
+                status: 'Completed',
+                isEditing: false,
+                editingId: ''
             });
         }
         setFieldVisitModalOpen(true);
     };
 
-    const handleSubmitVisit = () => {
-        if (!visitForm.farmerName || !visitForm.purpose || !visitForm.notes) {
-            alert('Please fill in all required fields');
+    const handleEditVisit = (visit: any) => {
+        setVisitForm({
+            farmerId: visit.farmer?._id || visit.farmerId,
+            farmerName: visit.farmer?.name || visit.farmerName,
+            lyncId: visit.farmer?.lyncId || visit.lyncId,
+            phone: visit.farmer?.contact || visit.phone,
+            date: new Date(visit.date).toISOString().split('T')[0],
+            time: visit.time,
+            hoursSpent: visit.hoursSpent.toString(),
+            purpose: visit.purpose,
+            notes: visit.notes,
+            challenges: visit.challenges || '',
+            status: visit.status || 'Completed',
+            isEditing: true,
+            editingId: visit._id
+        });
+        setVisitImages(visit.visitImages || []);
+        setFieldVisitModalOpen(true);
+    };
+
+    // Fetch field visits
+    const fetchVisits = async () => {
+        try {
+            const res = await api.get('/field-visits');
+            setVisitLogs(res.data);
+        } catch (err) {
+            console.error('Error fetching field visits:', err);
+        }
+    };
+
+    const handleExportPDF = async () => {
+        if (visitLogs.length === 0) {
+            toast.error('No visit logs to export');
             return;
         }
-        const newVisit = {
-            id: visitLogs.length + 1,
-            farmerId: visitForm.farmerId || `F00${visitLogs.length + 1}`,
-            farmerName: visitForm.farmerName,
-            lyncId: visitForm.lyncId || `LYG000000${visitLogs.length + 1}`,
-            phone: visitForm.phone,
-            date: visitForm.date,
-            purpose: visitForm.purpose,
-            notes: visitForm.notes,
-            status: 'Completed'
-        };
-        setVisitLogs([newVisit, ...visitLogs]);
-        setFieldVisitModalOpen(false);
-        alert('Field visit logged successfully!');
+
+        const dataToExport = selectedVisits.size > 0
+            ? visitLogs.filter(v => selectedVisits.has(v._id || v.id))
+            : visitLogs;
+
+        setIsExporting('pdf');
+        // Add a small artificial delay for UX and to allow spinner to show
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        try {
+            const doc = new jsPDF();
+            doc.setFontSize(20);
+            doc.setTextColor(29, 185, 84); // AgriLync Green
+            doc.text('Field Visit Logs - AgriLync', 14, 22);
+
+            doc.setFontSize(11);
+            doc.setTextColor(100);
+            doc.text(`Agent: ${agent?.name || 'AgriLync Agent'}`, 14, 30);
+            doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 37);
+            doc.text(`Type: ${selectedVisits.size > 0 ? 'Selected Records' : 'All Records'}`, 14, 44);
+
+            const tableColumn = ["Date", "Farmer", "Lync ID", "Purpose", "Hours", "Status"];
+            const tableRows = dataToExport.map(visit => [
+                new Date(visit.date).toLocaleDateString(),
+                visit.farmer?.name || visit.farmerName,
+                visit.farmer?.lyncId || visit.lyncId,
+                visit.purpose,
+                visit.hoursSpent,
+                visit.status
+            ]);
+
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 50,
+                theme: 'grid',
+                headStyles: { fillColor: [29, 185, 84], halign: 'center' },
+                bodyStyles: { halign: 'center' },
+                alternateRowStyles: { fillColor: [240, 240, 240] }
+            });
+
+            doc.save(`AgriLync_VisitLogs_${new Date().toISOString().split('T')[0]}.pdf`);
+            toast.success(`PDF report (${dataToExport.length} records) exported successfully`);
+        } catch (err) {
+            console.error('Export error:', err);
+            toast.error('Failed to export PDF');
+        } finally {
+            setIsExporting(null);
+        }
+    };
+
+    const handleExportExcel = async () => {
+        if (visitLogs.length === 0) {
+            toast.error('No visit logs to export');
+            return;
+        }
+
+        const dataToExport = selectedVisits.size > 0
+            ? visitLogs.filter(v => selectedVisits.has(v._id || v.id))
+            : visitLogs;
+
+        setIsExporting('excel');
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        try {
+            const exportData = dataToExport.map(visit => ({
+                'Date': new Date(visit.date).toLocaleDateString(),
+                'Farmer Name': visit.farmer?.name || visit.farmerName,
+                'Lync ID': visit.farmer?.lyncId || visit.lyncId,
+                'Purpose': visit.purpose,
+                'Notes': visit.notes,
+                'Challenges': visit.challenges || 'None',
+                'Hours Spent': visit.hoursSpent,
+                'Status': visit.status
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Visit Logs");
+            XLSX.writeFile(wb, `AgriLync_VisitLogs_${new Date().toISOString().split('T')[0]}.xlsx`);
+            toast.success(`Excel spreadsheet (${dataToExport.length} records) exported successfully`);
+        } catch (err) {
+            console.error('Export error:', err);
+            toast.error('Failed to export Excel');
+        } finally {
+            setIsExporting(null);
+        }
+    };
+
+    React.useEffect(() => {
+        if (isLoaded) {
+            fetchVisits();
+        }
+    }, [isLoaded]);
+
+    const handleSubmitVisit = async () => {
+        if (!visitForm.farmerId || !visitForm.purpose || !visitForm.notes) {
+            toast.error('Please fill all required fields');
+            return;
+        }
+
+        try {
+            const visitData = {
+                farmerId: visitForm.farmerId,
+                date: visitForm.date,
+                time: visitForm.time,
+                hoursSpent: parseFloat(visitForm.hoursSpent),
+                purpose: visitForm.purpose,
+                notes: visitForm.notes,
+                visitImages: visitImages,
+                challenges: visitForm.challenges,
+                status: visitForm.status
+            };
+
+            if (visitForm.isEditing) {
+                await api.put(`/field-visits/${visitForm.editingId}`, visitData);
+                toast.success('Field visit updated successfully!');
+            } else {
+                await api.post('/field-visits', visitData);
+                toast.success('Field visit logged successfully!');
+            }
+
+            fetchVisits(); // Refresh the list
+            setFieldVisitModalOpen(false);
+            // Reset form
+            setVisitForm({
+                farmerId: '',
+                farmerName: '',
+                lyncId: '',
+                phone: '',
+                date: new Date().toISOString().split('T')[0],
+                time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+                hoursSpent: '1',
+                purpose: '',
+                notes: '',
+                challenges: '',
+                status: 'Completed',
+                isEditing: false,
+                editingId: ''
+            });
+            setVisitImages([]);
+        } catch (err) {
+            console.error('Error saving visit:', err);
+            toast.error(visitForm.isEditing ? 'Failed to update field visit' : 'Failed to log field visit');
+        }
     };
 
     const sectionCardClass = darkMode
@@ -215,6 +435,14 @@ const FarmManagement: React.FC = () => {
     const inputBaseClasses = darkMode
         ? 'bg-[#10363d] border-[#1b5b65] text-gray-100 placeholder:text-gray-400'
         : '';
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
+            </div>
+        );
+    }
 
     return (
         <AgentLayout
@@ -226,8 +454,8 @@ const FarmManagement: React.FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
                     {[
                         { label: 'Total Farmers', value: metrics.total, icon: Users, color: 'bg-emerald-600', status: null },
-                        { label: 'Verified', value: metrics.verified, icon: CheckCircle, color: 'bg-blue-600', status: 'Verified' },
-                        { label: 'Pending', value: metrics.pending, icon: Clock, color: 'bg-orange-600', status: 'Pending' },
+                        { label: 'Completed', value: metrics.verified, icon: CheckCircle, color: 'bg-blue-600', status: 'Completed' },
+                        { label: 'Verification Queue', value: metrics.pending, icon: Clock, color: 'bg-orange-600', status: 'Pending' },
                         { label: 'Active Farms', value: metrics.active, icon: TrendingUp, color: 'bg-indigo-600', status: 'In Progress' },
                         { label: 'Matched', value: metrics.matched, icon: Coins, color: 'bg-purple-600', status: 'Matched' }
                     ].map((item, idx) => (
@@ -296,7 +524,7 @@ const FarmManagement: React.FC = () => {
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all">All Regions</SelectItem>
-                                                {regions.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                                {['Ashanti', 'Eastern', 'Northern', 'Western'].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                                             </SelectContent>
                                         </Select>
                                         <Select value={selectedFarmType} onValueChange={setSelectedFarmType}>
@@ -316,7 +544,7 @@ const FarmManagement: React.FC = () => {
                                             <SelectContent>
                                                 <SelectItem value="all">All Statuses</SelectItem>
                                                 <SelectItem value="Pending">Pending</SelectItem>
-                                                <SelectItem value="Verified">Verified</SelectItem>
+                                                <SelectItem value="Completed">Completed</SelectItem>
                                                 <SelectItem value="Matched">Matched</SelectItem>
                                                 <SelectItem value="In Progress">In Progress</SelectItem>
                                             </SelectContent>
@@ -382,7 +610,7 @@ const FarmManagement: React.FC = () => {
                                         <TableBody>
                                             {filteredFarmers.map((farmer, index) => (
                                                 <TableRow
-                                                    key={farmer.id}
+                                                    key={farmer._id}
                                                     className={`group transition-all duration-300 border-b ${darkMode ? 'border-white/5 hover:bg-emerald-500/5' : 'hover:bg-gray-50'} ${index % 2 === 0 ? (darkMode ? 'bg-transparent' : 'bg-white') : (darkMode ? 'bg-white/2' : 'bg-gray-50/30')}`}
                                                 >
                                                     <TableCell className="text-center font-mono text-xs text-gray-500">
@@ -391,10 +619,10 @@ const FarmManagement: React.FC = () => {
                                                     <TableCell>
                                                         <div className="flex items-center gap-4">
                                                             <div className="relative">
-                                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-bold text-white shadow-lg transition-transform group-hover:scale-110 group-hover:rotate-3 ${farmer.status === 'Verified' ? 'bg-emerald-500' : farmer.status === 'Pending' ? 'bg-amber-500' : 'bg-indigo-500'}`}>
-                                                                    {farmer.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-bold text-white shadow-lg transition-transform group-hover:scale-110 group-hover:rotate-3 ${farmer.displayStatus === 'Completed' ? 'bg-emerald-500' : farmer.displayStatus === 'Pending' ? 'bg-amber-500' : 'bg-indigo-500'}`}>
+                                                                    {farmer.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
                                                                 </div>
-                                                                {farmer.status === 'Verified' && (
+                                                                {farmer.displayStatus === 'Completed' && (
                                                                     <div className="absolute -right-1 -bottom-1 bg-white rounded-full p-0.5 shadow-sm">
                                                                         <CheckCircle className="w-4 h-4 text-emerald-500" />
                                                                     </div>
@@ -402,7 +630,7 @@ const FarmManagement: React.FC = () => {
                                                             </div>
                                                             <div>
                                                                 <p className={`font-bold text-sm ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{farmer.name}</p>
-                                                                <p className={`text-xs font-mono mt-0.5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{generateLyncId(farmer.id)}</p>
+                                                                <p className={`text-xs font-mono mt-0.5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{generateLyncId(farmer._id)}</p>
                                                             </div>
                                                         </div>
                                                     </TableCell>
@@ -421,19 +649,19 @@ const FarmManagement: React.FC = () => {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Badge className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border-0 ring-1 ring-inset ${farmer.status === 'Verified' ? 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20' :
-                                                            farmer.status === 'Pending' ? 'bg-amber-500/10 text-amber-500 ring-amber-500/20' :
-                                                                farmer.status === 'Matched' ? 'bg-indigo-500/10 text-indigo-500 ring-indigo-500/20' :
+                                                        <Badge className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border-0 ring-1 ring-inset ${farmer.displayStatus === 'Completed' ? 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20' :
+                                                            farmer.displayStatus === 'Pending' ? 'bg-amber-500/10 text-amber-500 ring-amber-500/20' :
+                                                                farmer.displayStatus === 'Matched' ? 'bg-indigo-500/10 text-indigo-500 ring-indigo-500/20' :
                                                                     'bg-blue-500/10 text-blue-500 ring-blue-500/20'
                                                             }`}>
-                                                            {farmer.status}
+                                                            {farmer.displayStatus}
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
                                                             <Calendar className="w-3.5 h-3.5 text-gray-400" />
                                                             <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                                {new Date(farmer.lastVisit).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                                {farmer.createdAt ? new Date(farmer.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never'}
                                                             </span>
                                                         </div>
                                                     </TableCell>
@@ -485,7 +713,7 @@ const FarmManagement: React.FC = () => {
                         </Card>
 
                         <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} text-center`}>
-                            Showing {filteredFarmers.length} of {mockFarmers.length} farmers
+                            Showing {filteredFarmers.length} of {farmers.length} farmers
                         </div>
                     </TabsContent>
 
@@ -496,11 +724,63 @@ const FarmManagement: React.FC = () => {
                                 <h3 className={`text-xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>Field Activities</h3>
                                 <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Chronological record of recent farm inspections</p>
                             </div>
-                            <Button onClick={() => handleLogVisit()} className="bg-[#1db954] hover:bg-[#17a447] text-white shadow-lg shadow-emerald-500/20">
-                                <Plus className="h-4 w-4 mr-2" />
-                                New Journal Entry
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    onClick={handleExportPDF}
+                                    disabled={isExporting !== null}
+                                    className={`bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-500/20 border-0 h-10 px-4 transition-all active:scale-95`}
+                                >
+                                    {isExporting === 'pdf' ? (
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : (
+                                        <Download className="h-4 w-4 mr-2" />
+                                    )}
+                                    {selectedVisits.size > 0 ? `PDF (${selectedVisits.size})` : 'PDF All'}
+                                </Button>
+                                <Button
+                                    onClick={handleExportExcel}
+                                    disabled={isExporting !== null}
+                                    className={`bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 border-0 h-10 px-4 transition-all active:scale-95`}
+                                >
+                                    {isExporting === 'excel' ? (
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : (
+                                        <FileSpreadsheet className="h-4 w-4 mr-2" />
+                                    )}
+                                    {selectedVisits.size > 0 ? `Excel (${selectedVisits.size})` : 'Excel All'}
+                                </Button>
+                                <Button onClick={() => handleLogVisit()} className="bg-[#1db954] hover:bg-[#17a447] text-white shadow-lg shadow-emerald-500/20 h-10 px-4">
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    New Journal Entry
+                                </Button>
+                            </div>
                         </div>
+
+                        {visitLogs.length > 0 && (
+                            <div className="flex items-center gap-4 py-2 px-8">
+                                <div className="flex items-center gap-2">
+                                    <Checkbox
+                                        id="selectAllVisits"
+                                        checked={selectedVisits.size === visitLogs.length && visitLogs.length > 0}
+                                        onCheckedChange={(checked) => {
+                                            if (checked) {
+                                                setSelectedVisits(new Set(visitLogs.map(v => v._id || v.id)));
+                                            } else {
+                                                setSelectedVisits(new Set());
+                                            }
+                                        }}
+                                    />
+                                    <Label htmlFor="selectAllVisits" className={`text-xs font-bold cursor-pointer ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        Select All Records
+                                    </Label>
+                                </div>
+                                {selectedVisits.size > 0 && (
+                                    <span className="text-[10px] uppercase tracking-widest font-bold text-emerald-500 animate-pulse">
+                                        {selectedVisits.size} records selected for export
+                                    </span>
+                                )}
+                            </div>
+                        )}
 
                         <div className="relative pl-8 space-y-6 before:absolute before:left-3 before:top-2 before:bottom-0 before:w-0.5 before:bg-gradient-to-b before:from-emerald-500 before:via-emerald-500/50 before:to-transparent">
                             {visitLogs.map((visit, index) => (
@@ -511,52 +791,124 @@ const FarmManagement: React.FC = () => {
                                         <div className={`w-1.5 h-1.5 rounded-full ${visit.status === 'Completed' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                                     </div>
 
-                                    <Card className={`${sectionCardClass} border-0 shadow-lg overflow-hidden transition-all duration-300 group-hover:shadow-emerald-500/5 group-hover:translate-x-1`}>
-                                        <div className="p-5">
-                                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                                                <div className="flex-1 space-y-2">
-                                                    <div className="flex items-center gap-3">
-                                                        <Badge variant="outline" className={`text-[10px] font-mono px-2 py-0.5 ${darkMode ? 'bg-white/5 border-white/10 text-emerald-400' : 'bg-gray-50 text-emerald-600'}`}>
-                                                            {visit.lyncId}
-                                                        </Badge>
-                                                        <h4 className={`font-bold transition-colors ${darkMode ? 'text-gray-100 group-hover:text-emerald-400' : 'text-gray-900 group-hover:text-emerald-600'}`}>
-                                                            {visit.farmerName}
-                                                        </h4>
-                                                        <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>•</span>
-                                                        <Badge className={`text-[10px] uppercase tracking-widest ${darkMode ? 'bg-emerald-500/10 text-emerald-400 border-0' : 'bg-emerald-50 text-emerald-700'}`}>
-                                                            {visit.purpose}
-                                                        </Badge>
-                                                    </div>
-                                                    <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                        {visit.notes}
-                                                    </p>
-                                                    <div className="flex flex-wrap items-center gap-4 pt-2">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <Calendar className="w-3.5 h-3.5 text-gray-500" />
-                                                            <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                                {new Date(visit.date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                                    <Card
+                                        className={`${sectionCardClass} border-0 shadow-lg overflow-hidden transition-all duration-300 group-hover:shadow-emerald-500/5 group-hover:translate-x-1 cursor-pointer`}
+                                    >
+                                        <div className="p-5 flex items-start gap-4">
+                                            <div className="pt-1" onClick={(e) => e.stopPropagation()}>
+                                                <Checkbox
+                                                    checked={selectedVisits.has(visit._id || visit.id)}
+                                                    onCheckedChange={(checked) => {
+                                                        const newSelected = new Set(selectedVisits);
+                                                        if (checked) {
+                                                            newSelected.add(visit._id || visit.id);
+                                                        } else {
+                                                            newSelected.delete(visit._id || visit.id);
+                                                        }
+                                                        setSelectedVisits(newSelected);
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="flex-1" onClick={() => {
+                                                setSelectedVisit(visit);
+                                                setVisitDetailModalOpen(true);
+                                            }}>
+                                                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                                    <div className="flex-1 space-y-2">
+                                                        <div className="flex items-center gap-3">
+                                                            <span className={`text-xs font-bold opacity-40 font-mono ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                                #{visitLogs.length - index}
                                                             </span>
+                                                            <Badge variant="outline" className={`text-[10px] font-mono px-2 py-0.5 ${darkMode ? 'bg-white/5 border-white/10 text-emerald-400' : 'bg-gray-50 text-emerald-600'}`}>
+                                                                {visit.farmer?.lyncId || visit.lyncId}
+                                                            </Badge>
+                                                            <h4 className={`font-bold transition-colors ${darkMode ? 'text-gray-100 group-hover:text-emerald-400' : 'text-gray-900 group-hover:text-emerald-600'}`}>
+                                                                {visit.farmer?.name || visit.farmerName}
+                                                            </h4>
+                                                            <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>•</span>
+                                                            <Badge className={`text-[10px] uppercase tracking-widest ${darkMode ? 'bg-emerald-500/10 text-emerald-400 border-0' : 'bg-emerald-50 text-emerald-700'}`}>
+                                                                {visit.purpose}
+                                                            </Badge>
                                                         </div>
-                                                        <div className="flex items-center gap-1.5">
-                                                            <Phone className="w-3.5 h-3.5 text-gray-500" />
-                                                            <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                                {visit.phone}
-                                                            </span>
+
+                                                        <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                            {visit.notes}
+                                                        </p>
+
+                                                        {visit.challenges && (
+                                                            <div className={`mt-2 p-3 rounded-lg border text-sm ${darkMode ? 'bg-amber-500/5 border-amber-500/10 text-amber-200/70' : 'bg-amber-50 border-amber-100 text-amber-700'}`}>
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <X className="w-3.5 h-3.5" />
+                                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Challenges Encountered</span>
+                                                                </div>
+                                                                {visit.challenges}
+                                                            </div>
+                                                        )}
+
+                                                        {visit.visitImages && visit.visitImages.length > 0 && (
+                                                            <div className="flex gap-2 mt-3 overflow-x-auto pb-2 scrollbar-hide">
+                                                                {visit.visitImages.map((img: string, idx: number) => (
+                                                                    <img
+                                                                        key={idx}
+                                                                        src={img}
+                                                                        alt={`Visit ${idx}`}
+                                                                        className="h-16 w-16 object-cover rounded-md border border-white/10 cursor-pointer hover:opacity-80 transition-opacity"
+                                                                        onClick={() => window.open(img, '_blank')}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        <div className="flex flex-wrap items-center gap-4 pt-2">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <Calendar className="w-3.5 h-3.5 text-gray-500" />
+                                                                <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                    {new Date(visit.date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <Clock className="w-3.5 h-3.5 text-gray-500" />
+                                                                <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                    {visit.time} ({visit.hoursSpent} hrs)
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <Phone className="w-3.5 h-3.5 text-gray-500" />
+                                                                <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                    {visit.farmer?.contact || visit.phone}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div className="flex flex-col items-end gap-3 min-w-[120px]">
-                                                    <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ring-1 ring-inset ${visit.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20' : 'bg-amber-500/10 text-amber-500 ring-amber-500/20'
-                                                        }`}>
-                                                        {visit.status}
-                                                    </div>
-                                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-white/10">
-                                                            <Edit className="w-4 h-4 text-gray-400" />
-                                                        </Button>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-emerald-500/20">
-                                                            <CheckCircle className="w-4 h-4 text-emerald-400" />
-                                                        </Button>
+                                                    <div className="flex flex-col items-end gap-3 min-w-[120px]">
+                                                        <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ring-1 ring-inset ${visit.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20' : 'bg-amber-500/10 text-amber-500 ring-amber-500/20'
+                                                            }`}>
+                                                            {visit.status}
+                                                        </div>
+                                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 rounded-lg hover:bg-white/10"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleEditVisit(visit);
+                                                                }}
+                                                            >
+                                                                <Edit className="w-4 h-4 text-gray-400" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 rounded-lg hover:bg-emerald-500/20"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    // Logic for completing/marking done if needed
+                                                                }}
+                                                            >
+                                                                <CheckCircle className="w-4 h-4 text-emerald-400" />
+                                                            </Button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -582,9 +934,9 @@ const FarmManagement: React.FC = () => {
                 </Tabs>
             </div>
 
-            <AddFarmerModal open={isAddFarmerModalOpen} onOpenChange={setIsAddFarmerModalOpen} />
+            <AddFarmerModal open={isAddFarmerModalOpen} onOpenChange={setIsAddFarmerModalOpen} onSuccess={fetchData} />
             <ViewFarmerModal open={viewModalOpen} onOpenChange={setViewModalOpen} farmer={selectedFarmer} />
-            <EditFarmerModal open={editModalOpen} onOpenChange={setEditModalOpen} farmer={selectedFarmer} />
+            <AddFarmerModal open={editModalOpen} onOpenChange={setEditModalOpen} farmer={selectedFarmer} isEditMode={true} onSuccess={fetchData} />
             <UploadReportModal open={uploadModalOpen} onOpenChange={setUploadModalOpen} farmer={selectedFarmer} />
 
             {/* Field Visit Modal - Premium Style */}
@@ -609,24 +961,35 @@ const FarmManagement: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div className="space-y-2">
                                 <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Grower Name *</Label>
-                                <Input
-                                    value={visitForm.farmerName}
-                                    onChange={(e) => {
-                                        const newName = e.target.value;
-                                        const matchedFarmer = mockFarmers.find(f =>
-                                            f.name.toLowerCase() === newName.toLowerCase() &&
-                                            (visitForm.phone === '' || f.phone === visitForm.phone)
-                                        );
-                                        setVisitForm({
-                                            ...visitForm,
-                                            farmerName: newName,
-                                            lyncId: matchedFarmer ? generateLyncId(matchedFarmer.id) : '',
-                                            farmerId: matchedFarmer?.id || ''
-                                        });
+                                <Select
+                                    value={visitForm.farmerId}
+                                    onValueChange={(val) => {
+                                        const farmer = farmers.find(f => f._id === val);
+                                        if (farmer) {
+                                            setVisitForm({
+                                                ...visitForm,
+                                                farmerId: val,
+                                                farmerName: farmer.name,
+                                                lyncId: generateLyncId(farmer._id),
+                                                phone: farmer.contact
+                                            });
+                                        }
                                     }}
-                                    placeholder="Enter farmer name"
-                                    className={`h-11 ${inputBaseClasses}`}
-                                />
+                                >
+                                    <SelectTrigger className={`h-11 ${inputBaseClasses}`}>
+                                        <SelectValue placeholder="Select a registered farmer" />
+                                    </SelectTrigger>
+                                    <SelectContent className={darkMode ? 'bg-gray-900 border-white/10' : ''}>
+                                        {farmers.map(farmer => (
+                                            <SelectItem key={farmer._id} value={farmer._id} className={darkMode ? 'hover:bg-white/5' : ''}>
+                                                <div className="flex items-center justify-between w-full">
+                                                    <span>{farmer.name}</span>
+                                                    <span className="text-xs text-gray-500 ml-2">{farmer.contact}</span>
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Lync ID Identification</Label>
@@ -640,32 +1003,7 @@ const FarmManagement: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                            <div className="space-y-2">
-                                <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Contact Number</Label>
-                                <div className="relative group">
-                                    <Phone className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${darkMode ? 'text-gray-500 group-focus-within:text-emerald-500' : 'text-gray-400 group-focus-within:text-emerald-500'}`} />
-                                    <Input
-                                        value={visitForm.phone}
-                                        onChange={(e) => {
-                                            const newPhone = e.target.value;
-                                            const matchedFarmer = mockFarmers.find(f =>
-                                                f.phone === newPhone &&
-                                                (visitForm.farmerName === '' || f.name.toLowerCase() === visitForm.farmerName.toLowerCase())
-                                            );
-                                            setVisitForm({
-                                                ...visitForm,
-                                                phone: newPhone,
-                                                lyncId: matchedFarmer ? generateLyncId(matchedFarmer.id) : visitForm.lyncId,
-                                                farmerId: matchedFarmer?.id || visitForm.farmerId,
-                                                farmerName: matchedFarmer?.name || visitForm.farmerName
-                                            });
-                                        }}
-                                        placeholder="+233 XX XXX XXXX"
-                                        className={`pl-10 h-11 ${inputBaseClasses}`}
-                                    />
-                                </div>
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                             <div className="space-y-2">
                                 <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Visit Date *</Label>
                                 <div className="relative group">
@@ -678,25 +1016,66 @@ const FarmManagement: React.FC = () => {
                                     />
                                 </div>
                             </div>
+                            <div className="space-y-2">
+                                <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Time *</Label>
+                                <div className="relative group">
+                                    <Clock className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${darkMode ? 'text-gray-500 group-focus-within:text-emerald-500' : 'text-gray-400 group-focus-within:text-emerald-500'}`} />
+                                    <Input
+                                        type="time"
+                                        value={visitForm.time}
+                                        onChange={(e) => setVisitForm({ ...visitForm, time: e.target.value })}
+                                        className={`pl-10 h-11 ${inputBaseClasses}`}
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Hours Spent *</Label>
+                                <div className="relative group">
+                                    <Timer className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${darkMode ? 'text-gray-500 group-focus-within:text-emerald-500' : 'text-gray-400 group-focus-within:text-emerald-500'}`} />
+                                    <Input
+                                        type="number"
+                                        min="0.1"
+                                        max="24"
+                                        step="0.5"
+                                        value={visitForm.hoursSpent}
+                                        onChange={(e) => setVisitForm({ ...visitForm, hoursSpent: e.target.value })}
+                                        placeholder="e.g., 1.5"
+                                        className={`pl-10 h-11 ${inputBaseClasses}`}
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Primary Inspection Purpose *</Label>
-                            <Select value={visitForm.purpose} onValueChange={(val) => setVisitForm({ ...visitForm, purpose: val })}>
-                                <SelectTrigger className={`h-11 ${inputBaseClasses}`}>
-                                    <SelectValue placeholder="Select purpose of this visit" />
-                                </SelectTrigger>
-                                <SelectContent className={darkMode ? 'bg-[#002f37] border-white/10 text-white' : ''}>
-                                    <SelectItem value="Crop Inspection">Crop Inspection</SelectItem>
-                                    <SelectItem value="Soil Assessment">Soil Assessment</SelectItem>
-                                    <SelectItem value="Equipment Check">Equipment Check</SelectItem>
-                                    <SelectItem value="Harvest Monitoring">Harvest Monitoring</SelectItem>
-                                    <SelectItem value="Training Follow-up">Training Follow-up</SelectItem>
-                                    <SelectItem value="Pest Control">Pest Control</SelectItem>
-                                    <SelectItem value="General Check-in">General Check-in</SelectItem>
-                                    <SelectItem value="Investment Review">Investment Review</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Primary Inspection Purpose *</Label>
+                                <Select value={visitForm.purpose} onValueChange={(val) => setVisitForm({ ...visitForm, purpose: val })}>
+                                    <SelectTrigger className={`h-11 ${inputBaseClasses}`}>
+                                        <SelectValue placeholder="Select purpose of this visit" />
+                                    </SelectTrigger>
+                                    <SelectContent className={darkMode ? 'bg-[#002f37] border-white/10 text-white' : ''}>
+                                        <SelectItem value="Routine inspection">Routine Inspection</SelectItem>
+                                        <SelectItem value="Pest control">Pest Control</SelectItem>
+                                        <SelectItem value="Irrigation check">Irrigation Check</SelectItem>
+                                        <SelectItem value="Harvest assessment">Harvest Assessment</SelectItem>
+                                        <SelectItem value="Soil testing">Soil Testing</SelectItem>
+                                        <SelectItem value="Training session">Training Session</SelectItem>
+                                        <SelectItem value="Other">Other</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Visit Status *</Label>
+                                <Select value={visitForm.status} onValueChange={(val) => setVisitForm({ ...visitForm, status: val })}>
+                                    <SelectTrigger className={`h-11 ${inputBaseClasses}`}>
+                                        <SelectValue placeholder="Select visit status" />
+                                    </SelectTrigger>
+                                    <SelectContent className={darkMode ? 'bg-[#002f37] border-white/10 text-white' : ''}>
+                                        <SelectItem value="Completed">Completed</SelectItem>
+                                        <SelectItem value="Follow-up Required">Will visit again</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
                         <div className="space-y-2">
@@ -708,6 +1087,59 @@ const FarmManagement: React.FC = () => {
                                 rows={4}
                                 className={`${inputBaseClasses} resize-none pt-3`}
                             />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Challenges Encountered (Optional)</Label>
+                            <Textarea
+                                value={visitForm.challenges}
+                                onChange={(e) => setVisitForm({ ...visitForm, challenges: e.target.value })}
+                                placeholder="Document any difficulties reaching the location, weather conditions, or other challenges during the visit..."
+                                rows={3}
+                                className={`${inputBaseClasses} resize-none pt-3`}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Visit Photos (Optional)</Label>
+                            <div className="grid grid-cols-3 gap-3">
+                                {visitImages.map((img, idx) => (
+                                    <div key={idx} className="relative group">
+                                        <img src={img} alt={`Visit ${idx + 1}`} className="w-full h-24 object-cover rounded-lg" />
+                                        <button
+                                            type="button"
+                                            onClick={() => setVisitImages(visitImages.filter((_, i) => i !== idx))}
+                                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ))}
+                                {visitImages.length < 6 && (
+                                    <label className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-emerald-500 transition-colors">
+                                        <Camera className="h-6 w-6 text-gray-400" />
+                                        <span className="text-xs text-gray-500 mt-1">Add Photo</span>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => {
+                                                        setVisitImages([...visitImages, reader.result as string]);
+                                                    };
+                                                    reader.readAsDataURL(file);
+                                                }
+                                            }}
+                                        />
+                                    </label>
+                                )}
+                            </div>
+                            {visitImages.length > 0 && (
+                                <p className="text-xs text-gray-500">{visitImages.length}/6 photos uploaded</p>
+                            )}
                         </div>
 
                         <div className="flex gap-4 justify-end pt-4">
@@ -722,13 +1154,143 @@ const FarmManagement: React.FC = () => {
                                 onClick={handleSubmitVisit}
                                 className="px-8 h-11 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                             >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Archive Journal Entry
+                                {visitForm.isEditing ? (
+                                    <>
+                                        <Edit className="h-4 w-4 mr-2" />
+                                        Update Journal Entry
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircle className="h-4 w-4 mr-2" />
+                                        Archive Journal Entry
+                                    </>
+                                )}
                             </Button>
                         </div>
                     </div>
                 </DialogContent>
             </Dialog>
+
+            <Dialog open={visitDetailModalOpen} onOpenChange={setVisitDetailModalOpen}>
+                <DialogContent className={`max-w-2xl max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-white/10 text-white' : ''}`}>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-3">
+                            <Badge variant="outline" className={`text-xs font-mono ${darkMode ? 'bg-white/5 border-white/10 text-emerald-400' : 'bg-gray-50 text-emerald-600'}`}>
+                                {selectedVisit?.farmer?.lyncId || selectedVisit?.lyncId}
+                            </Badge>
+                            <span className="text-xl font-bold">{selectedVisit?.farmer?.name || selectedVisit?.farmerName}</span>
+                        </DialogTitle>
+                        <DialogDescription className={`${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            Detailed field journal entry for farm inspection
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {selectedVisit && (
+                        <div className="space-y-6 py-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-white/5">
+                                <div className="space-y-1">
+                                    <Label className="text-[10px] uppercase tracking-wider text-gray-500">Date</Label>
+                                    <p className="text-sm font-semibold flex items-center gap-2">
+                                        <Calendar className="w-3.5 h-3.5 text-emerald-500" />
+                                        {new Date(selectedVisit.date).toLocaleDateString()}
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-[10px] uppercase tracking-wider text-gray-500">Time</Label>
+                                    <p className="text-sm font-semibold flex items-center gap-2">
+                                        <Clock className="w-3.5 h-3.5 text-emerald-500" />
+                                        {selectedVisit.time}
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-[10px] uppercase tracking-wider text-gray-500">Duration</Label>
+                                    <p className="text-sm font-semibold flex items-center gap-2">
+                                        <Timer className="w-3.5 h-3.5 text-emerald-500" />
+                                        {selectedVisit.hoursSpent} hrs
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-[10px] uppercase tracking-wider text-gray-500">Status</Label>
+                                    <Badge className={`text-[10px] uppercase tracking-widest ${selectedVisit.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500 border-0' : 'bg-amber-500/10 text-amber-500 border-0'}`}>
+                                        {selectedVisit.status || 'Completed'}
+                                    </Badge>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[11px] font-bold uppercase tracking-wider text-emerald-500">Inspection Purpose</Label>
+                                <p className="text-sm font-medium">{selectedVisit.purpose}</p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[11px] font-bold uppercase tracking-wider text-emerald-500">Observations & Notes</Label>
+                                <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    {selectedVisit.notes}
+                                </p>
+                            </div>
+
+                            {selectedVisit.challenges && (
+                                <div className={`p-4 rounded-xl border ${darkMode ? 'bg-amber-500/5 border-amber-500/10' : 'bg-amber-50 border-amber-100'}`}>
+                                    <div className="flex items-center gap-2 mb-2 text-amber-500">
+                                        <X className="w-4 h-4" />
+                                        <span className="text-[11px] font-bold uppercase tracking-widest">Challenges Encountered</span>
+                                    </div>
+                                    <p className={`text-sm ${darkMode ? 'text-amber-200/70' : 'text-amber-800'}`}>
+                                        {selectedVisit.challenges}
+                                    </p>
+                                </div>
+                            )}
+
+                            {selectedVisit.visitImages && selectedVisit.visitImages.length > 0 && (
+                                <div className="space-y-3">
+                                    <Label className="text-[11px] font-bold uppercase tracking-wider text-emerald-500">Visit Gallery</Label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                        {selectedVisit.visitImages.map((img: string, idx: number) => (
+                                            <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-white/10 group relative cursor-pointer" onClick={() => window.open(img, '_blank')}>
+                                                <img src={img} alt={`Visit ${idx}`} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <Eye className="w-6 h-6 text-white" />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <DialogFooter className="sm:justify-between gap-4 pt-4 border-t border-white/5">
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setVisitDetailModalOpen(false);
+                                handleEditVisit(selectedVisit);
+                            }}
+                            className={`flex-1 ${darkMode ? 'border-white/10 hover:bg-white/5 text-gray-400' : ''}`}
+                        >
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit Journal Entry
+                        </Button>
+                        <Button
+                            onClick={() => setVisitDetailModalOpen(false)}
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white"
+                        >
+                            Close Details
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <VerificationQueueModal
+                open={verificationQueueModalOpen}
+                onOpenChange={setVerificationQueueModalOpen}
+                pendingFarmers={pendingFarmers}
+                agent={agent}
+                darkMode={darkMode}
+                onSuccess={fetchData}
+                onView={handleViewFarmer}
+                onEdit={handleEditFarmer}
+            />
         </AgentLayout>
     );
 };

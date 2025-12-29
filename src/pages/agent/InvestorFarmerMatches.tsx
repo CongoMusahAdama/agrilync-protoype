@@ -1,175 +1,99 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
-import AgentLayout from './AgentLayout';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import {
-  Briefcase, RefreshCw, DollarSign, CheckCircle, AlertTriangle,
-  Search, Filter, ArrowUpDown, Eye, Upload, Flag, UserCheck,
-  MapPin, Leaf, Calendar, Clock, MessageSquare, FileText, Camera,
-  X, ChevronRight, User, Building, Phone, Mail, TrendingUp,
-  AlertCircle, CheckCircle2, CircleDot, ChevronDown, ChevronUp, Plus
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Search,
+  Briefcase,
+  RefreshCw,
+  DollarSign,
+  CheckCircle,
+  AlertTriangle,
+  ArrowUpDown,
+  X,
+  User,
+  Building,
+  CheckCircle2,
+  Eye,
+  Calendar,
+  Clock,
+  MapPin,
+  Leaf,
+  TrendingUp,
+  CircleDot,
+  Phone,
+  Mail,
+  AlertCircle,
+  Plus,
+  Upload,
+  Flag,
+  Camera
 } from 'lucide-react';
+import AgentLayout from './AgentLayout';
+import { useAuth } from '@/contexts/AuthContext';
+import api from '@/utils/api';
+import { toast } from 'sonner';
 
-// Mock data for matches with progress tracking
+// Helper functions used in the file
+const getStatusBadge = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'active': return 'bg-emerald-100 text-emerald-700';
+    case 'completed': return 'bg-blue-100 text-blue-700';
+    case 'pending': return 'bg-amber-100 text-amber-700';
+    case 'flagged': return 'bg-rose-100 text-rose-700';
+    default: return 'bg-gray-100 text-gray-700';
+  }
+};
 
-// Mock data for matches with progress tracking
-const mockMatches = [
-  {
-    id: 1,
-    investor: { name: 'AgriFunds Ltd', organization: 'AgriFunds Ghana', contact: '+233 24 123 4567', email: 'info@agrifunds.gh', photo: null },
-    farmer: { name: 'John Kwame', region: 'Ashanti', phone: '+233 24 111 2222', lyncId: 'LYG0000001', photo: null, verified: true, landSize: '5 acres', productionStage: 'Growing' },
-    farmType: 'Crop',
-    category: 'Maize',
-    investmentType: 'Input Support',
-    investmentValue: 'GHS 15,000',
-    partnershipModel: 'Profit Sharing',
-    status: 'active',
-    progress: 65,
-    matchDate: '2024-10-15',
-    startDate: '2024-10-20',
-    lastUpdate: '3 days ago',
-    assignedAgent: 'Agent Mensah',
-    updates: [
-      { id: 1, title: 'Land Preparation Complete', description: 'Successfully cleared and prepared 5 acres for maize plantation.', date: '2024-10-22', progress: 20 },
-      { id: 2, title: 'Seedling Planting Done', description: 'Planted improved maize variety. Irrigation system installed.', date: '2024-10-30', progress: 40 },
-      { id: 3, title: 'Growth Monitoring Update', description: 'Crops showing healthy growth. First fertilizer applied.', date: '2024-11-10', progress: 65 },
-    ],
-    timeline: [
-      { date: '2024-10-15', action: 'Match created', type: 'create' },
-      { date: '2024-10-20', action: 'Investment started', type: 'start' },
-      { date: '2024-10-25', action: 'Inputs delivered to farmer', type: 'delivery' },
-      { date: '2024-11-01', action: 'Field visit completed', type: 'visit' },
-      { date: '2024-11-15', action: 'Progress report uploaded', type: 'report' },
-    ]
-  },
-  {
-    id: 2,
-    investor: { name: 'GreenCapital', organization: 'GreenCapital Investments', contact: '+233 20 987 6543', email: 'invest@greencapital.gh', photo: null },
-    farmer: { name: 'Amina Fatimah', region: 'Northern', phone: '+233 20 333 4444', lyncId: 'LYG0000002', photo: null, verified: true, landSize: '2 acres', productionStage: 'Hatching' },
-    farmType: 'Livestock',
-    category: 'Poultry',
-    investmentType: 'Equipment',
-    investmentValue: 'GHS 8,500',
-    partnershipModel: 'Buy-back Agreement',
-    status: 'pending',
-    progress: 0,
-    matchDate: '2024-11-01',
-    startDate: null,
-    lastUpdate: '8 days ago',
-    assignedAgent: 'Agent Mensah',
-    updates: [],
-    timeline: [
-      { date: '2024-11-01', action: 'Match created', type: 'create' },
-      { date: '2024-11-05', action: 'Awaiting investor confirmation', type: 'pending' },
-    ]
-  },
-  {
-    id: 3,
-    investor: { name: 'FarmersFirst', organization: 'FarmersFirst Foundation', contact: '+233 27 555 1234', email: 'support@farmersfirst.org', photo: null },
-    farmer: { name: 'Kofi Asante', region: 'Eastern', phone: '+233 27 555 6666', lyncId: 'LYG0000003', photo: null, verified: true, landSize: '10 acres', productionStage: 'Harvesting' },
-    farmType: 'Crop',
-    category: 'Cassava',
-    investmentType: 'Cash Support',
-    investmentValue: 'GHS 25,000',
-    partnershipModel: 'Profit Sharing',
-    status: 'completed',
-    progress: 100,
-    matchDate: '2024-06-01',
-    startDate: '2024-06-10',
-    lastUpdate: '1 week ago',
-    assignedAgent: 'Agent Mensah',
-    updates: [
-      { id: 1, title: 'Project Launched', description: 'Land preparation and planting completed.', date: '2024-06-15', progress: 25 },
-      { id: 2, title: 'Mid-Season Update', description: 'Crops growing well. Pest control measures in place.', date: '2024-08-01', progress: 50 },
-      { id: 3, title: 'Harvest Ready', description: 'Cassava ready for harvest. Expected yield: 15 tonnes.', date: '2024-09-10', progress: 85 },
-      { id: 4, title: 'Harvest Complete', description: 'Successfully harvested 16 tonnes. Returns distributed.', date: '2024-10-01', progress: 100 },
-    ],
-    timeline: [
-      { date: '2024-06-01', action: 'Match created', type: 'create' },
-      { date: '2024-06-10', action: 'Investment started', type: 'start' },
-      { date: '2024-09-15', action: 'Harvest completed', type: 'harvest' },
-      { date: '2024-10-01', action: 'Final report submitted', type: 'complete' },
-    ]
-  },
-  {
-    id: 4,
-    investor: { name: 'AgriVest Corp', organization: 'AgriVest Corporation', contact: '+233 55 444 3333', email: 'agrivest@corp.gh', photo: null },
-    farmer: { name: 'Akosua Mensah', region: 'Volta', phone: '+233 55 777 8888', lyncId: 'LYG0000004', photo: null, verified: false, landSize: '3 acres', productionStage: 'Planting' },
-    farmType: 'Crop',
-    category: 'Vegetables',
-    investmentType: 'Land Prep',
-    investmentValue: 'GHS 12,000',
-    partnershipModel: 'Input Financing',
-    status: 'flagged',
-    progress: 30,
-    matchDate: '2024-09-20',
-    startDate: '2024-09-25',
-    lastUpdate: '2 days ago',
-    assignedAgent: 'Agent Mensah',
-    updates: [
-      { id: 1, title: 'Land Preparation Started', description: 'Cleared land and started soil preparation.', date: '2024-09-28', progress: 20 },
-      { id: 2, title: 'Issue Detected', description: 'Low yield risk identified due to water shortage.', date: '2024-10-15', progress: 30 },
-    ],
-    timeline: [
-      { date: '2024-09-20', action: 'Match created', type: 'create' },
-      { date: '2024-09-25', action: 'Investment started', type: 'start' },
-      { date: '2024-10-15', action: 'Issue reported: Low yield risk', type: 'issue' },
-    ]
-  },
-  {
-    id: 5,
-    investor: { name: 'SeedFund Ghana', organization: 'SeedFund Limited', contact: '+233 24 777 8888', email: 'hello@seedfund.gh', photo: null },
-    farmer: { name: 'Yaw Boateng', region: 'Bono', phone: '+233 24 999 0000', lyncId: 'LYG0000005', photo: null, verified: true, landSize: '7 acres', productionStage: 'Growing' },
-    farmType: 'Crop',
-    category: 'Rice',
-    investmentType: 'Input Support',
-    investmentValue: 'GHS 18,000',
-    partnershipModel: 'Buy-back Agreement',
-    status: 'active',
-    progress: 45,
-    matchDate: '2024-10-01',
-    startDate: '2024-10-05',
-    lastUpdate: '1 day ago',
-    assignedAgent: 'Agent Mensah',
-    updates: [
-      { id: 1, title: 'Project Started', description: 'Rice paddies prepared and planting initiated.', date: '2024-10-08', progress: 15 },
-      { id: 2, title: 'Planting Complete', description: 'All 7 acres planted with improved rice variety.', date: '2024-10-18', progress: 35 },
-      { id: 3, title: 'Growth Update', description: 'Rice seedlings showing excellent growth.', date: '2024-11-01', progress: 45 },
-    ],
-    timeline: [
-      { date: '2024-10-01', action: 'Match created', type: 'create' },
-      { date: '2024-10-05', action: 'Investment started', type: 'start' },
-      { date: '2024-10-20', action: 'Field visit completed', type: 'visit' },
-    ]
-  },
-];
-
-// Mock data for flagged issues
-const mockIssues = [
-  { id: 102, farmer: 'Amina F.', investor: 'GreenCapital', type: 'Low yield risk', date: '02 Nov', severity: 'Medium', status: 'Under Review' },
-  { id: 103, farmer: 'Akosua M.', investor: 'AgriVest Corp', type: 'Input mismanagement', date: '28 Oct', severity: 'High', status: 'Open' },
-  { id: 104, farmer: 'Kwesi D.', investor: 'FarmersFirst', type: 'Payment delay', date: '15 Oct', severity: 'Low', status: 'Resolved' },
-];
+const getSeverityBadge = (severity: string) => {
+  switch (severity.toLowerCase()) {
+    case 'high': return 'bg-rose-100 text-rose-700';
+    case 'medium': return 'bg-amber-100 text-amber-700';
+    case 'low': return 'bg-emerald-100 text-emerald-700';
+    default: return 'bg-gray-100 text-gray-700';
+  }
+};
 
 const InvestorFarmerMatchesDashboard: React.FC = () => {
   const { darkMode } = useDarkMode();
+  const { agent } = useAuth();
+  const [matches, setMatches] = useState<any[]>([]);
+  const [issues, setIssues] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [investmentTypeFilter, setInvestmentTypeFilter] = useState('all');
   const [regionFilter, setRegionFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
-  const [selectedMatch, setSelectedMatch] = useState<typeof mockMatches[0] | null>(null);
+  const [selectedMatch, setSelectedMatch] = useState<any | null>(null);
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [activeMetricFilter, setActiveMetricFilter] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -178,48 +102,61 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   React.useEffect(() => {
-    const timer = setTimeout(() => setIsLoaded(true), 100);
-    return () => clearTimeout(timer);
+    const fetchData = async () => {
+      try {
+        const [matchesRes, disputesRes] = await Promise.all([
+          api.get('/matches'),
+          api.get('/disputes')
+        ]);
+        setMatches(matchesRes.data);
+        setIssues(disputesRes.data);
+        setIsLoaded(true);
+      } catch (err) {
+        toast.error('Failed to load matches and disputes');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
   // Calculate metrics
-  const totalMatches = mockMatches.length;
-  const pendingMatches = mockMatches.filter(m => m.status === 'pending').length;
-  const activeInvestments = mockMatches.filter(m => m.status === 'active').length;
-  const completedPartnerships = mockMatches.filter(m => m.status === 'completed').length;
-  const flaggedIssues = mockMatches.filter(m => m.status === 'flagged').length;
+  const totalMatches = matches.length;
+  const pendingMatches = matches.filter(m => m.status === 'Pending Approval' || m.status === 'Pending Funding').length;
+  const activeInvestments = matches.filter(m => m.status === 'Active').length;
+  const completedPartnerships = matches.filter(m => m.status === 'Completed').length;
+  const flaggedIssuesCount = issues.filter(i => i.status !== 'Resolved').length;
 
   // Filter matches
-  const filteredMatches = mockMatches.filter(match => {
+  const filteredMatches = matches.filter(match => {
     // Search filter
     const matchesSearch = searchQuery === '' ||
-      match.farmer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      match.investor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      match.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      match.farmer.region.toLowerCase().includes(searchQuery.toLowerCase());
+      (match.farmer?.name && match.farmer.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (match.investor && match.investor.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (match.category && match.category.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (match.farmer?.region && match.farmer.region.toLowerCase().includes(searchQuery.toLowerCase()));
 
     // Status filter
-    const matchesStatus = statusFilter === 'all' || match.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || match.status.toLowerCase() === statusFilter.toLowerCase();
 
     // Investment type filter
     const matchesInvestmentType = investmentTypeFilter === 'all' ||
-      match.investmentType.toLowerCase().includes(investmentTypeFilter.toLowerCase());
+      (match.investmentType && match.investmentType.toLowerCase().includes(investmentTypeFilter.toLowerCase()));
 
     // Region filter
     const matchesRegion = regionFilter === 'all' ||
-      match.farmer.region.toLowerCase() === regionFilter.toLowerCase();
+      (match.farmer?.region && match.farmer.region.toLowerCase() === regionFilter.toLowerCase());
 
     // Category filter
     const matchesCategory = categoryFilter === 'all' ||
-      match.farmType.toLowerCase() === categoryFilter.toLowerCase();
+      (match.farmType && match.farmType.toLowerCase() === categoryFilter.toLowerCase());
 
     // Metric card filter
     const matchesMetric = !activeMetricFilter ||
       (activeMetricFilter === 'total') ||
-      (activeMetricFilter === 'pending' && match.status === 'pending') ||
-      (activeMetricFilter === 'active' && match.status === 'active') ||
-      (activeMetricFilter === 'completed' && match.status === 'completed') ||
-      (activeMetricFilter === 'flagged' && match.status === 'flagged');
+      (activeMetricFilter === 'pending' && (match.status === 'Pending Approval' || match.status === 'Pending Funding')) ||
+      (activeMetricFilter === 'active' && match.status === 'Active') ||
+      (activeMetricFilter === 'completed' && match.status === 'Completed');
 
     return matchesSearch && matchesStatus && matchesInvestmentType && matchesRegion && matchesCategory && matchesMetric;
   });
@@ -227,48 +164,28 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
   // Sort matches
   const sortedMatches = [...filteredMatches].sort((a, b) => {
     if (sortBy === 'recent') {
-      return new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime();
+      return new Date(b.matchDate || b.createdAt).getTime() - new Date(a.matchDate || a.createdAt).getTime();
     }
     if (sortBy === 'value') {
-      const aValue = parseInt(a.investmentValue.replace(/[^0-9]/g, ''));
-      const bValue = parseInt(b.investmentValue.replace(/[^0-9]/g, ''));
+      const aValue = parseInt(a.value?.replace(/[^0-9]/g, '') || '0');
+      const bValue = parseInt(b.value?.replace(/[^0-9]/g, '') || '0');
       return bValue - aValue;
-    }
-    if (sortBy === 'urgent') {
-      const priority = { flagged: 0, pending: 1, active: 2, completed: 3 };
-      return priority[a.status as keyof typeof priority] - priority[b.status as keyof typeof priority];
     }
     return 0;
   });
 
-  const getStatusBadge = (status: string) => {
-    const styles = {
-      pending: 'bg-orange-100 text-orange-700 border-orange-200',
-      active: 'bg-green-100 text-green-700 border-green-200',
-      completed: 'bg-blue-100 text-blue-700 border-blue-200',
-      flagged: 'bg-red-100 text-red-700 border-red-200',
-    };
-    return styles[status as keyof typeof styles] || 'bg-gray-100 text-gray-700';
-  };
-
-  const getSeverityBadge = (severity: string) => {
-    const styles = {
-      Low: 'bg-green-100 text-green-700',
-      Medium: 'bg-yellow-100 text-yellow-700',
-      High: 'bg-red-100 text-red-700',
-    };
-    return styles[severity as keyof typeof styles] || 'bg-gray-100 text-gray-700';
-  };
-
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
   const handleMetricClick = (metric: string) => {
-    if (activeMetricFilter === metric) {
-      setActiveMetricFilter(null);
-    } else {
-      setActiveMetricFilter(metric);
-    }
+    setActiveMetricFilter(prev => prev === metric ? null : metric);
   };
 
-  const handleViewMatch = (match: typeof mockMatches[0]) => {
+  const handleViewMatch = (match: any) => {
     setSelectedMatch(match);
     setShowMatchModal(true);
   };
@@ -287,7 +204,7 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
             { label: 'Pending Updates', value: pendingMatches, icon: RefreshCw, color: 'bg-orange-600', filter: 'pending' },
             { label: 'Active Projects', value: activeInvestments, icon: DollarSign, color: 'bg-emerald-600', filter: 'active' },
             { label: 'Completed', value: completedPartnerships, icon: CheckCircle, color: 'bg-blue-600', filter: 'completed' },
-            { label: 'Flagged Issues', value: flaggedIssues, icon: AlertTriangle, color: 'bg-red-600', filter: 'flagged' },
+            { label: 'Flagged Issues', value: flaggedIssuesCount, icon: AlertTriangle, color: 'bg-red-600', filter: 'flagged' },
           ].map((item, index) => (
             <Card
               key={item.label}
@@ -423,7 +340,7 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
               className={`flex-1 py-3 text-[10px] font-black uppercase tracking-wider h-11 rounded-lg transition-all ${darkMode ? 'data-[state=active]:bg-[#1b5b65] data-[state=active]:text-white' : 'data-[state=active]:bg-white data-[state=active]:text-emerald-600'}`}
             >
               <AlertTriangle className="h-4 w-4 mr-2 inline" />
-              Resolution Center ({mockIssues.filter(i => i.status !== 'Resolved').length})
+              Resolution Center ({issues.filter(i => i.status !== 'Resolved').length})
             </TabsTrigger>
           </TabsList>
 
@@ -599,7 +516,7 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
           {/* Flagged Issues Tab */}
           <TabsContent value="issues">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {mockIssues.map((issue) => (
+              {issues.map((issue) => (
                 <Card
                   key={issue.id}
                   className={`relative overflow-hidden border-none shadow-lg transition-all hover:scale-[1.02] ${darkMode ? 'bg-[#0b2528]' : 'bg-white'}`}
@@ -610,7 +527,7 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
                   <CardContent className="p-5">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <p className={`text-[10px] font-black uppercase tracking-widest ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Case #{issue.id}</p>
+                        <p className={`text-[10px] font-black uppercase tracking-widest ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Case #{issue.id || issue._id?.slice(-6)}</p>
                         <h3 className={`text-lg font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{issue.type}</h3>
                       </div>
                       <Badge className={`${getSeverityBadge(issue.severity)} rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider border-none shadow-sm`}>
@@ -644,7 +561,7 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
                       <div className="flex items-center justify-between text-xs px-1">
                         <div className="flex items-center gap-1.5 text-gray-500">
                           <Calendar className="h-3.5 w-3.5" />
-                          <span>Logged: {issue.date}</span>
+                          <span>Logged: {issue.dateLogged || new Date(issue.createdAt).toLocaleDateString()}</span>
                         </div>
                         <Badge variant="outline" className={`font-bold border-none ${issue.status === 'Resolved' ? 'text-emerald-500 bg-emerald-500/10' : 'text-amber-500 bg-amber-500/10'}`}>
                           {issue.status}
@@ -672,7 +589,7 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
               ))}
             </div>
 
-            {mockIssues.length === 0 && (
+            {issues.length === 0 && (
               <Card className={`p-12 text-center border-dashed ${darkMode ? 'bg-transparent border-[#1b5b65]' : 'bg-gray-50 border-gray-200'}`}>
                 <div className="flex flex-col items-center">
                   <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
@@ -918,7 +835,7 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="relative">
-                          {selectedMatch.timeline.map((item, index) => (
+                          {selectedMatch.timeline.map((item: any, index: number) => (
                             <div key={index} className="flex gap-4 pb-4">
                               <div className="flex flex-col items-center">
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${item.type === 'issue' ? 'bg-red-100' :

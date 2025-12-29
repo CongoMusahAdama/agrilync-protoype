@@ -10,6 +10,8 @@ import DashboardSidebar from './DashboardSidebar';
 import Preloader from './ui/Preloader';
 import AddFarmerModal from './agent/AddFarmerModal';
 import { Badge } from './ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
+import api from '@/utils/api';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -42,14 +44,29 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 }) => {
     const { userType: paramUserType } = useParams();
     const userType = explicitUserType || paramUserType;
-    const effectiveSubtitle = description || subtitle;
     const navigate = useNavigate();
     const { darkMode, toggleDarkMode } = useDarkMode();
     const isMobile = useIsMobile();
+    const { agent } = useAuth();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [addFarmerModalOpen, setAddFarmerModalOpen] = useState(false);
+    const [notifications, setNotifications] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (userType === 'agent') {
+            const fetchNotifications = async () => {
+                try {
+                    const res = await api.get('/notifications');
+                    setNotifications(res.data);
+                } catch (err) {
+                    console.error('Failed to fetch notifications', err);
+                }
+            };
+            fetchNotifications();
+        }
+    }, [userType]);
 
     // Simulate loading on mount and navigation
     useEffect(() => {
@@ -60,13 +77,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         return () => clearTimeout(timer);
     }, [activeSidebarItem, title]); // Re-trigger on sidebar change or title change
 
-    // Use the same mock data logic as in pages to show profile info in header
-    const mockProfile = {
-        name: 'John Agribusiness', // Default or fetch based on userType
-        id: 'LYG1234567'
-    };
-
+    const effectiveSubtitle = description || subtitle;
     const currentTitle = title || 'Dashboard';
+    const activeNotifications = userType === 'agent' ? notifications : agentNotifications;
 
     return (
         <div className={`h-screen overflow-hidden ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
@@ -157,9 +170,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                             className={`relative flex items-center gap-2 ${darkMode ? 'bg-transparent border-gray-600 text-white hover:bg-gray-800' : ''}`}
                                         >
                                             <Bell className="h-4 w-4" />
-                                            {agentNotifications.filter(n => !n.read).length > 0 && (
+                                            {activeNotifications.filter(n => !n.read).length > 0 && (
                                                 <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-rose-600 text-[10px] font-black text-white flex items-center justify-center border-2 border-white dark:border-[#002f37]">
-                                                    {agentNotifications.filter(n => !n.read).length}
+                                                    {activeNotifications.filter(n => !n.read).length}
                                                 </span>
                                             )}
                                             <span className="hidden sm:inline font-medium">Notifications</span>
@@ -170,16 +183,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                             <div className="flex items-center justify-between">
                                                 <h3 className={`font-black uppercase tracking-widest text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Latest Updates</h3>
                                                 <Badge variant="outline" className="text-[9px] font-bold border-none bg-emerald-100 text-emerald-700">
-                                                    {agentNotifications.filter(n => !n.read).length} New
+                                                    {activeNotifications.filter(n => !n.read).length} New
                                                 </Badge>
                                             </div>
                                         </div>
                                         <div className={`max-h-[350px] overflow-y-auto ${darkMode ? 'bg-gray-950' : 'bg-white'}`}>
-                                            {agentNotifications.slice(0, 5).map((notif) => (
+                                            {activeNotifications.slice(0, 5).map((notif) => (
                                                 <DropdownMenuItem
-                                                    key={notif.id}
+                                                    key={notif._id || notif.id}
                                                     className={`p-4 cursor-pointer focus:bg-emerald-50 dark:focus:bg-emerald-900/20 border-b last:border-none ${darkMode ? 'border-gray-800' : 'border-gray-50'}`}
-                                                    onClick={() => navigate(`/dashboard/${userType}/notifications`)}
+                                                    onClick={() => navigate(`/dashboard/${userType}/notifications-center`)}
                                                 >
                                                     <div className="flex gap-3 w-full">
                                                         <div className={`h-8 w-8 rounded-full flex-shrink-0 flex items-center justify-center ${notif.type === 'alert' ? 'bg-rose-100 text-rose-600' :
@@ -202,7 +215,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                                 variant="ghost"
                                                 size="sm"
                                                 className="w-full text-[10px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-100"
-                                                onClick={() => navigate(`/dashboard/${userType}/notifications`)}
+                                                onClick={() => navigate(`/dashboard/${userType}/notifications-center`)}
                                             >
                                                 View All Notifications
                                             </Button>
@@ -215,12 +228,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                     onClick={() => navigate(`/dashboard/${userType}/settings`)}
                                 >
                                     <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-[#7ede56]">
+                                        <AvatarImage src={agent?.avatar} alt={agent?.name} />
                                         <AvatarFallback className="bg-[#002f37] text-white text-xs sm:text-sm font-semibold">
-                                            JA
+                                            {agent?.name ? agent.name.split(' ').map(n => n[0]).join('') : 'JA'}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div className="hidden sm:flex flex-col items-start min-w-0">
-                                        <span className={`text-sm font-semibold truncate max-w-[120px] ${darkMode ? 'text-white' : 'text-gray-900'}`}>{mockProfile.name}</span>
+                                        <span className={`text-sm font-semibold truncate max-w-[120px] ${darkMode ? 'text-white' : 'text-gray-900'}`}>{agent?.name || 'Loading...'}</span>
                                         <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                             {(userType || 'user').charAt(0).toUpperCase() + (userType || 'user').slice(1)}
                                         </span>

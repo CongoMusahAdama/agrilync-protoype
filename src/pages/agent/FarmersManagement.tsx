@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AgentLayout from './AgentLayout';
-import { agentFarmers } from './agent-data';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import {
   Card,
@@ -28,7 +27,9 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, CheckCircle2, NotebookPen, Plus } from 'lucide-react';
+import { Search, Filter, CheckCircle2, NotebookPen, Plus, Eye, Edit } from 'lucide-react';
+import AddFarmerModal from '@/components/agent/AddFarmerModal';
+import ViewFarmerModal from '@/components/agent/ViewFarmerModal';
 
 const statusStyles: Record<string, string> = {
   active: 'bg-emerald-500/10 text-emerald-600',
@@ -36,24 +37,64 @@ const statusStyles: Record<string, string> = {
   inactive: 'bg-slate-500/10 text-slate-600'
 };
 
+import api from '@/utils/api';
+import { toast } from 'sonner';
+
 const FarmersManagement: React.FC = () => {
   const navigate = useNavigate();
   const { darkMode } = useDarkMode();
+  const [farmers, setFarmers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [farmerSearch, setFarmerSearch] = useState('');
   const [farmerStatusFilter, setFarmerStatusFilter] = useState<'all' | 'active' | 'pending' | 'inactive'>('all');
+  const [selectedFarmer, setSelectedFarmer] = useState<any>(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+
+  React.useEffect(() => {
+    const fetchFarmers = async () => {
+      try {
+        const res = await api.get('/farmers');
+        setFarmers(res.data);
+      } catch (err) {
+        toast.error('Failed to load farmers');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFarmers();
+  }, []);
+
+  const handleViewFarmer = (farmer: any) => {
+    setSelectedFarmer(farmer);
+    setViewModalOpen(true);
+  };
+
+  const handleEditFarmer = (farmer: any) => {
+    setSelectedFarmer(farmer);
+    setEditModalOpen(true);
+  };
 
   const filteredFarmers = useMemo(() => {
-    return agentFarmers.filter((farmer) => {
+    return farmers.filter((farmer) => {
       const searchValue = farmerSearch.toLowerCase();
       const matchesSearch =
-        farmer.name.toLowerCase().includes(searchValue) ||
-        farmer.region.toLowerCase().includes(searchValue) ||
-        farmer.community.toLowerCase().includes(searchValue);
+        farmer.name?.toLowerCase().includes(searchValue) ||
+        (farmer.region && farmer.region.toLowerCase().includes(searchValue)) ||
+        (farmer.community && farmer.community.toLowerCase().includes(searchValue));
       const matchesStatus =
         farmerStatusFilter === 'all' ? true : farmer.status === farmerStatusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [farmerSearch, farmerStatusFilter]);
+  }, [farmers, farmerSearch, farmerStatusFilter]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
 
   const headerActions = (
     <Button className="bg-[#1db954] hover:bg-[#17a447] text-white" onClick={() => navigate('/dashboard/agent')}>
@@ -125,7 +166,7 @@ const FarmersManagement: React.FC = () => {
               </TableHeader>
               <TableBody>
                 {filteredFarmers.map((farmer) => (
-                  <TableRow key={farmer.name} className={tableRowClass}>
+                  <TableRow key={farmer._id} className={tableRowClass}>
                     <TableCell className={`font-medium ${tableCellClass}`}>{farmer.name}</TableCell>
                     <TableCell className={tableCellClass}>{farmer.region}</TableCell>
                     <TableCell className={tableCellClass}>{farmer.community}</TableCell>
@@ -140,16 +181,24 @@ const FarmersManagement: React.FC = () => {
                         {farmer.investmentStatus}
                       </Badge>
                     </TableCell>
-                    <TableCell className={tableCellClass}>{farmer.lastUpdated}</TableCell>
+                    <TableCell className={tableCellClass}>{new Date(farmer.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="outline" size="sm" className={darkMode ? 'border-gray-600 text-emerald-300 hover:bg-[#0d3036] hover:text-emerald-200' : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'}>
-                          <CheckCircle2 className="mr-1 h-4 w-4" />
-                          Verify
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={darkMode ? 'text-gray-400 hover:text-emerald-400 hover:bg-emerald-500/10' : 'text-gray-500 hover:text-emerald-600 hover:bg-emerald-50'}
+                          onClick={() => handleViewFarmer(farmer)}
+                        >
+                          <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className={darkMode ? 'text-gray-300 hover:bg-[#0d3036] hover:text-white' : 'text-gray-600 hover:text-emerald-700'}>
-                          <NotebookPen className="mr-1 h-4 w-4" />
-                          Update
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={darkMode ? 'text-gray-400 hover:text-amber-400 hover:bg-amber-500/10' : 'text-gray-500 hover:text-amber-600 hover:bg-amber-50'}
+                          onClick={() => handleEditFarmer(farmer)}
+                        >
+                          <Edit className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -160,6 +209,26 @@ const FarmersManagement: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      <ViewFarmerModal open={viewModalOpen} onOpenChange={setViewModalOpen} farmer={selectedFarmer} />
+      <AddFarmerModal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        farmer={selectedFarmer}
+        isEditMode={true}
+        onSuccess={() => {
+          // Re-fetch data on success
+          const fetchFarmers = async () => {
+            try {
+              const res = await api.get('/farmers');
+              setFarmers(res.data);
+            } catch (err) {
+              toast.error('Failed to update farmers list');
+            }
+          };
+          fetchFarmers();
+        }}
+      />
     </AgentLayout>
   );
 };

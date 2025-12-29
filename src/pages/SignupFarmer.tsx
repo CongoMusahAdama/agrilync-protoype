@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Leaf, MapPin, UserCheck, Phone } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import api from '@/utils/api';
+import { toast } from 'sonner';
 
 const SignupFarmer = () => {
     const navigate = useNavigate();
@@ -23,6 +25,7 @@ const SignupFarmer = () => {
         farmRegion: '',
         farmDistrict: '',
         farmAddress: '',
+        farmType: '',
         acceptTerms: false,
         acceptDataPolicy: false
     });
@@ -50,20 +53,43 @@ const SignupFarmer = () => {
         return false;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!verifyOTP()) {
-            alert('Please enter the correct OTP code');
+        if (formData.password !== formData.confirmPassword) {
+            toast.error('Passwords do not match');
             return;
         }
 
-        // Show under development message
-        alert('🌾 Thank you for your interest in AgriLync!\n\nOur authentication system and user dashboards are currently under development and will be available very soon.\n\nStay tuned for updates!');
-        return;
+        if (!verifyOTP()) {
+            toast.error('Please enter the correct OTP code');
+            return;
+        }
 
-        // console.log('Farmer Registration Data:', formData);
-        // navigate('/dashboard/farmer');
+        try {
+            const payload = {
+                name: formData.fullName,
+                gender: formData.gender,
+                contact: formData.phone,
+                email: formData.email,
+                password: formData.password,
+                region: formData.farmRegion,
+                district: formData.farmDistrict,
+                community: formData.farmAddress,
+                farmType: formData.farmType || 'Crop Farming' // Default if not selected
+            };
+
+            const res = await api.post('/farmers/public/register', payload);
+
+            if (res.data.success) {
+                toast.success('Registration successful! Please wait for agent verification.');
+                // Show success message or redirect
+                setTimeout(() => navigate('/login'), 2000);
+            }
+        } catch (err: any) {
+            console.error('Registration error:', err);
+            toast.error(err.response?.data?.msg || 'Failed to register. Please try again.');
+        }
     };
 
     const ghanaRegions = [
@@ -246,15 +272,31 @@ const SignupFarmer = () => {
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <Label htmlFor="farmAddress">Farm Address *</Label>
-                                        <Input
-                                            id="farmAddress"
-                                            value={formData.farmAddress}
-                                            onChange={(e) => handleInputChange('farmAddress', e.target.value)}
-                                            placeholder="Enter detailed farm address or nearest landmark"
-                                            required
-                                        />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <Label htmlFor="farmAddress">Farm Address *</Label>
+                                            <Input
+                                                id="farmAddress"
+                                                value={formData.farmAddress}
+                                                onChange={(e) => handleInputChange('farmAddress', e.target.value)}
+                                                placeholder="Enter detailed farm address or nearest landmark"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="farmType">Farm Type *</Label>
+                                            <Select onValueChange={(value) => handleInputChange('farmType', value)}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select farm type" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Crop Farming">Crop Farming</SelectItem>
+                                                    <SelectItem value="Livestock Farming">Livestock Farming</SelectItem>
+                                                    <SelectItem value="Mixed Farming">Mixed Farming</SelectItem>
+                                                    <SelectItem value="Aquaculture">Aquaculture</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
 
                                     {/* Terms */}

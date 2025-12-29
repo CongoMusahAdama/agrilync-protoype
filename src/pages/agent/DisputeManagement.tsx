@@ -48,7 +48,8 @@ import {
   FileText,
   AlertCircle
 } from 'lucide-react';
-import { agentDisputes } from './agent-data';
+import api from '@/utils/api';
+import { toast } from 'sonner';
 import ViewDisputeModal from '@/components/agent/ViewDisputeModal';
 
 const DisputeManagement: React.FC = () => {
@@ -62,10 +63,24 @@ const DisputeManagement: React.FC = () => {
   const [showNewDisputeDialog, setShowNewDisputeDialog] = useState(false);
   const [selectedDispute, setSelectedDispute] = useState<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [disputes, setDisputes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   React.useEffect(() => {
-    const timer = setTimeout(() => setIsLoaded(true), 100);
-    return () => clearTimeout(timer);
+    const fetchDisputes = async () => {
+      try {
+        const res = await api.get('/disputes');
+        setDisputes(res.data);
+        setIsLoaded(true);
+      } catch (err) {
+        console.error('Error fetching disputes:', err);
+        toast.error('Failed to load disputes');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDisputes();
   }, []);
 
   // New dispute form state
@@ -80,19 +95,21 @@ const DisputeManagement: React.FC = () => {
   });
 
   // Calculate stats
-  const totalDisputes = agentDisputes.length;
-  const pendingDisputes = agentDisputes.filter(d => d.status === 'Pending').length;
-  const underReviewDisputes = agentDisputes.filter(d => d.status === 'Under Review').length;
-  const resolvedDisputes = agentDisputes.filter(d => d.status === 'Resolved').length;
-  const escalatedDisputes = agentDisputes.filter(d => d.status === 'Escalated').length;
+  // Calculate stats
+  const totalDisputes = disputes.length;
+  const pendingDisputes = disputes.filter(d => d.status === 'Pending').length;
+  const underReviewDisputes = disputes.filter(d => d.status === 'Under Review').length;
+  const resolvedDisputes = disputes.filter(d => d.status === 'Resolved').length;
+  const escalatedDisputes = disputes.filter(d => d.status === 'Escalated').length;
 
   // Filter disputes
-  const filteredDisputes = agentDisputes.filter(dispute => {
+  // Filter disputes
+  const filteredDisputes = disputes.filter(dispute => {
     const matchesSearch =
-      dispute.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      dispute.parties?.farmer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      dispute.parties?.investor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      dispute.type.toLowerCase().includes(searchTerm.toLowerCase());
+      (dispute.id?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+      (dispute.parties?.farmer?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+      (dispute.parties?.investor?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+      (dispute.type?.toLowerCase().includes(searchTerm.toLowerCase()) || '');
 
     const matchesStatus = statusFilter === 'all' || dispute.status === statusFilter;
     const matchesType = typeFilter === 'all' || dispute.type === typeFilter;
@@ -136,18 +153,41 @@ const DisputeManagement: React.FC = () => {
     setNewDispute({ ...newDispute, evidence: [...newDispute.evidence, ...files] });
   };
 
-  const handleSubmitDispute = () => {
-    console.log('New dispute submitted:', newDispute);
-    setShowNewDisputeDialog(false);
-    setNewDispute({
-      farmerName: '',
-      investorName: '',
-      type: '',
-      severity: '',
-      region: '',
-      description: '',
-      evidence: []
-    });
+  const handleSubmitDispute = async () => {
+    if (!newDispute.farmerName || !newDispute.investorName || !newDispute.type || !newDispute.severity || !newDispute.description) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      const res = await api.post('/disputes', {
+        id: `DIST-${Date.now().toString().slice(-6)}`,
+        parties: {
+          farmer: newDispute.farmerName,
+          investor: newDispute.investorName
+        },
+        type: newDispute.type,
+        severity: newDispute.severity,
+        region: newDispute.region,
+        description: newDispute.description
+      });
+
+      setDisputes([res.data, ...disputes]);
+      toast.success('Dispute logged successfully');
+      setShowNewDisputeDialog(false);
+      setNewDispute({
+        farmerName: '',
+        investorName: '',
+        type: '',
+        severity: '',
+        region: '',
+        description: '',
+        evidence: []
+      });
+    } catch (err) {
+      console.error('Error submitting dispute:', err);
+      toast.error('Failed to log dispute');
+    }
   };
 
   const handleFilterByStatus = (status: string) => {
@@ -275,7 +315,7 @@ const DisputeManagement: React.FC = () => {
         <div className="flex justify-between items-center mb-4">
           <div>
             <h2 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>All Disputes</h2>
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Showing {filteredDisputes.length} of {agentDisputes.length} disputes</p>
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Showing {filteredDisputes.length} of {disputes.length} disputes</p>
           </div>
           <Button
             className="bg-[#7ede56] hover:bg-[#6bc947] text-white px-6 py-2 shadow-md hover:shadow-lg transition-all"

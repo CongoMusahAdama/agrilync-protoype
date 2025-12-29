@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import { useDarkMode } from '@/contexts/DarkModeContext';
-import { User, Sprout, MapPin, Phone, Mail, Calendar, Eye, TrendingUp, CheckCircle, Sparkles, X } from 'lucide-react';
+import { User, Sprout, MapPin, Phone, Mail, Calendar, Eye, TrendingUp, CheckCircle, Sparkles, X, Coins, Wallet } from 'lucide-react';
 
 interface ViewFarmerModalProps {
     open: boolean;
@@ -20,7 +20,9 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
     if (!farmer) return null;
 
     const getStatusBadgeColor = (status: string) => {
-        switch (status) {
+        const displayStatus = farmer.displayStatus || (status === 'active' ? 'Completed' : status === 'pending' ? 'Pending' : status);
+        switch (displayStatus) {
+            case 'Completed':
             case 'Verified':
                 return darkMode ? 'bg-emerald-500/20 text-emerald-300 border-0' : 'bg-emerald-100 text-emerald-700';
             case 'Pending':
@@ -33,6 +35,8 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                 return darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600';
         }
     };
+
+    const currentDisplayStatus = farmer.displayStatus || (farmer.status === 'active' ? 'Completed' : farmer.status === 'pending' ? 'Pending' : farmer.status);
 
     const InfoCard = ({ label, value, icon: Icon }: { label: string; value: any; icon?: any }) => (
         <Card className={`${darkMode ? 'bg-[#124b53]/20 border-[#124b53]' : 'bg-gradient-to-br from-gray-50 to-white border-gray-200'}`}>
@@ -55,13 +59,13 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             {/* Enhanced Avatar */}
-                            <div className={`relative w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-lg ${farmer.status === 'Verified' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' :
-                                farmer.status === 'Pending' ? 'bg-gradient-to-br from-yellow-500 to-yellow-600' :
-                                    farmer.status === 'Matched' ? 'bg-gradient-to-br from-purple-500 to-purple-600' :
+                            <div className={`relative w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-lg ${currentDisplayStatus === 'Completed' || currentDisplayStatus === 'Verified' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' :
+                                currentDisplayStatus === 'Pending' ? 'bg-gradient-to-br from-yellow-500 to-yellow-600' :
+                                    currentDisplayStatus === 'Matched' ? 'bg-gradient-to-br from-purple-500 to-purple-600' :
                                         'bg-gradient-to-br from-blue-500 to-blue-600'
                                 }`}>
                                 {farmer.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
-                                {farmer.status === 'Verified' && (
+                                {(currentDisplayStatus === 'Completed' || currentDisplayStatus === 'Verified') && (
                                     <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white">
                                         <CheckCircle className="w-4 h-4 text-white" />
                                     </div>
@@ -83,8 +87,8 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Badge variant="outline" className={`${getStatusBadgeColor(farmer.status)} text-sm font-medium px-4 py-2`}>
-                                {farmer.status}
+                            <Badge variant="outline" className={`${getStatusBadgeColor(currentDisplayStatus)} text-sm font-medium px-4 py-2`}>
+                                {currentDisplayStatus}
                             </Badge>
                             {farmer.investmentMatched && (
                                 <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 px-4 py-2">
@@ -121,6 +125,13 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                                 >
                                     <Sprout className="h-4 w-4" />
                                     <span className="font-semibold">Farm Details</span>
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="investment"
+                                    className={`flex items-center gap-2 py-3 px-4 rounded-lg transition-all ${darkMode ? 'data-[state=active]:bg-[#124b53]' : 'data-[state=active]:bg-white data-[state=active]:shadow-md'}`}
+                                >
+                                    <Coins className="h-4 w-4" />
+                                    <span className="font-semibold">Investment</span>
                                 </TabsTrigger>
                             </TabsList>
                         </div>
@@ -257,6 +268,39 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                                         </Card>
                                     )}
                                 </div>
+                            </TabsContent>
+
+                            {/* Investment Tab */}
+                            <TabsContent value="investment" className="mt-0 space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <InfoCard label="Investment Interest" value={farmer.investmentInterest === 'yes' ? 'Very Interested' : farmer.investmentInterest === 'maybe' ? 'Maybe / Needs Info' : 'Not Interested'} icon={TrendingUp} />
+                                    <InfoCard label="Preferred Type" value={farmer.preferredInvestmentType || 'Not specified'} icon={Wallet} />
+                                    <InfoCard label="Estimated Capital Need" value={farmer.estimatedCapitalNeed ? `GHS ${farmer.estimatedCapitalNeed.toLocaleString()}` : 'Not specified'} icon={Coins} />
+                                    <InfoCard label="Readiness Score" value={farmer.investmentReadinessScore ? `${farmer.investmentReadinessScore}%` : '0%'} icon={Sparkles} />
+                                    <InfoCard label="Previous Investment" value={farmer.hasPreviousInvestment ? 'Yes' : 'No'} icon={CheckCircle} />
+                                </div>
+
+                                <Card className={`p-6 ${darkMode ? 'bg-[#124b53]/20 border-[#124b53]' : 'bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-200'}`}>
+                                    <div className="flex items-start gap-3">
+                                        <TrendingUp className={`w-6 h-6 mt-1 ${darkMode ? 'text-[#7ede56]' : 'text-indigo-600'}`} />
+                                        <div>
+                                            <h4 className={`font-semibold text-lg mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                                                Investment Readiness Summary
+                                            </h4>
+                                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 mb-4 mt-4 overflow-hidden">
+                                                <div
+                                                    className="bg-emerald-500 h-full transition-all duration-1000 ease-out"
+                                                    style={{ width: `${farmer.investmentReadinessScore || 0}%` }}
+                                                />
+                                            </div>
+                                            <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                {farmer.investmentReadinessScore >= 80 ? 'Highly attractive candidate for investment. Financial records and farm capacity are in excellent standing.' :
+                                                    farmer.investmentReadinessScore >= 50 ? 'Moderate readiness. Potential for investment with some additional training or capacity building.' :
+                                                        'Currently building readiness. Focus is on improving baseline farming metrics and financial literacy.'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </Card>
                             </TabsContent>
                         </ScrollArea>
                     </Tabs>

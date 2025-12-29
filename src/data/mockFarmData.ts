@@ -18,7 +18,7 @@ export interface Farmer {
     category: string;
     landSize: number;
     experience: number;
-    status: 'Pending' | 'Verified' | 'Matched' | 'In Progress';
+    status: 'Pending' | 'Completed' | 'Matched' | 'In Progress';
     lastVisit: string;
     gpsCoordinates?: { lat: number; lng: number };
     idNumber?: string;
@@ -41,7 +41,7 @@ export const mockFarmers: Farmer[] = [
         category: 'Maize',
         landSize: 5.5,
         experience: 8,
-        status: 'Verified',
+        status: 'Completed',
         lastVisit: '2024-11-28',
         gpsCoordinates: { lat: 6.6666, lng: -1.6163 },
         idNumber: 'GHA-123456789-0',
@@ -137,7 +137,7 @@ export const mockFarmers: Farmer[] = [
         category: 'Goats',
         landSize: 3.0,
         experience: 6,
-        status: 'Verified',
+        status: 'Completed',
         lastVisit: '2024-11-30',
         gpsCoordinates: { lat: 6.6107, lng: 0.4710 },
         idNumber: 'GHA-987654321-0',
@@ -176,7 +176,7 @@ export const mockFarmers: Farmer[] = [
         category: 'Maize',
         landSize: 7.5,
         experience: 12,
-        status: 'Verified',
+        status: 'Completed',
         lastVisit: '2024-11-29',
         gpsCoordinates: { lat: 6.2009, lng: -1.6642 },
         photos: [],

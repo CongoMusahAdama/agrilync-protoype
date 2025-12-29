@@ -1,6 +1,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { UserRound } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProfileCardProps {
   sidebarCollapsed: boolean;
@@ -51,7 +52,18 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({
   darkMode,
   userType
 }) => {
-  const profile = profileMapping[userType ?? 'grower'] || profileMapping['grower'];
+  const { agent } = useAuth(); // Get real user data
+
+  // Use real data if available and userType is agent, otherwise fallback or use mock for other types
+  const profile = userType === 'agent' && agent ? {
+    name: agent.name,
+    location: agent.region || 'Unknown Region',
+    avatarUrl: agent.avatar,
+    id: agent.agentId,
+    contact: agent.contact,
+    districts: [] // If needed, can be added to user context
+  } : (profileMapping[userType ?? 'grower'] || profileMapping['grower']);
+
   // Inverse theming: sidebar is light when app is dark, so profile card should be dark
   const sidebarDarkMode = !darkMode;
 
@@ -65,18 +77,20 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({
           } ${sidebarCollapsed && !isMobile ? 'px-2 py-3' : ''}`}
       >
         <Avatar className={`${sidebarCollapsed && !isMobile ? 'h-12 w-12' : 'h-16 w-16'}`}>
-          {profile.avatarUrl ? (
-            <AvatarImage src={profile.avatarUrl} alt={profile.name} className="object-cover" />
-          ) : (
-            <AvatarFallback className="bg-[#002f37]/90 text-white">
-              <UserRound className="h-8 w-8" />
-            </AvatarFallback>
-          )}
+          <AvatarImage src={profile.avatarUrl} alt={profile.name} className="object-cover" />
+          <AvatarFallback className="bg-[#002f37]/90 text-white">
+            <UserRound className="h-8 w-8" />
+          </AvatarFallback>
         </Avatar>
         {(!sidebarCollapsed || isMobile) && (
           <div className="flex flex-col items-center gap-1 text-center">
             <span className="text-sm font-semibold truncate max-w-[150px]">{profile.name}</span>
             <span className={`text-xs ${sidebarDarkMode ? 'text-[#b8e4e9]' : 'text-[#285d64]'}`}>{profile.location}</span>
+            {profile.id && (
+              <span className={`text-[10px] font-mono ${sidebarDarkMode ? 'text-[#7ede56]' : 'text-[#1db954]'} font-semibold`}>
+                ID: {profile.id}
+              </span>
+            )}
           </div>
         )}
       </div>

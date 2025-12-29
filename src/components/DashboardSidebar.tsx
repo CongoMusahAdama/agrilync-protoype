@@ -22,6 +22,18 @@ import {
 } from 'lucide-react';
 import SidebarProfileCard from './SidebarProfileCard';
 import { useDarkMode } from '@/contexts/DarkModeContext';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface DashboardSidebarProps {
     userType: string;
@@ -42,6 +54,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 }) => {
     const navigate = useNavigate();
     const { darkMode, toggleDarkMode } = useDarkMode();
+    const { logout } = useAuth();
     const sidebarDarkMode = !darkMode;
 
     const handleNavigation = (item: string) => {
@@ -152,13 +165,36 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                     {darkMode ? <Sun className="h-4 w-4 shrink-0 text-yellow-500" /> : <Moon className="h-4 w-4 shrink-0 text-gray-400" />}
                     {(!sidebarCollapsed || isMobile) && <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
                 </div>
-                <div
-                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
-                    onClick={() => navigate('/')}
-                >
-                    <ArrowRight className="h-4 w-4 shrink-0" />
-                    {(!sidebarCollapsed || isMobile) && <span className="font-medium">Log Out</span>}
-                </div>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <div
+                            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
+                        >
+                            <ArrowRight className="h-4 w-4 shrink-0" />
+                            {(!sidebarCollapsed || isMobile) && <span className="font-medium">Log Out</span>}
+                        </div>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className={darkMode ? 'bg-[#0b2528] border-gray-800' : 'bg-white'}>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle className={darkMode ? 'text-white' : 'text-gray-900'}>Sign Out</AlertDialogTitle>
+                            <AlertDialogDescription className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
+                                Are you sure you want to sign out of your account?
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel className={darkMode ? 'bg-transparent text-gray-300 hover:bg-white/10 border-gray-700' : ''}>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={() => {
+                                    logout();
+                                    navigate('/');
+                                }}
+                                className="bg-red-600 hover:bg-red-700 text-white border-none"
+                            >
+                                Sign Out
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
         </div>
     );

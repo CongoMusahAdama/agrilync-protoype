@@ -8,8 +8,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Eye, EyeOff, MessageCircle, Construction, Star, Quote } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -33,9 +37,18 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Show under development message
-    alert('🌾 Thank you for your interest in AgriLync!\n\nOur authentication system and user dashboards are currently under development and will be available very soon.\n\nStay tuned for updates!');
-    return;
+    setIsLoading(true);
+
+    try {
+      await login(formData.email, formData.password);
+      toast.success('Welcome back!');
+      navigate('/dashboard/agent');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.msg || 'Login failed. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -88,18 +101,7 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Under Development Message (Kept as per "content" request) */}
-          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div className="flex items-start gap-3">
-              <Construction className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-              <div className="flex-1">
-                <h3 className="font-semibold text-yellow-800 mb-1">Under Development</h3>
-                <p className="text-sm text-yellow-700">
-                  Login is currently disabled. Join our WhatsApp community!
-                </p>
-              </div>
-            </div>
-          </div>
+
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -110,8 +112,8 @@ const Login = () => {
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 placeholder="Enter your email"
-                disabled
                 className="h-12 bg-gray-50 border-gray-200 focus:border-[#002f37] focus:ring-[#002f37]"
+                required
               />
             </div>
 
@@ -124,8 +126,8 @@ const Login = () => {
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   placeholder="Enter your password"
-                  disabled
                   className="h-12 bg-gray-50 border-gray-200 focus:border-[#002f37] focus:ring-[#002f37]"
+                  required
                 />
                 <Button
                   type="button"
@@ -133,7 +135,6 @@ const Login = () => {
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
-                  disabled
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5 text-gray-400" />
@@ -151,7 +152,6 @@ const Login = () => {
                   checked={formData.rememberMe}
                   onCheckedChange={(checked) => handleInputChange('rememberMe', checked as boolean)}
                   className="border-gray-300 text-[#002f37] focus:ring-[#002f37]"
-                  disabled
                 />
                 <Label htmlFor="rememberMe" className="text-sm font-normal text-gray-600">Remember me</Label>
               </div>
@@ -163,9 +163,9 @@ const Login = () => {
             <Button
               type="submit"
               className="w-full h-12 bg-[#002f37] hover:bg-[#002f37]/90 text-white font-semibold text-lg rounded-lg shadow-lg"
-              disabled
+              disabled={isLoading}
             >
-              Sign In
+              {isLoading ? 'Signing In...' : 'Sign In'}
             </Button>
           </form>
 

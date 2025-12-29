@@ -168,7 +168,7 @@ const FarmManagement = () => {
   const handleSidebarNavigation = (item: string) => {
     setActiveSidebarItem(item);
     if (isMobile) {
-      setMobileSidebarOpen(false);
+      // Mobile sidebar state is managed by DashboardLayout
     }
     const routes: { [key: string]: string } = {
       'dashboard': `/dashboard/${userType}`,

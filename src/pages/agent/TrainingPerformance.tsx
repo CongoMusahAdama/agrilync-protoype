@@ -52,30 +52,63 @@ import {
   Handshake
 } from 'lucide-react';
 import { useDarkMode } from '@/contexts/DarkModeContext';
-import {
-  agentProfile,
-  availableTrainings,
-  myTrainings,
-  performanceMetrics,
-  activityTimeline
-} from './agent-data';
+import api from '@/utils/api';
+import { toast } from 'sonner';
 
 export const TrainingPerformanceContent = () => {
   const { darkMode } = useDarkMode();
   const [trainingFilter, setTrainingFilter] = useState('all');
   const [isLoaded, setIsLoaded] = useState(false);
-  const [consultationRequests, setConsultationRequests] = useState([
-    { id: 1, farmer: 'Kwame Mensah', region: 'Ashanti', mode: 'In-person', date: '2024-11-15', time: '10:00 AM', status: 'Pending', purpose: 'Cocoa Farm Inspection' },
-    { id: 2, farmer: 'Ama Serwaa', region: 'Ashanti', mode: 'Virtual', date: '2024-11-16', time: '2:00 PM', status: 'Pending', purpose: 'Pest Control Advice' },
-    { id: 3, farmer: 'Kofi Boateng', region: 'Ashanti', mode: 'In-person', date: '2024-11-18', time: '9:00 AM', status: 'Confirmed', purpose: 'Soil Testing' },
-  ]);
+  const [availableTrainings, setAvailableTrainings] = useState<any[]>([]);
+  const [myTrainings, setMyTrainings] = useState<any[]>([]);
+  const [performanceMetrics, setPerformanceMetrics] = useState<any>(null);
+  const [activities, setActivities] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
+  const [consultationRequests, setConsultationRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleConsultationAction = (id: number, action: 'accept' | 'decline' | 'reschedule') => {
+  React.useEffect(() => {
+    const fetchPerformanceData = async () => {
+      try {
+        const [availableRes, myRes, statsRes, activitiesRes] = await Promise.all([
+          api.get('/trainings'),
+          api.get('/trainings/my'),
+          api.get('/agents/stats'),
+          api.get('/activities')
+        ]);
+        setAvailableTrainings(availableRes.data);
+        setMyTrainings(myRes.data);
+        setStats(statsRes.data);
+        setActivities(activitiesRes.data);
+
+        // Mocking performance metrics structure from stats if not available
+        setPerformanceMetrics({
+          score: statsRes.data?.performanceScore || 89,
+          fieldVisits: statsRes.data?.activeFarms || 0,
+          monthlyActivity: statsRes.data?.monthlyActivity || [],
+        });
+
+        setIsLoaded(true);
+      } catch (err) {
+        console.error('Error fetching performance data:', err);
+        toast.error('Failed to load performance data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPerformanceData();
+  }, []);
+
+  const handleConsultationAction = (id: string, action: 'accept' | 'decline' | 'reschedule') => {
+    // In a real app, this would be an API call
+    console.log(`Action ${action} on consultation ${id}`);
+    toast.info(`Consultation ${action} for ID: ${id}`);
+    // For now, we'll just update the local state for demonstration
     setConsultationRequests(prev => prev.map(req => {
       if (req.id === id) {
         if (action === 'accept') return { ...req, status: 'Confirmed' };
         if (action === 'decline') return { ...req, status: 'Declined' };
-        // Reschedule logic would typically open a modal, simplifying for now
         if (action === 'reschedule') return { ...req, status: 'Reschedule Requested' };
       }
       return req;
@@ -92,11 +125,11 @@ export const TrainingPerformanceContent = () => {
     : 'border-none bg-white text-gray-900 shadow-sm';
 
   const summaryCards = [
-    { title: 'Available', value: '12', icon: GraduationCap, color: 'bg-blue-600' },
-    { title: 'Upcoming', value: '3', icon: Calendar, color: 'bg-orange-600' },
-    { title: 'Consultations', value: '8', icon: Handshake, color: 'bg-teal-600' }, // New Metric Card
-    { title: 'Score', value: '89%', icon: TrendingUp, color: 'bg-purple-600' },
-    { title: 'Reports', value: '48', icon: FileText, color: 'bg-indigo-600' },
+    { title: 'Available', value: availableTrainings.length.toString(), icon: GraduationCap, color: 'bg-blue-600' },
+    { title: 'Upcoming', value: myTrainings.filter(t => t.status === 'Registered').length.toString(), icon: Calendar, color: 'bg-orange-600' },
+    { title: 'Consultations', value: consultationRequests.length.toString(), icon: Handshake, color: 'bg-teal-600' },
+    { title: 'Score', value: `${stats?.performanceScore || 0}%`, icon: TrendingUp, color: 'bg-purple-600' },
+    { title: 'Reports', value: (stats?.reportsThisMonth || 0).toString(), icon: FileText, color: 'bg-indigo-600' },
   ];
 
   return (
@@ -138,14 +171,14 @@ export const TrainingPerformanceContent = () => {
             <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} overflow-hidden`}>
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader className={darkMode ? 'bg-gray-800/50' : 'bg-gray-50'}>
-                    <TableRow className={darkMode ? 'border-gray-800 hover:bg-transparent' : 'border-gray-100 hover:bg-transparent'}>
-                      <TableHead className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Farmer</TableHead>
-                      <TableHead className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Purpose & location</TableHead>
-                      <TableHead className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Date & Time</TableHead>
-                      <TableHead className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Mode</TableHead>
-                      <TableHead className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Status</TableHead>
-                      <TableHead className={`text-right ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Actions</TableHead>
+                  <TableHeader className={darkMode ? 'bg-[#0b3d32]' : 'bg-[#10b981]'}>
+                    <TableRow className={darkMode ? 'border-[#124b53] hover:bg-transparent' : 'border-emerald-500 hover:bg-transparent'}>
+                      <TableHead className="text-white font-bold h-10">Farmer</TableHead>
+                      <TableHead className="text-white font-bold h-10">Purpose & location</TableHead>
+                      <TableHead className="text-white font-bold h-10">Date & Time</TableHead>
+                      <TableHead className="text-white font-bold h-10">Mode</TableHead>
+                      <TableHead className="text-white font-bold h-10">Status</TableHead>
+                      <TableHead className="text-right text-white font-bold h-10">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -154,7 +187,7 @@ export const TrainingPerformanceContent = () => {
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-3">
                             <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
-                              {req.farmer.split(' ').map(n => n[0]).join('')}
+                              {req.farmer.split(' ').map((n: string) => n[0]).join('')}
                             </div>
                             <span className={darkMode ? 'text-gray-200' : 'text-gray-900'}>{req.farmer}</span>
                           </div>
@@ -172,15 +205,25 @@ export const TrainingPerformanceContent = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={`text-[10px] ${req.mode === 'Virtual' ? 'border-purple-500 text-purple-500' : 'border-blue-500 text-blue-500'}`}>
-                            {req.mode}
-                          </Badge>
+                          <div className="flex items-center gap-1.5">
+                            {req.mode === 'Virtual' ? (
+                              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${darkMode ? 'bg-purple-900/30 text-purple-400 border border-purple-800/50' : 'bg-purple-50 text-purple-700 border border-purple-200'}`}>
+                                <Activity className="h-3 w-3" />
+                                {req.mode}
+                              </div>
+                            ) : (
+                              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${darkMode ? 'bg-blue-900/30 text-blue-400 border border-blue-800/50' : 'bg-blue-50 text-blue-700 border border-blue-200'}`}>
+                                <UserCheck className="h-3 w-3" />
+                                {req.mode}
+                              </div>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <Badge className={`text-[10px] ${req.status === 'Confirmed' ? 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20' :
-                              req.status === 'Declined' ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20' :
-                                req.status === 'Reschedule Requested' ? 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20' :
-                                  'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20'
+                            req.status === 'Declined' ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20' :
+                              req.status === 'Reschedule Requested' ? 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20' :
+                                'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20'
                             }`}>
                             {req.status}
                           </Badge>
@@ -227,7 +270,7 @@ export const TrainingPerformanceContent = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {availableTrainings.map((training) => (
-                <Card key={training.id} className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} overflow-hidden h-full flex flex-col`}>
+                <Card key={training._id} className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} overflow-hidden h-full flex flex-col`}>
                   <CardContent className="p-5 flex-1 flex flex-col">
                     <div className="flex justify-between items-start mb-3">
                       <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-wider">
@@ -245,18 +288,26 @@ export const TrainingPerformanceContent = () => {
                       </div>
                       <div className={`flex items-center gap-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                         <GraduationCap className="h-4 w-4" />
-                        <span>NEIP Trainer</span>
+                        <span>{training.trainer}</span>
                       </div>
                       <p className={`text-sm mt-3 line-clamp-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                         {training.description}
                       </p>
                     </div>
-                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase tracking-wider text-xs h-10">
+                    <Button
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase tracking-wider text-xs h-10"
+                      onClick={() => toast.success(`Registered for ${training.title}`)}
+                    >
                       Register Now
                     </Button>
                   </CardContent>
                 </Card>
               ))}
+              {availableTrainings.length === 0 && (
+                <div className="col-span-2 text-center py-8 text-gray-500">
+                  No available trainings found
+                </div>
+              )}
             </div>
           </section>
 
@@ -276,22 +327,22 @@ export const TrainingPerformanceContent = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {myTrainings.map((training) => (
-                    <TableRow key={training.id} className={darkMode ? 'border-gray-800 hover:bg-gray-800/30' : 'hover:bg-gray-50 border-gray-100 transition-colors'}>
-                      <TableCell className={`font-medium sm:text-sm text-xs ${darkMode ? 'text-white' : 'text-gray-900'}`}>{training.title}</TableCell>
-                      <TableCell className={`sm:text-sm text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{training.date}</TableCell>
-                      <TableCell className={`sm:text-sm text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{training.mode}</TableCell>
+                  {myTrainings.map((reg) => (
+                    <TableRow key={reg._id} className={darkMode ? 'border-gray-800 hover:bg-gray-800/30' : 'hover:bg-gray-50 border-gray-100 transition-colors'}>
+                      <TableCell className={`font-medium sm:text-sm text-xs ${darkMode ? 'text-white' : 'text-gray-900'}`}>{reg.training?.title || 'Unknown Training'}</TableCell>
+                      <TableCell className={`sm:text-sm text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{reg.training?.date || 'N/A'}</TableCell>
+                      <TableCell className={`sm:text-sm text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{reg.training?.mode || 'N/A'}</TableCell>
                       <TableCell>
-                        <Badge className={`text-[9px] uppercase font-black px-2 py-0.5 rounded-sm shadow-none ${training.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
-                          training.status === 'Registered' ? 'bg-blue-100 text-blue-700' :
-                            training.status === 'Ongoing' ? 'bg-orange-100 text-orange-700' :
+                        <Badge className={`text-[9px] uppercase font-black px-2 py-0.5 rounded-sm shadow-none ${reg.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
+                          reg.status === 'Registered' ? 'bg-blue-100 text-blue-700' :
+                            reg.status === 'Ongoing' ? 'bg-orange-100 text-orange-700' :
                               'bg-gray-200 text-gray-600'
                           }`}>
-                          {training.status}
+                          {reg.status}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {training.certificate ? (
+                        {reg.certificate ? (
                           <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:bg-blue-50">
                             <Download className="h-4 w-4" />
                           </Button>
@@ -304,6 +355,13 @@ export const TrainingPerformanceContent = () => {
                       </TableCell>
                     </TableRow>
                   ))}
+                  {myTrainings.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                        You haven't registered for any trainings yet
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </Card>
@@ -315,12 +373,12 @@ export const TrainingPerformanceContent = () => {
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {[
-                { label: 'Farmers Onboarded', value: performanceMetrics.monthlyActivity[10].onboarding, icon: UserCheck, color: 'text-emerald-500' },
-                { label: 'Field Visits', value: performanceMetrics.fieldVisits, icon: Sprout, color: 'text-emerald-500' },
-                { label: 'Reports Submitted', value: performanceMetrics.monthlyActivity[10].reports, icon: FileText, color: 'text-blue-500' },
-                { label: 'Investment Matches', value: '12', icon: Handshake, color: 'text-amber-500' },
-                { label: 'Disputes Resolved', value: '8', icon: AlertTriangle, color: 'text-rose-500' },
-                { label: 'Training Participation', value: `${performanceMetrics.score}%`, icon: GraduationCap, color: 'text-purple-500' },
+                { label: 'Farmers Onboarded', value: stats?.farmersOnboarded || 0, icon: UserCheck, color: 'text-emerald-500' },
+                { label: 'Field Visits', value: stats?.activeFarms || 0, icon: Sprout, color: 'text-emerald-500' },
+                { label: 'Reports Submitted', value: stats?.reportsThisMonth || 0, icon: FileText, color: 'text-blue-500' },
+                { label: 'Investment Matches', value: stats?.investorMatches || 0, icon: Handshake, color: 'text-amber-500' },
+                { label: 'Disputes Resolved', value: stats?.pendingDisputes || 0, icon: AlertTriangle, color: 'text-rose-500' },
+                { label: 'Performance Score', value: `${stats?.performanceScore || 0}%`, icon: GraduationCap, color: 'text-purple-500' },
               ].map((m, idx) => (
                 <div key={idx} className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-gray-50 border-gray-100 shadow-sm'}`}>
                   <div className="flex items-center gap-3 mb-2">
@@ -351,7 +409,7 @@ export const TrainingPerformanceContent = () => {
               </div>
               <div className="h-[250px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={performanceMetrics.monthlyActivity}>
+                  <BarChart data={performanceMetrics?.monthlyActivity}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'} />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} dy={10} stroke="#9ca3af" />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} stroke="#9ca3af" />
@@ -373,27 +431,26 @@ export const TrainingPerformanceContent = () => {
             <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Activity Log</h2>
             <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} p-6 shadow-sm`}>
               <div className="space-y-6 relative before:absolute before:left-2.5 before:top-0 before:bottom-0 before:w-px before:bg-gray-100 dark:before:bg-gray-800">
-                {[
-                  { time: '10 Nov', action: 'Completed training', subject: 'Digital Field Reporting', icon: CheckCircle, color: 'text-emerald-500' },
-                  { time: '08 Nov', action: 'Submitted farm visit report', subject: 'John Mensah', icon: FileText, color: 'text-blue-500' },
-                  { time: '07 Nov', action: 'Logged dispute', subject: '#D112', icon: AlertTriangle, color: 'text-rose-500' },
-                  { time: '06 Nov', action: 'Verified farmer', subject: 'Amina Fuseini', icon: UserCheck, color: 'text-emerald-500' },
-                  { time: '04 Nov', action: 'Attended Webinar', subject: 'Climate Resilience', icon: GraduationCap, color: 'text-purple-500' },
-                  { time: '01 Nov', action: 'Reached Milestone', subject: '50 Onboarded', icon: TrendingUp, color: 'text-amber-500' },
-                ].map((item, idx) => (
-                  <div key={idx} className="relative pl-8 group">
+                {activities.map((item, idx) => (
+                  <div key={item._id || idx} className="relative pl-8 group">
                     <div className={`absolute left-0 top-1.5 w-5 h-5 rounded-full z-10 flex items-center justify-center border-2 ${darkMode ? 'bg-gray-950 border-gray-800' : 'bg-white border-gray-50'}`}>
-                      <item.icon className={`h-2 w-2 ${item.color}`} />
+                      {item.type === 'training' ? <CheckCircle className={`h-2 w-2 text-emerald-500`} /> :
+                        item.type === 'report' ? <FileText className={`h-2 w-2 text-blue-500`} /> :
+                          <TrendingUp className={`h-2 w-2 text-amber-500`} />}
                     </div>
                     <div className="transition-all">
-                      <p className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{item.time}</p>
+                      <p className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                        {new Date(item.createdAt).toLocaleDateString()}
+                      </p>
                       <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        <span className="opacity-70">{item.action}: </span>
-                        <span className="font-bold">{item.subject}</span>
+                        <span className="font-bold">{item.title}</span>
                       </p>
                     </div>
                   </div>
                 ))}
+                {activities.length === 0 && (
+                  <div className="text-center py-4 text-gray-500">No activity logged</div>
+                )}
               </div>
               <Button variant="ghost" className="w-full mt-6 text-[10px] font-bold uppercase tracking-widest hover:bg-gray-50">
                 View All Activity
