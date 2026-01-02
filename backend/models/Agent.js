@@ -25,7 +25,9 @@ const agentSchema = new mongoose.Schema({
         pendingDisputes: { type: Number, default: 0 },
         reportsThisMonth: { type: Number, default: 0 },
         trainingsAttended: { type: Number, default: 0 }
-    }
+    },
+    isLoggedIn: { type: Boolean, default: false },
+    currentSessionId: { type: String, default: null }
 }, { timestamps: true });
 
 // Hash password before saving

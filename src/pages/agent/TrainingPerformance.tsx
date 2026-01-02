@@ -49,7 +49,8 @@ import {
   Download,
   Filter,
   Sprout,
-  Handshake
+  Handshake,
+  Loader2
 } from 'lucide-react';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
@@ -66,6 +67,8 @@ export const TrainingPerformanceContent = () => {
   const [stats, setStats] = useState<any>(null);
   const [consultationRequests, setConsultationRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRegistering, setIsRegistering] = useState<string | null>(null);
+  const [isProcessingConsultation, setIsProcessingConsultation] = useState<string | null>(null);
 
   React.useEffect(() => {
     const fetchPerformanceData = async () => {
@@ -100,19 +103,26 @@ export const TrainingPerformanceContent = () => {
     fetchPerformanceData();
   }, []);
 
-  const handleConsultationAction = (id: string, action: 'accept' | 'decline' | 'reschedule') => {
-    // In a real app, this would be an API call
-    console.log(`Action ${action} on consultation ${id}`);
-    toast.info(`Consultation ${action} for ID: ${id}`);
-    // For now, we'll just update the local state for demonstration
-    setConsultationRequests(prev => prev.map(req => {
-      if (req.id === id) {
-        if (action === 'accept') return { ...req, status: 'Confirmed' };
-        if (action === 'decline') return { ...req, status: 'Declined' };
-        if (action === 'reschedule') return { ...req, status: 'Reschedule Requested' };
-      }
-      return req;
-    }));
+  const handleConsultationAction = async (id: string, action: 'accept' | 'decline' | 'reschedule') => {
+    setIsProcessingConsultation(id);
+    try {
+      // In a real app, this would be an API call
+      console.log(`Action ${action} on consultation ${id}`);
+      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate API delay
+      toast.info(`Consultation ${action} for ID: ${id}`);
+
+      // Update local state
+      setConsultationRequests(prev => prev.map(req => {
+        if (req.id === id) {
+          if (action === 'accept') return { ...req, status: 'Confirmed' };
+          if (action === 'decline') return { ...req, status: 'Declined' };
+          if (action === 'reschedule') return { ...req, status: 'Reschedule Requested' };
+        }
+        return req;
+      }));
+    } finally {
+      setIsProcessingConsultation(null);
+    }
   };
 
   React.useEffect(() => {
@@ -153,7 +163,7 @@ export const TrainingPerformanceContent = () => {
                 <p className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">{card.title}</p>
               </div>
               <div className="flex-1 flex items-center">
-                <p className="text-2xl sm:text-4xl font-bold text-white">{card.value}</p>
+                <p className="big-metric text-white">{card.value}</p>
               </div>
             </div>
           </Card>
@@ -166,19 +176,19 @@ export const TrainingPerformanceContent = () => {
           {/* Incoming Consultation Requests Section */}
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Incoming Consultation Requests</h2>
+              <h2 className={`section-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>Incoming Consultation Requests</h2>
             </div>
             <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} overflow-hidden`}>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader className={darkMode ? 'bg-[#0b3d32]' : 'bg-[#10b981]'}>
                     <TableRow className={darkMode ? 'border-[#124b53] hover:bg-transparent' : 'border-emerald-500 hover:bg-transparent'}>
-                      <TableHead className="text-white font-bold h-10">Farmer</TableHead>
-                      <TableHead className="text-white font-bold h-10">Purpose & location</TableHead>
-                      <TableHead className="text-white font-bold h-10">Date & Time</TableHead>
-                      <TableHead className="text-white font-bold h-10">Mode</TableHead>
-                      <TableHead className="text-white font-bold h-10">Status</TableHead>
-                      <TableHead className="text-right text-white font-bold h-10">Actions</TableHead>
+                      <TableHead className="text-white btn-text h-10">Farmer</TableHead>
+                      <TableHead className="text-white btn-text h-10">Purpose & location</TableHead>
+                      <TableHead className="text-white btn-text h-10">Date & Time</TableHead>
+                      <TableHead className="text-white btn-text h-10">Mode</TableHead>
+                      <TableHead className="text-white btn-text h-10">Status</TableHead>
+                      <TableHead className="text-right text-white btn-text h-10">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -231,11 +241,22 @@ export const TrainingPerformanceContent = () => {
                         <TableCell className="text-right">
                           {req.status === 'Pending' && (
                             <div className="flex justify-end gap-2">
-                              <Button size="sm" className="h-7 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px]" onClick={() => handleConsultationAction(req.id, 'accept')}>
-                                Accept
+                              <Button
+                                size="sm"
+                                className="h-7 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px]"
+                                onClick={() => handleConsultationAction(req.id, 'accept')}
+                                disabled={isProcessingConsultation === req.id}
+                              >
+                                {isProcessingConsultation === req.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Accept'}
                               </Button>
-                              <Button size="sm" variant="outline" className="h-7 border-red-500 text-red-500 hover:bg-red-500/10 text-[10px]" onClick={() => handleConsultationAction(req.id, 'decline')}>
-                                Decline
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 border-red-500 text-red-500 hover:bg-red-500/10 text-[10px]"
+                                onClick={() => handleConsultationAction(req.id, 'decline')}
+                                disabled={isProcessingConsultation === req.id}
+                              >
+                                {isProcessingConsultation === req.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Decline'}
                               </Button>
                               <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleConsultationAction(req.id, 'reschedule')}>
                                 <Clock className="h-3 w-3" />
@@ -260,7 +281,7 @@ export const TrainingPerformanceContent = () => {
           {/* 2. Available Trainings List */}
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Available Training Programs</h2>
+              <h2 className={`section-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>Available Training Programs</h2>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" className={darkMode ? 'border-gray-700' : ''}>
                   <Filter className="h-4 w-4 mr-2" /> Filter
@@ -296,9 +317,22 @@ export const TrainingPerformanceContent = () => {
                     </div>
                     <Button
                       className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase tracking-wider text-xs h-10"
-                      onClick={() => toast.success(`Registered for ${training.title}`)}
+                      onClick={async () => {
+                        setIsRegistering(training._id);
+                        await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
+                        toast.success(`Registered for ${training.title}`);
+                        setIsRegistering(null);
+                      }}
+                      disabled={isRegistering === training._id}
                     >
-                      Register Now
+                      {isRegistering === training._id ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Registering...
+                        </>
+                      ) : (
+                        'Register Now'
+                      )}
                     </Button>
                   </CardContent>
                 </Card>
@@ -313,17 +347,17 @@ export const TrainingPerformanceContent = () => {
 
           {/* 3. My Training Schedule */}
           <section>
-            <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>My Training Schedule</h2>
+            <h2 className={`section-title mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>My Training Schedule</h2>
             <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} overflow-hidden shadow-sm`}>
               <Table>
                 <TableHeader>
                   <TableRow className={darkMode ? 'bg-emerald-900/40 border-gray-800' : 'bg-emerald-600 border-emerald-500'}>
-                    <TableHead className={`font-black uppercase text-[10px] tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Training Title</TableHead>
-                    <TableHead className={`font-black uppercase text-[10px] tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Date</TableHead>
-                    <TableHead className={`font-black uppercase text-[10px] tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Mode</TableHead>
-                    <TableHead className={`font-black uppercase text-[10px] tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Status</TableHead>
-                    <TableHead className={`font-black uppercase text-[10px] tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Cert.</TableHead>
-                    <TableHead className={`text-right font-black uppercase text-[10px] tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Action</TableHead>
+                    <TableHead className={`btn-text uppercase h-10 tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Training Title</TableHead>
+                    <TableHead className={`btn-text uppercase h-10 tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Date</TableHead>
+                    <TableHead className={`btn-text uppercase h-10 tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Mode</TableHead>
+                    <TableHead className={`btn-text uppercase h-10 tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Status</TableHead>
+                    <TableHead className={`btn-text uppercase h-10 tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Cert.</TableHead>
+                    <TableHead className={`text-right btn-text h-10 uppercase tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -369,7 +403,7 @@ export const TrainingPerformanceContent = () => {
 
           {/* 4. Performance Metrics & Analytics */}
           <section className="space-y-6">
-            <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Performance Metrics & Analytics</h2>
+            <h2 className={`section-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>Performance Metrics & Analytics</h2>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {[
@@ -385,7 +419,7 @@ export const TrainingPerformanceContent = () => {
                     <m.icon className={`h-4 w-4 ${m.color}`} />
                     <span className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{m.label}</span>
                   </div>
-                  <p className={`text-2xl font-black ${darkMode ? 'text-white' : 'text-gray-900 font-outfit'}`}>{m.value}</p>
+                  <p className={`text-2xl big-metric ${darkMode ? 'text-white' : 'text-gray-900'}`}>{m.value}</p>
                 </div>
               ))}
             </div>
@@ -428,7 +462,7 @@ export const TrainingPerformanceContent = () => {
 
           {/* 5. Agent Activity Timeline */}
           <section>
-            <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Activity Log</h2>
+            <h2 className={`section-title mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Activity Log</h2>
             <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} p-6 shadow-sm`}>
               <div className="space-y-6 relative before:absolute before:left-2.5 before:top-0 before:bottom-0 before:w-px before:bg-gray-100 dark:before:bg-gray-800">
                 {activities.map((item, idx) => (

@@ -396,7 +396,7 @@ const FarmManagement = () => {
             <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
               <div className="flex flex-col gap-0.5 sm:gap-1">
                 <span className="text-[10px] sm:text-xs font-medium text-white/90">Total Items</span>
-                <span className="text-xl sm:text-2xl font-bold text-white">{farmProjects.length}</span>
+                <span className="big-metric text-white">{farmProjects.length}</span>
               </div>
               <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-white/20 flex items-center justify-center">
                 <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
@@ -409,7 +409,7 @@ const FarmManagement = () => {
             <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
               <div className="flex flex-col gap-0.5 sm:gap-1">
                 <span className="text-[10px] sm:text-xs font-medium text-white/90">Crops</span>
-                <span className="text-xl sm:text-2xl font-bold text-white">
+                <span className="big-metric text-white">
                   {farmProjects.filter(p => p.type === 'crop').length}
                 </span>
               </div>
@@ -424,7 +424,7 @@ const FarmManagement = () => {
             <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
               <div className="flex flex-col gap-0.5 sm:gap-1">
                 <span className="text-[10px] sm:text-xs font-medium text-white/90">Livestock</span>
-                <span className="text-xl sm:text-2xl font-bold text-white">
+                <span className="big-metric text-white">
                   {farmProjects.filter(p => p.type === 'livestock').length}
                 </span>
               </div>
@@ -439,7 +439,7 @@ const FarmManagement = () => {
             <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
               <div className="flex flex-col gap-0.5 sm:gap-1">
                 <span className="text-[10px] sm:text-xs font-medium text-white/90">Equipment</span>
-                <span className="text-xl sm:text-2xl font-bold text-white">
+                <span className="big-metric text-white">
                   {farmProjects.filter(p => p.type === 'equipment').length}
                 </span>
               </div>
@@ -454,7 +454,7 @@ const FarmManagement = () => {
             <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
               <div className="flex flex-col gap-0.5 sm:gap-1 min-w-0">
                 <span className="text-[10px] sm:text-xs font-medium text-white/90">Investment</span>
-                <span className="text-lg sm:text-2xl font-bold text-white truncate">
+                <span className="big-metric text-white truncate">
                   ₵{farmProjects.reduce((sum, item) => sum + item.investment, 0).toLocaleString()}
                 </span>
               </div>
@@ -471,7 +471,7 @@ const FarmManagement = () => {
               <CardHeader className="border-b border-gray-100 dark:border-gray-800 pb-0">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                   <div>
-                    <CardTitle className={`flex items-center gap-2 text-lg sm:text-xl ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    <CardTitle className={`flex items-center gap-2 section-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                       <Leaf className={`h-5 w-5 sm:h-6 sm:w-6 ${darkMode ? 'text-[#7ede56]' : 'text-[#0b8a62]'}`} />
                       Stage Activities
                     </CardTitle>
@@ -523,7 +523,7 @@ const FarmManagement = () => {
                 <div className="space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3">
-                      <h3 className={`text-base sm:text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <h3 className={`section-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                         {activeStageTab.charAt(0).toUpperCase() + activeStageTab.slice(1)} Activities
                       </h3>
                       {farmStage === activeStageTab ? (

@@ -13,6 +13,35 @@ const farmSchema = new mongoose.Schema({
     },
     lastVisit: { type: String },
     nextVisit: { type: String },
+    currentStage: { type: String, default: 'planning' },
+    stageDetails: {
+        type: Map,
+        of: {
+            date: String,
+            notes: String,
+            status: { type: String, enum: ['completed', 'in-progress', 'pending'], default: 'pending' },
+            activities: [{
+                id: String,
+                date: String,
+                activity: String,
+                description: String,
+                resources: String,
+                media: [{
+                    type: { type: String, enum: ['image', 'video'] },
+                    url: String,
+                    name: String
+                }]
+            }]
+        },
+        default: {
+            planning: { date: '', notes: '', status: 'pending', activities: [] },
+            planting: { date: '', notes: '', status: 'pending', activities: [] },
+            growing: { date: '', notes: '', status: 'pending', activities: [] },
+            harvesting: { date: '', notes: '', status: 'pending', activities: [] },
+            maintenance: { date: '', notes: '', status: 'pending', activities: [] },
+            other: { date: '', notes: '', status: 'pending', activities: [] }
+        }
+    },
     reportStatus: {
         type: String,
         enum: ['Ready', 'Pending', 'Flagged', 'Awaiting'],

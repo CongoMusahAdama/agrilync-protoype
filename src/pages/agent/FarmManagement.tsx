@@ -5,11 +5,13 @@ import * as XLSX from 'xlsx';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import { exportToPDF, exportToWord } from '@/utils/reportExport';
 import AgentLayout from './AgentLayout';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import AddFarmerModal from '@/components/agent/AddFarmerModal';
 import ViewFarmerModal from '@/components/agent/ViewFarmerModal';
 import UploadReportModal from '@/components/agent/UploadReportModal';
+import FarmJourneyModal from '@/components/agent/FarmJourneyModal';
 import VerificationQueueModal from '@/components/agent/VerificationQueueModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,14 +38,23 @@ import {
     X,
     MapPin,
     Calendar,
-    FileText,
-    ClipboardList,
     Phone,
+    Mail,
+    User,
+    ClipboardList,
+    FileText,
+    FileDown,
+    Trash2,
     Timer,
     Camera,
     Download,
     FileSpreadsheet,
-    Loader2
+    Loader2,
+    Leaf,
+    Sprout,
+    Scissors,
+    Wrench,
+    MoreHorizontal
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -66,34 +77,78 @@ const FarmManagement: React.FC = () => {
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
     const [pendingFarmers, setPendingFarmers] = useState<any[]>([]);
     const [verificationQueueModalOpen, setVerificationQueueModalOpen] = useState(false);
+    const [selectedTab, setSelectedTab] = useState('personal');
 
     // Field visit logging state
-    const [activeTab, setActiveTab] = useState<'farmers' | 'visits'>('farmers');
+    const [activeTab, setActiveTab] = useState<'farmers' | 'visits' | 'reports'>('farmers');
     const [fieldVisitModalOpen, setFieldVisitModalOpen] = useState(false);
+    const [journeyModalOpen, setJourneyModalOpen] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [loadingVisits, setLoadingVisits] = useState(false);
 
     const fetchData = async () => {
         setLoading(true);
+        setLoadingVisits(true);
+        setLoadingReports(true);
         try {
-            const [farmersRes, farmsRes, pendingRes] = await Promise.all([
+            const [farmersRes, farmsRes, pendingRes, visitsRes] = await Promise.all([
                 api.get('/farmers'),
                 api.get('/farms'),
-                api.get('/farmers/queue/pending')
+                api.get('/farmers/queue/pending'),
+                api.get('/field-visits')
             ]);
             setFarmers(farmersRes.data);
             setFarms(farmsRes.data);
             setPendingFarmers(pendingRes.data);
+            setVisitLogs(visitsRes.data);
+
+            // Try to fetch reports, but don't fail if endpoint doesn't exist
+            try {
+                const reportsRes = await api.get('/reports/agent');
+                setReports(reportsRes.data);
+            } catch (reportsErr: any) {
+                if (reportsErr.response?.status !== 404) {
+                    console.error('Error fetching reports:', reportsErr);
+                }
+                // If 404, just leave reports empty
+                setReports([]);
+            }
+
             setIsLoaded(true);
         } catch (err) {
-            toast.error('Failed to load farm management data');
+            console.error('Initial fetch error:', err);
+            toast.error('Failed to load dashboard data');
         } finally {
             setLoading(false);
+            setLoadingVisits(false);
+            setLoadingReports(false);
         }
     };
 
     React.useEffect(() => {
         fetchData();
     }, []);
+
+    const [reports, setReports] = useState<any[]>([]);
+    const [loadingReports, setLoadingReports] = useState(false);
+
+    const fetchReports = async () => {
+        setLoadingReports(true);
+        try {
+            const response = await api.get('/reports');
+            setReports(response.data);
+        } catch (error: any) {
+            // Silently handle 404 - endpoint doesn't exist yet
+            if (error.response?.status === 404) {
+                setReports([]);
+            } else {
+                console.error('Failed to fetch reports:', error);
+            }
+        } finally {
+            setLoadingReports(false);
+        }
+    };
 
     const [visitLogs, setVisitLogs] = useState<any[]>([]);
     const [selectedVisits, setSelectedVisits] = useState<Set<string>>(new Set());
@@ -107,6 +162,7 @@ const FarmManagement: React.FC = () => {
         time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
         hoursSpent: '1',
         purpose: '',
+        otherPurpose: '',
         notes: '',
         challenges: '',
         status: 'Completed',
@@ -121,7 +177,7 @@ const FarmManagement: React.FC = () => {
         const total = farmers.length;
         const verified = farmers.filter(f => f.status === 'active').length;
         const pending = pendingFarmers.length; // From verification queue
-        const activeCount = farms.filter(f => f.status === 'verified').length;
+        const activeCount = farms.length; // Count all created farms
         const matched = farmers.filter(f => f.investmentStatus === 'Matched').length;
         return { total, verified, pending, active: activeCount, matched };
     }, [farmers, farms, pendingFarmers]);
@@ -179,8 +235,9 @@ const FarmManagement: React.FC = () => {
         }
     };
 
-    const handleViewFarmer = (farmer: any) => {
+    const handleViewFarmer = (farmer: any, tab: string = 'personal') => {
         setSelectedFarmer(farmer);
+        setSelectedTab(tab);
         setViewModalOpen(true);
     };
 
@@ -220,6 +277,7 @@ const FarmManagement: React.FC = () => {
                 time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
                 hoursSpent: '1',
                 purpose: '',
+                otherPurpose: '',
                 notes: '',
                 challenges: '',
                 status: 'Completed',
@@ -236,6 +294,7 @@ const FarmManagement: React.FC = () => {
                 time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
                 hoursSpent: '1',
                 purpose: '',
+                otherPurpose: '',
                 notes: '',
                 challenges: '',
                 status: 'Completed',
@@ -247,6 +306,17 @@ const FarmManagement: React.FC = () => {
     };
 
     const handleEditVisit = (visit: any) => {
+        const standardPurposes = [
+            'Routine inspection',
+            'Pest control',
+            'Irrigation check',
+            'Harvest assessment',
+            'Soil testing',
+            'Training session'
+        ];
+
+        const isOther = visit.purpose && !standardPurposes.includes(visit.purpose) && visit.purpose !== 'Other';
+
         setVisitForm({
             farmerId: visit.farmer?._id || visit.farmerId,
             farmerName: visit.farmer?.name || visit.farmerName,
@@ -255,7 +325,8 @@ const FarmManagement: React.FC = () => {
             date: new Date(visit.date).toISOString().split('T')[0],
             time: visit.time,
             hoursSpent: visit.hoursSpent.toString(),
-            purpose: visit.purpose,
+            purpose: isOther ? 'Other' : (visit.purpose || ''),
+            otherPurpose: isOther ? visit.purpose : '',
             notes: visit.notes,
             challenges: visit.challenges || '',
             status: visit.status || 'Completed',
@@ -377,25 +448,28 @@ const FarmManagement: React.FC = () => {
     }, [isLoaded]);
 
     const handleSubmitVisit = async () => {
-        if (!visitForm.farmerId || !visitForm.purpose || !visitForm.notes) {
+        const finalPurpose = visitForm.purpose === 'Other' ? visitForm.otherPurpose : visitForm.purpose;
+
+        if (!visitForm.farmerId || !finalPurpose || !visitForm.notes) {
             toast.error('Please fill all required fields');
             return;
         }
 
+        setIsSaving(true);
         try {
             const visitData = {
-                farmerId: visitForm.farmerId,
+                farmer: visitForm.farmerId,
                 date: visitForm.date,
                 time: visitForm.time,
-                hoursSpent: parseFloat(visitForm.hoursSpent),
-                purpose: visitForm.purpose,
+                hoursSpent: Number(visitForm.hoursSpent),
+                purpose: finalPurpose,
                 notes: visitForm.notes,
                 visitImages: visitImages,
                 challenges: visitForm.challenges,
                 status: visitForm.status
             };
 
-            if (visitForm.isEditing) {
+            if (visitForm.isEditing && visitForm.editingId) {
                 await api.put(`/field-visits/${visitForm.editingId}`, visitData);
                 toast.success('Field visit updated successfully!');
             } else {
@@ -403,7 +477,8 @@ const FarmManagement: React.FC = () => {
                 toast.success('Field visit logged successfully!');
             }
 
-            fetchVisits(); // Refresh the list
+            await fetchVisits(); // Refresh the list
+            await fetchData(); // Refresh metrics and farmers
             setFieldVisitModalOpen(false);
             // Reset form
             setVisitForm({
@@ -415,6 +490,7 @@ const FarmManagement: React.FC = () => {
                 time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
                 hoursSpent: '1',
                 purpose: '',
+                otherPurpose: '',
                 notes: '',
                 challenges: '',
                 status: 'Completed',
@@ -425,6 +501,8 @@ const FarmManagement: React.FC = () => {
         } catch (err) {
             console.error('Error saving visit:', err);
             toast.error(visitForm.isEditing ? 'Failed to update field visit' : 'Failed to log field visit');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -435,14 +513,6 @@ const FarmManagement: React.FC = () => {
     const inputBaseClasses = darkMode
         ? 'bg-[#10363d] border-[#1b5b65] text-gray-100 placeholder:text-gray-400'
         : '';
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
-            </div>
-        );
-    }
 
     return (
         <AgentLayout
@@ -484,8 +554,8 @@ const FarmManagement: React.FC = () => {
                 </div>
 
                 {/* Tabs for Farmers Directory and Field Visit Logs */}
-                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'farmers' | 'visits')} className="w-full">
-                    <TabsList className={`grid w-full grid-cols-2 mb-4 ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-100'}`}>
+                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'farmers' | 'visits' | 'reports')} className="w-full">
+                    <TabsList className={`grid w-full grid-cols-3 mb-4 ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-100'}`}>
                         <TabsTrigger
                             value="farmers"
                             className={`${darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white'}`}
@@ -493,12 +563,13 @@ const FarmManagement: React.FC = () => {
                             <Users className="h-4 w-4 mr-2" />
                             Farmers Directory ({filteredFarmers.length})
                         </TabsTrigger>
-                        <TabsTrigger
-                            value="visits"
-                            className={`${darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white'}`}
-                        >
-                            <ClipboardList className="h-4 w-4 mr-2" />
-                            Field Visit Logs ({visitLogs.length})
+                        <TabsTrigger value="visits" className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all data-[state=active]:bg-emerald-600 data-[state=active]:text-white ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>
+                            <ClipboardList className="h-4 w-4" />
+                            <span className="font-semibold">Field Visits</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="reports" className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all data-[state=active]:bg-emerald-600 data-[state=active]:text-white ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>
+                            <FileText className="h-4 w-4" />
+                            <span className="font-semibold">Reports ({reports.length})</span>
                         </TabsTrigger>
                     </TabsList>
 
@@ -576,6 +647,40 @@ const FarmManagement: React.FC = () => {
                             </div>
                         </Card>
 
+
+                        {/* Action Benefits Legend */}
+                        <div className={`mb-4 p-4 rounded-lg flex flex-wrap gap-6 items-center border ${darkMode ? 'bg-[#002f37] border-cyan-900/30' : 'bg-blue-50 border-blue-100'}`}>
+                            <p className={`text-sm font-semibold mr-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Quick Actions Guide:</p>
+
+                            <div className="flex items-center gap-2">
+                                <div className={`p-1.5 rounded-md ${darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                                    <Eye className="w-3.5 h-3.5" />
+                                </div>
+                                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>View Profile</span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <div className={`p-1.5 rounded-md ${darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
+                                    <Edit className="w-3.5 h-3.5" />
+                                </div>
+                                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Edit Details</span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <div className={`p-1.5 rounded-md ${darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                                    <Leaf className="w-3.5 h-3.5" />
+                                </div>
+                                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Track Journey</span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <div className={`p-1.5 rounded-md ${darkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                                    <Upload className="w-3.5 h-3.5" />
+                                </div>
+                                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Upload Report</span>
+                            </div>
+                        </div>
+
                         {/* Farmers Table - Premium Interactive Style */}
                         <Card className={`${sectionCardClass} border-0 shadow-xl overflow-hidden`}>
                             <div className="overflow-hidden">
@@ -594,12 +699,13 @@ const FarmManagement: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="overflow-x-auto">
+                                <div className="overflow-auto max-h-[65vh] relative">
                                     <Table>
-                                        <TableHeader className="bg-emerald-600 dark:bg-emerald-700">
+                                        <TableHeader className="sticky top-0 z-20 bg-emerald-600 dark:bg-emerald-700 shadow-md">
                                             <TableRow className="border-0 hover:bg-transparent">
                                                 <TableHead className="w-12 text-center text-white font-bold h-12">#</TableHead>
                                                 <TableHead className="text-white font-bold h-12">Farmer Details</TableHead>
+                                                <TableHead className="text-white font-bold h-12">Phone Number</TableHead>
                                                 <TableHead className="text-white font-bold h-12">Location</TableHead>
                                                 <TableHead className="text-white font-bold h-12">Farm Info</TableHead>
                                                 <TableHead className="text-white font-bold h-12">Status</TableHead>
@@ -610,7 +716,7 @@ const FarmManagement: React.FC = () => {
                                         <TableBody>
                                             {filteredFarmers.map((farmer, index) => (
                                                 <TableRow
-                                                    key={farmer._id}
+                                                    key={farmer._id || farmer.id || `farmer-${index}`}
                                                     className={`group transition-all duration-300 border-b ${darkMode ? 'border-white/5 hover:bg-emerald-500/5' : 'hover:bg-gray-50'} ${index % 2 === 0 ? (darkMode ? 'bg-transparent' : 'bg-white') : (darkMode ? 'bg-white/2' : 'bg-gray-50/30')}`}
                                                 >
                                                     <TableCell className="text-center font-mono text-xs text-gray-500">
@@ -619,11 +725,17 @@ const FarmManagement: React.FC = () => {
                                                     <TableCell>
                                                         <div className="flex items-center gap-4">
                                                             <div className="relative">
-                                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-bold text-white shadow-lg transition-transform group-hover:scale-110 group-hover:rotate-3 ${farmer.displayStatus === 'Completed' ? 'bg-emerald-500' : farmer.displayStatus === 'Pending' ? 'bg-amber-500' : 'bg-indigo-500'}`}>
-                                                                    {farmer.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
-                                                                </div>
+                                                                {farmer.profilePicture ? (
+                                                                    <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-lg border-2 border-white dark:border-[#124b53] transition-transform group-hover:scale-110 group-hover:rotate-3">
+                                                                        <img src={farmer.profilePicture} alt={farmer.name} className="w-full h-full object-cover" />
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-bold text-white shadow-lg transition-transform group-hover:scale-110 group-hover:rotate-3 ${farmer.displayStatus === 'Completed' ? 'bg-emerald-500' : farmer.displayStatus === 'Pending' ? 'bg-amber-500' : 'bg-indigo-500'}`}>
+                                                                        {farmer.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                                                                    </div>
+                                                                )}
                                                                 {farmer.displayStatus === 'Completed' && (
-                                                                    <div className="absolute -right-1 -bottom-1 bg-white rounded-full p-0.5 shadow-sm">
+                                                                    <div className="absolute -right-1 -bottom-1 bg-white rounded-full p-0.5 shadow-sm border border-emerald-50">
                                                                         <CheckCircle className="w-4 h-4 text-emerald-500" />
                                                                     </div>
                                                                 )}
@@ -632,6 +744,12 @@ const FarmManagement: React.FC = () => {
                                                                 <p className={`font-bold text-sm ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{farmer.name}</p>
                                                                 <p className={`text-xs font-mono mt-0.5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{generateLyncId(farmer._id)}</p>
                                                             </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-2">
+                                                            <Phone className="w-3.5 h-3.5 text-gray-400" />
+                                                            <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{farmer.contact || 'N/A'}</span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
@@ -661,17 +779,17 @@ const FarmManagement: React.FC = () => {
                                                         <div className="flex items-center gap-2">
                                                             <Calendar className="w-3.5 h-3.5 text-gray-400" />
                                                             <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                                {farmer.createdAt ? new Date(farmer.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never'}
+                                                                {farmer.lastVisit ? new Date(farmer.lastVisit).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never'}
                                                             </span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-right">
-                                                        <div className="flex items-center justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                        <div className="flex items-center justify-end gap-1">
                                                             <Button
                                                                 size="icon"
                                                                 variant="ghost"
                                                                 onClick={() => handleViewFarmer(farmer)}
-                                                                className={`h-8 w-8 rounded-lg ${darkMode ? 'hover:bg-emerald-500/20 hover:text-emerald-400' : 'hover:bg-emerald-50 hover:text-emerald-600'}`}
+                                                                className={`h-8 w-8 rounded-lg ${darkMode ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
                                                             >
                                                                 <Eye className="w-4 h-4" />
                                                             </Button>
@@ -679,15 +797,28 @@ const FarmManagement: React.FC = () => {
                                                                 size="icon"
                                                                 variant="ghost"
                                                                 onClick={() => handleEditFarmer(farmer)}
-                                                                className={`h-8 w-8 rounded-lg ${darkMode ? 'hover:bg-amber-500/20 hover:text-amber-400' : 'hover:bg-amber-50 hover:text-amber-600'}`}
+                                                                className={`h-8 w-8 rounded-lg ${darkMode ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}`}
                                                             >
                                                                 <Edit className="w-4 h-4" />
                                                             </Button>
                                                             <Button
                                                                 size="icon"
                                                                 variant="ghost"
+                                                                onClick={() => {
+                                                                    setSelectedFarmer(farmer);
+                                                                    setJourneyModalOpen(true);
+                                                                }}
+                                                                className={`h-8 w-8 rounded-lg opacity-100 ${darkMode ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
+                                                                title="Track Farm Journey"
+                                                            >
+                                                                <Leaf className="w-4 h-4" />
+                                                            </Button>
+                                                            <Button
+                                                                size="icon"
+                                                                variant="ghost"
                                                                 onClick={() => handleUploadReport(farmer)}
-                                                                className={`h-8 w-8 rounded-lg ${darkMode ? 'hover:bg-indigo-500/20 hover:text-indigo-400' : 'hover:bg-indigo-50 hover:text-indigo-600'}`}
+                                                                className={`h-8 w-8 rounded-lg ${darkMode ? 'bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
+                                                                title="Upload Report"
                                                             >
                                                                 <Upload className="w-4 h-4" />
                                                             </Button>
@@ -783,161 +914,286 @@ const FarmManagement: React.FC = () => {
                         )}
 
                         <div className="relative pl-8 space-y-6 before:absolute before:left-3 before:top-2 before:bottom-0 before:w-0.5 before:bg-gradient-to-b before:from-emerald-500 before:via-emerald-500/50 before:to-transparent">
-                            {visitLogs.map((visit, index) => (
-                                <div key={visit.id} className="relative group">
-                                    {/* Timeline Node */}
-                                    <div className={`absolute -left-8 top-1.5 w-7 h-7 rounded-full border-4 flex items-center justify-center z-10 transition-transform group-hover:scale-110 ${darkMode ? 'bg-[#002f37] border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-white border-emerald-500 shadow-md'
-                                        }`}>
-                                        <div className={`w-1.5 h-1.5 rounded-full ${visit.status === 'Completed' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                                    </div>
-
-                                    <Card
-                                        className={`${sectionCardClass} border-0 shadow-lg overflow-hidden transition-all duration-300 group-hover:shadow-emerald-500/5 group-hover:translate-x-1 cursor-pointer`}
-                                    >
-                                        <div className="p-5 flex items-start gap-4">
-                                            <div className="pt-1" onClick={(e) => e.stopPropagation()}>
-                                                <Checkbox
-                                                    checked={selectedVisits.has(visit._id || visit.id)}
-                                                    onCheckedChange={(checked) => {
-                                                        const newSelected = new Set(selectedVisits);
-                                                        if (checked) {
-                                                            newSelected.add(visit._id || visit.id);
-                                                        } else {
-                                                            newSelected.delete(visit._id || visit.id);
-                                                        }
-                                                        setSelectedVisits(newSelected);
-                                                    }}
-                                                />
+                            {loadingVisits ? (
+                                <div className="flex flex-col items-center justify-center py-20">
+                                    <Loader2 className="h-12 w-12 text-emerald-500 animate-spin mb-4" />
+                                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Loading field journals...</p>
+                                </div>
+                            ) : (
+                                <>
+                                    {visitLogs.map((visit, index) => (
+                                        <div key={visit._id || index} className="group relative">
+                                            {/* Timeline Node */}
+                                            <div className={`absolute -left-8 top-1.5 w-7 h-7 rounded-full border-4 flex items-center justify-center z-10 transition-transform group-hover:scale-110 ${darkMode ? 'bg-[#002f37] border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-white border-emerald-500 shadow-md'
+                                                }`}>
+                                                <div className={`w-1.5 h-1.5 rounded-full ${visit.status === 'Completed' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                                             </div>
-                                            <div className="flex-1" onClick={() => {
-                                                setSelectedVisit(visit);
-                                                setVisitDetailModalOpen(true);
-                                            }}>
-                                                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                                                    <div className="flex-1 space-y-2">
-                                                        <div className="flex items-center gap-3">
-                                                            <span className={`text-xs font-bold opacity-40 font-mono ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                                                #{visitLogs.length - index}
-                                                            </span>
-                                                            <Badge variant="outline" className={`text-[10px] font-mono px-2 py-0.5 ${darkMode ? 'bg-white/5 border-white/10 text-emerald-400' : 'bg-gray-50 text-emerald-600'}`}>
-                                                                {visit.farmer?.lyncId || visit.lyncId}
-                                                            </Badge>
-                                                            <h4 className={`font-bold transition-colors ${darkMode ? 'text-gray-100 group-hover:text-emerald-400' : 'text-gray-900 group-hover:text-emerald-600'}`}>
-                                                                {visit.farmer?.name || visit.farmerName}
-                                                            </h4>
-                                                            <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>•</span>
-                                                            <Badge className={`text-[10px] uppercase tracking-widest ${darkMode ? 'bg-emerald-500/10 text-emerald-400 border-0' : 'bg-emerald-50 text-emerald-700'}`}>
-                                                                {visit.purpose}
-                                                            </Badge>
-                                                        </div>
 
-                                                        <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                            {visit.notes}
-                                                        </p>
-
-                                                        {visit.challenges && (
-                                                            <div className={`mt-2 p-3 rounded-lg border text-sm ${darkMode ? 'bg-amber-500/5 border-amber-500/10 text-amber-200/70' : 'bg-amber-50 border-amber-100 text-amber-700'}`}>
-                                                                <div className="flex items-center gap-2 mb-1">
-                                                                    <X className="w-3.5 h-3.5" />
-                                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Challenges Encountered</span>
-                                                                </div>
-                                                                {visit.challenges}
-                                                            </div>
-                                                        )}
-
-                                                        {visit.visitImages && visit.visitImages.length > 0 && (
-                                                            <div className="flex gap-2 mt-3 overflow-x-auto pb-2 scrollbar-hide">
-                                                                {visit.visitImages.map((img: string, idx: number) => (
-                                                                    <img
-                                                                        key={idx}
-                                                                        src={img}
-                                                                        alt={`Visit ${idx}`}
-                                                                        className="h-16 w-16 object-cover rounded-md border border-white/10 cursor-pointer hover:opacity-80 transition-opacity"
-                                                                        onClick={() => window.open(img, '_blank')}
-                                                                    />
-                                                                ))}
-                                                            </div>
-                                                        )}
-
-                                                        <div className="flex flex-wrap items-center gap-4 pt-2">
-                                                            <div className="flex items-center gap-1.5">
-                                                                <Calendar className="w-3.5 h-3.5 text-gray-500" />
-                                                                <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                                    {new Date(visit.date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                                                                </span>
-                                                            </div>
-                                                            <div className="flex items-center gap-1.5">
-                                                                <Clock className="w-3.5 h-3.5 text-gray-500" />
-                                                                <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                                    {visit.time} ({visit.hoursSpent} hrs)
-                                                                </span>
-                                                            </div>
-                                                            <div className="flex items-center gap-1.5">
-                                                                <Phone className="w-3.5 h-3.5 text-gray-500" />
-                                                                <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                                    {visit.farmer?.contact || visit.phone}
-                                                                </span>
-                                                            </div>
-                                                        </div>
+                                            <Card
+                                                className={`${sectionCardClass} border-0 shadow-lg overflow-hidden transition-all duration-300 group-hover:shadow-emerald-500/5 group-hover:translate-x-1 cursor-pointer`}
+                                                onClick={() => {
+                                                    setSelectedVisit(visit);
+                                                    setVisitDetailModalOpen(true);
+                                                }}
+                                            >
+                                                <div className="p-5 flex items-start gap-4">
+                                                    <div className="pt-1" onClick={(e) => e.stopPropagation()}>
+                                                        <Checkbox
+                                                            checked={selectedVisits.has(visit._id || visit.id)}
+                                                            onCheckedChange={(checked) => {
+                                                                const newSelected = new Set(selectedVisits);
+                                                                if (checked) {
+                                                                    newSelected.add(visit._id || visit.id);
+                                                                } else {
+                                                                    newSelected.delete(visit._id || visit.id);
+                                                                }
+                                                                setSelectedVisits(newSelected);
+                                                            }}
+                                                        />
                                                     </div>
-                                                    <div className="flex flex-col items-end gap-3 min-w-[120px]">
-                                                        <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ring-1 ring-inset ${visit.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20' : 'bg-amber-500/10 text-amber-500 ring-amber-500/20'
-                                                            }`}>
-                                                            {visit.status}
-                                                        </div>
-                                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-8 w-8 rounded-lg hover:bg-white/10"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleEditVisit(visit);
-                                                                }}
-                                                            >
-                                                                <Edit className="w-4 h-4 text-gray-400" />
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-8 w-8 rounded-lg hover:bg-emerald-500/20"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    // Logic for completing/marking done if needed
-                                                                }}
-                                                            >
-                                                                <CheckCircle className="w-4 h-4 text-emerald-400" />
-                                                            </Button>
+                                                    <div className="flex-1" onClick={() => {
+                                                        setSelectedVisit(visit);
+                                                        setVisitDetailModalOpen(true);
+                                                    }}>
+                                                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                                            <div className="flex-1 space-y-2">
+                                                                <div className="flex items-center gap-3">
+                                                                    <span className={`text-xs font-bold opacity-40 font-mono ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                                        #{visitLogs.length - index}
+                                                                    </span>
+                                                                    <Badge variant="outline" className={`text-[10px] font-mono px-2 py-0.5 ${darkMode ? 'bg-white/5 border-white/10 text-emerald-400' : 'bg-gray-50 text-emerald-600'}`}>
+                                                                        {visit.farmer?.lyncId || visit.lyncId}
+                                                                    </Badge>
+                                                                    <h4 className={`font-bold transition-colors ${darkMode ? 'text-gray-100 group-hover:text-emerald-400' : 'text-gray-900 group-hover:text-emerald-600'}`}>
+                                                                        {visit.farmer?.name || visit.farmerName}
+                                                                    </h4>
+                                                                    <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>•</span>
+                                                                    <Badge className={`text-[10px] uppercase tracking-widest ${darkMode ? 'bg-emerald-500/10 text-emerald-400 border-0' : 'bg-emerald-50 text-emerald-700'}`}>
+                                                                        {visit.purpose}
+                                                                    </Badge>
+                                                                </div>
+
+                                                                <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                                    {visit.notes}
+                                                                </p>
+
+                                                                {visit.challenges && (
+                                                                    <div className={`mt-2 p-3 rounded-lg border text-sm ${darkMode ? 'bg-amber-500/5 border-amber-500/10 text-amber-200/70' : 'bg-amber-50 border-amber-100 text-amber-700'}`}>
+                                                                        <div className="flex items-center gap-2 mb-1">
+                                                                            <X className="w-3.5 h-3.5" />
+                                                                            <span className="text-[10px] font-bold uppercase tracking-wider">Challenges Encountered</span>
+                                                                        </div>
+                                                                        {visit.challenges}
+                                                                    </div>
+                                                                )}
+
+                                                                {visit.visitImages && visit.visitImages.length > 0 && (
+                                                                    <div className="flex gap-2 mt-3 overflow-x-auto pb-2 scrollbar-hide">
+                                                                        {visit.visitImages.map((img: string, idx: number) => (
+                                                                            <img
+                                                                                key={idx}
+                                                                                src={img}
+                                                                                alt={`Visit ${idx}`}
+                                                                                className="h-16 w-16 object-cover rounded-md border border-white/10 cursor-pointer hover:opacity-80 transition-opacity"
+                                                                                onClick={() => window.open(img, '_blank')}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+
+                                                                <div className="flex flex-wrap items-center gap-4 pt-2">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <Calendar className="w-3.5 h-3.5 text-gray-500" />
+                                                                        <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                            {new Date(visit.date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <Clock className="w-3.5 h-3.5 text-gray-500" />
+                                                                        <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                            {visit.time} ({visit.hoursSpent} hrs)
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <Phone className="w-3.5 h-3.5 text-gray-500" />
+                                                                        <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                            {visit.farmer?.contact || visit.phone}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex flex-col items-end gap-3 min-w-[120px]">
+                                                                <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ring-1 ring-inset ${visit.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20' : 'bg-amber-500/10 text-amber-500 ring-amber-500/20'
+                                                                    }`}>
+                                                                    {visit.status}
+                                                                </div>
+                                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-8 w-8 rounded-lg hover:bg-white/10"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleEditVisit(visit);
+                                                                        }}
+                                                                    >
+                                                                        <Edit className="w-4 h-4 text-gray-400" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-8 w-8 rounded-lg hover:bg-emerald-500/20"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            // Logic for completing/marking done if needed
+                                                                        }}
+                                                                    >
+                                                                        <CheckCircle className="w-4 h-4 text-emerald-400" />
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </Card>
                                         </div>
-                                    </Card>
-                                </div>
-                            ))}
+                                    ))}
 
-                            {visitLogs.length === 0 && (
-                                <div className={`text-center py-20 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                    <div className={`w-20 h-20 mx-auto mb-6 rounded-[2rem] flex items-center justify-center rotate-12 ${darkMode ? 'bg-white/5 text-emerald-400' : 'bg-emerald-50 text-emerald-500'}`}>
-                                        <ClipboardList className="h-10 w-10 opacity-40" />
-                                    </div>
-                                    <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>Journal is empty</h3>
-                                    <p className="text-sm max-w-xs mx-auto opacity-70">No field visits have been recorded yet. Start by logging your first inspection.</p>
-                                    <Button onClick={() => handleLogVisit()} className="mt-6 bg-[#1db954]">
-                                        Log First Visit
-                                    </Button>
-                                </div>
+                                    {visitLogs.length === 0 && (
+                                        <div className={`text-center py-20 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            <div className={`w-20 h-20 mx-auto mb-6 rounded-[2rem] flex items-center justify-center rotate-12 ${darkMode ? 'bg-white/5 text-emerald-400' : 'bg-emerald-50 text-emerald-500'}`}>
+                                                <ClipboardList className="h-10 w-10 opacity-40" />
+                                            </div>
+                                            <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>Journal is empty</h3>
+                                            <p className="text-sm max-w-xs mx-auto opacity-70">No field visits have been recorded yet. Start by logging your first inspection.</p>
+                                            <Button onClick={() => handleLogVisit()} className="mt-6 bg-[#1db954]">
+                                                Log First Visit
+                                            </Button>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </TabsContent>
-                </Tabs>
-            </div>
+
+                    {/* Reports Tab */}
+                    <TabsContent value="reports" className="space-y-4">
+                        <Card className={`${sectionCardClass} border-0 shadow-lg overflow-hidden`}>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7 px-6 pt-6">
+                                <div>
+                                    <CardTitle className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                        Submitted Field Reports
+                                    </CardTitle>
+                                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        View and download documents for your field activities.
+                                    </p>
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={fetchReports}
+                                    disabled={loadingReports}
+                                    className={`h-9 ${darkMode ? 'border-white/10 text-gray-400 hover:bg-white/5' : ''}`}
+                                >
+                                    {loadingReports ? <Clock className="h-4 w-4 animate-spin mr-2" /> : <TrendingUp className="h-4 w-4 mr-2" />}
+                                    Refresh List
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="p-0 sm:p-6 sm:pt-0">
+                                <div className="overflow-auto max-h-[60vh] relative custom-scrollbar">
+                                    <Table>
+                                        <TableHeader className={`sticky top-0 z-20 ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'} shadow-sm`}>
+                                            <TableRow className="border-0 hover:bg-transparent">
+                                                <TableHead className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} font-bold`}>Farmer</TableHead>
+                                                <TableHead className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} font-bold text-center`}>Type</TableHead>
+                                                <TableHead className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} font-bold`}>Date</TableHead>
+                                                <TableHead className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} font-bold`}>Notes Summary</TableHead>
+                                                <TableHead className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} font-bold text-right`}>Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {reports.length === 0 ? (
+                                                <TableRow>
+                                                    <TableCell colSpan={5} className="h-32 text-center text-gray-500 italic">
+                                                        No reports found. Upload a report from the Farmers Directory.
+                                                    </TableCell>
+                                                </TableRow>
+                                            ) : (
+                                                reports.map((report, index) => (
+                                                    <TableRow key={report._id || report.id || `report-${index}`} className={`${darkMode ? 'border-white/5 hover:bg-white/5' : 'hover:bg-gray-50'} transition-colors`}>
+                                                        <TableCell className="font-medium">
+                                                            <div className="flex flex-col">
+                                                                <span className={darkMode ? 'text-white' : 'text-gray-900'}>{report.farmer?.name || 'Unknown Farmer'}</span>
+                                                                <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>ID: {report.farmer?._id || 'N/A'}</span>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="text-center">
+                                                            <Badge className={`${report.type === 'issue' ? 'bg-red-500/10 text-red-500' :
+                                                                report.type === 'field-visit' ? 'bg-blue-500/10 text-blue-500' :
+                                                                    report.type === 'harvest' ? 'bg-emerald-500/10 text-emerald-500' :
+                                                                        'bg-gray-500/10 text-gray-500'
+                                                                } border-0 text-[10px] uppercase tracking-wider px-2 py-0.5`}>
+                                                                {report.type.replace('-', ' ')}
+                                                            </Badge>
+                                                        </TableCell>
+                                                        <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
+                                                            <div className="flex items-center gap-2">
+                                                                <Calendar className="h-3.5 w-3.5 opacity-50 text-emerald-500" />
+                                                                <span className="text-xs">{report.date}</span>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className={`max-w-[200px] truncate ${darkMode ? 'text-gray-400' : 'text-gray-500'} text-xs`}>
+                                                            {report.notes}
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            <div className="flex justify-end gap-2">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    title="Download PDF"
+                                                                    onClick={() => exportToPDF({
+                                                                        ...report,
+                                                                        farmerName: report.farmer?.name || 'Farmer',
+                                                                        agentName: agent?.name || 'AgriLync Agent',
+                                                                        agentId: agent?.agentId || 'N/A'
+                                                                    })}
+                                                                    className={`h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 ${darkMode ? 'hover:bg-red-500/10' : ''}`}
+                                                                >
+                                                                    <FileDown className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    title="Download Word"
+                                                                    onClick={() => exportToWord({
+                                                                        ...report,
+                                                                        farmerName: report.farmer?.name || 'Farmer',
+                                                                        agentName: agent?.name || 'AgriLync Agent',
+                                                                        agentId: agent?.agentId || 'N/A'
+                                                                    })}
+                                                                    className={`h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50 ${darkMode ? 'hover:bg-blue-500/10' : ''}`}
+                                                                >
+                                                                    <FileText className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs >
+            </div >
 
             <AddFarmerModal open={isAddFarmerModalOpen} onOpenChange={setIsAddFarmerModalOpen} onSuccess={fetchData} />
             <ViewFarmerModal open={viewModalOpen} onOpenChange={setViewModalOpen} farmer={selectedFarmer} />
             <AddFarmerModal open={editModalOpen} onOpenChange={setEditModalOpen} farmer={selectedFarmer} isEditMode={true} onSuccess={fetchData} />
-            <UploadReportModal open={uploadModalOpen} onOpenChange={setUploadModalOpen} farmer={selectedFarmer} />
+            <UploadReportModal open={uploadModalOpen} onOpenChange={setUploadModalOpen} farmer={selectedFarmer} onUpload={fetchReports} />
+            <FarmJourneyModal open={journeyModalOpen} onOpenChange={setJourneyModalOpen} farmer={selectedFarmer} />
 
             {/* Field Visit Modal - Premium Style */}
             <Dialog open={fieldVisitModalOpen} onOpenChange={setFieldVisitModalOpen}>
@@ -980,8 +1236,8 @@ const FarmManagement: React.FC = () => {
                                         <SelectValue placeholder="Select a registered farmer" />
                                     </SelectTrigger>
                                     <SelectContent className={darkMode ? 'bg-gray-900 border-white/10' : ''}>
-                                        {farmers.map(farmer => (
-                                            <SelectItem key={farmer._id} value={farmer._id} className={darkMode ? 'hover:bg-white/5' : ''}>
+                                        {farmers.map((farmer, index) => (
+                                            <SelectItem key={farmer._id || farmer.id || `select-farmer-${index}`} value={farmer._id || farmer.id} className={darkMode ? 'hover:bg-white/5' : ''}>
                                                 <div className="flex items-center justify-between w-full">
                                                     <span>{farmer.name}</span>
                                                     <span className="text-xs text-gray-500 ml-2">{farmer.contact}</span>
@@ -1060,10 +1316,37 @@ const FarmManagement: React.FC = () => {
                                         <SelectItem value="Harvest assessment">Harvest Assessment</SelectItem>
                                         <SelectItem value="Soil testing">Soil Testing</SelectItem>
                                         <SelectItem value="Training session">Training Session</SelectItem>
-                                        <SelectItem value="Other">Other</SelectItem>
+                                        <SelectItem value="Other">Other (Specify)</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
+                            {visitForm.purpose === 'Other' ? (
+                                <div className="space-y-2">
+                                    <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Specify Other Purpose *</Label>
+                                    <Input
+                                        value={visitForm.otherPurpose}
+                                        onChange={(e) => setVisitForm({ ...visitForm, otherPurpose: e.target.value })}
+                                        placeholder="e.g. Property boundary check"
+                                        className={`h-11 ${inputBaseClasses}`}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Visit Status *</Label>
+                                    <Select value={visitForm.status} onValueChange={(val) => setVisitForm({ ...visitForm, status: val })}>
+                                        <SelectTrigger className={`h-11 ${inputBaseClasses}`}>
+                                            <SelectValue placeholder="Select visit status" />
+                                        </SelectTrigger>
+                                        <SelectContent className={darkMode ? 'bg-[#002f37] border-white/10 text-white' : ''}>
+                                            <SelectItem value="Completed">Completed</SelectItem>
+                                            <SelectItem value="Follow-up Required">Will visit again</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+                        </div>
+
+                        {visitForm.purpose === 'Other' && (
                             <div className="space-y-2">
                                 <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Visit Status *</Label>
                                 <Select value={visitForm.status} onValueChange={(val) => setVisitForm({ ...visitForm, status: val })}>
@@ -1076,7 +1359,7 @@ const FarmManagement: React.FC = () => {
                                     </SelectContent>
                                 </Select>
                             </div>
-                        </div>
+                        )}
 
                         <div className="space-y-2">
                             <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Observation Details & Recommendations *</Label>
@@ -1152,9 +1435,15 @@ const FarmManagement: React.FC = () => {
                             </Button>
                             <Button
                                 onClick={handleSubmitVisit}
+                                disabled={isSaving}
                                 className="px-8 h-11 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                             >
-                                {visitForm.isEditing ? (
+                                {isSaving ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Processing...
+                                    </>
+                                ) : visitForm.isEditing ? (
                                     <>
                                         <Edit className="h-4 w-4 mr-2" />
                                         Update Journal Entry
@@ -1291,7 +1580,7 @@ const FarmManagement: React.FC = () => {
                 onView={handleViewFarmer}
                 onEdit={handleEditFarmer}
             />
-        </AgentLayout>
+        </AgentLayout >
     );
 };
 

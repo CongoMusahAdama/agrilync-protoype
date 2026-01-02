@@ -13,14 +13,28 @@ exports.login = async (req, res) => {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
+        // Check if user is already logged in on another device
+        if (agent.isLoggedIn) {
+            return res.status(400).json({
+                msg: 'This account is already logged in on another device. Please log out from that device first.'
+            });
+        }
+
         const isMatch = await agent.comparePassword(password);
         if (!isMatch) {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
+        // Mark as logged in and generate session ID
+        const sessionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        agent.isLoggedIn = true;
+        agent.currentSessionId = sessionId;
+        await agent.save();
+
         const payload = {
             agent: {
-                id: agent.id
+                id: agent.id,
+                sessionId: sessionId // Include sessionId in token payload for verification if needed
             }
         };
 
@@ -39,7 +53,9 @@ exports.login = async (req, res) => {
                         agentId: agent.agentId,
                         hasChangedPassword: agent.hasChangedPassword,
                         isVerified: agent.isVerified,
-                        verificationStatus: agent.verificationStatus
+                        verificationStatus: agent.verificationStatus,
+                        region: agent.region,
+                        avatar: agent.avatar
                     }
                 });
             }
@@ -64,6 +80,24 @@ exports.changePassword = async (req, res) => {
         await agent.save();
 
         res.json({ msg: 'Password updated successfully' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
+// @route   POST api/auth/logout
+// @desc    Clear agent session status
+exports.logout = async (req, res) => {
+    try {
+        let agent = await Agent.findById(req.agent.id);
+        if (!agent) return res.status(404).json({ msg: 'Agent not found' });
+
+        agent.isLoggedIn = false;
+        agent.currentSessionId = null;
+        await agent.save();
+
+        res.json({ msg: 'Logged out successfully' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');

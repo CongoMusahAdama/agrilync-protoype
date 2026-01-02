@@ -14,8 +14,34 @@ const farmerSchema = new mongoose.Schema({
         default: 'pending'
     },
     investmentStatus: { type: String, default: 'Pending' },
+    lastVisit: { type: String },
     lastUpdated: { type: String },
     agent: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent', required: true },
+    profilePicture: { type: String }, // Base64
+    currentStage: { type: String, default: 'planning' },
+    stageDetails: {
+        type: Map,
+        of: {
+            date: String,
+            notes: String,
+            status: { type: String, enum: ['completed', 'in-progress', 'pending'], default: 'pending' },
+            activities: [{
+                id: String,
+                date: String,
+                activity: String,
+                description: String,
+                resources: String
+            }]
+        },
+        default: {
+            planning: { date: '', notes: '', status: 'pending', activities: [] },
+            planting: { date: '', notes: '', status: 'pending', activities: [] },
+            growing: { date: '', notes: '', status: 'pending', activities: [] },
+            harvesting: { date: '', notes: '', status: 'pending', activities: [] },
+            maintenance: { date: '', notes: '', status: 'pending', activities: [] },
+            other: { date: '', notes: '', status: 'pending', activities: [] }
+        }
+    },
     contact: { type: String },
     gender: { type: String },
     dob: { type: String },
@@ -36,6 +62,12 @@ const farmerSchema = new mongoose.Schema({
         type: String,
         enum: ['yes', 'no', 'maybe'],
         default: 'no'
+    },
+    rating: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5
     },
     preferredInvestmentType: {
         type: String,

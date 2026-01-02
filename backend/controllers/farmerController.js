@@ -77,7 +77,8 @@ exports.addFarmer = async (req, res) => {
         name, region, district, community, farmType, contact, gender, dob,
         language, otherLanguage, email, farmSize, yearsOfExperience,
         landOwnershipStatus, cropsGrown, livestockType, fieldNotes, password, idCardFront, idCardBack,
-        investmentInterest, preferredInvestmentType, estimatedCapitalNeed, hasPreviousInvestment, investmentReadinessScore
+        investmentInterest, preferredInvestmentType, estimatedCapitalNeed, hasPreviousInvestment, investmentReadinessScore,
+        profilePicture
     } = req.body;
 
     try {
@@ -109,6 +110,7 @@ exports.addFarmer = async (req, res) => {
             investmentReadinessScore,
             agent: req.agent.id,
             status: 'active', // Agent-onboarded farmers are active by default
+            profilePicture,
             lastUpdated: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
         });
 
@@ -144,7 +146,7 @@ exports.updateFarmer = async (req, res) => {
         region, district, community, farmType, farmSize, yearsOfExperience,
         landOwnershipStatus, cropsGrown, livestockType, fieldNotes,
         investmentInterest, preferredInvestmentType, estimatedCapitalNeed,
-        hasPreviousInvestment, investmentReadinessScore
+        hasPreviousInvestment, investmentReadinessScore, profilePicture
     } = req.body;
 
     try {
@@ -188,6 +190,7 @@ exports.updateFarmer = async (req, res) => {
         if (estimatedCapitalNeed !== undefined) farmer.estimatedCapitalNeed = estimatedCapitalNeed;
         if (hasPreviousInvestment !== undefined) farmer.hasPreviousInvestment = hasPreviousInvestment;
         if (investmentReadinessScore !== undefined) farmer.investmentReadinessScore = investmentReadinessScore;
+        if (profilePicture) farmer.profilePicture = profilePicture;
 
         farmer.lastUpdated = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 

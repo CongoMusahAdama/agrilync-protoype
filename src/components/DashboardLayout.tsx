@@ -73,7 +73,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         setIsLoading(true);
         const timer = setTimeout(() => {
             setIsLoading(false);
-        }, 1200); // Premium feel loading duration
+        }, 600); // Snappier premium feel
         return () => clearTimeout(timer);
     }, [activeSidebarItem, title]); // Re-trigger on sidebar change or title change
 
@@ -145,7 +145,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                     </Button>
                                 )}
                                 <div>
-                                    <h1 className={`text-xl sm:text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{currentTitle}</h1>
+                                    <h1 className={`dashboard-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>{currentTitle}</h1>
                                     {effectiveSubtitle && <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{effectiveSubtitle}</p>}
                                 </div>
                             </div>

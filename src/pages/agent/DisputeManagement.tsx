@@ -46,7 +46,8 @@ import {
   Clock,
   TrendingUp,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
@@ -65,6 +66,7 @@ const DisputeManagement: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [disputes, setDisputes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   React.useEffect(() => {
     const fetchDisputes = async () => {
@@ -159,6 +161,7 @@ const DisputeManagement: React.FC = () => {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const res = await api.post('/disputes', {
         id: `DIST-${Date.now().toString().slice(-6)}`,
@@ -187,6 +190,8 @@ const DisputeManagement: React.FC = () => {
     } catch (err) {
       console.error('Error submitting dispute:', err);
       toast.error('Failed to log dispute');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -536,8 +541,19 @@ const DisputeManagement: React.FC = () => {
               <Button variant="outline" onClick={() => setShowNewDisputeDialog(false)} className={darkMode ? 'border-gray-600 text-white hover:bg-gray-800' : ''}>
                 Cancel
               </Button>
-              <Button className="bg-[#7ede56] hover:bg-[#6bc947] text-white" onClick={handleSubmitDispute}>
-                Register Dispute
+              <Button
+                className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
+                onClick={handleSubmitDispute}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Registering...
+                  </>
+                ) : (
+                  'Register Dispute'
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>

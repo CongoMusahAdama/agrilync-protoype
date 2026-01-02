@@ -34,6 +34,7 @@ app.use('/api/trainings', require('./routes/trainingRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/activities', require('./routes/activityRoutes'));
 app.use('/api/field-visits', require('./routes/fieldVisitRoutes'));
+app.use('/api/reports', require('./routes/reportRoutes'));
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

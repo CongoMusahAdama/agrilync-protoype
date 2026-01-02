@@ -36,6 +36,8 @@ import ViewVisitDetailsModal from '@/components/agent/ViewVisitDetailsModal';
 import VerificationQueueModal from '@/components/agent/VerificationQueueModal';
 import { TrainingPerformanceContent } from './agent/TrainingPerformance';
 import { Button } from '@/components/ui/button';
+import ActiveFarmsModal from '@/components/agent/ActiveFarmsModal';
+import FarmJourneyModal from '@/components/agent/FarmJourneyModal';
 import {
   Users,
   Sprout,
@@ -99,6 +101,8 @@ const AgentDashboard: React.FC = () => {
   const [viewVisitModalOpen, setViewVisitModalOpen] = useState(false);
   const [pendingFarmers, setPendingFarmers] = useState<any[]>([]);
   const [verificationQueueModalOpen, setVerificationQueueModalOpen] = useState(false);
+  const [activeFarmsModalOpen, setActiveFarmsModalOpen] = useState(false);
+  const [journeyModalOpen, setJourneyModalOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Data states
@@ -217,6 +221,11 @@ const AgentDashboard: React.FC = () => {
     setEditModalOpen(true);
   };
 
+  const handleTrackJourney = (farmer: any) => {
+    setSelectedFarmer(farmer);
+    setJourneyModalOpen(true);
+  };
+
   const filteredFarmers = useMemo(() => {
     return farmers.map(f => {
       let displayStatus = f.status;
@@ -242,14 +251,6 @@ const AgentDashboard: React.FC = () => {
     });
   }, [farms, farmStatusFilter]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
-      </div>
-    );
-  }
-
   const highlightCards = [
     {
       id: 'farmers-management',
@@ -262,10 +263,10 @@ const AgentDashboard: React.FC = () => {
     {
       id: 'farm-monitoring',
       title: 'Active Farms',
-      value: stats?.activeFarms || 0,
+      value: farms.length || 0,
       color: 'bg-[#ffa500]',
       icon: Sprout,
-      path: '/dashboard/agent/farm-management'
+      onClick: () => setActiveFarmsModalOpen(true)
     },
     {
       id: 'investor-farmer-matches',
@@ -305,7 +306,6 @@ const AgentDashboard: React.FC = () => {
     'Pending Funding': 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
     'Pending Approval': 'bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300',
     'Under Review': 'bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300',
-    Completed: 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300',
     Active: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
     Ongoing: 'bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300',
     Resolved: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300'
@@ -358,7 +358,7 @@ const AgentDashboard: React.FC = () => {
       title="Dashboard"
     >
       <div className="mb-6 sm:mb-8">
-        <h2 className={`text-xl sm:text-2xl font-bold mb-1 sm:mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+        <h2 className={`dashboard-title mb-1 sm:mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
           {getGreeting()}, {agent?.name?.split(' ')[0] || 'Agent'}!
         </h2>
         <p className={`text-sm sm:text-base ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -393,7 +393,7 @@ const AgentDashboard: React.FC = () => {
             </div>
             <div className="flex-1 flex flex-col justify-center">
               <div className="flex items-baseline gap-1 sm:gap-2 mb-0.5 sm:mb-2 text-white">
-                <p className="text-2xl sm:text-4xl font-bold">{pendingFarmers.length}</p>
+                <p className="big-metric">{pendingFarmers.length}</p>
                 <span className="text-[10px] sm:text-xs font-medium uppercase tracking-widest text-emerald-400">Backlog</span>
               </div>
               <p className="text-[10px] sm:text-sm text-white/80 line-clamp-1 italic">Growers awaiting accreditation</p>
@@ -420,7 +420,13 @@ const AgentDashboard: React.FC = () => {
             className={`${card.color} rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-700 cursor-pointer hover:scale-105 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
             style={{ transitionDelay: `${(index + 1) * 100}ms` }}
-            onClick={() => navigate(card.path)}
+            onClick={() => {
+              if (card.onClick) {
+                card.onClick();
+              } else if (card.path) {
+                navigate(card.path as string);
+              }
+            }}
           >
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -433,7 +439,7 @@ const AgentDashboard: React.FC = () => {
                 <p className="text-[10px] sm:text-sm font-medium text-white">{card.title}</p>
               </div>
               <div className="flex-1 flex items-center">
-                <p className="text-2xl sm:text-4xl font-bold text-white">{card.value}</p>
+                <p className="big-metric text-white">{card.value}</p>
               </div>
               <div className="flex justify-end mt-2 sm:mt-4">
                 <div className="text-[10px] sm:text-sm font-medium text-white hover:underline flex items-center gap-1">
@@ -450,7 +456,7 @@ const AgentDashboard: React.FC = () => {
         <TabsList className={`w-full justify-start overflow-x-auto whitespace-nowrap scrollbar-hide flex p-1 gap-1 rounded-xl mb-6 ${darkMode ? 'bg-[#003c47]/50 border border-gray-700' : 'bg-gray-100/50 border border-gray-200'}`}>
           <TabsTrigger
             value="overview"
-            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all font-bold uppercase tracking-wider text-[10px] ${darkMode
+            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all btn-text uppercase tracking-wider ${darkMode
               ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
               : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
           >
@@ -458,7 +464,7 @@ const AgentDashboard: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger
             value="farmers"
-            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all font-bold uppercase tracking-wider text-[10px] ${darkMode
+            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all btn-text uppercase tracking-wider ${darkMode
               ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
               : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
           >
@@ -466,7 +472,7 @@ const AgentDashboard: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger
             value="farms"
-            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all font-bold uppercase tracking-wider text-[10px] ${darkMode
+            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all btn-text uppercase tracking-wider ${darkMode
               ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
               : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
           >
@@ -474,7 +480,7 @@ const AgentDashboard: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger
             value="matches"
-            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all font-bold uppercase tracking-wider text-[10px] ${darkMode
+            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all btn-text uppercase tracking-wider ${darkMode
               ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
               : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
           >
@@ -482,7 +488,7 @@ const AgentDashboard: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger
             value="performance"
-            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all font-bold uppercase tracking-wider text-[10px] ${darkMode
+            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all btn-text uppercase tracking-wider ${darkMode
               ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
               : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
           >
@@ -498,7 +504,7 @@ const AgentDashboard: React.FC = () => {
               <CardHeader className="pb-3 border-b border-gray-100 dark:border-gray-800">
                 <div className="flex items-center gap-2">
                   <TrendingUp className={`h-5 w-5 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
-                  <CardTitle className={darkMode ? 'text-gray-100' : ''}>Recent Activity</CardTitle>
+                  <CardTitle className={`section-title ${darkMode ? 'text-gray-100' : ''}`}>Recent Activity</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="p-0 flex-1 overflow-hidden">
@@ -551,7 +557,7 @@ const AgentDashboard: React.FC = () => {
                         </span>
                       )}
                     </div>
-                    <CardTitle className={darkMode ? 'text-gray-100' : ''}>Notifications</CardTitle>
+                    <CardTitle className={`section-title ${darkMode ? 'text-gray-100' : ''}`}>Notifications</CardTitle>
                   </div>
                   {unreadCount > 0 && (
                     <Button
@@ -659,7 +665,7 @@ const AgentDashboard: React.FC = () => {
             {/* Quick Stats */}
             <Card className={`${sectionCardClass} transition-colors`}>
               <CardHeader>
-                <CardTitle className={darkMode ? 'text-gray-100' : ''}>This Month</CardTitle>
+                <CardTitle className={`section-title ${darkMode ? 'text-gray-100' : ''}`}>This Month</CardTitle>
                 <CardDescription className={darkMode ? 'text-gray-400' : ''}>
                   Your monthly performance summary
                 </CardDescription>
@@ -704,7 +710,7 @@ const AgentDashboard: React.FC = () => {
         <TabsContent value="farmers" className="space-y-6">
           <Card className={`${sectionCardClass} transition-colors`}>
             <CardHeader>
-              <CardTitle className={darkMode ? 'text-gray-100' : ''}>Farmers Management</CardTitle>
+              <CardTitle className={`section-title ${darkMode ? 'text-gray-100' : ''}`}>Farmers Management</CardTitle>
               <CardDescription className={darkMode ? 'text-gray-400' : ''}>
                 Search, onboard, and verify farmers on your roster
               </CardDescription>
@@ -1131,6 +1137,19 @@ const AgentDashboard: React.FC = () => {
         onSuccess={fetchData}
         onView={handleViewFarmer}
         onEdit={handleEditFarmer}
+      />
+
+      <ActiveFarmsModal
+        open={activeFarmsModalOpen}
+        onOpenChange={setActiveFarmsModalOpen}
+        farms={farms}
+        onTrackJourney={handleTrackJourney}
+      />
+
+      <FarmJourneyModal
+        open={journeyModalOpen}
+        onOpenChange={setJourneyModalOpen}
+        farmer={selectedFarmer}
       />
     </AgentLayout>
   );

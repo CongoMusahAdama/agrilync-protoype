@@ -130,7 +130,7 @@ const GrowerProfile: React.FC = () => {
                         onClick={() => handleSidebarNavigation(item.key)}
                     >
                         <item.icon className="h-4 w-4 shrink-0" />
-                        {(!sidebarCollapsed || isMobile) && <span className="font-medium">{item.label}</span>}
+                        {(!sidebarCollapsed || isMobile) && <span className="btn-text">{item.label}</span>}
                     </div>
                 ))}
             </nav>
@@ -195,7 +195,7 @@ const GrowerProfile: React.FC = () => {
                                     <p className={`text-xs font-semibold uppercase tracking-wide ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>
                                         Grower Profile
                                     </p>
-                                    <h1 className={`text-lg font-bold sm:text-2xl ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                    <h1 className={`dashboard-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                                         Preparing your profile
                                     </h1>
                                 </div>
@@ -225,7 +225,7 @@ const GrowerProfile: React.FC = () => {
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 {/* Left Side - Form Content (2/3 width) */}
                                 <div className={`lg:col-span-2 rounded-lg p-6 ${darkMode ? 'bg-[#002f37]' : 'bg-white'} shadow-lg`}>
-                                    <h3 className={`text-xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                    <h3 className={`section-title mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                                         {profileSteps.find(s => s.id === activeStep)?.label}
                                     </h3>
 

@@ -27,7 +27,7 @@ interface AuthContextType {
     token: string | null;
     loading: boolean;
     login: (email: string, password: string) => Promise<void>;
-    logout: () => void;
+    logout: () => Promise<void>;
     updateAgent: (updatedAgent: Partial<Agent>) => Promise<void>;
 }
 
@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         const loadAgent = async () => {
-            if (token) {
+            if (token && !agent) {
                 try {
                     const res = await api.get('/agents/profile');
                     setAgent(res.data);
@@ -51,11 +51,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     setAgent(null);
                 }
             }
+            if (!token) {
+                setAgent(null);
+            }
             setLoading(false);
         };
 
         loadAgent();
-    }, [token]);
+    }, [token, agent]);
 
     const login = async (email: string, password: string) => {
         const res = await api.post('/auth/login', { email, password });
@@ -65,10 +68,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAgent(agent);
     };
 
-    const logout = () => {
-        localStorage.removeItem('token');
-        setToken(null);
-        setAgent(null);
+    const logout = async () => {
+        try {
+            await api.post('/auth/logout');
+        } catch (err) {
+            console.error('Logout API call failed', err);
+        } finally {
+            localStorage.removeItem('token');
+            setToken(null);
+            setAgent(null);
+        }
     };
 
     const updateAgent = async (updatedAgent: Partial<Agent>) => {

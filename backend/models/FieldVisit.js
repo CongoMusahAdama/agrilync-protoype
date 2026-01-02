@@ -27,8 +27,7 @@ const FieldVisitSchema = new mongoose.Schema({
     },
     purpose: {
         type: String,
-        required: true,
-        enum: ['Routine inspection', 'Pest control', 'Irrigation check', 'Harvest assessment', 'Soil testing', 'Training session', 'Other']
+        required: true
     },
     status: {
         type: String,

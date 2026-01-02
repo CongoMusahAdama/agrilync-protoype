@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent } from '@/components/ui/card';
 import { useDarkMode } from '@/contexts/DarkModeContext';
-import { User, Sprout, MapPin, Phone, Mail, Calendar, Eye, TrendingUp, CheckCircle, Sparkles, X, Coins, Wallet } from 'lucide-react';
+import {
+    MapPin, Phone, Mail,
+    Star, MessageSquare, X,
+    ShieldAlert, Share2, MoreHorizontal
+} from 'lucide-react';
+import api from '@/utils/api';
 
 interface ViewFarmerModalProps {
     open: boolean;
@@ -15,296 +19,251 @@ interface ViewFarmerModalProps {
 
 const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, farmer }) => {
     const { darkMode } = useDarkMode();
-    const [activeTab, setActiveTab] = useState('personal');
 
     if (!farmer) return null;
+    const [farms, setFarms] = useState<any[]>([]);
+    const [, setLoading] = useState(false);
 
-    const getStatusBadgeColor = (status: string) => {
-        const displayStatus = farmer.displayStatus || (status === 'active' ? 'Completed' : status === 'pending' ? 'Pending' : status);
-        switch (displayStatus) {
-            case 'Completed':
-            case 'Verified':
-                return darkMode ? 'bg-emerald-500/20 text-emerald-300 border-0' : 'bg-emerald-100 text-emerald-700';
-            case 'Pending':
-                return darkMode ? 'bg-yellow-500/20 text-yellow-300 border-0' : 'bg-yellow-100 text-yellow-700';
-            case 'Matched':
-                return darkMode ? 'bg-purple-500/20 text-purple-300 border-0' : 'bg-purple-100 text-purple-700';
-            case 'In Progress':
-                return darkMode ? 'bg-blue-500/20 text-blue-300 border-0' : 'bg-blue-100 text-blue-700';
-            default:
-                return darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600';
+    // Mock Rating (To be replaced with real data)
+    const rating = farmer?.rating || 4.2;
+
+    useEffect(() => {
+        if (open && farmer?._id) {
+            fetchFarms();
+        }
+    }, [open, farmer?._id]);
+
+    const fetchFarms = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/farms');
+            const farmerFarms = res.data.filter((f: any) => f.farmer?._id === farmer._id || f.farmer === farmer._id);
+            setFarms(farmerFarms);
+        } catch (err) {
+            console.error('Failed to fetch farms', err);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const currentDisplayStatus = farmer.displayStatus || (farmer.status === 'active' ? 'Completed' : farmer.status === 'pending' ? 'Pending' : farmer.status);
-
-    const InfoCard = ({ label, value, icon: Icon }: { label: string; value: any; icon?: any }) => (
-        <Card className={`${darkMode ? 'bg-[#124b53]/20 border-[#124b53]' : 'bg-gradient-to-br from-gray-50 to-white border-gray-200'}`}>
-            <CardContent className="p-4">
-                <div className={`flex items-center gap-2 text-sm font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {Icon && <Icon className="w-4 h-4 text-[#7ede56]" />}
-                    <span>{label}</span>
-                </div>
-                <p className={`font-semibold text-lg ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                    {value || 'Not provided'}
-                </p>
-            </CardContent>
-        </Card>
-    );
+    if (!farmer) return null;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`max-w-6xl h-[85vh] flex flex-col p-0 gap-0 ${darkMode ? 'bg-[#002f37] border-[#124b53]' : 'bg-white border-none shadow-2xl'}`}>
-                <DialogHeader className={`p-6 border-b ${darkMode ? 'border-gray-800 bg-gradient-to-r from-[#002f37] to-[#0b2528]' : 'border-gray-100 bg-gradient-to-r from-gray-50 to-white'} flex-shrink-0`}>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            {/* Enhanced Avatar */}
-                            <div className={`relative w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-lg ${currentDisplayStatus === 'Completed' || currentDisplayStatus === 'Verified' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' :
-                                currentDisplayStatus === 'Pending' ? 'bg-gradient-to-br from-yellow-500 to-yellow-600' :
-                                    currentDisplayStatus === 'Matched' ? 'bg-gradient-to-br from-purple-500 to-purple-600' :
-                                        'bg-gradient-to-br from-blue-500 to-blue-600'
-                                }`}>
-                                {farmer.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
-                                {(currentDisplayStatus === 'Completed' || currentDisplayStatus === 'Verified') && (
-                                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white">
-                                        <CheckCircle className="w-4 h-4 text-white" />
-                                    </div>
-                                )}
-                            </div>
-                            <div>
-                                <DialogTitle className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                    {farmer.name}
-                                </DialogTitle>
-                                <DialogDescription className="sr-only">
-                                    Detailed information and statistics for farmer {farmer.name}.
-                                </DialogDescription>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <Eye className="h-4 w-4 text-[#7ede56]" />
-                                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        Farmer Profile Details
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Badge variant="outline" className={`${getStatusBadgeColor(currentDisplayStatus)} text-sm font-medium px-4 py-2`}>
-                                {currentDisplayStatus}
-                            </Badge>
-                            {farmer.investmentMatched && (
-                                <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 px-4 py-2">
-                                    <Sparkles className="w-4 h-4 mr-1" />
-                                    Investment Matched
-                                </Badge>
-                            )}
+            <DialogContent className={`max-w-6xl h-[85vh] p-0 flex overflow-hidden border-0 ${darkMode ? 'bg-[#1e293b]' : 'bg-gray-50'}`}>
 
+                {/* Left Sidebar - Profile & Skills */}
+                <div className={`w-[320px] shrink-0 border-r p-8 flex flex-col overflow-y-auto ${darkMode ? 'bg-[#0f172a] border-gray-800' : 'bg-white border-gray-200'}`}>
+
+                    {/* Profile Image */}
+                    <div className="mb-8">
+                        <div className="aspect-square w-full rounded-2xl overflow-hidden shadow-lg mb-6 bg-gray-100 dark:bg-gray-800 relative group">
+                            {farmer.profilePicture ? (
+                                <img src={farmer.profilePicture} alt={farmer.name} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-6xl font-bold text-gray-300 dark:text-gray-600">
+                                    {farmer.name.charAt(0)}
+                                </div>
+                            )}
+                            <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex justify-center">
+                                <Badge className="bg-white/20 text-white backdrop-blur-md border-0 hover:bg-white/30">Change Photo</Badge>
+                            </div>
                         </div>
                     </div>
-                </DialogHeader>
 
-                <div className="flex-1 overflow-hidden flex flex-col">
-                    <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-                        <div className="px-6 pt-4 flex-shrink-0">
-                            <TabsList className={`grid w-full grid-cols-3 h-auto p-1.5 rounded-xl ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-100'}`}>
-                                <TabsTrigger
-                                    value="personal"
-                                    className={`flex items-center gap-2 py-3 px-4 rounded-lg transition-all ${darkMode ? 'data-[state=active]:bg-[#124b53]' : 'data-[state=active]:bg-white data-[state=active]:shadow-md'}`}
-                                >
-                                    <User className="h-4 w-4" />
-                                    <span className="font-semibold">Personal Info</span>
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    value="location"
-                                    className={`flex items-center gap-2 py-3 px-4 rounded-lg transition-all ${darkMode ? 'data-[state=active]:bg-[#124b53]' : 'data-[state=active]:bg-white data-[state=active]:shadow-md'}`}
-                                >
-                                    <MapPin className="h-4 w-4" />
-                                    <span className="font-semibold">Location</span>
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    value="farm"
-                                    className={`flex items-center gap-2 py-3 px-4 rounded-lg transition-all ${darkMode ? 'data-[state=active]:bg-[#124b53]' : 'data-[state=active]:bg-white data-[state=active]:shadow-md'}`}
-                                >
-                                    <Sprout className="h-4 w-4" />
-                                    <span className="font-semibold">Farm Details</span>
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    value="investment"
-                                    className={`flex items-center gap-2 py-3 px-4 rounded-lg transition-all ${darkMode ? 'data-[state=active]:bg-[#124b53]' : 'data-[state=active]:bg-white data-[state=active]:shadow-md'}`}
-                                >
-                                    <Coins className="h-4 w-4" />
-                                    <span className="font-semibold">Investment</span>
-                                </TabsTrigger>
-                            </TabsList>
+                    {/* Farming Summary (Replacing "Work") */}
+                    <div className="mb-8">
+                        <h3 className={`text-xs section-title uppercase tracking-widest mb-4 pb-2 border-b ${darkMode ? 'text-gray-400 border-gray-800' : 'text-gray-400 border-gray-100'}`}>
+                            Farm Details
+                        </h3>
+
+                        <div className="space-y-4">
+                            <div>
+                                <div className="flex justify-between items-center mb-1">
+                                    <p className={`font-semibold text-sm ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{farmer.farmType} Farm</p>
+                                    <Badge variant="secondary" className="text-[10px] h-5 bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">Primary</Badge>
+                                </div>
+                                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    {farmer.community}, {farmer.region}
+                                </p>
+                            </div>
+
+                            {farms.length > 0 && (
+                                <div>
+                                    <div className="flex justify-between items-center mb-1">
+                                        <p className={`font-semibold text-sm ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{farms[0].crop} Production</p>
+                                        <Badge variant="secondary" className="text-[10px] h-5 bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">Current</Badge>
+                                    </div>
+                                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        {farms[0].size || 'N/A'} Acres • {farms[0].currentStage}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Stats / Skills */}
+                    <div>
+                        <h3 className={`text-xs section-title uppercase tracking-widest mb-4 pb-2 border-b ${darkMode ? 'text-gray-400 border-gray-800' : 'text-gray-400 border-gray-100'}`}>
+                            Key Stats
+                        </h3>
+                        <div className="space-y-3">
+                            <div className="flex justify-between text-sm">
+                                <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Experience</span>
+                                <span className={darkMode ? 'text-gray-200' : 'text-gray-900'}>{farmer.experience || 1} Years</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Active Projects</span>
+                                <span className={darkMode ? 'text-gray-200' : 'text-gray-900'}>{farms.length}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Credit Score</span>
+                                <span className={darkMode ? 'text-gray-200' : 'text-gray-900'}>{farmer.investmentReadinessScore || 'N/A'}</span>
+                            </div>
                         </div>
 
-                        <ScrollArea className="flex-1 px-6 py-6">
-                            {/* Personal Information Tab */}
-                            <TabsContent value="personal" className="mt-0 space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <InfoCard label="Full Name" value={farmer.name} icon={User} />
-                                    <InfoCard label="Phone Number" value={farmer.phone} icon={Phone} />
-                                    <InfoCard label="Email Address" value={farmer.email || 'Not provided'} icon={Mail} />
-                                    <InfoCard label="Gender" value={farmer.gender || 'Not specified'} icon={User} />
-                                    <InfoCard
-                                        label="Date of Birth"
-                                        value={farmer.dob ? new Date(farmer.dob).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not provided'}
-                                        icon={Calendar}
-                                    />
-                                    <InfoCard label="Preferred Language" value={farmer.language || 'English'} />
-                                </div>
+                        <div className="mt-6 pt-6 border-t border-dashed border-gray-200 dark:border-gray-800">
+                            <h4 className={`text-xs section-title uppercase tracking-widest mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>Products</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {farms.map(f => f.crop).filter((v, i, a) => a.indexOf(v) === i).map(crop => (
+                                    <span key={crop} className={`text-xs px-2 py-1 rounded-md ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                                        {crop}
+                                    </span>
+                                ))}
+                                <span className={`text-xs px-2 py-1 rounded-md ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                                    {farmer.livestockType || 'Livestock'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
 
-                                {/* Quick Stats */}
-                                <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 p-6 rounded-xl ${darkMode ? 'bg-[#0b2528] border border-[#124b53]' : 'bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200'}`}>
-                                    <div className="text-center">
-                                        <Sprout className={`w-8 h-8 mx-auto mb-2 ${darkMode ? 'text-[#7ede56]' : 'text-blue-600'}`} />
-                                        <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                            {farmer.farmType || 'N/A'}
-                                        </p>
-                                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Farm Type</p>
-                                    </div>
-                                    <div className="text-center">
-                                        <TrendingUp className={`w-8 h-8 mx-auto mb-2 ${darkMode ? 'text-[#7ede56]' : 'text-purple-600'}`} />
-                                        <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                            {farmer.experience || '0'} yrs
-                                        </p>
-                                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Experience</p>
-                                    </div>
-                                    <div className="text-center">
-                                        <MapPin className={`w-8 h-8 mx-auto mb-2 ${darkMode ? 'text-[#7ede56]' : 'text-green-600'}`} />
-                                        <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                            {farmer.region || 'N/A'}
-                                        </p>
-                                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Region</p>
-                                    </div>
-                                </div>
-                            </TabsContent>
-
-                            {/* Location Tab */}
-                            <TabsContent value="location" className="mt-0 space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <InfoCard label="Region" value={farmer.region} icon={MapPin} />
-                                    <InfoCard label="District/Community" value={farmer.community} icon={MapPin} />
-                                </div>
-
-                                <Card className={`p-6 ${darkMode ? 'bg-[#124b53]/20 border-[#124b53]' : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200'}`}>
-                                    <div className="flex items-start gap-3">
-                                        <MapPin className={`w-6 h-6 mt-1 ${darkMode ? 'text-[#7ede56]' : 'text-green-600'}`} />
-                                        <div>
-                                            <h4 className={`font-semibold text-lg mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                                                Complete Address
-                                            </h4>
-                                            <p className={`text-base ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                {farmer.community}, {farmer.region}
-                                            </p>
-                                            <p className={`text-sm mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                This is the primary farm location for {farmer.name}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </Card>
-
-                                {/* Map Placeholder */}
-                                <div className={`h-64 rounded-xl ${darkMode ? 'bg-[#0b2528] border border-[#124b53]' : 'bg-gray-100 border border-gray-200'} flex items-center justify-center`}>
-                                    <div className="text-center">
-                                        <MapPin className={`w-12 h-12 mx-auto mb-3 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
-                                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                            Map integration coming soon
-                                        </p>
-                                    </div>
-                                </div>
-                            </TabsContent>
-
-                            {/* Farm Information Tab */}
-                            <TabsContent value="farm" className="mt-0 space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <InfoCard label="Farm Type" value={farmer.farmType} icon={Sprout} />
-                                    <InfoCard label="Category" value={farmer.category} />
-                                    <InfoCard label="Farm Size" value={farmer.farmSize ? `${farmer.farmSize} acres` : 'Not specified'} />
-                                    <InfoCard label="Experience" value={farmer.experience ? `${farmer.experience} years` : 'Not specified'} />
-                                    <InfoCard label="Farming Method" value={farmer.method || 'Traditional'} />
-                                    <InfoCard label="Land Ownership" value={farmer.landOwnership || 'Not specified'} />
-                                    <InfoCard label="Production Stage" value={farmer.productionStage || 'Active'} />
-                                    <InfoCard
-                                        label="Last Visit"
-                                        value={new Date(farmer.lastVisit).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                        icon={Calendar}
-                                    />
-                                </div>
-
-                                {/* Additional Info Cards */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {farmer.irrigation && (
-                                        <Card className={`p-4 ${darkMode ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-200'}`}>
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${darkMode ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
-                                                    <Sprout className={`w-5 h-5 ${darkMode ? 'text-blue-300' : 'text-blue-600'}`} />
-                                                </div>
-                                                <div>
-                                                    <p className={`font-semibold ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-                                                        Irrigation Available
-                                                    </p>
-                                                    <p className={`text-sm ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                                                        Farm has irrigation access
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </Card>
-                                    )}
-
-                                    {farmer.investmentMatched && (
-                                        <Card className={`p-4 ${darkMode ? 'bg-purple-500/10 border-purple-500/20' : 'bg-purple-50 border-purple-200'}`}>
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${darkMode ? 'bg-purple-500/20' : 'bg-purple-100'}`}>
-                                                    <Sparkles className={`w-5 h-5 ${darkMode ? 'text-purple-300' : 'text-purple-600'}`} />
-                                                </div>
-                                                <div>
-                                                    <p className={`font-semibold ${darkMode ? 'text-purple-300' : 'text-purple-700'}`}>
-                                                        Investment Matched
-                                                    </p>
-                                                    <p className={`text-sm ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-                                                        Connected with an investor
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </Card>
-                                    )}
-                                </div>
-                            </TabsContent>
-
-                            {/* Investment Tab */}
-                            <TabsContent value="investment" className="mt-0 space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <InfoCard label="Investment Interest" value={farmer.investmentInterest === 'yes' ? 'Very Interested' : farmer.investmentInterest === 'maybe' ? 'Maybe / Needs Info' : 'Not Interested'} icon={TrendingUp} />
-                                    <InfoCard label="Preferred Type" value={farmer.preferredInvestmentType || 'Not specified'} icon={Wallet} />
-                                    <InfoCard label="Estimated Capital Need" value={farmer.estimatedCapitalNeed ? `GHS ${farmer.estimatedCapitalNeed.toLocaleString()}` : 'Not specified'} icon={Coins} />
-                                    <InfoCard label="Readiness Score" value={farmer.investmentReadinessScore ? `${farmer.investmentReadinessScore}%` : '0%'} icon={Sparkles} />
-                                    <InfoCard label="Previous Investment" value={farmer.hasPreviousInvestment ? 'Yes' : 'No'} icon={CheckCircle} />
-                                </div>
-
-                                <Card className={`p-6 ${darkMode ? 'bg-[#124b53]/20 border-[#124b53]' : 'bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-200'}`}>
-                                    <div className="flex items-start gap-3">
-                                        <TrendingUp className={`w-6 h-6 mt-1 ${darkMode ? 'text-[#7ede56]' : 'text-indigo-600'}`} />
-                                        <div>
-                                            <h4 className={`font-semibold text-lg mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                                                Investment Readiness Summary
-                                            </h4>
-                                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 mb-4 mt-4 overflow-hidden">
-                                                <div
-                                                    className="bg-emerald-500 h-full transition-all duration-1000 ease-out"
-                                                    style={{ width: `${farmer.investmentReadinessScore || 0}%` }}
-                                                />
-                                            </div>
-                                            <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                {farmer.investmentReadinessScore >= 80 ? 'Highly attractive candidate for investment. Financial records and farm capacity are in excellent standing.' :
-                                                    farmer.investmentReadinessScore >= 50 ? 'Moderate readiness. Potential for investment with some additional training or capacity building.' :
-                                                        'Currently building readiness. Focus is on improving baseline farming metrics and financial literacy.'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </Card>
-                            </TabsContent>
-                        </ScrollArea>
-                    </Tabs>
                 </div>
+
+                {/* Right Content Area */}
+                <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0f172a]">
+
+                    {/* Header Section */}
+                    <div className={`p-8 pb-0 ${darkMode ? 'bg-[#0f172a]' : 'bg-white'}`}>
+                        <div className="flex justify-between items-start mb-6">
+                            <div>
+                                <div className="flex items-center gap-3 mb-1">
+                                    <h1 className={`dashboard-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>{farmer.name}</h1>
+                                    <MapPin className="w-4 h-4 text-gray-400" />
+                                    <span className="text-sm text-gray-400">{farmer.region}, GH</span>
+                                </div>
+                                <p className={`text-lg font-medium mb-2 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                                    {farmer.category || 'Commercial Farmer'}
+                                </p>
+
+                                <div className="flex items-center gap-4">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">Rating</span>
+                                        <div className="flex items-center gap-1">
+                                            <span className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{rating.toFixed(1)}</span>
+                                            <div className="flex text-amber-400">
+                                                {[1, 2, 3, 4, 5].map((s) => (
+                                                    <Star key={s} className={`w-3.5 h-3.5 ${s <= Math.round(rating) ? 'fill-current' : 'text-gray-300 dark:text-gray-700'}`} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-2">
+                                <Button variant="outline" size="icon" className="rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 dark:border-gray-700 dark:text-gray-400">
+                                    <Share2 className="w-5 h-5" />
+                                </Button>
+                                <Button variant="outline" size="icon" className="rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 dark:border-gray-700 dark:text-gray-400">
+                                    <ShieldAlert className="w-5 h-5" />
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons Row */}
+                        <div className="flex items-center gap-3 mb-8">
+                            <Button className="rounded-full px-6 bg-gray-900 text-white hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100">
+                                <MessageSquare className="w-4 h-4 mr-2" /> Send Message
+                            </Button>
+                            <Button variant="secondary" className="rounded-full px-6 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20">
+                                <Phone className="w-4 h-4 mr-2" /> Contacts
+                            </Button>
+                            <Button variant="ghost" className="rounded-full text-gray-500 dark:text-gray-400 dark:hover:text-gray-200">
+                                <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                        </div>
+
+                        {/* Visual Tabs (Header only) */}
+                        <div className="w-full border-b border-gray-200 dark:border-gray-800 mb-0">
+                            <div className="flex gap-8">
+                                <div className={`pb-3 text-sm font-medium border-b-2 border-emerald-500 text-gray-900 dark:text-white`}>
+                                    About
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Scrollable Content Area */}
+                        <ScrollArea className="h-[calc(85vh-300px)] w-full">
+                            <div className="p-8 pt-6">
+                                <div className="space-y-10 max-w-4xl">
+
+                                    {/* Contact Information Group */}
+                                    <section>
+                                        <h4 className={`text-xs section-title uppercase tracking-widest mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>Contact Information</h4>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
+                                            <div>
+                                                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Phone</label>
+                                                <p className={`text-sm font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{farmer.contact}</p>
+                                            </div>
+                                            <div>
+                                                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Address</label>
+                                                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{farmer.community}, {farmer.district}, {farmer.region}</p>
+                                            </div>
+                                            <div>
+                                                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>E-mail</label>
+                                                <p className={`text-sm font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{farmer.email || '—'}</p>
+                                            </div>
+                                            <div>
+                                                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Digital ID</label>
+                                                <p className={`text-sm id-code ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{farmer._id.substring(0, 8).toUpperCase()}</p>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <div className="w-full h-px bg-gray-100 dark:bg-gray-800" />
+
+                                    {/* Basic Information Group */}
+                                    <section>
+                                        <h4 className={`text-xs section-title uppercase tracking-widest mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>Basic Information</h4>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
+                                            <div className="col-span-2">
+                                                <label className={`block text-xs font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Bio</label>
+                                                <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                    {farmer.bio || `${farmer.name} is a dedicated commercial farmer focused on ${(farmer.farmType || 'sustainable').toLowerCase()} production. With ${farmer.experience || 1} years of experience in the field, they have demonstrated consistent growth and adoption of modern agricultural practices.`}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Birthday</label>
+                                                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{farmer.dob ? new Date(farmer.dob).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : '—'}</p>
+                                            </div>
+                                            <div>
+                                                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Gender</label>
+                                                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{farmer.gender || '—'}</p>
+                                            </div>
+                                            <div>
+                                                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Language</label>
+                                                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{farmer.language || 'English'}</p>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+                        </ScrollArea>
+                    </div>
+                </div>
+
             </DialogContent>
         </Dialog>
     );

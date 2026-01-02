@@ -58,7 +58,7 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({
   const profile = userType === 'agent' && agent ? {
     name: agent.name,
     location: agent.region || 'Unknown Region',
-    avatarUrl: agent.avatar,
+    avatarUrl: agent.avatar || '/lovable-uploads/profile.png',
     id: agent.agentId,
     contact: agent.contact,
     districts: [] // If needed, can be added to user context

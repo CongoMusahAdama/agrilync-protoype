@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useDarkMode } from '@/contexts/DarkModeContext';
-import { User, MapPin, Briefcase, FileText, Upload } from 'lucide-react';
+import { User, MapPin, Briefcase, FileText, Upload, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const AgentProfile: React.FC = () => {
@@ -19,6 +19,7 @@ const AgentProfile: React.FC = () => {
     const { agent, loading } = useAuth();
     const [activeTab, setActiveTab] = useState('personal');
     const [isEditing, setIsEditing] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
     const { updateAgent } = useAuth();
     const [formData, setFormData] = useState<any>({});
 
@@ -33,22 +34,17 @@ const AgentProfile: React.FC = () => {
     };
 
     const handleSave = async () => {
+        setIsUpdating(true);
         try {
             await updateAgent(formData);
             toast.success('Profile updated successfully');
             setIsEditing(false);
         } catch (err) {
             toast.error('Failed to update profile');
+        } finally {
+            setIsUpdating(false);
         }
     };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
-            </div>
-        );
-    }
 
     const sectionCardClass = darkMode
         ? 'border border-[#124b53] bg-[#0b2528] text-gray-100'
@@ -96,8 +92,16 @@ const AgentProfile: React.FC = () => {
                             <Button
                                 className="bg-[#1db954] hover:bg-[#17a447] text-white"
                                 onClick={handleSave}
+                                disabled={isUpdating}
                             >
-                                Save Changes
+                                {isUpdating ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Saving...
+                                    </>
+                                ) : (
+                                    'Save Changes'
+                                )}
                             </Button>
                         )}
                     </div>

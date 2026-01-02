@@ -23,6 +23,10 @@ import {
     ChevronRight,
     ChevronLeft,
     UserCheck,
+    Download,
+    FileSpreadsheet,
+    Loader2,
+    Leaf,
     CheckCircle2,
     Edit,
     Save,
@@ -70,6 +74,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
     });
 
     const [manualCommunity, setManualCommunity] = useState('');
+    const [profilePicture, setProfilePicture] = useState<string>('');
     const [idCardFront, setIdCardFront] = useState<string>('');
     const [idCardBack, setIdCardBack] = useState<string>('');
     const [certificationChecked, setCertificationChecked] = useState(false);
@@ -115,6 +120,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                 setFormData(prev => ({ ...prev, community: 'Other (Specify)' }));
             }
 
+            setProfilePicture(farmer.profilePicture || '');
             setIdCardFront(farmer.idCardFront || '');
             setIdCardBack(farmer.idCardBack || '');
             setIdVerificationChecked(!!(farmer.idCardFront && farmer.idCardBack));
@@ -131,6 +137,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                 hasPreviousInvestment: false, investmentReadinessScore: 0
             });
             setManualCommunity('');
+            setProfilePicture('');
             setIdCardFront('');
             setIdCardBack('');
             setStep(1);
@@ -219,7 +226,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         }
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'front' | 'back') => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'front' | 'back' | 'profile') => {
         const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
@@ -229,8 +236,10 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                     setIdCardFront(base64String);
                     // Process OCR on front of card
                     processOCR(base64String);
-                } else {
+                } else if (type === 'back') {
                     setIdCardBack(base64String);
+                } else if (type === 'profile') {
+                    setProfilePicture(base64String);
                 }
             };
             reader.readAsDataURL(file);
@@ -313,6 +322,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                 farmSize: Number(formData.farmSize),
                 estimatedCapitalNeed: formData.estimatedCapitalNeed ? Number(formData.estimatedCapitalNeed) : 0,
                 investmentReadinessScore: Number(formData.investmentReadinessScore),
+                profilePicture,
                 idCardFront,
                 idCardBack,
                 status: 'active'
@@ -389,6 +399,36 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                 <UserCheck className="h-4 w-4" />
                                 Personal Details
                             </div>
+
+                            {/* Profile Picture Upload */}
+                            <div className="flex flex-col items-center justify-center mb-6">
+                                <div className="relative group">
+                                    <div className={`w-28 h-28 rounded-2xl border-2 border-dashed flex items-center justify-center overflow-hidden transition-all ${profilePicture ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 bg-gray-50 hover:border-emerald-400'}`}>
+                                        {profilePicture ? (
+                                            <img src={profilePicture} alt="Farmer Profile" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center text-gray-400">
+                                                <Camera className="w-8 h-8 mb-1" />
+                                                <span className="text-[10px] font-medium">Add Photo</span>
+                                            </div>
+                                        )}
+                                        <label className="absolute inset-0 cursor-pointer opacity-0 group-hover:opacity-100 bg-black/20 flex items-center justify-center transition-opacity">
+                                            <Camera className="w-6 h-6 text-white" />
+                                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, 'profile')} disabled={!isEditable} />
+                                        </label>
+                                    </div>
+                                    {profilePicture && isEditable && (
+                                        <button
+                                            onClick={() => setProfilePicture('')}
+                                            className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-colors"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    )}
+                                </div>
+                                <p className="text-[10px] text-gray-400 mt-2">Farmer Profile Picture (Optional)</p>
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label className="text-xs font-bold uppercase text-gray-500">Full Name *</Label>
@@ -894,7 +934,10 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                 className={`bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 px-8 rounded-xl shadow-lg shadow-emerald-600/20 ${isEditable && !isSubmitting ? 'animate-pulse' : ''} disabled:opacity-50`}
                             >
                                 {isSubmitting ? (
-                                    <>Processing...</>
+                                    <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Processing...
+                                    </>
                                 ) : (
                                     <>
                                         {isEditMode ? (

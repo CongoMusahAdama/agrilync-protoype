@@ -88,14 +88,6 @@ const FarmersManagement: React.FC = () => {
     });
   }, [farmers, farmerSearch, farmerStatusFilter]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
-      </div>
-    );
-  }
-
   const headerActions = (
     <Button className="bg-[#1db954] hover:bg-[#17a447] text-white" onClick={() => navigate('/dashboard/agent')}>
       <Plus className="mr-2 h-4 w-4" />
@@ -123,7 +115,7 @@ const FarmersManagement: React.FC = () => {
       <Card className={`transition-colors ${cardClass}`}>
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle className={`text-xl ${titleClass}`}>Grower Directory</CardTitle>
+            <CardTitle className={`section-title ${titleClass}`}>Grower Directory</CardTitle>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative w-full sm:w-64">

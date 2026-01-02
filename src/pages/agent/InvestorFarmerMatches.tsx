@@ -174,13 +174,6 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
     return 0;
   });
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
-      </div>
-    );
-  }
   const handleMetricClick = (metric: string) => {
     setActiveMetricFilter(prev => prev === metric ? null : metric);
   };
@@ -223,7 +216,7 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
                   <p className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">{item.label}</p>
                 </div>
                 <div className="flex-1 flex items-center">
-                  <p className="text-2xl sm:text-4xl font-bold text-white">{item.value}</p>
+                  <p className="big-metric text-white">{item.value}</p>
                 </div>
               </div>
             </Card>
@@ -527,7 +520,7 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
                   <CardContent className="p-5">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <p className={`text-[10px] font-black uppercase tracking-widest ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Case #{issue.id || issue._id?.slice(-6)}</p>
+                        <p className={`text-[10px] id-code uppercase tracking-widest ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Case #{issue.id || issue._id?.slice(-6)}</p>
                         <h3 className={`text-lg font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{issue.type}</h3>
                       </div>
                       <Badge className={`${getSeverityBadge(issue.severity)} rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider border-none shadow-sm`}>

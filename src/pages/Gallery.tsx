@@ -249,6 +249,24 @@ const farmVisits = [
     category: "Community Outreach",
     date: "2024",
     description: "Visit to Cape Coast with Ghanaian farmers to explore farm fresh foods and sustainable agricultural practices."
+  },
+  {
+    id: 25,
+    title: "Palm Nut Operation",
+    image: "/lovable-uploads/image copy 9.png",
+    region: "Eastern Region",
+    category: "Palm Nut Farming",
+    date: "2024",
+    description: "Operation in the Eastern Region led by Oti Gabriel Wontumi, our Chief of Operations, working with palm nut farmers to improve yield and market access."
+  },
+  {
+    id: 26,
+    title: "Palm Nut Operation",
+    image: "/lovable-uploads/image copy 10.png",
+    region: "Eastern Region",
+    category: "Palm Nut Farming",
+    date: "2024",
+    description: "Collaborative session with palm nut farmers in the Eastern Region, spearheaded by our Chief of Operations, Oti Gabriel Wontumi."
   }
 ];
 
@@ -267,6 +285,7 @@ const regions = [
 const categories = [
   "All Categories",
   "Pineapple Plantation",
+  "Palm Nut Farming",
   "Conference",
   "Training",
   "Catfish Farming",

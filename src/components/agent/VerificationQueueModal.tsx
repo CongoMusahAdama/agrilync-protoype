@@ -15,7 +15,7 @@ import {
     TableRow
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { UserCheck, Calendar, Eye, Edit } from 'lucide-react';
+import { UserCheck, Calendar, Eye, Edit, Loader2 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 
@@ -40,13 +40,18 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
     onView,
     onEdit
 }) => {
+    const [isVerifying, setIsVerifying] = React.useState<string | null>(null);
+
     const handleApprove = async (farmer: any) => {
+        setIsVerifying(farmer._id);
         try {
             await api.put(`/farmers/${farmer._id}`, { status: 'active' });
             toast.success('Grower verified successfully!');
             onSuccess();
         } catch (err) {
             toast.error('Failed to verify grower');
+        } finally {
+            setIsVerifying(null);
         }
     };
 
@@ -130,10 +135,15 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
                                                 </Button>
                                                 <Button
                                                     size="sm"
+                                                    disabled={isVerifying === f._id}
                                                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 rounded-xl shadow-lg shadow-emerald-500/20"
                                                     onClick={() => handleApprove(f)}
                                                 >
-                                                    Approve & Activate
+                                                    {isVerifying === f._id ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        'Approve & Activate'
+                                                    )}
                                                 </Button>
                                             </div>
                                         </TableCell>

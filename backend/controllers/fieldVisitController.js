@@ -45,6 +45,10 @@ exports.logFieldVisit = async (req, res) => {
         });
 
         const visit = await newVisit.save();
+
+        // Update farmer's lastVisit date
+        await Farmer.findByIdAndUpdate(farmerId, { lastVisit: date });
+
         const populatedVisit = await FieldVisit.findById(visit._id)
             .populate('farmer', 'name contact region district community');
 
@@ -105,6 +109,11 @@ exports.updateFieldVisit = async (req, res) => {
             { $set: visitFields },
             { new: true }
         ).populate('farmer', 'name contact region district community lyncId');
+
+        // Update farmer's lastVisit date if it was changed
+        if (date) {
+            await Farmer.findByIdAndUpdate(visit.farmer._id, { lastVisit: date });
+        }
 
         res.json(visit);
     } catch (err) {
