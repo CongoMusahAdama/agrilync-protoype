@@ -497,18 +497,15 @@ const Index = () => {
       </section>
 
       {/* Scroll to Top Button - Mobile Optimized */}
-      {
-        showScrollTop && (
-          <Button
-            onClick={scrollToTop}
-            className="fixed bottom-6 right-4 z-50 bg-green-600 hover:bg-green-700 text-white p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 md:bottom-8 md:right-6"
-            aria-label="Scroll to top"
-            size="lg"
-          >
-            <ArrowUp className="h-5 w-5 md:h-6 md:w-6" />
-          </Button>
-        )
-      }
+      {showScrollTop && (
+        <Button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-[#7ede56] to-[#66cc44] hover:from-[#66cc44] hover:to-[#7ede56] text-white p-4 rounded-full shadow-2xl hover:shadow-[#7ede56]/50 transition-all duration-300 transform hover:scale-110"
+          aria-label="Scroll to top"
+        >
+          <ArrowUp className="h-6 w-6" />
+        </Button>
+      )}
 
       {/* Success Stories Section */}
       <section className="py-4 sm:py-6 bg-white">

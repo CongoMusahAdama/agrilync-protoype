@@ -712,7 +712,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex">
+    <div className="min-h-screen w-full flex font-manrope">
       {/* Left Side - Brand Panel (Deep Teal) */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#002f37] relative overflow-hidden flex-col justify-between p-16 text-white">
         {/* Decorative Circles */}

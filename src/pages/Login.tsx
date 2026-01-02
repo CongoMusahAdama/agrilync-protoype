@@ -44,15 +44,20 @@ const Login = () => {
       toast.success('Welcome back!');
       navigate('/dashboard/agent');
     } catch (err: any) {
-      console.error(err);
-      toast.error(err.response?.data?.msg || 'Login failed. Please check your credentials.');
+      console.error('Login error:', err);
+      const errorMsg = err.response?.data?.msg || err.message || 'Login failed. Please check your credentials.';
+      toast.error(errorMsg);
+
+      if (!err.response && !err.status) {
+        toast.info('This might be a network issue. Please ensure VITE_API_URL is correctly set in your hosting platform.');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full flex">
+    <div className="min-h-screen w-full flex font-manrope">
 
       {/* Left Side - Brand Panel (Deep Teal) */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#002f37] relative overflow-hidden flex-col justify-between p-16 text-white">

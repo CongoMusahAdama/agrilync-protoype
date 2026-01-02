@@ -82,7 +82,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const activeNotifications = userType === 'agent' ? notifications : agentNotifications;
 
     return (
-        <div className={`h-screen overflow-hidden ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
+        <div className={`h-screen overflow-hidden font-manrope ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
             {isLoading && <Preloader />}
             <div className="flex h-full">
                 {/* Mobile Sidebar */}
