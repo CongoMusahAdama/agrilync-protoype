@@ -79,7 +79,7 @@ const Dashboard = () => {
     // Small delay to ensure smooth animation on page load/refresh
     const timer = setTimeout(() => {
       setIsLoaded(true);
-    }, 50);
+    }, 10);
     return () => clearTimeout(timer);
   }, []);
 

@@ -458,45 +458,55 @@ const AgentDashboard: React.FC = () => {
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className={`w-full justify-start overflow-x-auto whitespace-nowrap scrollbar-hide flex p-1 gap-1 rounded-xl mb-6 ${darkMode ? 'bg-[#003c47]/50 border border-gray-700' : 'bg-gray-100/50 border border-gray-200'}`}>
+        <TabsList className={`flex w-full overflow-x-auto whitespace-nowrap scrollbar-hide bg-transparent p-0 h-auto gap-2 sm:gap-4 mb-4 sm:mb-8 border-b ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
           <TabsTrigger
             value="overview"
-            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all btn-text uppercase tracking-wider ${darkMode
-              ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
-              : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
+            className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'overview'
+              ? 'border-[#7ede56] text-[#7ede56] bg-[#7ede56]/5'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
           >
+            <BarChart3 className="w-4 h-4 mr-2" />
             Overview
           </TabsTrigger>
           <TabsTrigger
             value="farmers"
-            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all btn-text uppercase tracking-wider ${darkMode
-              ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
-              : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
+            className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'farmers'
+              ? 'border-[#7ede56] text-[#7ede56] bg-[#7ede56]/5'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
           >
-            Directory
+            <Users className="w-4 h-4 mr-2" />
+            Farmers
           </TabsTrigger>
           <TabsTrigger
-            value="farms"
-            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all btn-text uppercase tracking-wider ${darkMode
-              ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
-              : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
+            value="field-ops"
+            className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'field-ops'
+              ? 'border-[#7ede56] text-[#7ede56] bg-[#7ede56]/5'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
           >
+            <Sprout className="w-4 h-4 mr-2" />
             Field Ops
           </TabsTrigger>
           <TabsTrigger
-            value="matches"
-            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all btn-text uppercase tracking-wider ${darkMode
-              ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
-              : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
+            value="partnerships"
+            className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'partnerships'
+              ? 'border-[#7ede56] text-[#7ede56] bg-[#7ede56]/5'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
           >
+            <Handshake className="w-4 h-4 mr-2" />
             Partnerships
           </TabsTrigger>
           <TabsTrigger
-            value="performance"
-            className={`flex-1 min-w-[100px] h-10 rounded-lg transition-all btn-text uppercase tracking-wider ${darkMode
-              ? 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-400'
-              : 'data-[state=active]:bg-[#7ede56] data-[state=active]:text-[#002f37] text-gray-500'}`}
+            value="training"
+            className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'training'
+              ? 'border-[#7ede56] text-[#7ede56] bg-[#7ede56]/5'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
           >
+            <Calendar className="w-4 h-4 mr-2" />
             Training & Perf.
           </TabsTrigger>
         </TabsList>

@@ -432,13 +432,13 @@ const Settings = () => {
                   style={{ width: `${getProgressPercentage()}%` }}
                 />
               </div>
-              <div className="mt-3 flex items-center gap-2">
-                <div className={`p-1.5 rounded-lg ${darkMode ? 'bg-[#7ede56]/10' : 'bg-[#7ede56]/20'}`}>
+              <div className="mt-3 flex items-center gap-3">
+                <div className={`flex-shrink-0 p-1.5 rounded-lg ${darkMode ? 'bg-[#7ede56]/10' : 'bg-[#7ede56]/20'}`}>
                   {React.createElement(profileSections.find(s => s.id === activeProfileSection)?.icon || UserCheck, {
                     className: "h-4 w-4 text-[#7ede56]"
                   })}
                 </div>
-                <span className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <span className={`text-sm font-bold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                   {profileSections.find(s => s.id === activeProfileSection)?.label}
                 </span>
               </div>
@@ -1313,7 +1313,7 @@ const Settings = () => {
                   <button
                     key={item.id}
                     onClick={() => setActiveSection(item.id)}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all duration-300 ${isActive
+                    className={`flex-shrink-0 flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all duration-300 whitespace-nowrap ${isActive
                       ? 'bg-[#7ede56] text-[#002f37] shadow-lg shadow-[#7ede56]/20'
                       : darkMode
                         ? 'bg-[#003c47]/50 text-gray-400 hover:text-white border-gray-700'

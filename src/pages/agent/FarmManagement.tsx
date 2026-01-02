@@ -853,38 +853,38 @@ const FarmManagement: React.FC = () => {
 
                     {/* Field Visit Logs Tab - Journal Entry Style */}
                     <TabsContent value="visits" className="space-y-4">
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
                             <div>
                                 <h3 className={`text-xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>Field Activities</h3>
                                 <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Chronological record of recent farm inspections</p>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                                 <Button
                                     onClick={handleExportPDF}
                                     disabled={isExporting !== null}
-                                    className={`bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-500/20 border-0 h-10 px-4 transition-all active:scale-95`}
+                                    className={`bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-500/20 border-0 h-9 sm:h-10 px-3 sm:px-4 transition-all active:scale-95 text-xs sm:text-sm`}
                                 >
                                     {isExporting === 'pdf' ? (
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        <Loader2 className="h-4 w-4 mr-1 sm:mr-2 animate-spin" />
                                     ) : (
-                                        <Download className="h-4 w-4 mr-2" />
+                                        <Download className="h-4 w-4 mr-1 sm:mr-2" />
                                     )}
                                     {selectedVisits.size > 0 ? `PDF (${selectedVisits.size})` : 'PDF All'}
                                 </Button>
                                 <Button
                                     onClick={handleExportExcel}
                                     disabled={isExporting !== null}
-                                    className={`bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 border-0 h-10 px-4 transition-all active:scale-95`}
+                                    className={`bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 border-0 h-9 sm:h-10 px-3 sm:px-4 transition-all active:scale-95 text-xs sm:text-sm`}
                                 >
                                     {isExporting === 'excel' ? (
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        <Loader2 className="h-4 w-4 mr-1 sm:mr-2 animate-spin" />
                                     ) : (
-                                        <FileSpreadsheet className="h-4 w-4 mr-2" />
+                                        <FileSpreadsheet className="h-4 w-4 mr-1 sm:mr-2" />
                                     )}
                                     {selectedVisits.size > 0 ? `Excel (${selectedVisits.size})` : 'Excel All'}
                                 </Button>
-                                <Button onClick={() => handleLogVisit()} className="bg-[#1db954] hover:bg-[#17a447] text-white shadow-lg shadow-emerald-500/20 h-10 px-4">
-                                    <Plus className="h-4 w-4 mr-2" />
+                                <Button onClick={() => handleLogVisit()} className="bg-[#1db954] hover:bg-[#17a447] text-white shadow-lg shadow-emerald-500/20 h-9 sm:h-10 px-3 sm:px-4 text-xs sm:text-sm">
+                                    <Plus className="h-4 w-4 mr-1 sm:mr-2" />
                                     New Journal Entry
                                 </Button>
                             </div>
@@ -916,7 +916,7 @@ const FarmManagement: React.FC = () => {
                             </div>
                         )}
 
-                        <div className="relative pl-8 space-y-6 before:absolute before:left-3 before:top-2 before:bottom-0 before:w-0.5 before:bg-gradient-to-b before:from-emerald-500 before:via-emerald-500/50 before:to-transparent">
+                        <div className="relative pl-6 sm:pl-8 space-y-6 before:absolute before:left-2.5 sm:before:left-3 before:top-2 before:bottom-0 before:w-0.5 before:bg-gradient-to-b before:from-emerald-500 before:via-emerald-500/50 before:to-transparent">
                             {loadingVisits ? (
                                 <div className="flex flex-col items-center justify-center py-20">
                                     <Loader2 className="h-12 w-12 text-emerald-500 animate-spin mb-4" />
@@ -927,7 +927,7 @@ const FarmManagement: React.FC = () => {
                                     {visitLogs.map((visit, index) => (
                                         <div key={visit._id || index} className="group relative">
                                             {/* Timeline Node */}
-                                            <div className={`absolute -left-8 top-1.5 w-7 h-7 rounded-full border-4 flex items-center justify-center z-10 transition-transform group-hover:scale-110 ${darkMode ? 'bg-[#002f37] border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-white border-emerald-500 shadow-md'
+                                            <div className={`absolute -left-6 sm:-left-8 top-1.5 w-6 h-6 sm:w-7 sm:h-7 rounded-full border-4 flex items-center justify-center z-10 transition-transform group-hover:scale-110 ${darkMode ? 'bg-[#002f37] border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-white border-emerald-500 shadow-md'
                                                 }`}>
                                                 <div className={`w-1.5 h-1.5 rounded-full ${visit.status === 'Completed' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                                             </div>
@@ -958,20 +958,20 @@ const FarmManagement: React.FC = () => {
                                                         setSelectedVisit(visit);
                                                         setVisitDetailModalOpen(true);
                                                     }}>
-                                                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-3">
                                                             <div className="flex-1 space-y-2">
-                                                                <div className="flex items-center gap-3">
-                                                                    <span className={`text-xs font-bold opacity-40 font-mono ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                                                    <span className={`text-[10px] font-bold opacity-40 font-mono ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                                                                         #{visitLogs.length - index}
                                                                     </span>
-                                                                    <Badge variant="outline" className={`text-[10px] font-mono px-2 py-0.5 ${darkMode ? 'bg-white/5 border-white/10 text-emerald-400' : 'bg-gray-50 text-emerald-600'}`}>
+                                                                    <Badge variant="outline" className={`text-[9px] sm:text-[10px] font-mono px-1.5 sm:px-2 py-0.5 ${darkMode ? 'bg-white/5 border-white/10 text-emerald-400' : 'bg-gray-50 text-emerald-600'}`}>
                                                                         {visit.farmer?.lyncId || visit.lyncId}
                                                                     </Badge>
-                                                                    <h4 className={`font-bold transition-colors ${darkMode ? 'text-gray-100 group-hover:text-emerald-400' : 'text-gray-900 group-hover:text-emerald-600'}`}>
+                                                                    <h4 className={`text-sm sm:text-base font-bold transition-colors ${darkMode ? 'text-gray-100 group-hover:text-emerald-400' : 'text-gray-900 group-hover:text-emerald-600'}`}>
                                                                         {visit.farmer?.name || visit.farmerName}
                                                                     </h4>
-                                                                    <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>•</span>
-                                                                    <Badge className={`text-[10px] uppercase tracking-widest ${darkMode ? 'bg-emerald-500/10 text-emerald-400 border-0' : 'bg-emerald-50 text-emerald-700'}`}>
+                                                                    <span className={`hidden sm:inline text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>•</span>
+                                                                    <Badge className={`text-[9px] sm:text-[10px] uppercase tracking-widest ${darkMode ? 'bg-emerald-500/10 text-emerald-400 border-0' : 'bg-emerald-50 text-emerald-700'}`}>
                                                                         {visit.purpose}
                                                                     </Badge>
                                                                 </div>
@@ -1004,37 +1004,37 @@ const FarmManagement: React.FC = () => {
                                                                     </div>
                                                                 )}
 
-                                                                <div className="flex flex-wrap items-center gap-4 pt-2">
+                                                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2">
                                                                     <div className="flex items-center gap-1.5">
                                                                         <Calendar className="w-3.5 h-3.5 text-gray-500" />
-                                                                        <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                                            {new Date(visit.date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                                                                        <span className={`text-[11px] sm:text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                            {new Date(visit.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
                                                                         </span>
                                                                     </div>
                                                                     <div className="flex items-center gap-1.5">
                                                                         <Clock className="w-3.5 h-3.5 text-gray-500" />
-                                                                        <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                                            {visit.time} ({visit.hoursSpent} hrs)
+                                                                        <span className={`text-[11px] sm:text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                            {visit.time} ({visit.hoursSpent}h)
                                                                         </span>
                                                                     </div>
                                                                     <div className="flex items-center gap-1.5">
                                                                         <Phone className="w-3.5 h-3.5 text-gray-500" />
-                                                                        <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                        <span className={`text-[11px] sm:text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                                                             {visit.farmer?.contact || visit.phone}
                                                                         </span>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div className="flex flex-col items-end gap-3 min-w-[120px]">
-                                                                <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ring-1 ring-inset ${visit.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20' : 'bg-amber-500/10 text-amber-500 ring-amber-500/20'
+                                                            <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-4 md:gap-3 min-w-full md:min-w-[120px] pt-3 md:pt-0 border-t md:border-t-0 border-white/5">
+                                                                <div className={`px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-widest ring-1 ring-inset ${visit.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20' : 'bg-amber-500/10 text-amber-500 ring-amber-500/20'
                                                                     }`}>
                                                                     {visit.status}
                                                                 </div>
-                                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <div className="flex items-center gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="icon"
-                                                                        className="h-8 w-8 rounded-lg hover:bg-white/10"
+                                                                        className="h-9 w-9 md:h-8 md:w-8 rounded-lg bg-white/5 md:bg-transparent hover:bg-white/10"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
                                                                             handleEditVisit(visit);
@@ -1045,7 +1045,7 @@ const FarmManagement: React.FC = () => {
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="icon"
-                                                                        className="h-8 w-8 rounded-lg hover:bg-emerald-500/20"
+                                                                        className="h-9 w-9 md:h-8 md:w-8 rounded-lg bg-emerald-500/10 md:bg-transparent hover:bg-emerald-500/20"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
                                                                             // Logic for completing/marking done if needed
@@ -1103,8 +1103,8 @@ const FarmManagement: React.FC = () => {
                                 </Button>
                             </CardHeader>
                             <CardContent className="p-0 sm:p-6 sm:pt-0">
-                                <div className="overflow-auto max-h-[60vh] relative custom-scrollbar">
-                                    <Table>
+                                <div className="overflow-x-auto relative custom-scrollbar">
+                                    <Table className="min-w-[800px] lg:min-w-full">
                                         <TableHeader className={`sticky top-0 z-20 ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'} shadow-sm`}>
                                             <TableRow className="border-0 hover:bg-transparent">
                                                 <TableHead className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} font-bold`}>Farmer</TableHead>
