@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { exportToPDF, exportToWord } from '@/utils/reportExport';
 import AgentLayout from './AgentLayout';
 import { useDarkMode } from '@/contexts/DarkModeContext';
+import CountUp from '@/components/CountUp';
 import AddFarmerModal from '@/components/agent/AddFarmerModal';
 import ViewFarmerModal from '@/components/agent/ViewFarmerModal';
 import UploadReportModal from '@/components/agent/UploadReportModal';
@@ -531,8 +532,8 @@ const FarmManagement: React.FC = () => {
                     ].map((item, idx) => (
                         <Card
                             key={item.label}
-                            className={`${item.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-700 relative overflow-hidden ${(statusFilter === item.status && item.status !== null) || (statusFilter === null && item.status === null) ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent' : ''} ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-                            style={{ transitionDelay: `${idx * 100}ms` }}
+                            className={`${item.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-200 relative overflow-hidden ${(statusFilter === item.status && item.status !== null) || (statusFilter === null && item.status === null) ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent' : ''} ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                            style={{ transitionDelay: `${idx * 50}ms` }}
                             onClick={() => handleCardClick(item.status)}
                         >
                             {/* Background Decoration */}
@@ -546,7 +547,9 @@ const FarmManagement: React.FC = () => {
                                     <p className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">{item.label}</p>
                                 </div>
                                 <div className="flex-1 flex items-center">
-                                    <p className="text-2xl sm:text-4xl font-bold text-white">{item.value}</p>
+                                    <p className="text-2xl sm:text-4xl font-bold text-white">
+                                        <CountUp end={Number(item.value)} duration={1000} />
+                                    </p>
                                 </div>
                             </div>
                         </Card>

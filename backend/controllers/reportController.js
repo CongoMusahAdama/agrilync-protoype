@@ -16,10 +16,10 @@ exports.createReport = async (req, res) => {
         });
 
         const report = await newReport.save();
-        res.json(report);
+        res.json({ success: true, data: report });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('createReport error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -27,11 +27,11 @@ exports.createReport = async (req, res) => {
 // @desc    Get all reports for a specific farmer
 exports.getFarmerReports = async (req, res) => {
     try {
-        const reports = await Report.find({ farmer: req.params.farmerId }).sort({ date: -1 });
+        const reports = await Report.find({ farmer: req.params.farmerId }).sort({ date: -1 }).lean();
         res.json(reports);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('getFarmerReports error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -41,10 +41,11 @@ exports.getAgentReports = async (req, res) => {
     try {
         const reports = await Report.find({ agent: req.agent.id })
             .populate('farmer', 'name')
-            .sort({ date: -1 });
+            .sort({ date: -1 })
+            .lean();
         res.json(reports);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('getAgentReports error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };

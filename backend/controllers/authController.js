@@ -13,12 +13,9 @@ exports.login = async (req, res) => {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
-        // Check if user is already logged in on another device
-        if (agent.isLoggedIn) {
-            return res.status(400).json({
-                msg: 'This account is already logged in on another device. Please log out from that device first.'
-            });
-        }
+        // In a "Last Session Wins" model, we don't block the login.
+        // Instead, we just update the sessionId which will effectively invalidate the old token
+        // if we check it in the auth middleware.
 
         const isMatch = await agent.comparePassword(password);
         if (!isMatch) {

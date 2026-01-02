@@ -73,52 +73,32 @@ exports.registerFarmerPublic = async (req, res) => {
 // @route   POST api/farmers
 // @desc    Add a new farmer
 exports.addFarmer = async (req, res) => {
-    const {
-        name, region, district, community, farmType, contact, gender, dob,
-        language, otherLanguage, email, farmSize, yearsOfExperience,
-        landOwnershipStatus, cropsGrown, livestockType, fieldNotes, password, idCardFront, idCardBack,
-        investmentInterest, preferredInvestmentType, estimatedCapitalNeed, hasPreviousInvestment, investmentReadinessScore,
-        profilePicture
-    } = req.body;
-
     try {
+        const farmerData = { ...req.body };
+
+        // Trim string fields
+        Object.keys(farmerData).forEach(key => {
+            if (typeof farmerData[key] === 'string') {
+                farmerData[key] = farmerData[key].trim();
+            }
+        });
+
         const newFarmer = new Farmer({
-            name,
-            password,
-            region,
-            district,
-            community,
-            farmType,
-            contact,
-            gender,
-            dob,
-            language,
-            otherLanguage,
-            email,
-            farmSize,
-            yearsOfExperience,
-            landOwnershipStatus,
-            cropsGrown,
-            livestockType,
-            idCardFront,
-            idCardBack,
-            fieldNotes,
-            investmentInterest,
-            preferredInvestmentType,
-            estimatedCapitalNeed,
-            hasPreviousInvestment,
-            investmentReadinessScore,
+            ...farmerData,
             agent: req.agent.id,
             status: 'active', // Agent-onboarded farmers are active by default
-            profilePicture,
             lastUpdated: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
         });
 
         const farmer = await newFarmer.save();
-        res.json(farmer);
+        res.status(201).json({ success: true, data: farmer });
     } catch (err) {
+        if (err.name === 'ValidationError') {
+            const messages = Object.values(err.errors).map(val => val.message);
+            return res.status(400).json({ success: false, message: messages.join(', ') });
+        }
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({ success: false, message: 'Server error during farmer onboarding' });
     }
 };
 
@@ -129,75 +109,54 @@ exports.getPendingFarmersByRegion = async (req, res) => {
         const farmers = await Farmer.find({
             status: 'pending',
             region: req.agent.region
-        }).select('-idCardFront -idCardBack -password');
+        })
+            .select('-idCardFront -idCardBack -password')
+            .lean();
+
         res.json(farmers);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
 // @route   PUT api/farmers/:id
 // @desc    Update farmer status (Verification)
 exports.updateFarmer = async (req, res) => {
-    const {
-        status, investmentStatus, agentId,
-        name, contact, gender, dob, language, otherLanguage, email,
-        region, district, community, farmType, farmSize, yearsOfExperience,
-        landOwnershipStatus, cropsGrown, livestockType, fieldNotes,
-        investmentInterest, preferredInvestmentType, estimatedCapitalNeed,
-        hasPreviousInvestment, investmentReadinessScore, profilePicture
-    } = req.body;
+    const updateData = { ...req.body };
 
     try {
         let farmer = await Farmer.findById(req.params.id);
-        if (!farmer) return res.status(404).json({ msg: 'Farmer not found' });
-
-        // If it's a verification (status -> active), assign the current agent if none
-        if (status === 'active' && !farmer.agent) {
-            farmer.agent = req.agent.id;
-        } else if (farmer.agent && farmer.agent.toString() !== req.agent.id) {
-            // For existing farmers, still ensure agent ownership unless verifying a pending one
-            return res.status(401).json({ msg: 'Not authorized' });
+        if (!farmer) {
+            return res.status(404).json({ success: false, message: 'Farmer not found' });
         }
 
-        if (status) farmer.status = status;
-        if (investmentStatus) farmer.investmentStatus = investmentStatus;
-        if (agentId) farmer.agent = agentId;
+        // Security check: Only assigned agent or regional agent (for verification) can update
+        const isAssignedAgent = farmer.agent && farmer.agent.toString() === req.agent.id;
+        const isVerifyingRegional = farmer.status === 'pending' && farmer.region === req.agent.region;
 
-        // General fields update
-        if (name) farmer.name = name;
-        if (contact) farmer.contact = contact;
-        if (gender) farmer.gender = gender;
-        if (dob) farmer.dob = dob;
-        if (language) farmer.language = language;
-        if (otherLanguage) farmer.otherLanguage = otherLanguage;
-        if (email) farmer.email = email;
-        if (region) farmer.region = region;
-        if (district) farmer.district = district;
-        if (community) farmer.community = community;
-        if (farmType) farmer.farmType = farmType;
-        if (farmSize) farmer.farmSize = farmSize;
-        if (yearsOfExperience) farmer.yearsOfExperience = yearsOfExperience;
-        if (landOwnershipStatus) farmer.landOwnershipStatus = landOwnershipStatus;
-        if (cropsGrown) farmer.cropsGrown = cropsGrown;
-        if (livestockType) farmer.livestockType = livestockType;
-        if (fieldNotes) farmer.fieldNotes = fieldNotes;
+        if (!isAssignedAgent && !isVerifyingRegional) {
+            return res.status(401).json({ success: false, message: 'Not authorized to update this farmer profile' });
+        }
 
-        // Investment fields update
-        if (investmentInterest) farmer.investmentInterest = investmentInterest;
-        if (preferredInvestmentType) farmer.preferredInvestmentType = preferredInvestmentType;
-        if (estimatedCapitalNeed !== undefined) farmer.estimatedCapitalNeed = estimatedCapitalNeed;
-        if (hasPreviousInvestment !== undefined) farmer.hasPreviousInvestment = hasPreviousInvestment;
-        if (investmentReadinessScore !== undefined) farmer.investmentReadinessScore = investmentReadinessScore;
-        if (profilePicture) farmer.profilePicture = profilePicture;
+        // If verifying a pending farmer, assign IT to the current agent
+        if (isVerifyingRegional && updateData.status === 'active') {
+            farmer.agent = req.agent.id;
+        }
+
+        // Update fields if provided
+        Object.keys(updateData).forEach(key => {
+            if (updateData[key] !== undefined) {
+                farmer[key] = typeof updateData[key] === 'string' ? updateData[key].trim() : updateData[key];
+            }
+        });
 
         farmer.lastUpdated = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
         await farmer.save();
 
-        // If verified, create a success notification for the agent
-        if (status === 'active') {
+        // Notification logic
+        if (updateData.status === 'active' && isVerifyingRegional) {
             await Notification.create({
                 title: `Grower ${farmer.name} Verified`,
                 time: 'Just now',
@@ -208,9 +167,13 @@ exports.updateFarmer = async (req, res) => {
             });
         }
 
-        res.json(farmer);
+        res.json({ success: true, data: farmer });
     } catch (err) {
+        if (err.name === 'ValidationError') {
+            const messages = Object.values(err.errors).map(val => val.message);
+            return res.status(400).json({ success: false, message: messages.join(', ') });
+        }
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };

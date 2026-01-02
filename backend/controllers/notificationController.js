@@ -5,11 +5,11 @@ const Activity = require('../models/Activity');
 // @desc    Get all notifications for current agent
 exports.getNotifications = async (req, res) => {
     try {
-        const notifications = await Notification.find({ agent: req.agent.id }).sort({ createdAt: -1 });
+        const notifications = await Notification.find({ agent: req.agent.id }).sort({ createdAt: -1 }).lean();
         res.json(notifications);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('getNotifications error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -18,18 +18,18 @@ exports.getNotifications = async (req, res) => {
 exports.markAsRead = async (req, res) => {
     try {
         let notification = await Notification.findById(req.params.id);
-        if (!notification) return res.status(404).json({ msg: 'Notification not found' });
+        if (!notification) return res.status(404).json({ success: false, message: 'Notification not found' });
 
         if (notification.agent.toString() !== req.agent.id) {
-            return res.status(401).json({ msg: 'Not authorized' });
+            return res.status(401).json({ success: false, message: 'Not authorized' });
         }
 
         notification.read = true;
         await notification.save();
-        res.json(notification);
+        res.json({ success: true, data: notification });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('markAsRead error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -37,11 +37,11 @@ exports.markAsRead = async (req, res) => {
 // @desc    Get activity timeline for current agent
 exports.getActivities = async (req, res) => {
     try {
-        const activities = await Activity.find({ agent: req.agent.id }).sort({ createdAt: -1 }).limit(20);
+        const activities = await Activity.find({ agent: req.agent.id }).sort({ createdAt: -1 }).limit(20).lean();
         res.json(activities);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('getActivities error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 

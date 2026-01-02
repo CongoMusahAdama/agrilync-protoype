@@ -74,6 +74,7 @@ import {
   YAxis
 } from 'recharts';
 import { useDarkMode } from '@/contexts/DarkModeContext';
+import CountUp from '@/components/CountUp';
 
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
@@ -370,7 +371,7 @@ const AgentDashboard: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-6 mb-8">
         {/* Verification Queue - Deep Teal */}
         <Card
-          className={`bg-[#002f37] rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-700 cursor-pointer hover:scale-105 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          className={`bg-[#002f37] rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-200 cursor-pointer hover:scale-105 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
           style={{ transitionDelay: '0ms' }}
           onClick={() => setVerificationQueueModalOpen(true)}
@@ -393,7 +394,9 @@ const AgentDashboard: React.FC = () => {
             </div>
             <div className="flex-1 flex flex-col justify-center">
               <div className="flex items-baseline gap-1 sm:gap-2 mb-0.5 sm:mb-2 text-white">
-                <p className="big-metric">{pendingFarmers.length}</p>
+                <p className="big-metric">
+                  <CountUp end={pendingFarmers.length} duration={1000} />
+                </p>
                 <span className="text-[10px] sm:text-xs font-medium uppercase tracking-widest text-emerald-400">Backlog</span>
               </div>
               <p className="text-[10px] sm:text-sm text-white/80 line-clamp-1 italic">Growers awaiting accreditation</p>
@@ -417,9 +420,9 @@ const AgentDashboard: React.FC = () => {
         {highlightCards.map((card, index) => (
           <Card
             key={card.id}
-            className={`${card.color} rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-700 cursor-pointer hover:scale-105 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            className={`${card.color} rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-200 cursor-pointer hover:scale-105 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}
-            style={{ transitionDelay: `${(index + 1) * 100}ms` }}
+            style={{ transitionDelay: `${(index + 1) * 50}ms` }}
             onClick={() => {
               if (card.onClick) {
                 card.onClick();
@@ -439,7 +442,9 @@ const AgentDashboard: React.FC = () => {
                 <p className="text-[10px] sm:text-sm font-medium text-white">{card.title}</p>
               </div>
               <div className="flex-1 flex items-center">
-                <p className="big-metric text-white">{card.value}</p>
+                <p className="big-metric text-white">
+                  <CountUp end={Number(card.value)} duration={1000} />
+                </p>
               </div>
               <div className="flex justify-end mt-2 sm:mt-4">
                 <div className="text-[10px] sm:text-sm font-medium text-white hover:underline flex items-center gap-1">

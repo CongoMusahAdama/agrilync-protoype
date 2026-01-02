@@ -4,11 +4,11 @@ const Agent = require('../models/Agent');
 // @desc    Get current agent profile
 exports.getProfile = async (req, res) => {
     try {
-        const agent = await Agent.findById(req.agent.id).select('-password');
+        const agent = await Agent.findById(req.agent.id).select('-password').lean();
         res.json(agent);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('getProfile error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -29,7 +29,7 @@ exports.updateProfile = async (req, res) => {
     try {
         let agent = await Agent.findById(req.agent.id);
 
-        if (!agent) return res.status(404).json({ msg: 'Agent not found' });
+        if (!agent) return res.status(404).json({ success: false, message: 'Agent not found' });
 
         agent = await Agent.findByIdAndUpdate(
             req.agent.id,
@@ -37,10 +37,10 @@ exports.updateProfile = async (req, res) => {
             { new: true }
         ).select('-password');
 
-        res.json(agent);
+        res.json({ success: true, data: agent });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('updateProfile error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -51,16 +51,16 @@ exports.updateVerification = async (req, res) => {
 
     try {
         let agent = await Agent.findById(req.agent.id);
-        if (!agent) return res.status(404).json({ msg: 'Agent not found' });
+        if (!agent) return res.status(404).json({ success: false, message: 'Agent not found' });
 
         agent.verificationStatus = status;
         if (status === 'verified') agent.isVerified = true;
 
         await agent.save();
-        res.json(agent);
+        res.json({ success: true, data: agent });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('updateVerification error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -68,10 +68,10 @@ exports.updateVerification = async (req, res) => {
 // @desc    Get dashboard stats
 exports.getStats = async (req, res) => {
     try {
-        const agent = await Agent.findById(req.agent.id).select('stats');
+        const agent = await Agent.findById(req.agent.id).select('stats').lean();
         res.json(agent.stats);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('getStats error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };

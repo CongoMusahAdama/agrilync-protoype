@@ -4,11 +4,11 @@ const { Training, AgentTraining } = require('../models/Training');
 // @desc    Get all available trainings
 exports.getAvailableTrainings = async (req, res) => {
     try {
-        const trainings = await Training.find();
+        const trainings = await Training.find().lean();
         res.json(trainings);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('getAvailableTrainings error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -16,11 +16,11 @@ exports.getAvailableTrainings = async (req, res) => {
 // @desc    Get current agent's trainings
 exports.getMyTrainings = async (req, res) => {
     try {
-        const trainings = await AgentTraining.find({ agent: req.agent.id }).populate('training');
+        const trainings = await AgentTraining.find({ agent: req.agent.id }).populate('training').lean();
         res.json(trainings);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('getMyTrainings error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -29,11 +29,11 @@ exports.getMyTrainings = async (req, res) => {
 exports.registerTraining = async (req, res) => {
     try {
         const training = await Training.findById(req.params.id);
-        if (!training) return res.status(404).json({ msg: 'Training not found' });
+        if (!training) return res.status(404).json({ success: false, message: 'Training not found' });
 
         // Check if already registered
         let registration = await AgentTraining.findOne({ agent: req.agent.id, training: req.params.id });
-        if (registration) return res.status(400).json({ msg: 'Already registered for this training' });
+        if (registration) return res.status(400).json({ success: false, message: 'Already registered for this training' });
 
         const newRegistration = new AgentTraining({
             agent: req.agent.id,
@@ -42,10 +42,10 @@ exports.registerTraining = async (req, res) => {
         });
 
         await newRegistration.save();
-        res.json(newRegistration);
+        res.json({ success: true, data: newRegistration });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('registerTraining error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -56,19 +56,19 @@ exports.updateTrainingStatus = async (req, res) => {
 
     try {
         let registration = await AgentTraining.findById(req.params.id);
-        if (!registration) return res.status(404).json({ msg: 'Registration not found' });
+        if (!registration) return res.status(404).json({ success: false, message: 'Registration not found' });
 
         if (registration.agent.toString() !== req.agent.id) {
-            return res.status(401).json({ msg: 'Not authorized' });
+            return res.status(401).json({ success: false, message: 'Not authorized' });
         }
 
         if (status) registration.status = status;
         if (certificate !== undefined) registration.certificate = certificate;
 
         await registration.save();
-        res.json(registration);
+        res.json({ success: true, data: registration });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('updateTrainingStatus error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };

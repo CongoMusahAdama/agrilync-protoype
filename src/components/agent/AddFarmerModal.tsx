@@ -226,20 +226,70 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         }
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'front' | 'back' | 'profile') => {
+    const compressImage = (base64Str: string, maxWidth = 800, maxHeight = 800, quality = 0.7): Promise<string> => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = base64Str;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width *= maxHeight / height;
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+        });
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'front' | 'back' | 'profile') => {
         const file = e.target.files?.[0];
         if (file) {
+            // Check file size (limit to 5MB before compression)
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error('File is too large. Please select an image under 5MB.');
+                return;
+            }
+
             const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result as string;
-                if (type === 'front') {
-                    setIdCardFront(base64String);
-                    // Process OCR on front of card
-                    processOCR(base64String);
-                } else if (type === 'back') {
-                    setIdCardBack(base64String);
-                } else if (type === 'profile') {
-                    setProfilePicture(base64String);
+            reader.onloadend = async () => {
+                const originalBase64 = reader.result as string;
+
+                // Show "processing" toast for large images
+                const processingToast = file.size > 1 * 1024 * 1024 ? toast.loading('Optimizing image...') : null;
+
+                try {
+                    const compressedBase64 = await compressImage(originalBase64);
+
+                    if (processingToast) toast.dismiss(processingToast);
+
+                    if (type === 'front') {
+                        setIdCardFront(compressedBase64);
+                        // Process OCR on front of card
+                        processOCR(compressedBase64);
+                    } else if (type === 'back') {
+                        setIdCardBack(compressedBase64);
+                    } else if (type === 'profile') {
+                        setProfilePicture(compressedBase64);
+                    }
+                } catch (err) {
+                    console.error('Compression failed', err);
+                    if (processingToast) toast.dismiss(processingToast);
+                    toast.error('Failed to process image');
                 }
             };
             reader.readAsDataURL(file);
