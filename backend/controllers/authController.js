@@ -27,8 +27,6 @@ exports.login = async (req, res) => {
         agent.isLoggedIn = true;
         agent.currentSessionId = sessionId;
 
-        console.log(`[LOGIN] Agent ${agent.email} logging in. SessionID generated: ${sessionId}`);
-
         await agent.save();
 
         const payload = {
