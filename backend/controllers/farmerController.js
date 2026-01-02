@@ -65,8 +65,12 @@ exports.registerFarmerPublic = async (req, res) => {
 
         res.json({ success: true, farmerId: farmer._id });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        if (err.name === 'ValidationError') {
+            const messages = Object.values(err.errors).map(val => val.message);
+            return res.status(400).json({ msg: messages.join(', ') });
+        }
+        console.error('registerFarmerPublic error:', err.message);
+        res.status(500).json({ msg: 'Server error during registration' });
     }
 };
 
@@ -91,14 +95,14 @@ exports.addFarmer = async (req, res) => {
         });
 
         const farmer = await newFarmer.save();
-        res.status(201).json({ success: true, data: farmer });
+        res.status(201).json(farmer);
     } catch (err) {
         if (err.name === 'ValidationError') {
             const messages = Object.values(err.errors).map(val => val.message);
-            return res.status(400).json({ success: false, message: messages.join(', ') });
+            return res.status(400).json({ msg: messages.join(', ') });
         }
-        console.error(err.message);
-        res.status(500).json({ success: false, message: 'Server error during farmer onboarding' });
+        console.error('addFarmer error:', err.message);
+        res.status(500).json({ msg: 'Server error during farmer onboarding' });
     }
 };
 
@@ -167,13 +171,13 @@ exports.updateFarmer = async (req, res) => {
             });
         }
 
-        res.json({ success: true, data: farmer });
+        res.json(farmer);
     } catch (err) {
         if (err.name === 'ValidationError') {
             const messages = Object.values(err.errors).map(val => val.message);
-            return res.status(400).json({ success: false, message: messages.join(', ') });
+            return res.status(400).json({ msg: messages.join(', ') });
         }
-        console.error(err.message);
-        res.status(500).json({ success: false, message: 'Server error' });
+        console.error('updateFarmer error:', err.message);
+        res.status(500).json({ msg: 'Server error' });
     }
 };
