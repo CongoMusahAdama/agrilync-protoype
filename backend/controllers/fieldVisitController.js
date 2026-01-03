@@ -1,5 +1,6 @@
 const FieldVisit = require('../models/FieldVisit');
 const Farmer = require('../models/Farmer');
+const Activity = require('../models/Activity');
 
 // @route   GET api/field-visits
 // @desc    Get all field visits for current agent
@@ -48,6 +49,14 @@ exports.logFieldVisit = async (req, res) => {
 
         // Update farmer's lastVisit date
         await Farmer.findByIdAndUpdate(farmerId, { lastVisit: date });
+
+        // Log Activity
+        await Activity.create({
+            agent: req.agent.id,
+            type: 'report',
+            title: `Visited ${farmer.name}`,
+            description: `${purpose || 'Field Visit'} - ${hoursSpent}hrs`
+        });
 
         const populatedVisit = await FieldVisit.findById(visit._id)
             .populate('farmer', 'name contact region district community');

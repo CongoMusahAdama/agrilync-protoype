@@ -85,6 +85,9 @@ const farmerSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+// Indexing for performance
+farmerSchema.index({ agent: 1, status: 1, region: 1 });
+
 // Hash password before saving
 farmerSchema.pre('save', async function () {
     if (!this.isModified('password')) return;

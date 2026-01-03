@@ -50,4 +50,7 @@ const farmSchema = new mongoose.Schema({
     agent: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent', required: true }
 }, { timestamps: true });
 
+// Indexing for performance
+farmSchema.index({ agent: 1, status: 1 });
+
 module.exports = mongoose.models.Farm || mongoose.model('Farm', farmSchema);

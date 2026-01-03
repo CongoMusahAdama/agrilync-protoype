@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useDarkMode } from '@/contexts/DarkModeContext';
-import { Calendar, Clock, MapPin, User, FileText, CheckCircle, Download, FileSpreadsheet } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, FileText, CheckCircle, Download, FileSpreadsheet, Camera } from 'lucide-react';
 
 interface ViewVisitDetailsModalProps {
     open: boolean;
@@ -150,6 +150,27 @@ const ViewVisitDetailsModal: React.FC<ViewVisitDetailsModalProps> = ({ open, onO
                                 <p className="font-medium">{visit.purpose}</p>
                             </div>
                         </div>
+
+                        {visit.visitImages && visit.visitImages.length > 0 && (
+                            <div className="space-y-2 pt-2">
+                                <div className="flex items-center gap-2">
+                                    <Camera className={`h-4 w-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                    <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Visit Photos</p>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                    {visit.visitImages.map((img: string, idx: number) => (
+                                        <div key={idx} className="relative aspect-square rounded-md overflow-hidden border border-gray-200 dark:border-gray-700">
+                                            <img
+                                                src={img}
+                                                alt={`Visit photo ${idx + 1}`}
+                                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                                                onClick={() => window.open(img, '_blank')}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 

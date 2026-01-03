@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
     Leaf, FileText, Sprout, Scissors, Wrench, MoreHorizontal, CheckCircle,
-    Plus, Edit, Activity, Upload, X, Video
+    Plus, Edit, Activity, Upload, X, Video, Clock
 } from 'lucide-react';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
@@ -459,27 +459,37 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                         </Card>
 
                         <Card className={`mb-8 transition-all border-none shadow-xl ${darkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
-                            <CardHeader className={`border-b ${darkMode ? 'border-white/10' : 'border-gray-100'} pb-4`}>
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-6">
-                                    <div>
-                                        <CardTitle className={`flex items-center gap-3 text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                            <Activity className={`h-7 w-7 ${darkMode ? 'text-[#7ede56]' : 'text-emerald-600'}`} />
-                                            Stage Activities log
-                                        </CardTitle>
-                                        <CardDescription className={`text-base mt-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            Detailed records for the <span className="font-bold text-emerald-500 uppercase">{activeStageTab}</span> phase
-                                        </CardDescription>
+                            <CardHeader className={`border-b ${darkMode ? 'border-white/10' : 'border-gray-100'} pb-0 px-4 sm:px-6`}>
+                                <div className="flex flex-col gap-4 mb-6">
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <CardTitle className={`flex items-center gap-2 text-xl sm:text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                <Activity className={`h-6 w-6 sm:h-7 sm:w-7 ${darkMode ? 'text-[#7ede56]' : 'text-emerald-600'}`} />
+                                                Activity Log
+                                            </CardTitle>
+                                            <CardDescription className={`text-sm sm:text-base mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                Tracking <span className="font-bold text-emerald-500 uppercase">{activeStageTab}</span> phase
+                                            </CardDescription>
+                                        </div>
+                                        <Button
+                                            onClick={openActivityDialog}
+                                            size="sm"
+                                            className="sm:hidden bg-[#7ede56] hover:bg-[#6bc947] text-white font-bold h-10 px-4 rounded-lg shadow-lg shadow-emerald-500/20"
+                                        >
+                                            <Plus className="h-5 w-5" />
+                                        </Button>
                                     </div>
+
                                     <Button
                                         onClick={openActivityDialog}
-                                        className="bg-[#7ede56] hover:bg-[#6bc947] text-white font-bold px-8 h-12 rounded-xl shadow-lg shadow-emerald-500/20"
+                                        className="hidden sm:flex self-end bg-[#7ede56] hover:bg-[#6bc947] text-white font-bold px-8 h-12 rounded-xl shadow-lg shadow-emerald-500/20"
                                     >
                                         <Plus className="h-5 w-5 mr-2" />
                                         Log New Activity
                                     </Button>
                                 </div>
 
-                                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
+                                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0 -mb-px">
                                     {stages.map((stage) => {
                                         const isActive = activeStageTab === stage;
                                         const isCurrentStage = currentStage === stage;
@@ -489,7 +499,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                 key={stage}
                                                 onClick={() => setActiveStageTab(stage)}
                                                 className={`
-                                                relative px-6 py-4 text-base font-bold whitespace-nowrap transition-all rounded-t-xl
+                                                relative px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-bold whitespace-nowrap transition-all rounded-t-xl
                                                 ${isActive
                                                         ? `bg-[#7ede56]/10 text-[#7ede56] border-b-4 border-[#7ede56]`
                                                         : `text-gray-400 hover:text-gray-600 dark:hover:text-white border-b-4 border-transparent`
@@ -499,7 +509,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                 <span className="flex items-center gap-2">
                                                     {stage.charAt(0).toUpperCase() + stage.slice(1)}
                                                     {isCurrentStage && (
-                                                        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></div>
+                                                        <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-emerald-500 animate-ping"></div>
                                                     )}
                                                 </span>
                                             </button>
@@ -508,30 +518,30 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                 </div>
                             </CardHeader>
 
-                            <CardContent className="pt-8 min-h-[400px]">
+                            <CardContent className="pt-6 sm:pt-8 min-h-[400px] px-4 sm:px-6">
                                 <div className="space-y-6">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6 border-white/5">
-                                        <div className="flex items-center gap-4">
-                                            <h3 className={`text-2xl font-extrabold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4 border-white/5">
+                                        <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+                                            <h3 className={`text-xl sm:text-2xl font-extrabold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                                                 {activeStageTab.charAt(0).toUpperCase() + activeStageTab.slice(1)} Feed
                                             </h3>
                                             {currentStage === activeStageTab ? (
-                                                <Badge className="bg-[#7ede56] text-white px-3 py-1 text-sm font-bold uppercase tracking-wider">Currently In Progress</Badge>
+                                                <Badge className="bg-[#7ede56] text-white px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-sm font-bold uppercase tracking-wider">In Progress</Badge>
                                             ) : (
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => handleUpdateStage(activeStageTab)}
-                                                    className={`h-9 px-4 font-bold border-2 ${darkMode ? 'border-[#7ede56] text-[#7ede56] hover:bg-[#7ede56]/10' : 'border-[#7ede56] text-[#0b8a62] hover:bg-[#7ede56]/10'}`}
+                                                    className={`h-8 px-3 text-xs sm:text-sm font-bold border-2 ${darkMode ? 'border-[#7ede56] text-[#7ede56] hover:bg-[#7ede56]/10' : 'border-[#7ede56] text-[#0b8a62] hover:bg-[#7ede56]/10'}`}
                                                 >
-                                                    Set as Current Stage
+                                                    Set Current
                                                 </Button>
                                             )}
                                         </div>
                                     </div>
 
                                     {farm.stageDetails && farm.stageDetails[activeStageTab]?.activities && farm.stageDetails[activeStageTab].activities.length > 0 ? (
-                                        <div className="grid grid-cols-1 gap-6">
+                                        <div className="grid grid-cols-1 gap-4 sm:gap-6">
                                             {farm.stageDetails[activeStageTab].activities.map((activity: any, index: number) => {
                                                 const activityId = activity.id || index;
                                                 const activityDate = activity.date ? new Date(activity.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
@@ -541,35 +551,35 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                 return (
                                                     <div
                                                         key={activityId}
-                                                        className={`p-6 rounded-2xl border-l-[6px] transition-all hover:translate-x-1 ${darkMode ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}
+                                                        className={`p-4 sm:p-6 rounded-2xl border-l-[6px] transition-all hover:translate-x-1 ${darkMode ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}
                                                         style={{ borderLeftColor: getStageColor(activeStageTab).bg }}
                                                     >
-                                                        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                                                        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 sm:gap-6">
                                                             <div className="flex-1 space-y-3">
-                                                                <div className="flex items-center gap-4">
+                                                                <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                                                                     <Badge
-                                                                        className="px-4 py-1.5 text-sm font-bold shadow-md"
+                                                                        className="px-3 py-1 sm:px-4 sm:py-1.5 text-xs sm:text-sm font-bold shadow-md whitespace-normal"
                                                                         style={{ backgroundColor: getStageColor(activeStageTab).bg, color: 'white' }}
                                                                     >
                                                                         {label}
                                                                     </Badge>
                                                                     {activityDate && (
-                                                                        <div className={`flex items-center gap-2 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
-                                                                            <Activity className="h-4 w-4" />
+                                                                        <div className={`flex items-center gap-2 text-xs sm:text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
+                                                                            <Activity className="h-3 w-3 sm:h-4 sm:w-4" />
                                                                             {activityDate}
                                                                         </div>
                                                                     )}
                                                                 </div>
                                                                 {activityDescription && (
-                                                                    <p className={`text-lg leading-relaxed ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                                                    <p className={`text-base sm:text-lg leading-relaxed ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
                                                                         {activityDescription}
                                                                     </p>
                                                                 )}
                                                                 {activity.resources && (
                                                                     <div className={`flex items-start gap-2 p-3 rounded-xl ${darkMode ? 'bg-black/20 text-emerald-400' : 'bg-emerald-50 text-emerald-700'}`}>
-                                                                        <Wrench className="h-5 w-5 mt-0.5 shrink-0" />
-                                                                        <p className="text-sm">
-                                                                            <span className="font-bold uppercase text-[10px] block opacity-70">Resources Utilized</span>
+                                                                        <Wrench className="h-4 w-4 sm:h-5 sm:w-5 mt-0.5 shrink-0" />
+                                                                        <p className="text-xs sm:text-sm">
+                                                                            <span className="font-bold uppercase text-[10px] block opacity-70">Resources</span>
                                                                             {activity.resources}
                                                                         </p>
                                                                     </div>
@@ -577,14 +587,14 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                             </div>
 
                                                             {activity.media && activity.media.length > 0 && (
-                                                                <div className="flex gap-3 flex-wrap lg:max-w-[280px]">
+                                                                <div className="flex gap-2 sm:gap-3 flex-wrap lg:max-w-[280px]">
                                                                     {activity.media.map((item: any, i: number) => (
-                                                                        <div key={i} className="relative group w-20 h-20 rounded-xl overflow-hidden shadow-lg border-2 border-white/10">
+                                                                        <div key={i} className="relative group w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shadow-lg border-2 border-white/10">
                                                                             {item.type === 'image' ? (
                                                                                 <img src={item.url} alt={item.name} className="w-full h-full object-cover transition-transform group-hover:scale-125" />
                                                                             ) : (
                                                                                 <div className="w-full h-full flex items-center justify-center bg-gray-900 group-hover:bg-emerald-900 transition-colors">
-                                                                                    <Video className="h-8 w-8 text-white" />
+                                                                                    <Video className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
                                                                                 </div>
                                                                             )}
                                                                         </div>
@@ -597,16 +607,16 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                             })}
                                         </div>
                                     ) : (
-                                        <div className={`text-center py-20 border-3 border-dashed rounded-3xl ${darkMode ? 'border-white/5 bg-white/2' : 'border-gray-100 bg-gray-50'}`}>
-                                            <Activity className={`h-20 w-20 mx-auto mb-6 opacity-10 ${darkMode ? 'text-white' : 'text-gray-900'}`} />
-                                            <h4 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>No activity footprint found</h4>
-                                            <p className={`text-lg max-w-md mx-auto mb-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        <div className={`text-center py-12 sm:py-20 border-3 border-dashed rounded-3xl ${darkMode ? 'border-white/5 bg-white/2' : 'border-gray-100 bg-gray-50'}`}>
+                                            <Activity className={`h-16 w-16 sm:h-20 sm:w-20 mx-auto mb-4 sm:mb-6 opacity-10 ${darkMode ? 'text-white' : 'text-gray-900'}`} />
+                                            <h4 className={`text-xl sm:text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>No activity footprint found</h4>
+                                            <p className={`text-base sm:text-lg max-w-md mx-auto mb-6 sm:mb-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                                 Every cycle starts with a single log. Start tracking the <span className="text-emerald-500 font-bold">{activeStageTab}</span> stage progress now.
                                             </p>
                                             <Button
                                                 variant="outline"
                                                 onClick={openActivityDialog}
-                                                className={`h-14 px-10 text-lg font-bold rounded-2xl border-2 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all ${darkMode ? 'border-white/20 text-white' : 'border-emerald-500 text-emerald-600'}`}
+                                                className={`h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg font-bold rounded-2xl border-2 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all ${darkMode ? 'border-white/20 text-white' : 'border-emerald-500 text-emerald-600'}`}
                                             >
                                                 Log First Activity
                                             </Button>

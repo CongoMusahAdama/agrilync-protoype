@@ -6,10 +6,15 @@ const matchSchema = new mongoose.Schema({
     farmer: { type: mongoose.Schema.Types.ObjectId, ref: 'Farmer', required: true },
     farmType: { type: String, required: true },
     value: { type: String, required: true },
+    investmentType: { type: String, default: 'Cash' },
+    category: { type: String, default: 'General' },
+    partnershipModel: { type: String, default: 'Profit Sharing' },
     matchDate: { type: String },
+    startDate: { type: String },
+    progress: { type: Number, default: 0 },
     status: {
         type: String,
-        enum: ['Active', 'Pending Funding', 'Pending Approval', 'Completed'],
+        enum: ['Active', 'Pending Funding', 'Flagged', 'Pending Approval', 'Completed'],
         default: 'Pending Approval'
     },
     approvalStatus: {
@@ -24,7 +29,21 @@ const matchSchema = new mongoose.Schema({
         agreement: { type: String }
     },
     notes: { type: String },
+    updates: [{
+        title: String,
+        description: String,
+        date: String,
+        progress: Number
+    }],
+    timeline: [{
+        action: String,
+        date: String,
+        type: { type: String, enum: ['info', 'issue', 'complete', 'match'], default: 'info' }
+    }],
     agent: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent', required: true }
 }, { timestamps: true });
+
+// Indexing for performance
+matchSchema.index({ agent: 1, approvalStatus: 1 });
 
 module.exports = mongoose.models.Match || mongoose.model('Match', matchSchema);

@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useDarkMode } from '@/contexts/DarkModeContext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     AlertTriangle,
     User,
@@ -36,6 +37,7 @@ interface ViewDisputeModalProps {
 
 const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange, dispute }) => {
     const { darkMode } = useDarkMode();
+    const { agent } = useAuth();
     const [activeTab, setActiveTab] = React.useState('summary');
 
     if (!dispute) return null;
@@ -158,31 +160,32 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
                     {activeTab === 'parties' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                             {[
-                                { role: 'Farmer', name: dispute.parties?.farmer, contact: '+233 24 567 8901', email: 'farmer@example.com' },
-                                { role: 'Investor', name: dispute.parties?.investor, contact: '+233 50 123 4567', email: 'investor@lync.com' },
-                                { role: 'Handled By', name: 'Agent Kwame Mensah', contact: '+233 20 987 6543', email: 'kwame@agrilync.com' },
+                                { role: 'Farmer', name: dispute.farmer?.name || 'Unknown Farmer', contact: dispute.farmer?.contact || '+233 24 567 8901', email: 'farmer@example.com' },
+                                { role: 'Investor', name: dispute.investor || 'Unknown Investor', contact: '+233 50 123 4567', email: 'investor@lync.com' },
+                                { role: 'Handled By', name: agent?.name || 'Agent', contact: agent?.contact || '+233 24 000 0000', email: agent?.email || 'agent@agrilync.com' },
                             ].map((p, i) => (
-                                <div key={i} className={`p-6 rounded-2xl border flex items-center justify-between ${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100 shadow-sm'}`}>
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">
-                                            {p.name.charAt(0)}
+                                <div key={i} className={`p-4 sm:p-6 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100 shadow-sm'}`}>
+                                    <div className="flex items-center gap-4 w-full sm:w-auto">
+                                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-emerald-100 flex-shrink-0 flex items-center justify-center text-emerald-600 font-bold">
+                                            {p.name?.charAt(0) || '?'}
                                         </div>
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-0.5">
-                                                <span className="text-[10px] font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded text-gray-500">{p.role}</span>
-                                                <h4 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{p.name}</h4>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-0.5">
+                                                <span className="self-start text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded text-gray-500 whitespace-nowrap">{p.role}</span>
+                                                <h4 className={`font-bold text-sm sm:text-base truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>{p.name}</h4>
                                             </div>
-                                            <div className="flex items-center gap-4 text-xs text-gray-400">
+                                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs text-gray-400">
                                                 <span className="flex items-center gap-1.5"><CalendarDays className="h-3 w-3" /> {p.contact}</span>
-                                                <span className="flex items-center gap-1.5"><FileText className="h-3 w-3" /> {p.email}</span>
+                                                <span className="flex items-center gap-1.5 truncate"><FileText className="h-3 w-3" /> {p.email}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <Button variant="outline" size="sm" className="h-8 text-[10px] font-bold uppercase tracking-widest border-gray-100">Contact</Button>
+                                    <Button variant="outline" size="sm" className="w-full sm:w-auto h-8 text-[10px] font-bold uppercase tracking-widest border-gray-200 dark:border-gray-700">Contact</Button>
                                 </div>
                             ))}
                         </div>
                     )}
+
 
                     {activeTab === 'timeline' && (
                         <div className="space-y-8 pl-4 py-4 animate-in fade-in slide-in-from-bottom-2 duration-300">

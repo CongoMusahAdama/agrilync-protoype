@@ -25,6 +25,11 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage
+} from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, Filter, CheckCircle2, NotebookPen, Plus, Eye, Edit } from 'lucide-react';
@@ -88,12 +93,7 @@ const FarmersManagement: React.FC = () => {
     });
   }, [farmers, farmerSearch, farmerStatusFilter]);
 
-  const headerActions = (
-    <Button className="bg-[#1db954] hover:bg-[#17a447] text-white" onClick={() => navigate('/dashboard/agent')}>
-      <Plus className="mr-2 h-4 w-4" />
-      Add Farmer
-    </Button>
-  );
+  const headerActions = null;
 
   const cardClass = darkMode ? 'bg-[#002f37] border-gray-600 border' : 'bg-white';
   const titleClass = darkMode ? 'text-white' : 'text-gray-900';
@@ -146,20 +146,33 @@ const FarmersManagement: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow className={tableHeaderClass}>
-                  <TableHead className={darkMode ? 'text-gray-100' : ''}>Farmer</TableHead>
-                  <TableHead className={darkMode ? 'text-gray-100' : ''}>Region</TableHead>
-                  <TableHead className={darkMode ? 'text-gray-100' : ''}>Community</TableHead>
-                  <TableHead className={darkMode ? 'text-gray-100' : ''}>Farm Type</TableHead>
-                  <TableHead className={darkMode ? 'text-gray-100' : ''}>Status</TableHead>
-                  <TableHead className={darkMode ? 'text-gray-100' : ''}>Investment Status</TableHead>
-                  <TableHead className={darkMode ? 'text-gray-100' : ''}>Last Updated</TableHead>
-                  <TableHead className={`text-right ${darkMode ? 'text-gray-100' : ''}`}>Actions</TableHead>
+                  <TableHead className="text-white uppercase whitespace-nowrap font-bold">Farmer</TableHead>
+                  <TableHead className="text-white uppercase whitespace-nowrap font-bold">Region</TableHead>
+                  <TableHead className="text-white uppercase whitespace-nowrap font-bold">Community</TableHead>
+                  <TableHead className="text-white uppercase whitespace-nowrap font-bold">Farm Type</TableHead>
+                  <TableHead className="text-white uppercase whitespace-nowrap font-bold">Status</TableHead>
+                  <TableHead className="text-white uppercase whitespace-nowrap font-bold">Investment Status</TableHead>
+                  <TableHead className="text-white uppercase whitespace-nowrap font-bold">Last Updated</TableHead>
+                  <TableHead className="text-right text-white uppercase whitespace-nowrap font-bold">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredFarmers.map((farmer) => (
                   <TableRow key={farmer._id} className={tableRowClass}>
-                    <TableCell className={`font-medium ${tableCellClass}`}>{farmer.name}</TableCell>
+                    <TableCell className={tableCellClass}>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-9 w-9 border-2 border-white/20">
+                          {farmer.profilePicture ? (
+                            <AvatarImage src={farmer.profilePicture} alt={farmer.name} className="object-cover" />
+                          ) : (
+                            <AvatarFallback className={`${darkMode ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-700'}`}>
+                              {farmer.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          )}
+                        </Avatar>
+                        <span className="font-medium">{farmer.name}</span>
+                      </div>
+                    </TableCell>
                     <TableCell className={tableCellClass}>{farmer.region}</TableCell>
                     <TableCell className={tableCellClass}>{farmer.community}</TableCell>
                     <TableCell className={tableCellClass}>{farmer.farmType}</TableCell>

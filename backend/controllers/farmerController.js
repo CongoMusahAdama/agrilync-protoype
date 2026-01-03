@@ -1,6 +1,7 @@
 const Farmer = require('../models/Farmer');
 const Agent = require('../models/Agent');
 const Notification = require('../models/Notification');
+const Activity = require('../models/Activity');
 
 // @route   GET api/farmers
 // @desc    Get all farmers for current agent
@@ -95,6 +96,15 @@ exports.addFarmer = async (req, res) => {
         });
 
         const farmer = await newFarmer.save();
+
+        // Log Activity
+        await Activity.create({
+            agent: req.agent.id,
+            type: 'verification',
+            title: `Onboarded ${farmer.name}`,
+            description: `New farmer added in ${farmer.community || 'their community'}`
+        });
+
         res.status(201).json(farmer);
     } catch (err) {
         if (err.name === 'ValidationError') {

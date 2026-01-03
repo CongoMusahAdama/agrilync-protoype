@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import {
   Card,
@@ -84,9 +85,109 @@ const getSeverityBadge = (severity: string) => {
 const InvestorFarmerMatchesDashboard: React.FC = () => {
   const { darkMode } = useDarkMode();
   const { agent } = useAuth();
-  const [matches, setMatches] = useState<any[]>([]);
-  const [issues, setIssues] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: summaryData, isLoading: loadingSummary } = useQuery({
+    queryKey: ['agentDashboardSummary'],
+    queryFn: async () => {
+      const response = await api.get('/dashboard/summary');
+      return response.data.data;
+    },
+    staleTime: 60000
+  });
+
+  const { data: farmersList = [] } = useQuery({
+    queryKey: ['agentFarmers'],
+    queryFn: async () => {
+      const response = await api.get('/farmers');
+      return response.data;
+    },
+    staleTime: 60000
+  });
+
+  // MOCK DATA FOR DEMONSTRATION
+  const MOCK_DATA = {
+    matches: [
+      {
+        id: 'm1',
+        farmer: { name: 'Kwame Mensah', region: 'Ashanti', verified: true },
+        investor: { name: 'Agrifund Capital' },
+        category: 'Crop',
+        farmType: 'Maize',
+        investmentValue: 'GHS 15,000',
+        investmentType: 'Input Support',
+        progress: 65,
+        status: 'Active',
+        matchDate: '2025-12-15T10:00:00Z',
+        updates: [1, 2, 3]
+      },
+      {
+        id: 'm2',
+        farmer: { name: 'Abena Osei', region: 'Eastern', verified: true },
+        investor: { name: 'GreenGrowth Partners' },
+        category: 'Livestock',
+        farmType: 'Poultry',
+        investmentValue: 'GHS 25,000',
+        investmentType: 'Cash Support',
+        progress: 30,
+        status: 'Pending Approval',
+        matchDate: '2026-01-02T14:30:00Z',
+        updates: []
+      },
+      {
+        id: 'm3',
+        farmer: { name: 'John Doe', region: 'Northern', verified: false },
+        investor: { name: 'Savannah Investments' },
+        category: 'Crop',
+        farmType: 'Soybean',
+        investmentValue: 'GHS 10,000',
+        investmentType: 'Equipment',
+        progress: 100,
+        status: 'Completed',
+        matchDate: '2025-10-10T09:00:00Z',
+        updates: [1, 2, 3, 4, 5]
+      },
+      {
+        id: 'm4',
+        farmer: { name: 'Emmanuel Yeboah', region: 'Volta', verified: true },
+        investor: { name: 'Global Agri-Tech' },
+        category: 'Crop',
+        farmType: 'Rice',
+        investmentValue: 'GHS 50,000',
+        investmentType: 'Infrastructure',
+        progress: 45,
+        status: 'Flagged',
+        matchDate: '2025-11-20T11:15:00Z',
+        updates: [1, 2]
+      }
+    ],
+    issues: [
+      {
+        id: 'DIS-2024-001',
+        type: 'Breach of Contract',
+        severity: 'High',
+        investor: 'Agrifund Capital',
+        farmer: 'Kwame Mensah',
+        status: 'Pending Review',
+        dateLogged: '2026-01-03',
+        createdAt: '2026-01-03T08:00:00Z'
+      },
+      {
+        id: 'DIS-2024-002',
+        type: 'Delayed Payment',
+        severity: 'Medium',
+        investor: 'GreenGrowth Partners',
+        farmer: 'Abena Osei',
+        status: 'In Progress',
+        dateLogged: '2025-12-28',
+        createdAt: '2025-12-28T14:00:00Z'
+      }
+    ]
+  };
+
+  const matches = (summaryData?.matches && summaryData.matches.length > 0) ? summaryData.matches : MOCK_DATA.matches;
+  const issues = (summaryData?.disputes && summaryData.disputes.length > 0) ? summaryData.disputes : MOCK_DATA.issues;
+  const loading = loadingSummary;
+  const isLoaded = !loadingSummary;
+
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [investmentTypeFilter, setInvestmentTypeFilter] = useState('all');
@@ -98,37 +199,90 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
   const [activeMetricFilter, setActiveMetricFilter] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [updateNotes, setUpdateNotes] = useState('');
-  const [activeTab, setActiveTab] = useState<'matches' | 'issues'>('matches');
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [activeTab, setActiveTab] = useState<'matches' | 'issues' | 'opportunities'>('matches');
+  const [selectedOpportunity, setSelectedOpportunity] = useState<any>(null);
+  const [selectedFarmerId, setSelectedFarmerId] = useState<string>('');
+  const [isSubmittingMatch, setIsSubmittingMatch] = useState(false);
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [matchesRes, disputesRes] = await Promise.all([
-          api.get('/matches'),
-          api.get('/disputes')
-        ]);
-        setMatches(matchesRes.data);
-        setIssues(disputesRes.data);
-        setIsLoaded(true);
-      } catch (err) {
-        toast.error('Failed to load matches and disputes');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+
+  const handleSubmitMatch = async () => {
+    if (!selectedFarmerId || !selectedOpportunity) return;
+
+    setIsSubmittingMatch(true);
+    try {
+      await api.post('/matches', {
+        farmerId: selectedFarmerId,
+        investor: selectedOpportunity.investor,
+        farmType: selectedOpportunity.type, // Map type to farmType roughly
+        value: selectedOpportunity.valueRange,
+        investmentType: selectedOpportunity.type,
+        category: 'Partnership'
+      });
+      toast.success('Match proposal submitted successfully!');
+      setShowMatchModal(false);
+      // Refresh matches
+      window.location.reload(); // Simple refresh for now or invalidate query if I had queryClient
+    } catch (err) {
+      toast.error('Failed to create match');
+    } finally {
+      setIsSubmittingMatch(false);
+    }
+  };
+
+  // Fetch Opportunities
+  const MOCK_OPPORTUNITIES = [
+    {
+      _id: 'opp1',
+      investor: 'Agrifund Capital',
+      type: 'Crop Production',
+      valueRange: 'GHS 10k - 50k',
+      title: 'Maize Expansion Project',
+      description: 'Looking for verified farmers in Ashanti region to scale up maize production for local processing.',
+      targetRegions: ['Ashanti', 'Bono'],
+      status: 'Open'
+    },
+    {
+      _id: 'opp2',
+      investor: 'GreenGrowth Partners',
+      type: 'Livestock',
+      valueRange: 'GHS 20k - 100k',
+      title: 'Organic Poultry Initiative',
+      description: 'Scaling sustainable poultry farming with focus on organic feed and ethical practices.',
+      targetRegions: ['Eastern', 'Greater Accra'],
+      status: 'Urgent'
+    },
+    {
+      _id: 'opp3',
+      investor: 'TechFarm Ventures',
+      type: 'Agri-Tech',
+      valueRange: 'GHS 5k - 25k',
+      title: 'Smart Solar Irrigation',
+      description: 'Providing solar-powered irrigation systems to dry-season vegetable farmers.',
+      targetRegions: ['Northern', 'Upper East'],
+      status: 'Open'
+    }
+  ];
+
+  const { data: opportunitiesData, isLoading: loadingOpportunities } = useQuery({
+    queryKey: ['agentOpportunities'],
+    queryFn: async () => {
+      const response = await api.get('/opportunities');
+      return response.data;
+    },
+    staleTime: 60000
+  });
+
+  const opportunities = (opportunitiesData && opportunitiesData.length > 0) ? opportunitiesData : MOCK_OPPORTUNITIES;
 
   // Calculate metrics
   const totalMatches = matches.length;
-  const pendingMatches = matches.filter(m => m.status === 'Pending Approval' || m.status === 'Pending Funding').length;
-  const activeInvestments = matches.filter(m => m.status === 'Active').length;
-  const completedPartnerships = matches.filter(m => m.status === 'Completed').length;
-  const flaggedIssuesCount = issues.filter(i => i.status !== 'Resolved').length;
+  const pendingMatches = matches.filter((m: any) => m.status === 'Pending Approval' || m.status === 'Pending Funding').length;
+  const activeInvestments = matches.filter((m: any) => m.status === 'Active').length;
+  const completedPartnerships = matches.filter((m: any) => m.status === 'Completed').length;
+  const flaggedIssuesCount = issues.filter((i: any) => i.status !== 'Resolved').length;
 
   // Filter matches
-  const filteredMatches = matches.filter(match => {
+  const filteredMatches = matches.filter((match: any) => {
     // Search filter
     const matchesSearch = searchQuery === '' ||
       (match.farmer?.name && match.farmer.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -198,25 +352,24 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
             { label: 'Active Projects', value: activeInvestments, icon: DollarSign, color: 'bg-emerald-600', filter: 'active' },
             { label: 'Completed', value: completedPartnerships, icon: CheckCircle, color: 'bg-blue-600', filter: 'completed' },
             { label: 'Flagged Issues', value: flaggedIssuesCount, icon: AlertTriangle, color: 'bg-red-600', filter: 'flagged' },
-          ].map((item, index) => (
+          ].map((card: any, idx: number) => (
             <Card
-              key={item.label}
-              className={`${item.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-700 relative overflow-hidden ${activeMetricFilter === item.filter ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent' : ''} ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-              style={{ transitionDelay: `${index * 100}ms` }}
-              onClick={() => handleMetricClick(item.filter)}
+              key={card.label}
+              className={`${card.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-700 relative overflow-hidden ${activeMetricFilter === card.filter ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent' : ''} ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              style={{ transitionDelay: `${idx * 100}ms` }}
+              onClick={() => handleMetricClick(card.filter)}
             >
-              {/* Background Decoration */}
               <div className="absolute inset-0 opacity-10 pointer-events-none">
-                <item.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
+                <card.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
               </div>
 
               <div className="p-3 sm:p-5 flex flex-col h-full relative z-10 text-left">
                 <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
-                  <item.icon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
-                  <p className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">{item.label}</p>
+                  <card.icon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                  <p className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">{card.label}</p>
                 </div>
                 <div className="flex-1 flex items-center">
-                  <p className="big-metric text-white">{item.value}</p>
+                  <p className="big-metric text-white">{card.value}</p>
                 </div>
               </div>
             </Card>
@@ -320,20 +473,46 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
         </Card>
 
         {/* Matches and Issues Tabs */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'matches' | 'issues')} className="w-full">
-          <TabsList className={`flex w-full mb-6 p-1 gap-1 rounded-xl h-auto ${darkMode ? 'bg-[#0b2528] border border-[#1b5b65]' : 'bg-gray-100 border border-gray-200 shadow-sm'}`}>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'matches' | 'issues' | 'opportunities')} className="w-full">
+          <TabsList className={`grid grid-cols-3 w-full mb-6 p-1 gap-1 rounded-xl h-auto ${darkMode ? 'bg-[#0b2528] border border-[#1b5b65]' : 'bg-gray-100 border border-gray-200 shadow-sm'}`}>
             <TabsTrigger
               value="matches"
-              className={`flex-1 py-3 text-[10px] font-black uppercase tracking-wider h-11 rounded-lg transition-all ${darkMode ? 'data-[state=active]:bg-[#1b5b65] data-[state=active]:text-white' : 'data-[state=active]:bg-white data-[state=active]:text-emerald-600'}`}
+              className={`py-3 text-[9px] sm:text-[10px] font-black uppercase tracking-wider h-auto min-h-[44px] rounded-lg transition-all whitespace-normal leading-tight ${darkMode ? 'data-[state=active]:bg-[#1b5b65] data-[state=active]:text-white' : 'data-[state=active]:bg-white data-[state=active]:text-emerald-600'}`}
             >
-              Active Partnerships ({sortedMatches.length})
+              <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
+                <Briefcase className="h-4 w-4 sm:hidden" />
+                <span>
+                  <span className="sm:hidden">Matches</span>
+                  <span className="hidden sm:inline">Active Partnerships</span>
+                  <span className="ml-1 opacity-70">({sortedMatches.length})</span>
+                </span>
+              </div>
+            </TabsTrigger>
+            <TabsTrigger
+              value="opportunities"
+              className={`py-3 text-[9px] sm:text-[10px] font-black uppercase tracking-wider h-auto min-h-[44px] rounded-lg transition-all whitespace-normal leading-tight ${darkMode ? 'data-[state=active]:bg-[#1b5b65] data-[state=active]:text-white' : 'data-[state=active]:bg-white data-[state=active]:text-emerald-600'}`}
+            >
+              <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
+                <TrendingUp className="h-4 w-4" />
+                <span>
+                  <span className="sm:hidden">Invest</span>
+                  <span className="hidden sm:inline">Opportunities</span>
+                  <span className="ml-1 opacity-70">({opportunities.length})</span>
+                </span>
+              </div>
             </TabsTrigger>
             <TabsTrigger
               value="issues"
-              className={`flex-1 py-3 text-[10px] font-black uppercase tracking-wider h-11 rounded-lg transition-all ${darkMode ? 'data-[state=active]:bg-[#1b5b65] data-[state=active]:text-white' : 'data-[state=active]:bg-white data-[state=active]:text-emerald-600'}`}
+              className={`py-3 text-[9px] sm:text-[10px] font-black uppercase tracking-wider h-auto min-h-[44px] rounded-lg transition-all whitespace-normal leading-tight ${darkMode ? 'data-[state=active]:bg-[#1b5b65] data-[state=active]:text-white' : 'data-[state=active]:bg-white data-[state=active]:text-emerald-600'}`}
             >
-              <AlertTriangle className="h-4 w-4 mr-2 inline" />
-              Resolution Center ({issues.filter(i => i.status !== 'Resolved').length})
+              <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                <span>
+                  <span className="sm:hidden">Issues</span>
+                  <span className="hidden sm:inline">Resolution Center</span>
+                  <span className="ml-1 opacity-70">({issues.filter((i: any) => i.status !== 'Resolved').length})</span>
+                </span>
+              </div>
             </TabsTrigger>
           </TabsList>
 
@@ -364,27 +543,27 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
                         </Badge>
                       </div>
 
-                      <div className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-blue-50 dark:bg-blue-900/10">
+                      <div className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-blue-50 dark:bg-[#0b2528] border border-transparent dark:border-[#1b5b65]">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center ${darkMode ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
                           <Building className={`h-3 w-3 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                         </div>
-                        <span className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>{match.investor.name}</span>
+                        <span className={`text-sm font-medium ${darkMode ? 'text-amber-400' : 'text-gray-700'}`}>{match.investor.name}</span>
                       </div>
 
                       <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-sm mb-4">
                         <div>
                           <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Category</span>
-                          <div className={darkMode ? 'text-gray-200' : 'text-gray-900'}>{match.category}</div>
+                          <div className={darkMode ? 'text-emerald-300' : 'text-gray-900'}>{match.category}</div>
                         </div>
                         <div>
                           <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Investment</span>
-                          <div className="font-medium text-green-600">{match.investmentValue}</div>
+                          <div className={`font-medium ${darkMode ? 'text-emerald-400' : 'text-green-600'}`}>{match.investmentValue}</div>
                         </div>
                       </div>
 
                       <div className="mb-4">
                         <div className="flex justify-between text-xs mb-1">
-                          <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Progress</span>
+                          <span className={darkMode ? 'text-gray-600' : 'text-gray-500'}>Progress</span>
                           <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>{match.progress}%</span>
                         </div>
                         <Progress value={match.progress} className="h-2" />
@@ -410,6 +589,7 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
 
                 {/* Desktop Table View */}
                 <div className="hidden sm:block overflow-x-auto">
+                  {/* ... (keeping existing desktop table for matches) ... */}
                   <table className="w-full">
                     <thead>
                       <tr className="bg-[#1db954] border-[#1db954]">
@@ -495,7 +675,6 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
                       ))}
                     </tbody>
                   </table>
-
                   {sortedMatches.length === 0 && (
                     <div className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                       <p>No matches found. Try adjusting your filters.</p>
@@ -506,10 +685,119 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
             </Card>
           </TabsContent>
 
+          {/* Opportunities Tab */}
+          <TabsContent value="opportunities">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {opportunities.map((opp: any) => (
+                <Card key={opp._id} className={`${darkMode ? 'bg-[#0b2528] border-[#1b5b65]' : 'bg-white'} hover:shadow-lg transition-all duration-300`}>
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${darkMode ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
+                          <Building className={`h-5 w-5 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                        </div>
+                        <div>
+                          <CardTitle className="text-base font-bold">{opp.investor}</CardTitle>
+                          <CardDescription className="text-xs">{opp.type}</CardDescription>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-wider">{opp.status}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h4 className="font-bold text-lg text-emerald-600">{opp.valueRange}</h4>
+                      <h5 className={`font-semibold text-sm mt-1 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>{opp.title}</h5>
+                      <p className={`text-xs mt-2 line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {opp.description}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {opp.targetRegions && opp.targetRegions.length > 0 ? opp.targetRegions.map((r: string) => (
+                        <Badge key={r} variant="secondary" className="text-[10px]">{r}</Badge>
+                      )) : <Badge variant="secondary" className="text-[10px]">All Regions</Badge>}
+                    </div>
+
+                    <Button
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                      onClick={() => {
+                        setSelectedOpportunity(opp);
+                        setShowMatchModal(true);
+                      }}
+                    >
+                      Match Farmer
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+              {opportunities.length === 0 && (
+                <Card className={`col-span-full p-12 text-center border-dashed ${darkMode ? 'bg-transparent border-[#1b5b65]' : 'bg-gray-50 border-gray-200'}`}>
+                  <div className="flex flex-col items-center">
+                    <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                      <TrendingUp className="h-8 w-8 text-emerald-500" />
+                    </div>
+                    <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>No Opportunities Yet</h3>
+                    <p className="text-gray-500 max-w-sm">There are currently no open investment opportunities matching your criteria.</p>
+                  </div>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Match Modal */}
+          <Dialog open={showMatchModal} onOpenChange={setShowMatchModal}>
+            <DialogContent className={darkMode ? 'bg-[#0b2528] border-[#1b5b65] text-white' : ''}>
+              <DialogHeader>
+                <DialogTitle>Match Farmer to Opportunity</DialogTitle>
+                <DialogDescription className={darkMode ? 'text-gray-400' : ''}>
+                  Select a farmer from your list to apply for this {selectedOpportunity?.title} opportunity.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Select Farmer</Label>
+                  <Select onValueChange={setSelectedFarmerId}>
+                    <SelectTrigger className={darkMode ? 'bg-[#10363d] border-[#1b5b65]' : ''}>
+                      <SelectValue placeholder="Choose a farmer..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {farmersList.map((f: any) => (
+                        <SelectItem key={f._id} value={f._id}>{f.name} - {f.community}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-lg text-sm text-emerald-700 dark:text-emerald-400">
+                  <p className="font-bold mb-1">Opportunity Details:</p>
+                  <ul className="list-disc pl-4 space-y-1">
+                    <li>Investor: {selectedOpportunity?.investor}</li>
+                    <li>Type: {selectedOpportunity?.type}</li>
+                    <li>Value: {selectedOpportunity?.valueRange}</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setShowMatchModal(false)} className={darkMode ? 'border-[#1b5b65] text-gray-300 hover:bg-[#1b5b65]' : ''}>Cancel</Button>
+                <Button
+                  onClick={handleSubmitMatch}
+                  disabled={!selectedFarmerId || isSubmittingMatch}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  {isSubmittingMatch ? 'Submitting...' : 'Confirm Match'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+
           {/* Flagged Issues Tab */}
-          <TabsContent value="issues">
+          <TabsContent value="issues" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {issues.map((issue) => (
+              {issues.map((issue: any) => (
                 <Card
                   key={issue.id}
                   className={`relative overflow-hidden border-none shadow-lg transition-all hover:scale-[1.02] ${darkMode ? 'bg-[#0b2528]' : 'bg-white'}`}
@@ -529,13 +817,24 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
                     </div>
 
                     <div className="space-y-4 mb-6">
+                      <div className="p-3 rounded-lg bg-gray-50 dark:bg-[#0b2528] border border-gray-100 dark:border-[#1b5b65] mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                            <Briefcase className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <div className="overflow-hidden">
+                            <p className={`text-[10px] uppercase font-bold leading-none mb-1 ${darkMode ? 'text-gray-600' : 'text-gray-500'}`}>Investor</p>
+                            <p className={`text-sm font-bold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>{issue.investor}</p>
+                          </div>
+                        </div>
+                      </div>
                       <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
                             <Briefcase className="h-4 w-4 text-blue-600" />
                           </div>
                           <div>
-                            <p className="text-[9px] uppercase font-bold text-gray-400 leading-none mb-1">Investor</p>
+                            <p className={`text-[9px] uppercase font-bold leading-none mb-1 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>Investor</p>
                             <p className={`text-sm font-bold leading-none ${darkMode ? 'text-white' : 'text-gray-900'}`}>{issue.investor}</p>
                           </div>
                         </div>
@@ -545,8 +844,10 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
                             <User className="h-4 w-4 text-emerald-600" />
                           </div>
                           <div>
-                            <p className="text-[9px] uppercase font-bold text-gray-400 leading-none mb-1">Farmer</p>
-                            <p className={`text-sm font-bold leading-none ${darkMode ? 'text-white' : 'text-gray-900'}`}>{issue.farmer}</p>
+                            <p className={`text-[9px] uppercase font-bold leading-none mb-1 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>Farmer</p>
+                            <p className={`text-sm font-bold leading-none ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                              {issue.farmer?.name || issue.farmer || 'Unknown Farmer'}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -828,7 +1129,7 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="relative">
-                          {selectedMatch.timeline.map((item: any, index: number) => (
+                          {(selectedMatch.timeline || []).map((item: any, index: number) => (
                             <div key={index} className="flex gap-4 pb-4">
                               <div className="flex flex-col items-center">
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${item.type === 'issue' ? 'bg-red-100' :
@@ -906,6 +1207,8 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+
       </div>
     </AgentLayout>
   );

@@ -2,11 +2,9 @@ const mongoose = require('mongoose');
 
 const disputeSchema = new mongoose.Schema({
     id: { type: String, required: true, unique: true }, // #D102
-    parties: {
-        farmer: { type: String, required: true },
-        investor: { type: String, required: true },
-        agent: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent', required: true }
-    },
+    farmer: { type: mongoose.Schema.Types.ObjectId, ref: 'Farmer', required: true },
+    investor: { type: String, required: true },
+    agent: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent', required: true },
     type: { type: String, required: true },
     severity: {
         type: String,
@@ -30,5 +28,11 @@ const disputeSchema = new mongoose.Schema({
     notes: { type: String },
     resolution: { type: String }
 }, { timestamps: true });
+
+// Indexes for performance
+disputeSchema.index({ agent: 1, createdAt: -1 });
+disputeSchema.index({ farmer: 1 });
+disputeSchema.index({ status: 1 });
+disputeSchema.index({ id: 1 }, { unique: true });
 
 module.exports = mongoose.models.Dispute || mongoose.model('Dispute', disputeSchema);

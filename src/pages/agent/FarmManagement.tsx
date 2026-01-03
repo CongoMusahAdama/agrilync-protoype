@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { exportToPDF, exportToWord } from '@/utils/reportExport';
 import AgentLayout from './AgentLayout';
@@ -24,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     Search,
     Users,
@@ -59,12 +62,23 @@ import {
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
+const MetricCardSkeleton = () => (
+    <Card className="bg-gray-800/50 border-gray-700 rounded-lg p-3 sm:p-6 shadow-lg animate-pulse">
+        <div className="flex flex-col h-full gap-4 text-left">
+            <div className="flex items-center gap-3">
+                <Skeleton className="h-8 w-8 rounded-lg bg-gray-700" />
+                <Skeleton className="h-4 w-24 bg-gray-700" />
+            </div>
+            <div className="flex-1 flex items-center">
+                <Skeleton className="h-10 w-16 bg-gray-700" />
+            </div>
+        </div>
+    </Card>
+);
+
 const FarmManagement: React.FC = () => {
     const { darkMode } = useDarkMode();
     const { agent } = useAuth();
-    const [farmers, setFarmers] = useState<any[]>([]);
-    const [farms, setFarms] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRegion, setSelectedRegion] = useState<string>('all');
     const [selectedFarmType, setSelectedFarmType] = useState<string>('all');
@@ -76,7 +90,6 @@ const FarmManagement: React.FC = () => {
     const [viewModalOpen, setViewModalOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
-    const [pendingFarmers, setPendingFarmers] = useState<any[]>([]);
     const [verificationQueueModalOpen, setVerificationQueueModalOpen] = useState(false);
     const [selectedTab, setSelectedTab] = useState('personal');
 
@@ -84,74 +97,66 @@ const FarmManagement: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'farmers' | 'visits' | 'reports'>('farmers');
     const [fieldVisitModalOpen, setFieldVisitModalOpen] = useState(false);
     const [journeyModalOpen, setJourneyModalOpen] = useState(false);
-    const [isLoaded, setIsLoaded] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [loadingVisits, setLoadingVisits] = useState(false);
 
-    const fetchData = async () => {
-        setLoading(true);
-        setLoadingVisits(true);
-        setLoadingReports(true);
-        try {
-            const [farmersRes, farmsRes, pendingRes, visitsRes] = await Promise.all([
-                api.get('/farmers'),
-                api.get('/farms'),
-                api.get('/farmers/queue/pending'),
-                api.get('/field-visits')
-            ]);
-            setFarmers(farmersRes.data);
-            setFarms(farmsRes.data);
-            setPendingFarmers(pendingRes.data);
-            setVisitLogs(visitsRes.data);
-
-            // Try to fetch reports, but don't fail if endpoint doesn't exist
-            try {
-                const reportsRes = await api.get('/reports/agent');
-                setReports(reportsRes.data);
-            } catch (reportsErr: any) {
-                if (reportsErr.response?.status !== 404) {
-                    console.error('Error fetching reports:', reportsErr);
-                }
-                // If 404, just leave reports empty
-                setReports([]);
-            }
-
-            setIsLoaded(true);
-        } catch (err) {
-            console.error('Initial fetch error:', err);
-            toast.error('Failed to load dashboard data');
-        } finally {
-            setLoading(false);
-            setLoadingVisits(false);
-            setLoadingReports(false);
+    // Initial Tab Selection from URL
+    const location = useLocation();
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const tabParam = params.get('tab');
+        if (tabParam && ['farmers', 'visits', 'reports'].includes(tabParam)) {
+            setActiveTab(tabParam as 'farmers' | 'visits' | 'reports');
         }
+    }, [location.search]);
+
+    // useQuery for dashboard data (shared with main dashboard)
+    const { data: summaryData, isLoading: loadingSummary, refetch: refetchSummary } = useQuery({
+        queryKey: ['agentDashboardSummary'],
+        queryFn: async () => {
+            const response = await api.get('/dashboard/summary');
+            return response.data.data;
+        },
+        staleTime: 60000
+    });
+
+    // useQuery for field visits
+    const { data: visitLogsData, isLoading: loadingVisits, refetch: refetchVisits } = useQuery({
+        queryKey: ['fieldVisits'],
+        queryFn: async () => {
+            const response = await api.get('/field-visits');
+            return response.data;
+        },
+        staleTime: 60000
+    });
+
+    // useQuery for reports
+    const { data: reportsData, isLoading: loadingReports, refetch: refetchReports } = useQuery({
+        queryKey: ['reports'],
+        queryFn: async () => {
+            const response = await api.get('/reports/agent');
+            return response.data;
+        },
+        staleTime: 60000
+    });
+
+    const farmers = summaryData?.farmers || [];
+    const farms = summaryData?.farms || [];
+    const pendingFarmers = summaryData?.pendingQueue || [];
+    const visitLogs = visitLogsData || [];
+    const reports = reportsData || [];
+
+    const loading = loadingSummary;
+    const isLoaded = !loadingSummary && !loadingVisits && !loadingReports;
+
+    const fetchData = () => {
+        refetchSummary();
+        refetchVisits();
+        refetchReports();
     };
 
-    React.useEffect(() => {
-        fetchData();
-    }, []);
+    // State moved to useQuery
 
-    const [reports, setReports] = useState<any[]>([]);
-    const [loadingReports, setLoadingReports] = useState(false);
 
-    const fetchReports = async () => {
-        setLoadingReports(true);
-        try {
-            const response = await api.get('/reports');
-            setReports(response.data);
-        } catch (error: any) {
-            // Silently handle 404 - endpoint doesn't exist yet
-            if (error.response?.status === 404) {
-                setReports([]);
-            } else {
-                console.error('Failed to fetch reports:', error);
-            }
-        } finally {
-            setLoadingReports(false);
-        }
-    };
-
-    const [visitLogs, setVisitLogs] = useState<any[]>([]);
+    // visitLogs moved to useQuery
     const [selectedVisits, setSelectedVisits] = useState<Set<string>>(new Set());
     const [isExporting, setIsExporting] = useState<'pdf' | 'excel' | null>(null);
     const [visitForm, setVisitForm] = useState({
@@ -176,20 +181,20 @@ const FarmManagement: React.FC = () => {
 
     const metrics = useMemo(() => {
         const total = farmers.length;
-        const verified = farmers.filter(f => f.status === 'active').length;
+        const verified = farmers.filter((f: any) => f.status === 'active').length;
         const pending = pendingFarmers.length; // From verification queue
         const activeCount = farms.length; // Count all created farms
-        const matched = farmers.filter(f => f.investmentStatus === 'Matched').length;
+        const matched = farmers.filter((f: any) => f.investmentStatus === 'Matched').length;
         return { total, verified, pending, active: activeCount, matched };
     }, [farmers, farms, pendingFarmers]);
 
     const filteredFarmers = useMemo(() => {
-        return farmers.map(f => {
+        return farmers.map((f: any) => {
             let displayStatus = f.status;
             if (displayStatus === 'active') displayStatus = 'Completed';
             if (displayStatus === 'pending') displayStatus = 'Pending';
             return { ...f, displayStatus };
-        }).filter(farmer => {
+        }).filter((farmer: any) => {
             const matchesSearch =
                 farmer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 (farmer.phone && farmer.phone.includes(searchQuery));
@@ -338,14 +343,8 @@ const FarmManagement: React.FC = () => {
         setFieldVisitModalOpen(true);
     };
 
-    // Fetch field visits
-    const fetchVisits = async () => {
-        try {
-            const res = await api.get('/field-visits');
-            setVisitLogs(res.data);
-        } catch (err) {
-            console.error('Error fetching field visits:', err);
-        }
+    const fetchVisits = () => {
+        refetchVisits();
     };
 
     const handleExportPDF = async () => {
@@ -355,7 +354,7 @@ const FarmManagement: React.FC = () => {
         }
 
         const dataToExport = selectedVisits.size > 0
-            ? visitLogs.filter(v => selectedVisits.has(v._id || v.id))
+            ? visitLogs.filter((v: any) => selectedVisits.has(v._id || v.id))
             : visitLogs;
 
         setIsExporting('pdf');
@@ -375,7 +374,7 @@ const FarmManagement: React.FC = () => {
             doc.text(`Type: ${selectedVisits.size > 0 ? 'Selected Records' : 'All Records'}`, 14, 44);
 
             const tableColumn = ["Date", "Farmer", "Lync ID", "Purpose", "Hours", "Status"];
-            const tableRows = dataToExport.map(visit => [
+            const tableRows = dataToExport.map((visit: any) => [
                 new Date(visit.date).toLocaleDateString(),
                 visit.farmer?.name || visit.farmerName,
                 visit.farmer?.lyncId || visit.lyncId,
@@ -411,14 +410,14 @@ const FarmManagement: React.FC = () => {
         }
 
         const dataToExport = selectedVisits.size > 0
-            ? visitLogs.filter(v => selectedVisits.has(v._id || v.id))
+            ? visitLogs.filter((v: any) => selectedVisits.has(v._id || v.id))
             : visitLogs;
 
         setIsExporting('excel');
         await new Promise(resolve => setTimeout(resolve, 800));
 
         try {
-            const exportData = dataToExport.map(visit => ({
+            const exportData = dataToExport.map((visit: any) => ({
                 'Date': new Date(visit.date).toLocaleDateString(),
                 'Farmer Name': visit.farmer?.name || visit.farmerName,
                 'Lync ID': visit.farmer?.lyncId || visit.lyncId,
@@ -442,44 +441,21 @@ const FarmManagement: React.FC = () => {
         }
     };
 
-    React.useEffect(() => {
-        if (isLoaded) {
-            fetchVisits();
-        }
-    }, [isLoaded]);
 
-    const handleSubmitVisit = async () => {
-        const finalPurpose = visitForm.purpose === 'Other' ? visitForm.otherPurpose : visitForm.purpose;
+    const queryClient = useQueryClient();
 
-        if (!visitForm.farmerId || !finalPurpose || !visitForm.notes) {
-            toast.error('Please fill all required fields');
-            return;
-        }
-
-        setIsSaving(true);
-        try {
-            const visitData = {
-                farmer: visitForm.farmerId,
-                date: visitForm.date,
-                time: visitForm.time,
-                hoursSpent: Number(visitForm.hoursSpent),
-                purpose: finalPurpose,
-                notes: visitForm.notes,
-                visitImages: visitImages,
-                challenges: visitForm.challenges,
-                status: visitForm.status
-            };
-
+    const visitMutation = useMutation({
+        mutationFn: async (visitData: any) => {
             if (visitForm.isEditing && visitForm.editingId) {
-                await api.put(`/field-visits/${visitForm.editingId}`, visitData);
-                toast.success('Field visit updated successfully!');
+                return api.put(`/field-visits/${visitForm.editingId}`, visitData);
             } else {
-                await api.post('/field-visits', visitData);
-                toast.success('Field visit logged successfully!');
+                return api.post('/field-visits', visitData);
             }
-
-            await fetchVisits(); // Refresh the list
-            await fetchData(); // Refresh metrics and farmers
+        },
+        onSuccess: () => {
+            toast.success(visitForm.isEditing ? 'Field visit updated successfully!' : 'Field visit logged successfully!');
+            queryClient.invalidateQueries({ queryKey: ['fieldVisits'] });
+            queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
             setFieldVisitModalOpen(false);
             // Reset form
             setVisitForm({
@@ -499,12 +475,36 @@ const FarmManagement: React.FC = () => {
                 editingId: ''
             });
             setVisitImages([]);
-        } catch (err) {
+        },
+        onError: (err) => {
             console.error('Error saving visit:', err);
             toast.error(visitForm.isEditing ? 'Failed to update field visit' : 'Failed to log field visit');
-        } finally {
-            setIsSaving(false);
         }
+    });
+
+    // const isSaving = visitMutation.isPending; // Removed to avoid conflict with state
+
+    const handleSubmitVisit = async () => {
+        const finalPurpose = visitForm.purpose === 'Other' ? visitForm.otherPurpose : visitForm.purpose;
+
+        if (!visitForm.farmerId || !finalPurpose || !visitForm.notes) {
+            toast.error('Please fill all required fields');
+            return;
+        }
+
+        const visitData = {
+            farmer: visitForm.farmerId,
+            date: visitForm.date,
+            time: visitForm.time,
+            hoursSpent: Number(visitForm.hoursSpent),
+            purpose: finalPurpose,
+            notes: visitForm.notes,
+            visitImages: visitImages,
+            challenges: visitForm.challenges,
+            status: visitForm.status
+        };
+
+        visitMutation.mutate(visitData);
     };
 
     const sectionCardClass = darkMode
@@ -530,49 +530,69 @@ const FarmManagement: React.FC = () => {
                         { label: 'Active Farms', value: metrics.active, icon: TrendingUp, color: 'bg-indigo-600', status: 'In Progress' },
                         { label: 'Matched', value: metrics.matched, icon: Coins, color: 'bg-purple-600', status: 'Matched' }
                     ].map((item, idx) => (
-                        <Card
-                            key={item.label}
-                            className={`${item.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-200 relative overflow-hidden ${(statusFilter === item.status && item.status !== null) || (statusFilter === null && item.status === null) ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent' : ''} ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-                            style={{ transitionDelay: `${idx * 50}ms` }}
-                            onClick={() => handleCardClick(item.status)}
-                        >
-                            {/* Background Decoration */}
-                            <div className="absolute inset-0 opacity-10 pointer-events-none">
-                                <item.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
-                            </div>
+                        !isLoaded ? (
+                            <MetricCardSkeleton key={`skeleton-${idx}`} />
+                        ) : (
+                            <Card
+                                key={item.label}
+                                className={`${item.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-200 relative overflow-hidden ${(statusFilter === item.status && item.status !== null) || (statusFilter === null && item.status === null) ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent' : ''} opacity-100 translate-y-0`}
+                                style={{ transitionDelay: `${idx * 50}ms` }}
+                                onClick={() => handleCardClick(item.status)}
+                            >
+                                {/* Background Decoration */}
+                                <div className="absolute inset-0 opacity-10 pointer-events-none">
+                                    <item.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
+                                </div>
 
-                            <div className="p-3 sm:p-5 flex flex-col h-full relative z-10 text-left">
-                                <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
-                                    <item.icon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
-                                    <p className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">{item.label}</p>
+                                <div className="p-3 sm:p-5 flex flex-col h-full relative z-10 text-left">
+                                    <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
+                                        <item.icon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                                        <p className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">{item.label}</p>
+                                    </div>
+                                    <div className="flex-1 flex items-center">
+                                        <p className="text-2xl sm:text-4xl font-bold text-white">
+                                            <CountUp end={Number(item.value)} duration={1000} />
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="flex-1 flex items-center">
-                                    <p className="text-2xl sm:text-4xl font-bold text-white">
-                                        <CountUp end={Number(item.value)} duration={1000} />
-                                    </p>
-                                </div>
-                            </div>
-                        </Card>
+                            </Card>
+                        )
                     ))}
                 </div>
 
+
                 {/* Tabs for Farmers Directory and Field Visit Logs */}
                 <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'farmers' | 'visits' | 'reports')} className="w-full">
-                    <TabsList className={`grid w-full grid-cols-3 mb-4 ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-100'}`}>
+                    <TabsList className={`flex w-full overflow-x-auto whitespace-nowrap scrollbar-hide bg-transparent p-0 h-auto gap-2 sm:gap-4 mb-4 sm:mb-8 border-b ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
                         <TabsTrigger
                             value="farmers"
-                            className={`${darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white'}`}
+                            className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'farmers'
+                                ? 'border-[#1db954] text-[#1db954] bg-[#1db954]/5'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
                         >
                             <Users className="h-4 w-4 mr-2" />
                             Farmers Directory ({filteredFarmers.length})
                         </TabsTrigger>
-                        <TabsTrigger value="visits" className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all data-[state=active]:bg-emerald-600 data-[state=active]:text-white ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>
-                            <ClipboardList className="h-4 w-4" />
-                            <span className="font-semibold">Field Visits</span>
+                        <TabsTrigger
+                            value="visits"
+                            className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'visits'
+                                ? 'border-[#1db954] text-[#1db954] bg-[#1db954]/5'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            <ClipboardList className="h-4 w-4 mr-2" />
+                            Field Visits
                         </TabsTrigger>
-                        <TabsTrigger value="reports" className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all data-[state=active]:bg-emerald-600 data-[state=active]:text-white ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>
-                            <FileText className="h-4 w-4" />
-                            <span className="font-semibold">Reports ({reports.length})</span>
+                        <TabsTrigger
+                            value="reports"
+                            className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'reports'
+                                ? 'border-[#1db954] text-[#1db954] bg-[#1db954]/5'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            <FileText className="h-4 w-4 mr-2" />
+                            Reports ({reports.length})
                         </TabsTrigger>
                     </TabsList>
 
@@ -706,18 +726,18 @@ const FarmManagement: React.FC = () => {
                                     <Table>
                                         <TableHeader className="sticky top-0 z-20 bg-emerald-600 dark:bg-emerald-700 shadow-md">
                                             <TableRow className="border-0 hover:bg-transparent">
-                                                <TableHead className="w-12 text-center text-white font-bold h-12">#</TableHead>
-                                                <TableHead className="text-white font-bold h-12">Farmer Details</TableHead>
-                                                <TableHead className="text-white font-bold h-12">Phone Number</TableHead>
-                                                <TableHead className="text-white font-bold h-12">Location</TableHead>
-                                                <TableHead className="text-white font-bold h-12">Farm Info</TableHead>
-                                                <TableHead className="text-white font-bold h-12">Status</TableHead>
-                                                <TableHead className="text-white font-bold h-12">Last Visit</TableHead>
-                                                <TableHead className="text-right text-white font-bold h-12 pr-6">Actions</TableHead>
+                                                <TableHead className="w-12 text-center text-white font-bold uppercase tracking-wider h-12">#</TableHead>
+                                                <TableHead className="text-white font-bold uppercase tracking-wider h-12 whitespace-nowrap">Farmer Details</TableHead>
+                                                <TableHead className="text-white font-bold uppercase tracking-wider h-12 whitespace-nowrap">Phone Number</TableHead>
+                                                <TableHead className="text-white font-bold uppercase tracking-wider h-12 whitespace-nowrap">Location</TableHead>
+                                                <TableHead className="text-white font-bold uppercase tracking-wider h-12 whitespace-nowrap">Farm Info</TableHead>
+                                                <TableHead className="text-white font-bold uppercase tracking-wider h-12 whitespace-nowrap">Status</TableHead>
+                                                <TableHead className="text-white font-bold uppercase tracking-wider h-12 whitespace-nowrap">Last Visit</TableHead>
+                                                <TableHead className="text-right text-white font-bold uppercase tracking-wider h-12 pr-6 whitespace-nowrap">Actions</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {filteredFarmers.map((farmer, index) => (
+                                            {filteredFarmers.map((farmer: any, index: number) => (
                                                 <TableRow
                                                     key={farmer._id || farmer.id || `farmer-${index}`}
                                                     className={`group transition-all duration-300 border-b ${darkMode ? 'border-white/5 hover:bg-emerald-500/5' : 'hover:bg-gray-50'} ${index % 2 === 0 ? (darkMode ? 'bg-transparent' : 'bg-white') : (darkMode ? 'bg-white/2' : 'bg-gray-50/30')}`}
@@ -839,7 +859,8 @@ const FarmManagement: React.FC = () => {
                                             </div>
                                             <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>No growers discovered</h3>
                                             <p className="text-sm max-w-xs mx-auto opacity-70">We couldn't find any farmers matching your current search parameters. Try resetting your filters.</p>
-                                            <Button variant="link" onClick={resetFilters} className="mt-4 text-[#1db954]">Reset all filters</Button>
+                                            <Button variant="ghost" size="sm" onClick={resetFilters} className="text-emerald-600 hover:text-emerald-700">
+                                                Reset all filters</Button>
                                         </div>
                                     )}
                                 </div>
@@ -896,9 +917,9 @@ const FarmManagement: React.FC = () => {
                                     <Checkbox
                                         id="selectAllVisits"
                                         checked={selectedVisits.size === visitLogs.length && visitLogs.length > 0}
-                                        onCheckedChange={(checked) => {
+                                        onCheckedChange={(checked: boolean) => {
                                             if (checked) {
-                                                setSelectedVisits(new Set(visitLogs.map(v => v._id || v.id)));
+                                                setSelectedVisits(new Set(visitLogs.map((v: any) => v._id || v.id)));
                                             } else {
                                                 setSelectedVisits(new Set());
                                             }
@@ -924,7 +945,7 @@ const FarmManagement: React.FC = () => {
                                 </div>
                             ) : (
                                 <>
-                                    {visitLogs.map((visit, index) => (
+                                    {visitLogs.slice(0, 5).map((visit: any, index: number) => (
                                         <div key={visit._id || index} className="group relative">
                                             {/* Timeline Node */}
                                             <div className={`absolute -left-6 sm:-left-8 top-1.5 w-6 h-6 sm:w-7 sm:h-7 rounded-full border-4 flex items-center justify-center z-10 transition-transform group-hover:scale-110 ${darkMode ? 'bg-[#002f37] border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-white border-emerald-500 shadow-md'
@@ -940,10 +961,10 @@ const FarmManagement: React.FC = () => {
                                                 }}
                                             >
                                                 <div className="p-5 flex items-start gap-4">
-                                                    <div className="pt-1" onClick={(e) => e.stopPropagation()}>
+                                                    <div className="pt-1" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                                                         <Checkbox
                                                             checked={selectedVisits.has(visit._id || visit.id)}
-                                                            onCheckedChange={(checked) => {
+                                                            onCheckedChange={(checked: boolean) => {
                                                                 const newSelected = new Set(selectedVisits);
                                                                 if (checked) {
                                                                     newSelected.add(visit._id || visit.id);
@@ -1035,7 +1056,7 @@ const FarmManagement: React.FC = () => {
                                                                         variant="ghost"
                                                                         size="icon"
                                                                         className="h-9 w-9 md:h-8 md:w-8 rounded-lg bg-white/5 md:bg-transparent hover:bg-white/10"
-                                                                        onClick={(e) => {
+                                                                        onClick={(e: React.MouseEvent) => {
                                                                             e.stopPropagation();
                                                                             handleEditVisit(visit);
                                                                         }}
@@ -1046,7 +1067,7 @@ const FarmManagement: React.FC = () => {
                                                                         variant="ghost"
                                                                         size="icon"
                                                                         className="h-9 w-9 md:h-8 md:w-8 rounded-lg bg-emerald-500/10 md:bg-transparent hover:bg-emerald-500/20"
-                                                                        onClick={(e) => {
+                                                                        onClick={(e: React.MouseEvent) => {
                                                                             e.stopPropagation();
                                                                             // Logic for completing/marking done if needed
                                                                         }}
@@ -1094,7 +1115,7 @@ const FarmManagement: React.FC = () => {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={fetchReports}
+                                    onClick={() => refetchReports()}
                                     disabled={loadingReports}
                                     className={`h-9 ${darkMode ? 'border-white/10 text-gray-400 hover:bg-white/5' : ''}`}
                                 >
@@ -1122,7 +1143,7 @@ const FarmManagement: React.FC = () => {
                                                     </TableCell>
                                                 </TableRow>
                                             ) : (
-                                                reports.map((report, index) => (
+                                                reports.map((report: any, index: number) => (
                                                     <TableRow key={report._id || report.id || `report-${index}`} className={`${darkMode ? 'border-white/5 hover:bg-white/5' : 'hover:bg-gray-50'} transition-colors`}>
                                                         <TableCell className="font-medium">
                                                             <div className="flex flex-col">
@@ -1195,7 +1216,7 @@ const FarmManagement: React.FC = () => {
             <AddFarmerModal open={isAddFarmerModalOpen} onOpenChange={setIsAddFarmerModalOpen} onSuccess={fetchData} />
             <ViewFarmerModal open={viewModalOpen} onOpenChange={setViewModalOpen} farmer={selectedFarmer} />
             <AddFarmerModal open={editModalOpen} onOpenChange={setEditModalOpen} farmer={selectedFarmer} isEditMode={true} onSuccess={fetchData} />
-            <UploadReportModal open={uploadModalOpen} onOpenChange={setUploadModalOpen} farmer={selectedFarmer} onUpload={fetchReports} />
+            <UploadReportModal open={uploadModalOpen} onOpenChange={setUploadModalOpen} farmer={selectedFarmer} onUpload={() => refetchReports()} />
             <FarmJourneyModal open={journeyModalOpen} onOpenChange={setJourneyModalOpen} farmer={selectedFarmer} />
 
             {/* Field Visit Modal - Premium Style */}
@@ -1222,8 +1243,8 @@ const FarmManagement: React.FC = () => {
                                 <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Grower Name *</Label>
                                 <Select
                                     value={visitForm.farmerId}
-                                    onValueChange={(val) => {
-                                        const farmer = farmers.find(f => f._id === val);
+                                    onValueChange={(val: string) => {
+                                        const farmer = farmers.find((f: any) => f._id === val);
                                         if (farmer) {
                                             setVisitForm({
                                                 ...visitForm,
@@ -1239,7 +1260,7 @@ const FarmManagement: React.FC = () => {
                                         <SelectValue placeholder="Select a registered farmer" />
                                     </SelectTrigger>
                                     <SelectContent className={darkMode ? 'bg-gray-900 border-white/10' : ''}>
-                                        {farmers.map((farmer, index) => (
+                                        {farmers.slice(0, 5).map((farmer: any, index: number) => (
                                             <SelectItem key={farmer._id || farmer.id || `select-farmer-${index}`} value={farmer._id || farmer.id} className={darkMode ? 'hover:bg-white/5' : ''}>
                                                 <div className="flex items-center justify-between w-full">
                                                     <span>{farmer.name}</span>
@@ -1438,24 +1459,16 @@ const FarmManagement: React.FC = () => {
                             </Button>
                             <Button
                                 onClick={handleSubmitVisit}
-                                disabled={isSaving}
+                                disabled={visitMutation.isPending}
                                 className="px-8 h-11 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                             >
-                                {isSaving ? (
+                                {visitMutation.isPending ? (
                                     <>
                                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                        Processing...
-                                    </>
-                                ) : visitForm.isEditing ? (
-                                    <>
-                                        <Edit className="h-4 w-4 mr-2" />
-                                        Update Journal Entry
+                                        Saving...
                                     </>
                                 ) : (
-                                    <>
-                                        <CheckCircle className="h-4 w-4 mr-2" />
-                                        Archive Journal Entry
-                                    </>
+                                    "Save Visit"
                                 )}
                             </Button>
                         </div>

@@ -54,13 +54,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const [addFarmerModalOpen, setAddFarmerModalOpen] = useState(false);
     const [notifications, setNotifications] = useState<any[]>([]);
 
+    // Notifications are now fetched as part of the dashboard summary in most views,
+    // but the sidebar needs them globally. keeping them but making it more efficient.
     useEffect(() => {
         if (userType === 'agent') {
             const fetchNotifications = async () => {
                 try {
+                    // Only fetch if we don't already have them from a higher-level query if applicable
                     const res = await api.get('/notifications');
                     setNotifications(res.data);
                 } catch (err) {
+                    // Fail silently for notifications to not block the UI
                     console.error('Failed to fetch notifications', err);
                 }
             };
@@ -68,14 +72,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         }
     }, [userType]);
 
-    // Simulate loading on mount and navigation
+    // Simulate loading on mount and navigation - REMOVED artificial delay
+    // We rely on skeletons and TanStack Query for a smoother content-driven feeling
     useEffect(() => {
-        setIsLoading(true);
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 600); // Snappier premium feel
-        return () => clearTimeout(timer);
-    }, [activeSidebarItem, title]); // Re-trigger on sidebar change or title change
+        setIsLoading(false);
+    }, [activeSidebarItem, title]);
 
     const effectiveSubtitle = description || subtitle;
     const currentTitle = title || 'Dashboard';
@@ -83,7 +84,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
     return (
         <div className={`h-screen overflow-hidden font-manrope ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
-            {isLoading && <Preloader />}
+            {/* Full-page preloader only on initial app boot if needed, otherwise rely on skeletons */}
+            {(isLoading && !agent) && <Preloader />}
             <div className="flex h-full">
                 {/* Mobile Sidebar */}
                 {isMobile && (

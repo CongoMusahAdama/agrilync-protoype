@@ -1,4 +1,5 @@
 const { Training, AgentTraining } = require('../models/Training');
+const Activity = require('../models/Activity');
 
 // @route   GET api/trainings
 // @desc    Get all available trainings
@@ -42,6 +43,15 @@ exports.registerTraining = async (req, res) => {
         });
 
         await newRegistration.save();
+
+        // Log Activity
+        await Activity.create({
+            agent: req.agent.id,
+            type: 'training',
+            title: 'Training Registration',
+            description: `Registered for ${training.title}`
+        });
+
         res.json({ success: true, data: newRegistration });
     } catch (err) {
         console.error('registerTraining error:', err.message);

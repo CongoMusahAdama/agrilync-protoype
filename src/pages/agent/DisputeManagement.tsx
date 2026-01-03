@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AgentLayout from './AgentLayout';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import {
@@ -63,31 +64,34 @@ const DisputeManagement: React.FC = () => {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showNewDisputeDialog, setShowNewDisputeDialog] = useState(false);
   const [selectedDispute, setSelectedDispute] = useState<any>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [disputes, setDisputes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
-  React.useEffect(() => {
-    const fetchDisputes = async () => {
-      try {
-        const res = await api.get('/disputes');
-        setDisputes(res.data);
-        setIsLoaded(true);
-      } catch (err) {
-        console.error('Error fetching disputes:', err);
-        toast.error('Failed to load disputes');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: summaryData, isLoading: loadingSummary } = useQuery({
+    queryKey: ['agentDashboardSummary'],
+    queryFn: async () => {
+      const response = await api.get('/dashboard/summary');
+      return response.data.data;
+    },
+    staleTime: 60000
+  });
 
-    fetchDisputes();
-  }, []);
+  const disputes = summaryData?.disputes || [];
+  const loading = loadingSummary;
+  const isLoaded = !loadingSummary;
+
+  const { data: farmersList = [] } = useQuery({
+    queryKey: ['agentFarmers'],
+    queryFn: async () => {
+      const response = await api.get('/farmers');
+      return response.data;
+    },
+    staleTime: 60000
+  });
 
   // New dispute form state
   const [newDispute, setNewDispute] = useState({
     farmerName: '',
+    farmerId: '',
     investorName: '',
     type: '',
     severity: '',
@@ -99,18 +103,18 @@ const DisputeManagement: React.FC = () => {
   // Calculate stats
   // Calculate stats
   const totalDisputes = disputes.length;
-  const pendingDisputes = disputes.filter(d => d.status === 'Pending').length;
-  const underReviewDisputes = disputes.filter(d => d.status === 'Under Review').length;
-  const resolvedDisputes = disputes.filter(d => d.status === 'Resolved').length;
-  const escalatedDisputes = disputes.filter(d => d.status === 'Escalated').length;
+  const pendingDisputes = disputes.filter((d: any) => d.status === 'Pending').length;
+  const underReviewDisputes = disputes.filter((d: any) => d.status === 'Under Review').length;
+  const resolvedDisputes = disputes.filter((d: any) => d.status === 'Resolved').length;
+  const escalatedDisputes = disputes.filter((d: any) => d.status === 'Escalated').length;
 
   // Filter disputes
   // Filter disputes
-  const filteredDisputes = disputes.filter(dispute => {
+  const filteredDisputes = disputes.filter((dispute: any) => {
     const matchesSearch =
       (dispute.id?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-      (dispute.parties?.farmer?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-      (dispute.parties?.investor?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+      (dispute.farmer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+      (dispute.investor?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
       (dispute.type?.toLowerCase().includes(searchTerm.toLowerCase()) || '');
 
     const matchesStatus = statusFilter === 'all' || dispute.status === statusFilter;
@@ -155,31 +159,17 @@ const DisputeManagement: React.FC = () => {
     setNewDispute({ ...newDispute, evidence: [...newDispute.evidence, ...files] });
   };
 
-  const handleSubmitDispute = async () => {
-    if (!newDispute.farmerName || !newDispute.investorName || !newDispute.type || !newDispute.severity || !newDispute.description) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const res = await api.post('/disputes', {
-        id: `DIST-${Date.now().toString().slice(-6)}`,
-        parties: {
-          farmer: newDispute.farmerName,
-          investor: newDispute.investorName
-        },
-        type: newDispute.type,
-        severity: newDispute.severity,
-        region: newDispute.region,
-        description: newDispute.description
-      });
-
-      setDisputes([res.data, ...disputes]);
+  const disputeMutation = useMutation({
+    mutationFn: async (disputeData: any) => {
+      return api.post('/disputes', disputeData);
+    },
+    onSuccess: () => {
       toast.success('Dispute logged successfully');
+      queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
       setShowNewDisputeDialog(false);
       setNewDispute({
         farmerName: '',
+        farmerId: '',
         investorName: '',
         type: '',
         severity: '',
@@ -187,12 +177,32 @@ const DisputeManagement: React.FC = () => {
         description: '',
         evidence: []
       });
-    } catch (err) {
+    },
+    onError: (err: any) => {
       console.error('Error submitting dispute:', err);
-      toast.error('Failed to log dispute');
-    } finally {
-      setIsSubmitting(false);
+      toast.error(err.response?.data?.msg || 'Failed to log dispute');
     }
+  });
+
+  const isSubmitting = disputeMutation.isPending;
+
+  const handleSubmitDispute = async () => {
+    if (!newDispute.farmerId || !newDispute.investorName || !newDispute.type || !newDispute.severity || !newDispute.description) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    const disputeData = {
+      id: `DIST-${Date.now().toString().slice(-6)}`,
+      farmerId: newDispute.farmerId,
+      investor: newDispute.investorName,
+      type: newDispute.type,
+      severity: newDispute.severity,
+      region: newDispute.region,
+      description: newDispute.description
+    };
+
+    disputeMutation.mutate(disputeData);
   };
 
   const handleFilterByStatus = (status: string) => {
@@ -317,17 +327,21 @@ const DisputeManagement: React.FC = () => {
         </Card>
 
         {/* 3. Helper Header & Create Button */}
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h2 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>All Disputes</h2>
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Showing {filteredDisputes.length} of {disputes.length} disputes</p>
           </div>
           <Button
-            className="bg-[#7ede56] hover:bg-[#6bc947] text-white px-6 py-2 shadow-md hover:shadow-lg transition-all"
+            className={`w-full sm:w-auto shadow-lg bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white border-0 transition-all transform hover:scale-105 active:scale-95 py-6 sm:py-2 text-base sm:text-sm`}
             onClick={() => setShowNewDisputeDialog(true)}
           >
-            <Plus className="mr-2 h-5 w-5" />
-            Log New Dispute
+            <div className="flex items-center justify-center">
+              <div className="bg-white/20 p-1 rounded-full mr-2">
+                <Plus className="h-5 w-5 text-white" />
+              </div>
+              Log New Dispute
+            </div>
           </Button>
         </div>
 
@@ -347,7 +361,7 @@ const DisputeManagement: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredDisputes.map((dispute) => (
+                {filteredDisputes.map((dispute: any) => (
                   <TableRow
                     key={dispute.id}
                     className={`border-b cursor-pointer ${darkMode ? 'border-gray-700 hover:bg-[#0d3036]' : 'hover:bg-gray-50'}`}
@@ -358,8 +372,8 @@ const DisputeManagement: React.FC = () => {
                     </TableCell>
                     <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-700'}>
                       <div className="flex flex-col">
-                        <span className="font-medium">{dispute.parties?.farmer}</span>
-                        <span className="text-xs opacity-70">vs {dispute.parties?.investor}</span>
+                        <span className="font-medium">{dispute.farmer?.name || 'Unknown Farmer'}</span>
+                        <span className="text-xs opacity-70">vs {dispute.investor || 'Unknown Investor'}</span>
                       </div>
                     </TableCell>
                     <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-700'}>
@@ -427,33 +441,49 @@ const DisputeManagement: React.FC = () => {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 mt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className={darkMode ? 'text-gray-200' : ''}>Farmer Name *</Label>
-                  <Input
-                    value={newDispute.farmerName}
-                    onChange={(e) => setNewDispute({ ...newDispute, farmerName: e.target.value })}
-                    placeholder="Enter farmer name"
-                    className={darkMode ? 'bg-[#10363d] border-[#1b5b65] text-white' : ''}
-                  />
-                </div>
-                <div>
-                  <Label className={darkMode ? 'text-gray-200' : ''}>Investor Name *</Label>
-                  <Input
-                    value={newDispute.investorName}
-                    onChange={(e) => setNewDispute({ ...newDispute, investorName: e.target.value })}
-                    placeholder="Enter investor name"
-                    className={darkMode ? 'bg-[#10363d] border-[#1b5b65] text-white' : ''}
-                  />
-                </div>
+            <div className="space-y-4 mt-4 max-h-[70vh] overflow-y-auto px-1">
+              <div className="space-y-2">
+                <Label className={darkMode ? 'text-gray-200' : ''}>Affected Farmer</Label>
+                <Select
+                  value={newDispute.farmerId}
+                  onValueChange={(val) => {
+                    const farmer = farmersList.find((f: any) => f._id === val);
+                    setNewDispute({
+                      ...newDispute,
+                      farmerId: val,
+                      farmerName: farmer?.name || '',
+                      region: farmer?.region || newDispute.region // Auto-select region
+                    });
+                  }}
+                >
+                  <SelectTrigger className={`h-12 ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-white' : ''}`}>
+                    <SelectValue placeholder="Select farmer..." />
+                  </SelectTrigger>
+                  <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+                    {farmersList.map((f: any) => (
+                      <SelectItem key={f._id} value={f._id} className={darkMode ? 'text-white hover:bg-gray-800' : ''}>
+                        {f.name} - {f.community}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label className={darkMode ? 'text-gray-200' : ''}>Dispute Type *</Label>
+              <div className="space-y-2">
+                <Label className={darkMode ? 'text-gray-200' : ''}>Investor / Party Involved</Label>
+                <Input
+                  value={newDispute.investorName}
+                  onChange={(e) => setNewDispute({ ...newDispute, investorName: e.target.value })}
+                  placeholder="Enter investor name"
+                  className={`h-12 ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-white' : ''}`}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className={darkMode ? 'text-gray-200' : ''}>Dispute Type</Label>
                   <Select value={newDispute.type} onValueChange={(val) => setNewDispute({ ...newDispute, type: val })}>
-                    <SelectTrigger className={darkMode ? 'bg-[#10363d] border-[#1b5b65] text-white' : ''}>
+                    <SelectTrigger className={`h-12 ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-white' : ''}`}>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
@@ -466,10 +496,10 @@ const DisputeManagement: React.FC = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label className={darkMode ? 'text-gray-200' : ''}>Severity *</Label>
+                <div className="space-y-2">
+                  <Label className={darkMode ? 'text-gray-200' : ''}>Severity</Label>
                   <Select value={newDispute.severity} onValueChange={(val) => setNewDispute({ ...newDispute, severity: val })}>
-                    <SelectTrigger className={darkMode ? 'bg-[#10363d] border-[#1b5b65] text-white' : ''}>
+                    <SelectTrigger className={`h-12 ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-white' : ''}`}>
                       <SelectValue placeholder="Select severity" />
                     </SelectTrigger>
                     <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
@@ -479,10 +509,10 @@ const DisputeManagement: React.FC = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label className={darkMode ? 'text-gray-200' : ''}>Region *</Label>
+                <div className="space-y-2">
+                  <Label className={darkMode ? 'text-gray-200' : ''}>Region</Label>
                   <Select value={newDispute.region} onValueChange={(val) => setNewDispute({ ...newDispute, region: val })}>
-                    <SelectTrigger className={darkMode ? 'bg-[#10363d] border-[#1b5b65] text-white' : ''}>
+                    <SelectTrigger className={`h-12 ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-white' : ''}`}>
                       <SelectValue placeholder="Select region" />
                     </SelectTrigger>
                     <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>

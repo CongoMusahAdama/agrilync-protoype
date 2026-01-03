@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import AgentLayout from './AgentLayout';
 import {
   Card,
@@ -7,6 +8,7 @@ import {
   CardTitle,
   CardDescription
 } from '@/components/ui/card';
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -59,49 +61,31 @@ import { toast } from 'sonner';
 export const TrainingPerformanceContent = () => {
   const { darkMode } = useDarkMode();
   const [trainingFilter, setTrainingFilter] = useState('all');
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [availableTrainings, setAvailableTrainings] = useState<any[]>([]);
-  const [myTrainings, setMyTrainings] = useState<any[]>([]);
-  const [performanceMetrics, setPerformanceMetrics] = useState<any>(null);
-  const [activities, setActivities] = useState<any[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const { data: summaryData, isLoading: loadingSummary, refetch } = useQuery({
+    queryKey: ['agentDashboardSummary'],
+    queryFn: async () => {
+      const response = await api.get('/dashboard/summary');
+      return response.data.data;
+    },
+    staleTime: 60000
+  });
+
+  const availableTrainings = summaryData?.trainings || [];
+  const myTrainings = summaryData?.myTrainings || [];
+  const activities = summaryData?.activities || [];
+  const stats = summaryData?.stats || {};
+  const loading = loadingSummary;
+  const isLoaded = !loadingSummary;
+
   const [consultationRequests, setConsultationRequests] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isRegistering, setIsRegistering] = useState<string | null>(null);
   const [isProcessingConsultation, setIsProcessingConsultation] = useState<string | null>(null);
 
-  React.useEffect(() => {
-    const fetchPerformanceData = async () => {
-      try {
-        const [availableRes, myRes, statsRes, activitiesRes] = await Promise.all([
-          api.get('/trainings'),
-          api.get('/trainings/my'),
-          api.get('/agents/stats'),
-          api.get('/activities')
-        ]);
-        setAvailableTrainings(availableRes.data);
-        setMyTrainings(myRes.data);
-        setStats(statsRes.data);
-        setActivities(activitiesRes.data);
+  const loadingAvailable = loadingSummary;
+  const loadingMyTrainings = loadingSummary;
+  const loadingStats = loadingSummary;
+  const loadingActivities = loadingSummary;
 
-        // Mocking performance metrics structure from stats if not available
-        setPerformanceMetrics({
-          score: statsRes.data?.performanceScore || 89,
-          fieldVisits: statsRes.data?.activeFarms || 0,
-          monthlyActivity: statsRes.data?.monthlyActivity || [],
-        });
-
-        setIsLoaded(true);
-      } catch (err) {
-        console.error('Error fetching performance data:', err);
-        toast.error('Failed to load performance data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPerformanceData();
-  }, []);
 
   const handleConsultationAction = async (id: string, action: 'accept' | 'decline' | 'reschedule') => {
     setIsProcessingConsultation(id);
@@ -125,10 +109,6 @@ export const TrainingPerformanceContent = () => {
     }
   };
 
-  React.useEffect(() => {
-    const timer = setTimeout(() => setIsLoaded(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
 
   const sectionCardClass = darkMode
     ? 'border border-[#124b53] bg-[#0b2528] text-gray-100 shadow-lg'
@@ -136,39 +116,65 @@ export const TrainingPerformanceContent = () => {
 
   const summaryCards = [
     { title: 'Available', value: availableTrainings.length.toString(), icon: GraduationCap, color: 'bg-blue-600' },
-    { title: 'Upcoming', value: myTrainings.filter(t => t.status === 'Registered').length.toString(), icon: Calendar, color: 'bg-orange-600' },
+    { title: 'Upcoming', value: myTrainings.filter((t: any) => t.status === 'Registered').length.toString(), icon: Calendar, color: 'bg-orange-600' },
     { title: 'Consultations', value: consultationRequests.length.toString(), icon: Handshake, color: 'bg-teal-600' },
     { title: 'Score', value: `${stats?.performanceScore || 0}%`, icon: TrendingUp, color: 'bg-purple-600' },
     { title: 'Reports', value: (stats?.reportsThisMonth || 0).toString(), icon: FileText, color: 'bg-indigo-600' },
   ];
 
+  const MetricCardSkeleton = () => (
+    <Card className="bg-gray-800/50 border-gray-700 rounded-lg p-3 sm:p-6 shadow-lg animate-pulse">
+      <div className="flex flex-col h-full gap-4 text-left">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-8 rounded-lg bg-gray-700" />
+          <Skeleton className="h-4 w-24 bg-gray-700" />
+        </div>
+        <div className="flex-1 flex items-center">
+          <Skeleton className="h-10 w-16 bg-gray-700" />
+        </div>
+      </div>
+    </Card>
+  );
+
   return (
     <div className="space-y-8">
       {/* 1. Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-6">
-        {summaryCards.map((card, idx) => (
-          <Card
-            key={idx}
-            className={`${card.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-700 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-            style={{ transitionDelay: `${idx * 100}ms` }}
-          >
-            {/* Background Decoration */}
-            <div className="absolute inset-0 opacity-10 pointer-events-none">
-              <card.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
-            </div>
+        {summaryCards.map((card: any, idx: number) => {
+          const isLoading =
+            (card.title === 'Available' && loadingAvailable) ||
+            (card.title === 'Upcoming' && loadingMyTrainings) ||
+            (card.title === 'Consultations' && loadingStats) || // tied to stats for now
+            (card.title === 'Score' && loadingStats) ||
+            (card.title === 'Reports' && loadingStats);
 
-            <div className="p-3 sm:p-5 flex flex-col h-full relative z-10">
-              <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
-                <card.icon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
-                <p className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">{card.title}</p>
+          return isLoading ? (
+            <MetricCardSkeleton key={`skeleton-${idx}`} />
+          ) : (
+            <Card
+              key={idx}
+              className={`${card.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-700 relative overflow-hidden opacity-100 translate-y-0`}
+              style={{ transitionDelay: `${idx * 100}ms` }}
+            >
+              {/* Background Decoration */}
+              <div className="absolute inset-0 opacity-10 pointer-events-none">
+                <card.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
               </div>
-              <div className="flex-1 flex items-center">
-                <p className="big-metric text-white">{card.value}</p>
+
+              <div className="p-3 sm:p-5 flex flex-col h-full relative z-10">
+                <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
+                  <card.icon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                  <p className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">{card.title}</p>
+                </div>
+                <div className="flex-1 flex items-center">
+                  <p className="big-metric text-white">{card.value}</p>
+                </div>
               </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column (2/3 width) */}
@@ -290,7 +296,7 @@ export const TrainingPerformanceContent = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {availableTrainings.map((training) => (
+              {availableTrainings.map((training: any) => (
                 <Card key={training._id} className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} overflow-hidden h-full flex flex-col`}>
                   <CardContent className="p-5 flex-1 flex flex-col">
                     <div className="flex justify-between items-start mb-3">
@@ -361,7 +367,7 @@ export const TrainingPerformanceContent = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {myTrainings.map((reg) => (
+                  {myTrainings.map((reg: any) => (
                     <TableRow key={reg._id} className={darkMode ? 'border-gray-800 hover:bg-gray-800/30' : 'hover:bg-gray-50 border-gray-100 transition-colors'}>
                       <TableCell className={`font-medium sm:text-sm text-xs ${darkMode ? 'text-white' : 'text-gray-900'}`}>{reg.training?.title || 'Unknown Training'}</TableCell>
                       <TableCell className={`sm:text-sm text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{reg.training?.date || 'N/A'}</TableCell>
@@ -443,7 +449,7 @@ export const TrainingPerformanceContent = () => {
               </div>
               <div className="h-[250px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={performanceMetrics?.monthlyActivity}>
+                  <BarChart data={stats?.monthlyActivity || []}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'} />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} dy={10} stroke="#9ca3af" />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} stroke="#9ca3af" />
@@ -465,7 +471,7 @@ export const TrainingPerformanceContent = () => {
             <h2 className={`section-title mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Activity Log</h2>
             <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} p-6 shadow-sm`}>
               <div className="space-y-6 relative before:absolute before:left-2.5 before:top-0 before:bottom-0 before:w-px before:bg-gray-100 dark:before:bg-gray-800">
-                {activities.map((item, idx) => (
+                {activities.map((item: any, idx: number) => (
                   <div key={item._id || idx} className="relative pl-8 group">
                     <div className={`absolute left-0 top-1.5 w-5 h-5 rounded-full z-10 flex items-center justify-center border-2 ${darkMode ? 'bg-gray-950 border-gray-800' : 'bg-white border-gray-50'}`}>
                       {item.type === 'training' ? <CheckCircle className={`h-2 w-2 text-emerald-500`} /> :

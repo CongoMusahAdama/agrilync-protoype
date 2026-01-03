@@ -38,8 +38,8 @@ const ActiveFarmsModal: React.FC<ActiveFarmsModalProps> = ({
 
     const filteredFarms = farms.filter(farm => {
         const farmerName = farm.farmer?.name || '';
-        const farmType = farm.farmType || '';
-        const region = farm.region || '';
+        const farmType = farm.crop || '';
+        const region = farm.farmer?.region || '';
         const search = searchQuery.toLowerCase();
 
         return farmerName.toLowerCase().includes(search) ||
@@ -86,7 +86,86 @@ const ActiveFarmsModal: React.FC<ActiveFarmsModalProps> = ({
                         />
                     </div>
 
-                    <div className={`rounded-xl border ${darkMode ? 'border-[#124b53]' : 'border-gray-200'} overflow-hidden`}>
+                    {/* Mobile Card View */}
+                    <div className="block sm:hidden space-y-4">
+                        {filteredFarms.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                                <div className={`p-4 rounded-full mb-4 ${darkMode ? 'bg-white/5' : 'bg-gray-100'}`}>
+                                    <Search className="h-8 w-8 opacity-50" />
+                                </div>
+                                <p className="text-gray-500 font-medium">No farms matching your search.</p>
+                            </div>
+                        ) : (
+                            filteredFarms.map((farm) => (
+                                <div
+                                    key={farm._id}
+                                    className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ${darkMode
+                                            ? 'bg-gradient-to-br from-[#0b2528] to-[#06181a] border-[#1b5b65]'
+                                            : 'bg-white border-gray-100 shadow-lg shadow-gray-200/50'
+                                        }`}
+                                >
+                                    {/* Card Header / Status Strip */}
+                                    <div className={`absolute top-0 left-0 right-0 h-1.5 ${farm.status === 'Verified' ? 'bg-emerald-500' :
+                                            farm.status === 'Pending' ? 'bg-amber-500' : 'bg-blue-500'
+                                        }`} />
+
+                                    <div className="p-5 pt-6">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="flex items-center gap-3.5">
+                                                <div className={`h-12 w-12 rounded-xl flex items-center justify-center shadow-inner ${darkMode ? 'bg-[#124b53] text-emerald-400' : 'bg-emerald-50 text-emerald-600'
+                                                    }`}>
+                                                    <User className="h-6 w-6" />
+                                                </div>
+                                                <div>
+                                                    <h4 className={`font-bold text-lg leading-tight mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                        {farm.farmer?.name || 'Unknown Farmer'}
+                                                    </h4>
+                                                    <div className="flex items-center gap-1.5 text-xs opacity-70">
+                                                        <MapPin className="h-3 w-3" />
+                                                        <span>{farm.farmer?.community}, {farm.farmer?.region}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <Badge variant="secondary" className={`${getStatusStyle(farm.status)} text-[10px] px-2 py-0.5 uppercase tracking-wider font-bold shadow-sm`}>
+                                                {farm.status || 'Active'}
+                                            </Badge>
+                                        </div>
+
+                                        <div className={`grid grid-cols-2 gap-3 mb-5 p-3 rounded-xl ${darkMode ? 'bg-black/20' : 'bg-gray-50'}`}>
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] uppercase tracking-wider font-bold opacity-50 block">Main Crop</span>
+                                                <div className="flex items-center gap-2 font-semibold text-sm">
+                                                    <Sprout className="h-3.5 w-3.5 text-emerald-500" />
+                                                    {farm.crop}
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] uppercase tracking-wider font-bold opacity-50 block">Farm Type</span>
+                                                <div className="flex items-center gap-2 font-semibold text-sm">
+                                                    <Activity className="h-3.5 w-3.5 text-blue-500" />
+                                                    {farm.farmer?.farmType}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <Button
+                                            onClick={() => {
+                                                onTrackJourney(farm.farmer);
+                                                onOpenChange(false);
+                                            }}
+                                            className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all"
+                                        >
+                                            <Activity className="h-5 w-5 mr-2" />
+                                            Track Farm Journey
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {/* Desktop Table View */}
+                    <div className={`hidden sm:block rounded-xl border ${darkMode ? 'border-[#124b53]' : 'border-gray-200'} overflow-hidden`}>
                         <Table>
                             <TableHeader className={darkMode ? 'bg-[#124b53]/30' : 'bg-gray-50'}>
                                 <TableRow className={darkMode ? 'border-[#124b53] hover:bg-transparent' : 'hover:bg-transparent'}>
@@ -117,14 +196,14 @@ const ActiveFarmsModal: React.FC<ActiveFarmsModalProps> = ({
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-semibold">{farm.farmType}</span>
-                                                    <span className="text-xs text-gray-500 uppercase">{farm.scale || 'Small Scale'}</span>
+                                                    <span className="text-sm font-semibold">{farm.crop}</span>
+                                                    <span className="text-xs text-gray-500 uppercase">{farm.farmer?.farmType || 'General Farming'}</span>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-1 text-sm text-gray-500">
                                                     <MapPin className="h-3 w-3" />
-                                                    {farm.region}, {farm.community || 'N/A'}
+                                                    {farm.farmer?.region || 'N/A'}, {farm.farmer?.community || 'N/A'}
                                                 </div>
                                             </TableCell>
                                             <TableCell>

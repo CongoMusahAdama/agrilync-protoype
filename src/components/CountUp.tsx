@@ -14,6 +14,8 @@ const CountUp: React.FC<CountUpProps> = ({ end, duration = 2000, suffix = '', pr
     const hasAnimated = useRef(false);
 
     useEffect(() => {
+        const targetValue = isNaN(end) ? 0 : end;
+
         const observer = new IntersectionObserver(
             (entries) => {
                 const [entry] = entries;
@@ -31,7 +33,7 @@ const CountUp: React.FC<CountUpProps> = ({ end, duration = 2000, suffix = '', pr
                             return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
                         };
 
-                        const currentCount = Math.floor(easeOutExpo(progress) * (end - startValue) + startValue);
+                        const currentCount = Math.floor(easeOutExpo(progress) * (targetValue - startValue) + startValue);
                         setCount(currentCount);
 
                         if (progress < 1) {

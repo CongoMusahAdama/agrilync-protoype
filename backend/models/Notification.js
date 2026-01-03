@@ -17,4 +17,7 @@ const notificationSchema = new mongoose.Schema({
     agent: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent', required: true }
 }, { timestamps: true });
 
+// Indexing for performance
+notificationSchema.index({ agent: 1, read: 1, createdAt: -1 });
+
 module.exports = mongoose.models.Notification || mongoose.model('Notification', notificationSchema);

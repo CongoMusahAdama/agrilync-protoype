@@ -1,5 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardContent,
@@ -80,6 +82,23 @@ import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 
+const MetricCardSkeleton = () => (
+  <Card className="bg-gray-800/50 border-gray-700 rounded-lg p-3 sm:p-6 shadow-lg animate-pulse">
+    <div className="flex flex-col h-full gap-4">
+      <div className="flex items-center gap-3">
+        <Skeleton className="h-8 w-8 rounded-lg bg-gray-700" />
+        <Skeleton className="h-4 w-24 bg-gray-700" />
+      </div>
+      <div className="flex-1 flex items-center">
+        <Skeleton className="h-10 w-16 bg-gray-700" />
+      </div>
+      <div className="flex justify-end mt-4">
+        <Skeleton className="h-3 w-12 bg-gray-700" />
+      </div>
+    </div>
+  </Card>
+);
+
 const AgentDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { darkMode } = useDarkMode();
@@ -100,70 +119,65 @@ const AgentDashboard: React.FC = () => {
   const [viewDisputeModalOpen, setViewDisputeModalOpen] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState<any>(null);
   const [viewVisitModalOpen, setViewVisitModalOpen] = useState(false);
-  const [pendingFarmers, setPendingFarmers] = useState<any[]>([]);
   const [verificationQueueModalOpen, setVerificationQueueModalOpen] = useState(false);
   const [activeFarmsModalOpen, setActiveFarmsModalOpen] = useState(false);
   const [journeyModalOpen, setJourneyModalOpen] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Data states
-  // Data states
-  const [stats, setStats] = useState<any>({});
-  const [farmers, setFarmers] = useState<any[]>([]);
-  const [farms, setFarms] = useState<any[]>([]);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [activities, setActivities] = useState<any[]>([]);
-  const [matches, setMatches] = useState<any[]>([]);
-  const [disputes, setDisputes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // useQuery for all-in-one dashboard data
+  const { data: summaryData, isLoading: loading, refetch: refreshData } = useQuery({
+    queryKey: ['agentDashboardSummary'],
+    queryFn: async () => {
+      const response = await api.get('/dashboard/summary');
+      return response.data.data;
+    },
+    staleTime: 60000, // 1 minute
+    refetchOnWindowFocus: true
+  });
 
-  const fetchData = async () => {
-    try {
-      const [statsRes, farmersRes, farmsRes, notificationsRes, matchesRes, activitiesRes, disputesRes, pendingRes] = await Promise.all([
-        api.get('/agents/stats'),
-        api.get('/farmers'),
-        api.get('/farms'),
-        api.get('/notifications'),
-        api.get('/matches'),
-        api.get('/activities'),
-        api.get('/disputes'),
-        api.get('/farmers/queue/pending')
-      ]);
-      setStats(statsRes.data);
-      setFarmers(farmersRes.data);
-      setFarms(farmsRes.data);
-      setNotifications(notificationsRes.data);
-      setMatches(matchesRes.data);
-      setDisputes(disputesRes.data);
-      setPendingFarmers(pendingRes.data);
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      toast.error('Failed to load dashboard data');
-    } finally {
-      setIsLoaded(true);
-      setLoading(false);
-    }
+  // Extract data from summary with fallbacks
+  const stats = summaryData?.stats || {};
+  const farmers = summaryData?.farmers || [];
+  const farms = summaryData?.farms || [];
+  const notifications = summaryData?.notifications || [];
+  const activities = summaryData?.activities || [];
+  const matches = summaryData?.matches || [];
+  const disputes = summaryData?.disputes || [];
+  const pendingFarmers = summaryData?.pendingQueue || [];
+
+  const loadingStats = loading;
+  const loadingFarmers = loading;
+  const loadingFarms = loading;
+  const loadingQueue = loading;
+  const loadingNotifications = loading;
+  const loadingMatches = loading;
+  const loadingActivities = loading;
+  const loadingDisputes = loading;
+
+  const fetchData = () => {
+    refreshData();
   };
 
-  React.useEffect(() => {
-    fetchData();
-  }, []);
+
+  // fetchData is now handled by useQuery
 
   // Notification State
   const [notificationFilter, setNotificationFilter] = useState<'all' | 'alert' | 'update'>('all');
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadNotifications = notifications.filter((n: any) => !n.read).length;
 
-  const handleMarkAllRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
+  const queryClient = useQueryClient();
+
+  const handleMarkAllRead = async () => {
+    // In a optimized world, we'd have an API for this
+    // For now, let's invalidate to show fresh data
+    queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
   };
 
   const toggleReadStatus = async (id: string, type?: string) => {
     try {
       await api.put(`/notifications/${id}`);
-      setNotifications(notifications.map(n =>
-        n._id === id ? { ...n, read: true } : n
-      ));
+      // Invalidate to refresh summary data
+      queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
 
       // Actionable notifications
       if (type === 'verification') {
@@ -175,7 +189,7 @@ const AgentDashboard: React.FC = () => {
     }
   };
 
-  const filteredNotifications = notifications.filter(n => {
+  const filteredNotifications = notifications.filter((n: any) => {
     if (notificationFilter === 'all') return true;
     if (notificationFilter === 'alert') return n.type === 'alert' || n.priority === 'high';
     if (notificationFilter === 'update') return n.type !== 'alert' && n.priority !== 'high';
@@ -212,6 +226,11 @@ const AgentDashboard: React.FC = () => {
     setViewVisitModalOpen(true);
   };
 
+  const handleFarmAction = (farm: any) => {
+    setSelectedFarmer(farm);
+    setViewModalOpen(true);
+  };
+
   const handleViewFarmer = (farmer: any) => {
     setSelectedFarmer(farmer);
     setViewModalOpen(true);
@@ -228,12 +247,12 @@ const AgentDashboard: React.FC = () => {
   };
 
   const filteredFarmers = useMemo(() => {
-    return farmers.map(f => {
+    return farmers.map((f: any) => {
       let displayStatus = f.status;
       if (displayStatus === 'active') displayStatus = 'Completed';
       if (displayStatus === 'pending') displayStatus = 'Pending';
       return { ...f, displayStatus };
-    }).filter((farmer) => {
+    }).filter((farmer: any) => {
       const searchValue = farmerSearch.toLowerCase();
       const matchesSearch =
         farmer.name?.toLowerCase().includes(searchValue) ||
@@ -246,7 +265,7 @@ const AgentDashboard: React.FC = () => {
   }, [farmers, farmerSearch, farmerStatusFilter]);
 
   const filteredFarms = useMemo(() => {
-    return farms.filter((farm) => {
+    return farms.filter((farm: any) => {
       if (farmStatusFilter === 'all') return true;
       return farm.status === farmStatusFilter;
     });
@@ -283,7 +302,7 @@ const AgentDashboard: React.FC = () => {
       value: stats?.reportsThisMonth || 0,
       color: 'bg-[#921573]',
       icon: ClipboardCheck,
-      path: '/dashboard/agent/farm-management'
+      path: '/dashboard/agent/farm-management?tab=reports'
     },
     {
       id: 'dispute-management',
@@ -370,90 +389,101 @@ const AgentDashboard: React.FC = () => {
       {/* Key Metric Cards - 6-column Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-6 mb-8">
         {/* Verification Queue - Deep Teal */}
-        <Card
-          className={`bg-[#002f37] rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-200 cursor-pointer hover:scale-105 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
-          style={{ transitionDelay: '0ms' }}
-          onClick={() => setVerificationQueueModalOpen(true)}
-        >
-          {/* Background Decoration */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute -right-4 -bottom-4 opacity-10">
-              <UserCheck className="h-24 w-24 sm:h-32 sm:w-32 text-white rotate-12" />
-            </div>
-            {/* Subtle pulsating circles for "active queue" feel */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-emerald-500/10 rounded-full animate-pulse pointer-events-none" />
-          </div>
-
-          <div className="flex flex-col h-full relative z-10">
-            <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-white/10">
-                <UserCheck className="h-4 w-4 sm:h-6 sm:w-6 text-emerald-400" />
-              </div>
-              <p className="text-[10px] sm:text-sm font-medium text-white uppercase tracking-wider">Verification Queue</p>
-            </div>
-            <div className="flex-1 flex flex-col justify-center">
-              <div className="flex items-baseline gap-1 sm:gap-2 mb-0.5 sm:mb-2 text-white">
-                <p className="big-metric">
-                  <CountUp end={pendingFarmers.length} duration={1000} />
-                </p>
-                <span className="text-[10px] sm:text-xs font-medium uppercase tracking-widest text-emerald-400">Backlog</span>
-              </div>
-              <p className="text-[10px] sm:text-sm text-white/80 line-clamp-1 italic">Growers awaiting accreditation</p>
-            </div>
-            <div className="mt-2 sm:mt-4 flex items-center justify-between">
-              <div className="flex -space-x-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-[#002f37] bg-gray-500 overflow-hidden`}>
-                    <img src={`https://i.pravatar.cc/150?u=${i + 10}`} alt="Farmer" className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
-              <div className="text-[10px] sm:text-xs text-[#7ede56] font-bold flex items-center gap-1">
-                Process <ArrowUpRight className="h-3 w-3" />
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Other Metric Cards */}
-        {highlightCards.map((card, index) => (
+        {loadingQueue ? (
+          <MetricCardSkeleton />
+        ) : (
           <Card
-            key={card.id}
-            className={`${card.color} rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-200 cursor-pointer hover:scale-105 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}
-            style={{ transitionDelay: `${(index + 1) * 50}ms` }}
-            onClick={() => {
-              if (card.onClick) {
-                card.onClick();
-              } else if (card.path) {
-                navigate(card.path as string);
-              }
-            }}
+            className={`bg-[#002f37] rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-200 cursor-pointer hover:scale-105 relative overflow-hidden opacity-100 translate-y-0`}
+            style={{ transitionDelay: '0ms' }}
+            onClick={() => setVerificationQueueModalOpen(true)}
           >
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-10 pointer-events-none">
-              <card.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
+            {/* Background Decoration */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              <div className="absolute -right-4 -bottom-4 opacity-10">
+                <UserCheck className="h-24 w-24 sm:h-32 sm:w-32 text-white rotate-12" />
+              </div>
+              {/* Subtle pulsating circles for "active queue" feel */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-emerald-500/10 rounded-full animate-pulse pointer-events-none" />
             </div>
 
             <div className="flex flex-col h-full relative z-10">
               <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
-                <card.icon className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
-                <p className="text-[10px] sm:text-sm font-medium text-white">{card.title}</p>
+                <div className="p-1.5 sm:p-2 rounded-lg bg-white/10">
+                  <UserCheck className="h-4 w-4 sm:h-6 sm:w-6 text-emerald-400" />
+                </div>
+                <p className="text-[10px] sm:text-sm font-medium text-white uppercase tracking-wider">Verification Queue</p>
               </div>
-              <div className="flex-1 flex items-center">
-                <p className="big-metric text-white">
-                  <CountUp end={Number(card.value)} duration={1000} />
-                </p>
+              <div className="flex-1 flex flex-col justify-center">
+                <div className="flex items-baseline gap-1 sm:gap-2 mb-0.5 sm:mb-2 text-white">
+                  <p className="big-metric">
+                    <CountUp end={pendingFarmers.length} duration={1000} />
+                  </p>
+                  <span className="text-[10px] sm:text-xs font-medium uppercase tracking-widest text-emerald-400">Backlog</span>
+                </div>
+                <p className="text-[10px] sm:text-sm text-white/80 line-clamp-1 italic">Growers awaiting accreditation</p>
               </div>
-              <div className="flex justify-end mt-2 sm:mt-4">
-                <div className="text-[10px] sm:text-sm font-medium text-white hover:underline flex items-center gap-1">
-                  View <ArrowUpRight className="h-3 w-3" />
+              <div className="mt-2 sm:mt-4 flex items-center justify-between">
+                <div className="flex -space-x-2">
+                  {[1, 2, 3].map((i: number) => (
+                    <div key={i} className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-[#002f37] bg-gray-500 overflow-hidden`}>
+                      <img src={`https://i.pravatar.cc/150?u=${i + 10}`} alt="Farmer" className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+                <div className="text-[10px] sm:text-xs text-[#7ede56] font-bold flex items-center gap-1">
+                  Process <ArrowUpRight className="h-3 w-3" />
                 </div>
               </div>
             </div>
           </Card>
-        ))}
+        )}
+
+        {/* Other Metric Cards */}
+        {highlightCards.map((card: any, index: number) => {
+          const isLoading =
+            (card.id === 'farmers-management' && loadingFarmers) ||
+            (card.id === 'farm-monitoring' && loadingFarms) ||
+            ((card.id === 'investor-farmer-matches' || card.id === 'reports-submitted' || card.id === 'dispute-management') && loadingStats);
+
+          return isLoading ? (
+            <MetricCardSkeleton key={`skeleton-${card.id}`} />
+          ) : (
+            <Card
+              key={card.id}
+              className={`${card.color} rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-200 cursor-pointer hover:scale-105 relative overflow-hidden opacity-100 translate-y-0`}
+              style={{ transitionDelay: `${(index + 1) * 50}ms` }}
+              onClick={() => {
+                if (card.onClick) {
+                  card.onClick();
+                } else if (card.path) {
+                  navigate(card.path as string);
+                }
+              }}
+            >
+              {/* Background Pattern */}
+              <div className="absolute inset-0 opacity-10 pointer-events-none">
+                <card.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
+              </div>
+
+              <div className="flex flex-col h-full relative z-10">
+                <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
+                  <card.icon className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                  <p className="text-[10px] sm:text-sm font-medium text-white">{card.title}</p>
+                </div>
+                <div className="flex-1 flex items-center">
+                  <p className="big-metric text-white">
+                    <CountUp end={Number(card.value)} duration={1000} />
+                  </p>
+                </div>
+                <div className="flex justify-end mt-2 sm:mt-4">
+                  <div className="text-[10px] sm:text-sm font-medium text-white hover:underline flex items-center gap-1">
+                    Details <ArrowUpRight className="h-3 w-3" />
+                  </div>
+                </div>
+              </div>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Tabbed Content */}
@@ -524,8 +554,18 @@ const AgentDashboard: React.FC = () => {
               </CardHeader>
               <CardContent className="p-0 flex-1 overflow-hidden">
                 <div className="h-full overflow-y-auto p-4 space-y-4 custom-scrollbar">
-                  {activities.length > 0 ? (
-                    activities.map((activity, index) => (
+                  {loadingActivities ? (
+                    Array(5).fill(0).map((_: any, i: number) => (
+                      <div key={`activity-skeleton-${i}`} className="flex gap-4">
+                        <Skeleton className="h-10 w-10 shrink-0 rounded-full bg-gray-700" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-3/4 bg-gray-700" />
+                          <Skeleton className="h-3 w-1/4 bg-gray-700" />
+                        </div>
+                      </div>
+                    ))
+                  ) : activities.length > 0 ? (
+                    activities.map((activity: any, index: number) => (
                       <div key={activity._id || index} className="flex gap-4 relative">
                         {index !== activities.length - 1 && (
                           <div className={`absolute left-[19px] top-8 bottom-0 w-0.5 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`} />
@@ -566,15 +606,15 @@ const AgentDashboard: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <div className="relative">
                       <Bell className={`h-5 w-5 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
-                      {unreadCount > 0 && (
+                      {unreadNotifications > 0 && (
                         <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-[10px] text-white animate-pulse">
-                          {unreadCount}
+                          {unreadNotifications}
                         </span>
                       )}
                     </div>
                     <CardTitle className={`section-title ${darkMode ? 'text-gray-100' : ''}`}>Notifications</CardTitle>
                   </div>
-                  {unreadCount > 0 && (
+                  {unreadNotifications > 0 && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -588,7 +628,7 @@ const AgentDashboard: React.FC = () => {
 
                 {/* Filter Tabs */}
                 <div className="flex gap-2 mt-4">
-                  {['all', 'alert', 'update'].map((filter) => (
+                  {['all', 'alert', 'update'].map((filter: string) => (
                     <button
                       key={filter}
                       onClick={() => setNotificationFilter(filter as any)}
@@ -607,8 +647,19 @@ const AgentDashboard: React.FC = () => {
 
               <CardContent className="p-0 flex-1 overflow-hidden">
                 <div className="h-full overflow-y-auto p-4 space-y-3 custom-scrollbar">
-                  {filteredNotifications.length > 0 ? (
-                    filteredNotifications.map((notification) => (
+                  {loadingNotifications ? (
+                    Array(5).fill(0).map((_: any, i: number) => (
+                      <div key={`notif-skeleton-${i}`} className="flex gap-4 p-3 h-20">
+                        <Skeleton className="h-10 w-10 shrink-0 rounded-full bg-gray-700" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-3/4 bg-gray-700" />
+                          <Skeleton className="h-3 w-1/4 bg-gray-700" />
+                          <Skeleton className="h-3 w-1/2 bg-gray-700" />
+                        </div>
+                      </div>
+                    ))
+                  ) : filteredNotifications.length > 0 ? (
+                    filteredNotifications.map((notification: any) => (
                       <div
                         key={notification._id}
                         onClick={() => toggleReadStatus(notification._id, notification.type)}
@@ -667,10 +718,10 @@ const AgentDashboard: React.FC = () => {
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center p-6 opacity-60">
                       <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-3">
-                        <Check className="h-8 w-8 text-gray-400" />
+                        <Bell className="h-8 w-8 text-gray-400" />
                       </div>
-                      <p className="text-sm font-medium text-gray-500">All caught up!</p>
-                      <p className="text-xs text-gray-400">No new notifications in this category</p>
+                      <p className="text-sm font-medium text-gray-500">No notifications</p>
+                      <p className="text-xs text-gray-400">We'll let you know when something happens</p>
                     </div>
                   )}
                 </div>
@@ -784,7 +835,7 @@ const AgentDashboard: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredFarmers.map((farmer, index) => (
+                      {filteredFarmers.map((farmer: any, index: number) => (
                         <TableRow
                           key={farmer._id || index}
                           className={`border-b transition-colors ${darkMode
@@ -857,8 +908,8 @@ const AgentDashboard: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* Farm Monitoring Tab */}
-        <TabsContent value="farms" className="space-y-6">
+        {/* Field Ops Tab */}
+        <TabsContent value="field-ops" className="space-y-6">
 
           {/* Scheduled Visits Section */}
           <Card className={`${sectionCardClass} transition-colors border-l-4 border-l-blue-500`}>
@@ -887,7 +938,7 @@ const AgentDashboard: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {farms.filter(f => f.nextVisit).map((farm) => (
+                    {farms.filter((f: any) => f.nextVisit).map((farm: any) => (
                       <TableRow key={farm._id} className={darkMode ? 'border-gray-700 hover:bg-[#0f3035]' : 'hover:bg-gray-50'}>
                         <TableCell className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{farm.farmer?.name || 'N/A'}</TableCell>
                         <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{farm.name}</TableCell>
@@ -917,7 +968,7 @@ const AgentDashboard: React.FC = () => {
                         </TableCell>
                       </TableRow>
                     ))}
-                    {farms.filter(f => f.nextVisit).length === 0 && (
+                    {farms.filter((f: any) => f.nextVisit).length === 0 && (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                           No upcoming visits scheduled
@@ -979,16 +1030,21 @@ const AgentDashboard: React.FC = () => {
                         {filteredFarms.map((farm: any) => (
                           <TableRow key={farm.id} className={tableBodyRowClass}>
                             <TableCell className={`${tableCellClass} font-medium`}>{farm.name}</TableCell>
-                            <TableCell className={tableCellClass}>{farm.farmerName}</TableCell>
-                            <TableCell className={tableCellClass}>{farm.location}</TableCell>
+                            <TableCell className={tableCellClass}>{farm.farmer?.name || 'N/A'}</TableCell>
+                            <TableCell className={tableCellClass}>{farm.location || (farm.farmer ? `${farm.farmer.region}, ${farm.farmer.community}` : 'N/A')}</TableCell>
                             <TableCell className={tableCellClass}>
                               <Badge className={statusStyles[farm.status] ?? (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600')}>
                                 {farm.status}
                               </Badge>
                             </TableCell>
-                            <TableCell className={tableCellClass}>{farm.lastVisit}</TableCell>
+                            <TableCell className={tableCellClass}>{farm.lastVisit || 'No visits yet'}</TableCell>
                             <TableCell className={`${tableCellClass} text-right`}>
-                              <Button variant="ghost" size="sm" className={darkMode ? 'text-emerald-300 hover:bg-[#0d3036]' : 'text-emerald-700'}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className={darkMode ? 'text-emerald-300 hover:bg-[#0d3036]' : 'text-emerald-700'}
+                                onClick={() => handleViewFarmer(farm.farmer)}
+                              >
                                 View
                               </Button>
                             </TableCell>
@@ -1003,11 +1059,11 @@ const AgentDashboard: React.FC = () => {
           </div>
         </TabsContent>
 
-        {/* Matches Tab */}
-        <TabsContent value="matches" className="space-y-6">
+        {/* Partnerships Tab */}
+        <TabsContent value="partnerships" className="space-y-6">
 
           {/* Pending Approvals Section */}
-          {matches.some(m => m.approvalStatus === 'pending') && (
+          {matches.some((m: any) => m.approvalStatus === 'pending') && (
             <Card className={`${sectionCardClass} border-purple-200 dark:border-purple-900/50 transition-colors mb-6`}>
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
@@ -1031,7 +1087,7 @@ const AgentDashboard: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {matches.filter(m => m.approvalStatus === 'pending').map((match) => (
+                      {matches.filter((m: any) => m.approvalStatus === 'pending').map((match: any) => (
                         <TableRow key={match.id} className={darkMode ? 'border-purple-900/30' : 'border-purple-100'}>
                           <TableCell className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{match.investor}</TableCell>
                           <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{match.farmer?.name || 'N/A'}</TableCell>
@@ -1086,7 +1142,7 @@ const AgentDashboard: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {matches.filter(m => m.approvalStatus !== 'pending').map((match) => (
+                    {matches.filter((m: any) => m.status === 'Active Match').map((match: any) => (
                       <TableRow key={match._id} className={tableBodyRowClass}>
                         <TableCell className={`${tableCellClass} font-medium`}>{match.investor}</TableCell>
                         <TableCell className={tableCellClass}>{match.farmer?.name || 'N/A'}</TableCell>
@@ -1110,7 +1166,7 @@ const AgentDashboard: React.FC = () => {
                         </TableCell>
                       </TableRow>
                     ))}
-                    {matches.filter(m => m.approvalStatus !== 'pending').length === 0 && (
+                    {matches.filter((m: any) => m.approvalStatus !== 'pending').length === 0 && (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                           No active investments found
@@ -1124,8 +1180,8 @@ const AgentDashboard: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* Performance Tab */}
-        <TabsContent value="performance">
+        {/* Training Hub Tab */}
+        <TabsContent value="training">
           <TrainingPerformanceContent />
         </TabsContent>
       </Tabs>

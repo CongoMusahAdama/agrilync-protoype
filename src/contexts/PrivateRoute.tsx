@@ -7,7 +7,7 @@ const PrivateRoute = () => {
     const { agent, loading, token } = useAuth();
     const location = useLocation();
 
-    if (loading) {
+    if (loading && !token) {
         return <Preloader />;
     }
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 import { createWorker } from 'tesseract.js';
@@ -45,7 +46,6 @@ interface AddFarmerModalProps {
 
 const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenChange, onSuccess, farmer, isEditMode }) => {
     const [step, setStep] = useState(1);
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isEditable, setIsEditable] = useState(!isEditMode);
     const [formData, setFormData] = useState({
         name: '',
@@ -313,6 +313,43 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
     const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
     const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
 
+    const queryClient = useQueryClient();
+
+    const addFarmerMutation = useMutation({
+        mutationFn: async (payload: any) => {
+            if (isEditMode && farmer?._id) {
+                return api.put(`/farmers/${farmer._id}`, payload);
+            } else {
+                return api.post('/farmers', payload);
+            }
+        },
+        onSuccess: () => {
+            toast.success(isEditMode ? 'Farmer profile updated successfully!' : 'Farmer onboarded successfully!');
+            queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
+            queryClient.invalidateQueries({ queryKey: ['farmers'] });
+            onSuccess?.();
+            onOpenChange?.(false);
+            // Reset form
+            setFormData({
+                name: '', contact: '', gender: '', dob: '', language: '', otherLanguage: '', email: '',
+                password: '', region: '', district: '', community: '', farmType: '', farmSize: '',
+                yearsOfExperience: '', landOwnershipStatus: '', cropsGrown: '', livestockType: '', fieldNotes: '',
+                investmentInterest: 'no', preferredInvestmentType: '', estimatedCapitalNeed: '',
+                hasPreviousInvestment: false, investmentReadinessScore: 0
+            });
+            setManualCommunity('');
+            setIdCardFront('');
+            setIdCardBack('');
+            setStep(1);
+        },
+        onError: (error: any) => {
+            console.error(error);
+            toast.error(error.response?.data?.message || 'Failed to create farmer account');
+        }
+    });
+
+    const isSubmitting = addFarmerMutation.isPending;
+
     const handleSubmit = async () => {
         // Validation checks
         if (!certificationChecked) {
@@ -331,7 +368,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         }
 
         // Required field validation
-        const requiredFields = {
+        const requiredFields: Record<string, any> = {
             'Full Name': formData.name,
             'Phone Number': formData.contact,
             'Gender': formData.gender,
@@ -339,9 +376,13 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             'Region': formData.region,
             'District': formData.district,
             'Community': formData.community === 'Other (Specify)' ? manualCommunity : formData.community,
-            'Farm Type': formData.farmType,
-            'Password': formData.password
+            'Farm Type': formData.farmType
         };
+
+        // Password only required for new onboarding
+        if (!isEditMode) {
+            requiredFields['Password'] = formData.password;
+        }
 
         const missingFields = Object.entries(requiredFields)
             .filter(([_, value]) => !value)
@@ -363,66 +404,38 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             return;
         }
 
-        setIsSubmitting(true);
-        try {
-            const finalCommunity = formData.community === 'Other (Specify)' ? manualCommunity : formData.community;
-            const payload = {
-                ...formData,
-                community: finalCommunity,
-                farmSize: Number(formData.farmSize),
-                estimatedCapitalNeed: formData.estimatedCapitalNeed ? Number(formData.estimatedCapitalNeed) : 0,
-                investmentReadinessScore: Number(formData.investmentReadinessScore),
-                profilePicture,
-                idCardFront,
-                idCardBack,
-                status: 'active'
-            };
+        const finalCommunity = formData.community === 'Other (Specify)' ? manualCommunity : formData.community;
+        const payload = {
+            ...formData,
+            community: finalCommunity,
+            farmSize: Number(formData.farmSize),
+            estimatedCapitalNeed: formData.estimatedCapitalNeed ? Number(formData.estimatedCapitalNeed) : 0,
+            investmentReadinessScore: Number(formData.investmentReadinessScore),
+            profilePicture,
+            idCardFront,
+            idCardBack,
+            status: 'active'
+        };
 
-            if (isEditMode && farmer?._id) {
-                await api.put(`/farmers/${farmer._id}`, payload);
-                toast.success('Farmer profile updated successfully!');
-            } else {
-                await api.post('/farmers', payload);
-                toast.success('Farmer onboarded successfully!');
-            }
-            onSuccess?.(); // Refresh dashboard
-            onOpenChange?.(false);
-            // Reset form
-            setFormData({
-                name: '', contact: '', gender: '', dob: '', language: '', otherLanguage: '', email: '',
-                password: '', region: '', district: '', community: '', farmType: '', farmSize: '',
-                yearsOfExperience: '', landOwnershipStatus: '', cropsGrown: '', livestockType: '', fieldNotes: '',
-                investmentInterest: 'no', preferredInvestmentType: '', estimatedCapitalNeed: '',
-                hasPreviousInvestment: false, investmentReadinessScore: 0
-            });
-            setManualCommunity('');
-            setIdCardFront('');
-            setIdCardBack('');
-            setStep(1);
-        } catch (error) {
-            console.error(error);
-            toast.error('Failed to create farmer account');
-        } finally {
-            setIsSubmitting(false);
-        }
+        addFarmerMutation.mutate(payload);
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-            <DialogContent className="max-w-4xl h-[90vh] sm:h-auto sm:max-h-[90vh] flex flex-col p-0 gap-0 bg-white dark:bg-[#002f37] border-none overflow-hidden rounded-t-2xl sm:rounded-2xl shadow-2xl z-[150]">
+            <DialogContent className="max-w-4xl w-[95vw] sm:w-full h-[90vh] sm:h-auto sm:max-h-[85vh] flex flex-col p-0 gap-0 bg-white dark:bg-[#002f37] border-none overflow-hidden rounded-xl sm:rounded-2xl shadow-2xl z-[150]">
                 {/* Header with Progress Bar */}
-                <div className="relative pt-6 px-6 pb-2 border-b dark:border-gray-800">
+                <div className="relative pt-4 px-4 pb-2 sm:pt-6 sm:px-6 border-b dark:border-gray-800 shrink-0">
                     <DialogHeader>
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-500/10">
-                                <Plus className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                            <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 shrink-0">
+                                <Plus className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <div>
-                                <DialogTitle className="text-xl font-bold dark:text-white">
+                                <DialogTitle className="text-lg sm:text-xl font-bold dark:text-white text-left">
                                     {isEditMode ? 'Edit Grower Profile' : 'Grower Onboarding'}
                                 </DialogTitle>
-                                <DialogDescription className="text-xs text-gray-500 dark:text-gray-400">
+                                <DialogDescription className="text-xs text-gray-500 dark:text-gray-400 text-left">
                                     {isEditMode ? 'Update information for an existing farmer.' : 'Directly register a new farmer into the system.'}
                                 </DialogDescription>
                             </div>

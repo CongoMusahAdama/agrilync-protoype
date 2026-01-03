@@ -24,4 +24,7 @@ const ActivitySchema = new mongoose.Schema({
     }
 });
 
+// Indexing for performance
+ActivitySchema.index({ agent: 1, createdAt: -1 });
+
 module.exports = mongoose.models.Activity || mongoose.model('Activity', ActivitySchema);

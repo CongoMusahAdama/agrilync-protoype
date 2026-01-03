@@ -9,16 +9,28 @@ const auth = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.agent = decoded.agent;
 
-        // Verify session ID to enforce single device login
+        // Fetch agent and attach to request
         const Agent = require('../models/Agent');
-        const agent = await Agent.findById(req.agent.id);
+        const agent = await Agent.findById(decoded.agent.id).select('-password');
 
-        if (!agent || !agent.isLoggedIn || agent.currentSessionId !== req.agent.sessionId) {
-            return res.status(401).json({ msg: 'Session expired or logged in on another device' });
+        if (!agent) {
+            return res.status(401).json({ msg: 'Agent not found' });
         }
 
+        // Verify session ID to enforce single device login
+        // Only enforce if both exist
+        if (agent.currentSessionId && decoded.agent.sessionId && agent.currentSessionId !== decoded.agent.sessionId) {
+            return res.status(401).json({ msg: 'Session active on another device' });
+        }
+
+        // If DB has a session but token has NONE, it's an old token. Force logout.
+        if (agent.currentSessionId && !decoded.agent.sessionId) {
+            return res.status(401).json({ msg: 'Session expired (version update)' });
+        }
+
+        // Attach full agent object. Mongoose objects have .id getter for ._id
+        req.agent = agent;
         next();
     } catch (err) {
         console.error('[AUTH] Token verification error:', err.message);
