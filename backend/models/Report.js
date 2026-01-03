@@ -22,4 +22,7 @@ const reportSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+// Indexing for performance
+reportSchema.index({ agent: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Report', reportSchema);
