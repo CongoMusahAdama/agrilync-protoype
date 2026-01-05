@@ -18,7 +18,8 @@ import {
     Handshake,
     AlertTriangle,
     Briefcase,
-    GraduationCap
+    GraduationCap,
+    Activity
 } from 'lucide-react';
 import SidebarProfileCard from './SidebarProfileCard';
 import { useDarkMode } from '@/contexts/DarkModeContext';
@@ -62,8 +63,8 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             onNavigate(item);
         } else {
             const routes: Record<string, string> = {
-                'dashboard': userType === 'agent' ? '/dashboard/agent' : `/dashboard/${userType}`,
-                'settings': userType === 'agent' ? '/dashboard/agent/profile' : `/dashboard/${userType}/settings`,
+                'dashboard': userType === 'agent' ? '/dashboard/agent' : (userType === 'super-admin' ? '/dashboard/super-admin' : `/dashboard/${userType}`),
+                'settings': userType === 'agent' ? '/dashboard/agent/profile' : (userType === 'super-admin' ? '/dashboard/super-admin/settings' : `/dashboard/${userType}/settings`),
                 'farm-analytics': `/dashboard/${userType}/farm-analytics`,
                 'investor-matches': userType === 'agent' ? '/dashboard/agent/investor-farmer-matches' : `/dashboard/${userType}/investor-matches`,
                 'training-sessions': userType === 'agent' ? '/dashboard/agent/training-performance' : `/dashboard/${userType}/training-sessions`,
@@ -71,6 +72,13 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                 'notifications': userType === 'agent' ? '/dashboard/agent/notifications-center' : `/dashboard/${userType}/notifications`,
                 'farmers-management': '/dashboard/agent/farmers-management',
                 'dispute-management': '/dashboard/agent/dispute-management',
+                'regional-performance': '/dashboard/super-admin/regions',
+                'agent-accountability': '/dashboard/super-admin/agents',
+                'farm-oversight': '/dashboard/super-admin/oversight',
+                'partnerships-summary': '/dashboard/super-admin/partnerships',
+                'escalations': '/dashboard/super-admin/escalations',
+                'reports-analytics': '/dashboard/super-admin/analytics',
+                'system-logs': '/dashboard/super-admin/logs',
             };
             if (routes[item]) {
                 navigate(routes[item]);
@@ -88,15 +96,27 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             { id: 'notifications', label: 'Alert Center', icon: Bell },
             { id: 'settings', label: 'Profile & Settings', icon: Settings },
         ]
-        : [
-            { id: 'dashboard', label: 'Dashboard', icon: Home },
-            { id: 'farm-management', label: 'Farm Management', icon: Leaf },
-            { id: 'farm-analytics', label: 'Farm Analytics', icon: BarChart3 },
-            { id: 'investor-matches', label: 'Investor Matches', icon: Users },
-            { id: 'training-sessions', label: 'Training Sessions', icon: Calendar },
-            { id: 'notifications', label: 'Notifications', icon: Bell },
-            { id: 'settings', label: 'Profile & Settings', icon: Settings },
-        ];
+        : userType === 'super-admin'
+            ? [
+                { id: 'dashboard', label: 'Overview', icon: Home },
+                { id: 'regional-performance', label: 'Regional Performance', icon: MapPin },
+                { id: 'agent-accountability', label: 'Agent Accountability', icon: Briefcase },
+                { id: 'farm-oversight', label: 'Farm & Farmer Oversight', icon: Sprout },
+                { id: 'partnerships-summary', label: 'Partnerships Summary', icon: Handshake },
+                { id: 'escalations', label: 'Escalations & Alerts', icon: AlertTriangle },
+                { id: 'reports-analytics', label: 'Reports & Analytics', icon: BarChart3 },
+                { id: 'system-logs', label: 'System Logs & Audit', icon: Activity },
+                { id: 'settings', label: 'Settings & Roles', icon: Settings },
+            ]
+            : [
+                { id: 'dashboard', label: 'Dashboard', icon: Home },
+                { id: 'farm-management', label: 'Farm Management', icon: Leaf },
+                { id: 'farm-analytics', label: 'Farm Analytics', icon: BarChart3 },
+                { id: 'investor-matches', label: 'Investor Matches', icon: Users },
+                { id: 'training-sessions', label: 'Training Sessions', icon: Calendar },
+                { id: 'notifications', label: 'Notifications', icon: Bell },
+                { id: 'settings', label: 'Profile & Settings', icon: Settings },
+            ];
 
     return (
         <div className="flex flex-col h-full overflow-hidden">
@@ -137,23 +157,30 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             />
 
             {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-                {navItems.map((item) => (
-                    <div
-                        key={item.id}
-                        className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm transition-all duration-200 ${activeSidebarItem === item.id
-                            ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37] shadow-sm'
-                            : sidebarDarkMode
-                                ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent'
-                                : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent'
-                            }`}
-                        onClick={() => handleNavigation(item.id)}
-                        title={sidebarCollapsed && !isMobile ? item.label : undefined}
-                    >
-                        <item.icon className="h-4 w-4 shrink-0" />
-                        {(!sidebarCollapsed || isMobile) && <span className="font-medium">{item.label}</span>}
-                    </div>
-                ))}
+            <nav className={`flex-1 ${isMobile ? 'p-6 space-y-3' : 'p-4 space-y-2'} overflow-y-auto custom-scrollbar`}>
+                {navItems.map((item) => {
+                    const isActive = activeSidebarItem === item.id;
+                    return (
+                        <div
+                            key={item.id}
+                            className={`flex items-center gap-3 ${isMobile ? 'p-4' : 'p-3'} rounded-xl cursor-pointer text-sm transition-all duration-300 ${isActive
+                                ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37] shadow-lg scale-[1.02]'
+                                : sidebarDarkMode
+                                    ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent hover:translate-x-1'
+                                    : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent hover:translate-x-1'
+                                }`}
+                            onClick={() => handleNavigation(item.id)}
+                            title={sidebarCollapsed && !isMobile ? item.label : undefined}
+                        >
+                            <item.icon className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} shrink-0 ${isActive ? 'animate-pulse' : ''}`} />
+                            {(!sidebarCollapsed || isMobile) && (
+                                <span className={`${isMobile ? 'text-sm' : 'font-medium'}`}>
+                                    {item.label}
+                                </span>
+                            )}
+                        </div>
+                    );
+                })}
             </nav>
 
             <div className={`mt-auto p-4 border-t space-y-2 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'} ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'}`}>

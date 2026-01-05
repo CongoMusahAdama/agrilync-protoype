@@ -12,6 +12,7 @@ import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
 import Gallery from "./pages/Gallery";
 import Team from "./pages/Team";
+import TeamMemberProfile from "./pages/TeamMemberProfile";
 import Signup from "./pages/Signup";
 import SignupFarmer from "./pages/SignupFarmer";
 import SignupGrower from "./pages/SignupGrower";
@@ -38,6 +39,18 @@ import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 import GrowerProfile from "./pages/grower/GrowerProfile";
 import NotFound from "./pages/NotFound";
+import SuperAdminDashboard from "@/pages/super-admin/SuperAdminDashboard";
+import Overview from "@/pages/super-admin/Overview";
+import UserManagement from "@/pages/super-admin/UserManagement";
+import AgentAccountability from "@/pages/super-admin/AgentAccountability";
+import RegionalPerformance from "@/pages/super-admin/RegionalPerformance";
+import Escalations from "@/pages/super-admin/Escalations";
+import SystemLogs from "@/pages/super-admin/SystemLogs";
+import FarmFarmerOversight from "@/pages/super-admin/FarmFarmerOversight";
+import PartnershipsSummary from "@/pages/super-admin/PartnershipsSummary";
+import ReportsAnalytics from "@/pages/super-admin/ReportsAnalytics";
+import SettingsRoles from "@/pages/super-admin/SettingsRoles";
+import DashboardRedirect from "./pages/DashboardRedirect";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +68,7 @@ const App = () => (
               <Route path="/blog" element={<Blog />} />
               <Route path="/portfolio" element={<Gallery />} />
               <Route path="/team" element={<Team />} />
+              <Route path="/team/:memberId" element={<TeamMemberProfile />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
@@ -86,7 +100,25 @@ const App = () => (
                 <Route path="/dashboard/:userType/settings" element={<Settings />} />
               </Route>
 
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              {/* Super Admin Routes */}
+              <Route path="/dashboard/super-admin" element={<SuperAdminDashboard />}>
+                <Route index element={<Overview />} />
+                <Route path="regions" element={<RegionalPerformance />} />
+                <Route path="agents" element={<AgentAccountability />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="farms" element={<FarmFarmerOversight />} />
+                <Route path="oversight" element={<FarmFarmerOversight />} />
+                <Route path="partnerships" element={<PartnershipsSummary />} />
+                <Route path="escalations" element={<Escalations />} />
+                <Route path="analytics" element={<ReportsAnalytics />} />
+                <Route path="reports" element={<ReportsAnalytics />} />
+                <Route path="logs" element={<SystemLogs />} />
+                <Route path="settings" element={<SettingsRoles />} />
+                <Route path="*" element={<Overview />} />
+              </Route>
+
+              <Route path="/dashboard/redirect" element={<DashboardRedirect />} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

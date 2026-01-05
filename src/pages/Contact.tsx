@@ -60,7 +60,7 @@ ${formData.message}`;
       <Navbar />
 
       {/* Hero Section */}
-      <section ref={heroRef} className={"py-16 sm:py-20 md:py-24 bg-white transition-all duration-700 ease-in-out " + (heroVisible ? " animate-fade-in-up" : " opacity-0")}>
+      <section ref={heroRef} className={"pt-32 sm:pt-40 md:pt-48 pb-12 sm:pb-16 bg-white transition-all duration-700 ease-in-out " + (heroVisible ? " animate-fade-in-up" : " opacity-0")}>
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h1 className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (heroVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
             Get in Touch
@@ -78,7 +78,7 @@ ${formData.message}`;
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
 
             {/* Contact Form */}
-            <div ref={formRef} className={"transition-all duration-700 ease-in-out " + (formVisible ? " animate-fade-in-up" : " opacity-0")}>
+            <div id="message" ref={formRef} className={"transition-all duration-700 ease-in-out " + (formVisible ? " animate-fade-in-up" : " opacity-0")}>
               <h2 className={"text-2xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (formVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
                 Send us a Message
               </h2>
@@ -175,7 +175,7 @@ ${formData.message}`;
             </div>
 
             {/* Contact Information */}
-            <div ref={infoRef} className={"transition-all duration-700 ease-in-out " + (infoVisible ? " animate-fade-in-up" : " opacity-0")}>
+            <div id="info" ref={infoRef} className={"transition-all duration-700 ease-in-out " + (infoVisible ? " animate-fade-in-up" : " opacity-0")}>
               <h2 className={"text-2xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (infoVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
                 Contact Information
               </h2>
@@ -260,7 +260,7 @@ ${formData.message}`;
       </section>
 
       {/* Consultation CTA */}
-      <section ref={consultationRef} className={`py-20 bg-gradient-to-br from-[#002F37] to-[#004555] relative overflow-hidden transition-all duration-700 ${consultationVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
+      <section id="book-session" ref={consultationRef} className={`py-20 bg-gradient-to-br from-[#002F37] to-[#004555] relative overflow-hidden transition-all duration-700 ${consultationVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center text-white">
@@ -293,7 +293,7 @@ ${formData.message}`;
       </section>
 
       {/* WhatsApp Community Section */}
-      <section ref={communityRef} className={"py-12 sm:py-16 md:py-20 bg-white transition-all duration-700 ease-in-out " + (communityVisible ? " animate-fade-in-up" : " opacity-0")}>
+      <section id="community" ref={communityRef} className={"py-12 sm:py-16 md:py-20 bg-white transition-all duration-700 ease-in-out " + (communityVisible ? " animate-fade-in-up" : " opacity-0")}>
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className={"text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (communityVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
             Join Our WhatsApp Community

@@ -6,9 +6,17 @@ interface CountUpProps {
     suffix?: string;
     prefix?: string;
     className?: string;
+    decimals?: number;
 }
 
-const CountUp: React.FC<CountUpProps> = ({ end, duration = 2000, suffix = '', prefix = '', className = '' }) => {
+const CountUp: React.FC<CountUpProps> = ({
+    end,
+    duration = 2000,
+    suffix = '',
+    prefix = '',
+    className = '',
+    decimals = 0
+}) => {
     const [count, setCount] = useState(0);
     const elementRef = useRef<HTMLSpanElement>(null);
     const hasAnimated = useRef(false);
@@ -33,7 +41,7 @@ const CountUp: React.FC<CountUpProps> = ({ end, duration = 2000, suffix = '', pr
                             return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
                         };
 
-                        const currentCount = Math.floor(easeOutExpo(progress) * (targetValue - startValue) + startValue);
+                        const currentCount = easeOutExpo(progress) * (targetValue - startValue) + startValue;
                         setCount(currentCount);
 
                         if (progress < 1) {
@@ -60,7 +68,10 @@ const CountUp: React.FC<CountUpProps> = ({ end, duration = 2000, suffix = '', pr
 
     return (
         <span ref={elementRef} className={className}>
-            {prefix}{count}{suffix}
+            {prefix}{count.toLocaleString(undefined, {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            })}{suffix}
         </span>
     );
 };

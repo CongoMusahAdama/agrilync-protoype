@@ -132,12 +132,10 @@ const Index = () => {
     navigate(path);
   };
 
-  const navbarVariant = isMobile ? 'light' : (isScrolledPastHero ? 'light' : 'transparent');
-
   return (
     <div className="min-h-screen overflow-x-hidden">
       {/* Navbar */}
-      <Navbar variant={navbarVariant} />
+      <Navbar />
 
       {/* MOBILE/TABLET HERO SECTION - Hidden on Desktop */}
       <section className="relative min-h-[60vh] sm:min-h-[70vh] md:min-h-[80vh] lg:hidden bg-white overflow-hidden pt-16 pb-8 sm:pb-12 md:pb-16">
@@ -160,7 +158,7 @@ const Index = () => {
             {/* Left Side - Text Content */}
             <div className="order-2 flex flex-col justify-start text-left animate-fade-in-left -mt-16 sm:-mt-20 md:-mt-24">
               <h1 ref={heroHeadingRef} className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-6 sm:mb-8 transition-all duration-700 ease-in-out leading-tight text-gray-800 font-outfit ${heroHeadingVisible ? " animate-fade-in-left" : " opacity-0"}`}>
-                <span className="animate-hero-glow">Smarter Access</span> to <span className="text-[#7ede56]">Finance</span> & <span className="text-[#7ede56]">Information</span> Through <span className="text-[#7ede56]">AI</span>
+                <span className="animate-hero-glow">Smarter Access</span> to <span className="animate-hero-glow">Finance</span> & <span className="animate-hero-glow">Information</span> Through <span className="animate-hero-glow">AI</span>
               </h1>
 
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
@@ -250,18 +248,27 @@ const Index = () => {
 
       {/* DESKTOP HERO SECTION (NEW - ECOLAND STYLE) */}
       <section className="hidden lg:block relative min-h-[100vh] bg-gray-900/5 overflow-hidden">
+        <style>{`
+          @keyframes heroPremiumReveal {
+            from { transform: scale(1.1); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+          }
+          .animate-hero-reveal {
+            animation: heroPremiumReveal 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          }
+        `}</style>
         {/* Carousel Background Images */}
         <div className="absolute inset-0 z-0">
           <img
             src="/lovable-uploads/countryside-workers-together-field.jpg"
             alt="AgriLync Hero"
-            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none animate-hero-reveal"
             style={{ objectPosition: 'center 35%' }}
             loading="eager"
             draggable={false}
           />
-          {/* Dark Overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10"></div>
+          {/* Dark Overlay gradient - Lightened for better visibility */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent z-10"></div>
           {/* Bottom fade for banner integration */}
           <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/20 to-transparent z-10"></div>
         </div>
@@ -270,8 +277,8 @@ const Index = () => {
         <div className="relative z-20 w-full max-w-7xl mx-auto px-8 h-[75vh] flex flex-col justify-center">
           <div className="max-w-3xl pt-[420px]">
             {/* Main Headline */}
-            <h1 className="text-5xl md:text-6xl font-extrabold text-white leading-[1.1] mb-6 text-left animate-fade-in-left">
-              <span className="animate-hero-glow">Smarter Access</span> to <br />
+            <h1 className="text-5xl md:text-6xl font-extrabold text-white leading-[1.1] mb-6 text-left animate-fade-in-up">
+              <span className="text-white">Smarter Access</span> to <br />
               <span className="text-[#7ede56]">Finance</span> & <span className="text-[#7ede56]">Information</span> <br />
               Through <span className="text-[#7ede56]">AI</span>
             </h1>

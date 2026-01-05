@@ -53,7 +53,10 @@ exports.login = async (req, res) => {
                         isVerified: agent.isVerified,
                         verificationStatus: agent.verificationStatus,
                         region: agent.region,
-                        avatar: agent.avatar
+                        region: agent.region,
+                        avatar: agent.avatar,
+                        role: agent.role,
+                        status: agent.status
                     }
                 });
             }

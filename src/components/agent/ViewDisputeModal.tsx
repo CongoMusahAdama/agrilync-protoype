@@ -7,6 +7,7 @@ import {
     DialogDescription,
     DialogFooter,
 } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useDarkMode } from '@/contexts/DarkModeContext';
@@ -70,6 +71,10 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className={`max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0 border-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+                <VisuallyHidden>
+                    <DialogTitle>Dispute Details - {dispute?.id}</DialogTitle>
+                    <DialogDescription>Viewing detailed information for dispute {dispute?.id}</DialogDescription>
+                </VisuallyHidden>
                 {/* Header Section */}
                 <div className={`p-6 border-b ${darkMode ? 'border-gray-800 bg-gray-900/50' : 'bg-gray-50/50 border-gray-100'}`}>
                     <div className="flex items-center justify-between mb-2">

@@ -13,7 +13,7 @@ const ChangePassword = () => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const { agent, updateAgent } = useAuth();
+    const { agent, setAgent } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -26,8 +26,11 @@ const ChangePassword = () => {
         try {
             await api.post('/auth/change-password', { newPassword });
             toast.success('Password updated successfully!');
-            updateAgent({ hasChangedPassword: true });
-            navigate('/dashboard/agent');
+            // Update local state and navigate to redirector
+            if (agent) {
+                setAgent({ ...agent, hasChangedPassword: true });
+            }
+            navigate('/dashboard/redirect');
         } catch (err: any) {
             toast.error(err.response?.data?.msg || 'Failed to update password');
         } finally {

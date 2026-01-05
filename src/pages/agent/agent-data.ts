@@ -1,18 +1,18 @@
 export const agentProfile = {
-  name: 'Oti Gabriel Wontumi',
-  title: 'Senior Lync Agent',
+  name: 'Lync Agent',
+  title: 'Lync Agent',
   avatar: '/lovable-uploads/profile.png',
-  region: 'Ashanti Region',
-  agentId: 'LYA458920',
-  contact: '+233 20 987 6543',
-  districts: ['Kumasi Metro', 'Ejisu', 'Bosomtwe'],
+  region: 'Region',
+  agentId: 'LYA---',
+  contact: '',
+  districts: [],
   stats: {
-    farmersOnboarded: 45,
-    activeFarms: 30,
-    investorMatches: 12,
-    pendingDisputes: 3,
-    reportsThisMonth: 28,
-    trainingsAttended: 8
+    farmersOnboarded: 0,
+    activeFarms: 0,
+    investorMatches: 0,
+    pendingDisputes: 0,
+    reportsThisMonth: 0,
+    trainingsAttended: 0
   }
 };
 

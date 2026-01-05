@@ -18,6 +18,20 @@ const agentSchema = new mongoose.Schema({
         enum: ['unverified', 'pending', 'verified'],
         default: 'unverified'
     },
+    role: {
+        type: String,
+        enum: ['super_admin', 'supervisor', 'agent'],
+        default: 'agent'
+    },
+    status: {
+        type: String,
+        enum: ['active', 'inactive', 'suspended'],
+        default: 'active'
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Agent'
+    },
     stats: {
         farmersOnboarded: { type: Number, default: 0 },
         activeFarms: { type: Number, default: 0 },

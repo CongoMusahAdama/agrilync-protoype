@@ -1027,8 +1027,8 @@ const AgentDashboard: React.FC = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredFarms.map((farm: any) => (
-                          <TableRow key={farm.id} className={tableBodyRowClass}>
+                        {filteredFarms.map((farm: any, index: number) => (
+                          <TableRow key={farm.id || farm._id || index} className={tableBodyRowClass}>
                             <TableCell className={`${tableCellClass} font-medium`}>{farm.name}</TableCell>
                             <TableCell className={tableCellClass}>{farm.farmer?.name || 'N/A'}</TableCell>
                             <TableCell className={tableCellClass}>{farm.location || (farm.farmer ? `${farm.farmer.region}, ${farm.farmer.community}` : 'N/A')}</TableCell>

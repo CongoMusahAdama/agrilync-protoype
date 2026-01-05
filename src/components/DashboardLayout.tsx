@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, Bell, Sun, Moon, Home, MapPin, BarChart3, Settings, Plus, Users, Calendar, Leaf, Bot } from 'lucide-react';
+import { Menu, Bell, Sun, Moon, Home, MapPin, BarChart3, Settings, Plus, Users, Calendar, Leaf, Bot, AlertTriangle } from 'lucide-react';
 import DashboardSidebar from './DashboardSidebar';
 import Preloader from './ui/Preloader';
 import AddFarmerModal from './agent/AddFarmerModal';
@@ -113,6 +113,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                         'notifications': userType === 'agent' ? '/dashboard/agent/notifications-center' : `/dashboard/${userType}/notifications`,
                                         'farmers-management': '/dashboard/agent/farmers-management',
                                         'dispute-management': '/dashboard/agent/dispute-management',
+                                        // Super Admin Routes
+                                        'regional-performance': '/dashboard/super-admin/regions',
+                                        'agent-accountability': '/dashboard/super-admin/agents',
+                                        'farm-oversight': '/dashboard/super-admin/oversight',
+                                        'partnerships-summary': '/dashboard/super-admin/partnerships',
+                                        'escalations': '/dashboard/super-admin/escalations',
+                                        'reports-analytics': '/dashboard/super-admin/analytics',
+                                        'system-logs': '/dashboard/super-admin/logs',
                                     };
                                     if (routes[item]) {
                                         navigate(routes[item]);
@@ -238,7 +246,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                     <div className="hidden sm:flex flex-col items-start min-w-0">
                                         <span className={`text-sm font-semibold truncate max-w-[120px] ${darkMode ? 'text-white' : 'text-gray-900'}`}>{agent?.name || 'Loading...'}</span>
                                         <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                            {(userType || 'user').charAt(0).toUpperCase() + (userType || 'user').slice(1)}
+                                            {(userType || 'user').split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                                         </span>
                                     </div>
                                 </div>
@@ -315,10 +323,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                     </>
                                 ) : (
                                     <>
-                                        {/* Agent Navigation */}
+                                        {/* Agent/Super Admin Navigation */}
                                         {/* Home */}
                                         <button
-                                            onClick={() => navigate(`/dashboard/agent`)}
+                                            onClick={() => navigate(userType === 'agent' ? '/dashboard/agent' : '/dashboard/super-admin')}
                                             className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeSidebarItem === 'dashboard' ? 'text-[#7ede56] scale-110' : (darkMode ? 'text-gray-400' : 'text-gray-500')}`}
                                         >
                                             <div className={`p-1.5 rounded-xl ${activeSidebarItem === 'dashboard' ? 'bg-[#7ede56]/10' : ''}`}>
@@ -327,21 +335,27 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                             <span className="text-[10px] font-bold">Home</span>
                                         </button>
 
-                                        {/* Farmers Management */}
+                                        {/* Farmers Management / Regions */}
                                         <button
-                                            onClick={() => navigate(`/dashboard/agent/farmers-management`)}
-                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeSidebarItem === 'farmers-management' ? 'text-[#7ede56] scale-110' : (darkMode ? 'text-gray-400' : 'text-gray-500')}`}
+                                            onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/farmers-management' : '/dashboard/super-admin/regions')}
+                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeSidebarItem === 'farmers-management' || activeSidebarItem === 'regional-performance' ? 'text-[#7ede56] scale-110' : (darkMode ? 'text-gray-400' : 'text-gray-500')}`}
                                         >
-                                            <div className={`p-1.5 rounded-xl ${activeSidebarItem === 'farmers-management' ? 'bg-[#7ede56]/10' : ''}`}>
-                                                <Users className="h-5 w-5" />
+                                            <div className={`p-1.5 rounded-xl ${activeSidebarItem === 'farmers-management' || activeSidebarItem === 'regional-performance' ? 'bg-[#7ede56]/10' : ''}`}>
+                                                {userType === 'agent' ? <Users className="h-5 w-5" /> : <MapPin className="h-5 w-5" />}
                                             </div>
-                                            <span className="text-[10px] font-bold">Farmers</span>
+                                            <span className="text-[10px] font-bold">{userType === 'agent' ? 'Farmers' : 'Regions'}</span>
                                         </button>
 
                                         {/* Quick Action */}
                                         <div className="relative -top-5 px-1">
                                             <button
-                                                onClick={() => setAddFarmerModalOpen(true)}
+                                                onClick={() => {
+                                                    if (userType === 'agent') {
+                                                        setAddFarmerModalOpen(true);
+                                                    } else {
+                                                        navigate('/dashboard/super-admin/settings');
+                                                    }
+                                                }}
                                                 className="h-14 w-14 rounded-full bg-[#7ede56] shadow-lg flex items-center justify-center text-[#002f37] border-4 border-[#002f37] active:scale-90 transition-transform"
                                             >
                                                 <div className="bg-[#002f37] rounded-full p-2">
@@ -350,20 +364,20 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                             </button>
                                         </div>
 
-                                        {/* Training & Sessions */}
+                                        {/* Training / Escalations */}
                                         <button
-                                            onClick={() => navigate(`/dashboard/agent/training-performance`)}
-                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeSidebarItem === 'training-sessions' ? 'text-[#7ede56] scale-110' : (darkMode ? 'text-gray-400' : 'text-gray-500')}`}
+                                            onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/training-performance' : '/dashboard/super-admin/escalations')}
+                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeSidebarItem === 'training-sessions' || activeSidebarItem === 'escalations' ? 'text-[#7ede56] scale-110' : (darkMode ? 'text-gray-400' : 'text-gray-500')}`}
                                         >
-                                            <div className={`p-1.5 rounded-xl ${activeSidebarItem === 'training-sessions' ? 'bg-[#7ede56]/10' : ''}`}>
-                                                <Calendar className="h-5 w-5" />
+                                            <div className={`p-1.5 rounded-xl ${activeSidebarItem === 'training-sessions' || activeSidebarItem === 'escalations' ? 'bg-[#7ede56]/10' : ''}`}>
+                                                {userType === 'agent' ? <Calendar className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
                                             </div>
-                                            <span className="text-[10px] font-bold">Training</span>
+                                            <span className="text-[10px] font-bold">{userType === 'agent' ? 'Training' : 'Alerts'}</span>
                                         </button>
 
                                         {/* Settings / Profile */}
                                         <button
-                                            onClick={() => navigate(`/dashboard/agent/profile`)}
+                                            onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/profile' : '/dashboard/super-admin/settings')}
                                             className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeSidebarItem === 'settings' || activeSidebarItem === 'profile' ? 'text-[#7ede56] scale-110' : (darkMode ? 'text-gray-400' : 'text-gray-500')}`}
                                         >
                                             <div className={`p-1.5 rounded-xl ${activeSidebarItem === 'settings' || activeSidebarItem === 'profile' ? 'bg-[#7ede56]/10' : ''}`}>

@@ -12,6 +12,8 @@ interface Agent {
     region?: string;
     contact?: string;
     avatar?: string;
+    role: 'super_admin' | 'supervisor' | 'agent';
+    status: 'active' | 'inactive' | 'suspended';
     stats?: {
         farmersOnboarded: number;
         activeFarms: number;
@@ -29,6 +31,7 @@ interface AuthContextType {
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
     updateAgent: (updatedAgent: Partial<Agent>) => Promise<void>;
+    setAgent: React.Dispatch<React.SetStateAction<Agent | null>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,25 +43,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         const loadAgent = async () => {
-            if (token && !agent) {
+            if (token) {
                 try {
+                    // Always fetch fresh profile to ensure role and session are valid
                     const res = await api.get('/agents/profile');
                     setAgent(res.data);
                 } catch (err) {
                     console.error('Failed to load agent', err);
-                    localStorage.removeItem('token');
-                    setToken(null);
-                    setAgent(null);
+                    // If 401, clear token
+                    // @ts-ignore
+                    if (err.response && err.response.status === 401) {
+                        localStorage.removeItem('token');
+                        setToken(null);
+                        setAgent(null);
+                    }
+                    // If other error (network), keep token for retry? Or maybe not.
+                    // For now, let's strictly clear on auth failure
                 }
-            }
-            if (!token) {
+            } else {
                 setAgent(null);
             }
             setLoading(false);
         };
 
         loadAgent();
-    }, [token, agent]);
+    }, [token]); // Remove 'agent' from dependency to avoid loop if we wanted to enforce fresh fetch.
+    // Actually, if we depend on 'agent', and we setAgent, it triggers again. 
+    // We only want to run when token changes (login/logout/startup).
 
     const login = async (email: string, password: string) => {
         const res = await api.post('/auth/login', { email, password });
@@ -92,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ agent, token, loading, login, logout, updateAgent }}>
+        <AuthContext.Provider value={{ agent, token, loading, login, logout, updateAgent, setAgent }}>
             {children}
         </AuthContext.Provider>
     );

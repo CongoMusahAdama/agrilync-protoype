@@ -42,7 +42,7 @@ const Login = () => {
     try {
       await login(formData.email, formData.password);
       toast.success('Welcome back!');
-      navigate('/dashboard/agent');
+      navigate('/dashboard/redirect');
     } catch (err: any) {
       console.error('Login error:', err);
       const errorMsg = err.response?.data?.msg || err.message || 'Login failed. Please check your credentials.';

@@ -19,30 +19,41 @@ const profileMapping: Record<
     id?: string;
     contact?: string;
     districts?: string[];
+    title?: string;
   }
 > = {
   grower: {
     name: 'John Agribusiness',
     location: 'Ejisu, Ashanti',
-    avatarUrl: '/lovable-uploads/profile.png'
+    avatarUrl: '/lovable-uploads/profile.png',
+    title: 'Grower'
   },
   investor: {
     name: 'Maria Investment',
     location: 'Airport City, Accra',
-    avatarUrl: '/lovable-uploads/profile.png'
+    avatarUrl: '/lovable-uploads/profile.png',
+    title: 'Investor'
   },
   farmer: {
     name: 'Kwame Mensah',
     location: 'Kumasi, Ashanti',
-    avatarUrl: '/lovable-uploads/profile.png'
+    avatarUrl: '/lovable-uploads/profile.png',
+    title: 'Farmer'
   },
   agent: {
-    name: 'Oti Gabriel Wontumi',
-    location: 'Ashanti Region',
+    name: 'Lync Agent',
+    location: 'Region',
     avatarUrl: '/lovable-uploads/profile.png',
-    id: 'LYA458920',
-    contact: '+233 20 987 6543',
-    districts: ['Kumasi Metro', 'Ejisu', 'Bosomtwe']
+    id: '---',
+    contact: '',
+    districts: [],
+    title: 'Field Agent'
+  },
+  'super-admin': {
+    name: 'Super Admin',
+    location: 'Headquarters',
+    avatarUrl: '/lovable-uploads/profile.png',
+    title: 'Super Admin'
   }
 };
 
@@ -54,15 +65,29 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({
 }) => {
   const { agent } = useAuth(); // Get real user data
 
-  // Use real data if available and userType is agent, otherwise fallback or use mock for other types
-  const profile = userType === 'agent' && agent ? {
+  // Use real data if available and userType is agent/super-admin, otherwise fallback or use mock for other types
+  const isSuperAdmin = userType === 'super-admin';
+  const profile = (userType === 'agent' || isSuperAdmin) && agent ? {
     name: agent.name,
-    location: agent.region || 'Unknown Region',
+    location: isSuperAdmin ? 'AgriLync Systems' : (agent.region || 'Field Operations'),
     avatarUrl: agent.avatar || '/lovable-uploads/profile.png',
-    id: agent.agentId,
+    id: isSuperAdmin ? null : (agent.agentId || agent.id?.substring(0, 8)),
     contact: agent.contact,
-    districts: [] // If needed, can be added to user context
+    districts: [],
+    title: isSuperAdmin ? 'Super Admin' : (userType === 'agent' ? 'Field Agent' : userType)
   } : (profileMapping[userType ?? 'grower'] || profileMapping['grower']);
+
+  // Reset agent mock if it falls back to the mapping, to ensure we don't show Wontumi
+  if (userType === 'agent' && !agent) {
+    profileMapping['agent'] = {
+      name: 'Agent',
+      location: 'Region',
+      avatarUrl: '/lovable-uploads/profile.png',
+      id: '---',
+      contact: '',
+      districts: []
+    }
+  }
 
   // Inverse theming: sidebar is light when app is dark, so profile card should be dark
   const sidebarDarkMode = !darkMode;
@@ -85,8 +110,13 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({
         {(!sidebarCollapsed || isMobile) && (
           <div className="flex flex-col items-center gap-1 text-center">
             <span className="text-sm font-semibold truncate max-w-[150px]">{profile.name}</span>
-            <span className={`text-xs ${sidebarDarkMode ? 'text-[#b8e4e9]' : 'text-[#285d64]'}`}>{profile.location}</span>
-            {profile.id && (
+            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${sidebarDarkMode ? 'bg-white/10 text-[#7ede56]' : 'bg-[#002f37] text-white'}`}>
+              {profile.title || (isSuperAdmin ? 'Super Admin' : 'Staff')}
+            </span>
+            {!isSuperAdmin && (
+              <span className={`text-xs ${sidebarDarkMode ? 'text-[#b8e4e9]' : 'text-[#285d64]'} mt-1`}>{profile.location}</span>
+            )}
+            {profile.id && !isSuperAdmin && (
               <span className={`text-[10px] font-mono ${sidebarDarkMode ? 'text-[#7ede56]' : 'text-[#1db954]'} font-semibold`}>
                 ID: {profile.id}
               </span>

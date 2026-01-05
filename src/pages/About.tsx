@@ -85,6 +85,9 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
+      {/* Navbar - Always visible, transparent on top */}
+      <Navbar />
+
       {/* Hero Section with Carousel Background Images */}
       <section className="relative h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[75vh] flex flex-col items-center justify-center overflow-hidden p-0 m-0">
         {/* Carousel Container */}
@@ -130,8 +133,6 @@ const About = () => {
           ))}
         </div>
 
-        {/* Navbar overlayed above image */}
-        <Navbar variant={isScrolledPastHero ? "light" : "transparent-full"} disableHover={true} />
         <div className="relative z-20 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-end h-full pb-8 sm:pb-12 md:pb-16">
           <div className="animate-fade-in-up w-full max-w-4xl mx-auto">
             <h1 ref={heroHeadingRef} className={"text-lg sm:text-xl md:text-3xl lg:text-4xl font-extrabold text-white mb-3 sm:mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight px-2 " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0")} style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
@@ -142,13 +143,13 @@ const About = () => {
       </section>
 
       {/* Who We Are Section */}
-      <section className="py-10 sm:py-16 md:py-20 bg-white">
+      <section id="who-we-are" className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-start">
             {/* Left Column - Title */}
             <div className="animate-fade-in-right transition-all duration-700 ease-in-out">
               <h2 ref={whoWeAreRef} className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (whoWeAreVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
-                Who We Are
+                What We Do
               </h2>
               <div className="w-16 h-0.5 bg-purple-600 mb-4 sm:mb-6"></div>
             </div>
@@ -202,7 +203,7 @@ const About = () => {
 
 
       {/* Vision & Mission Section */}
-      <section className="py-10 sm:py-16 md:py-20 bg-white">
+      <section id="vision-mission" className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Vision Section */}
@@ -241,7 +242,7 @@ const About = () => {
       </section>
 
       {/* Core Values Section */}
-      <section className="py-8 sm:py-10 md:py-12" style={{ backgroundColor: BRAND_TEAL }}>
+      <section id="core-values" className="py-8 sm:py-10 md:py-12" style={{ backgroundColor: BRAND_TEAL }}>
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="text-center mb-6 sm:mb-8 animate-fade-in-up transition-all duration-700 ease-in-out">
             <div className="flex items-center justify-center mb-3">
@@ -314,7 +315,7 @@ const About = () => {
       </section>
 
       {/* Who We Serve Section */}
-      <section className="py-10 sm:py-16 md:py-20 bg-white">
+      <section id="who-we-serve" className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-start">
             {/* Left Column - Title */}
@@ -388,7 +389,7 @@ const About = () => {
       </section>
 
       {/* How We Do It Section */}
-      <section className="py-10 sm:py-16 md:py-20" style={{ backgroundColor: BRAND_TEAL }}>
+      <section id="process" className="py-10 sm:py-16 md:py-20" style={{ backgroundColor: BRAND_TEAL }}>
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-14 md:mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
             <div className="flex items-center justify-center mb-4">
@@ -439,7 +440,7 @@ const About = () => {
       </section>
 
       {/* Why Choose Us Section */}
-      <section className="py-10 sm:py-16 md:py-20 bg-white">
+      <section id="why-choose-us" className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-start">
             {/* Left Column - Title */}

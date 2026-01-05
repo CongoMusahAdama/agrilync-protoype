@@ -19,10 +19,10 @@ interface ViewFarmerModalProps {
 
 const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, farmer }) => {
     const { darkMode } = useDarkMode();
-
-    if (!farmer) return null;
     const [farms, setFarms] = useState<any[]>([]);
     const [, setLoading] = useState(false);
+
+    if (!farmer) return null;
 
     // Mock Rating (To be replaced with real data)
     const rating = farmer?.rating || 4.2;
@@ -51,6 +51,9 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className={`max-w-6xl w-full h-[95vh] md:h-[85vh] p-0 flex flex-col md:flex-row overflow-hidden border-0 ${darkMode ? 'bg-[#1e293b]' : 'bg-gray-50'}`}>
+                <div className="sr-only">
+                    <DialogTitle>Farmer Details - {farmer?.name}</DialogTitle>
+                </div>
 
                 {/* Left Sidebar - Profile & Skills */}
                 <div className={`w-full md:w-[320px] shrink-0 border-b md:border-b-0 md:border-r p-6 md:p-8 flex flex-col overflow-y-auto max-h-[40vh] md:max-h-full ${darkMode ? 'bg-[#0f172a] border-gray-800' : 'bg-white border-gray-200'}`}>
@@ -62,7 +65,7 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                                 <img src={farmer.profilePicture} alt={farmer.name} className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-3xl md:text-6xl font-bold text-gray-300 dark:text-gray-600">
-                                    {farmer.name.charAt(0)}
+                                    {farmer?.name?.charAt(0) || '?'}
                                 </div>
                             )}
                             <div className="hidden md:flex absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity justify-center">
