@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Leaf, Users, TrendingUp, MapPin, Calendar, Shield, Award, Play, MessageCircle, X, ArrowUp, Quote } from 'lucide-react';
+import { Leaf, Users, TrendingUp, MapPin, Calendar, Shield, Award, Play, MessageCircle, X, ArrowUp, Quote, ArrowRight, Bot } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
@@ -242,70 +242,135 @@ const Index = () => {
         </div>
       </section>
 
-      {/* DESKTOP HERO SECTION (NEW - ECOLAND STYLE) */}
-      <section className="hidden lg:block relative min-h-[100vh] bg-gray-900/5 overflow-hidden">
+      {/* DESKTOP HERO SECTION - Hubtel Style */}
+      <section className="hidden lg:block relative min-h-[100vh] bg-gradient-to-br from-gray-50 via-white to-green-50/30 overflow-hidden">
         <style>{`
-          @keyframes heroPremiumReveal {
-            from { transform: scale(1.1); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+          @keyframes slideInRight {
+            from { 
+              transform: translateX(100px); 
+              opacity: 0; 
+            }
+            to { 
+              transform: translateX(0); 
+              opacity: 1; 
+            }
           }
-          .animate-hero-reveal {
-            animation: heroPremiumReveal 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          @keyframes slideInLeft {
+            from { 
+              transform: translateX(-50px); 
+              opacity: 0; 
+            }
+            to { 
+              transform: translateX(0); 
+              opacity: 1; 
+            }
+          }
+          .animate-slide-right {
+            animation: slideInRight 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          }
+          .animate-slide-left {
+            opacity: 0;
+            animation: slideInLeft 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation-delay: 0.5s;
           }
         `}</style>
-        {/* Carousel Background Images */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src="/lovable-uploads/countryside-workers-together-field.jpg"
-            alt="AgriLync Hero"
-            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none animate-hero-reveal"
-            style={{ objectPosition: 'center 35%' }}
-            loading="eager"
-            draggable={false}
-          />
-          {/* Dark Overlay gradient - Lightened for better visibility */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent z-10"></div>
-          {/* Bottom fade for banner integration */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/20 to-transparent z-10"></div>
-        </div>
 
-        {/* Content Container */}
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-8 h-[75vh] flex flex-col justify-center">
-          <div className="max-w-3xl pt-[420px]">
-            {/* Main Headline */}
-            <h1 className="text-5xl md:text-6xl font-extrabold text-white leading-[1.1] mb-6 text-left animate-fade-in-up">
-              <span className="text-white">Smarter Access</span> to <br />
-              <span className="text-[#7ede56]">Finance</span> & <span className="text-[#7ede56]">Information</span> <br />
-              Through <span className="text-[#7ede56]">AI</span>
-            </h1>
+        {/* Main Hero Container with Full Background */}
+        <div className="relative w-full h-[85vh] min-h-[600px] bg-[url('/lovable-uploads/countryside-workers-together-field.jpg')] bg-cover bg-[center_35%] bg-no-repeat flex items-center mb-0">
+          {/* Dark Overlay for text readability - reduced opacity for better visibility */}
+          <div className="absolute inset-0 bg-black/30 bg-gradient-to-r from-black/60 to-transparent"></div>
 
-            {/* Subheadline */}
-            <p className="text-xl text-gray-200 mb-24 leading-relaxed max-w-2xl text-left animate-fade-in-left delay-100">
-              We connect smallholder farmers with AI-driven insights and smart investor matching to revolutionize the agricultural value chain.
-            </p>
+          <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10 pt-20">
+            <div className="max-w-4xl">
 
-            {/* CTA Buttons */}
-            <div className="flex items-center gap-4 mt-32 animate-fade-in-left delay-200">
-              <a href="https://agrilync.netlify.app" target="_blank" rel="noopener noreferrer">
-                <Button className="bg-[#7ede56] hover:bg-[#6ed04c] text-[#002f37] px-8 py-6 text-lg font-bold rounded-full shadow-[0_0_20px_rgba(126,222,86,0.4)] hover:shadow-[0_0_30px_rgba(126,222,86,0.6)] transform hover:scale-105 transition-all duration-300">
-                  Join Waitlist
-                  <div className="ml-2 bg-[#002f37]/10 rounded-full p-1">
-                    <ArrowUp className="w-4 h-4 rotate-45" />
-                  </div>
-                </Button>
-              </a>
+              {/* Pill Tag */}
+              <div className="hidden md:inline-block px-4 py-1.5 mb-6 border border-[#7ede56]/50 rounded-full bg-[#7ede56]/10 backdrop-blur-sm">
+                <span className="text-[#7ede56] font-sora font-medium text-sm tracking-wide uppercase">
+                  Revolutionizing Agriculture with AI
+                </span>
+              </div>
 
-              <Button
-                className="bg-white text-[#002f37] hover:bg-gray-100 px-8 py-6 text-lg font-bold rounded-full shadow-lg transition-all duration-300"
-                onClick={() => window.open('https://www.youtube.com/watch?v=-gOZgTW00GY', '_blank')}
-              >
-                Watch Demo
-              </Button>
+              {/* Main Headline */}
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight font-sora animate-slide-left">
+                Unlocking Difficult Access to <span className="text-[#FFD700]">Farm Investment and Timely Information Through AI</span>
+              </h1>
+
+              {/* Subheadline */}
+              <p className="text-lg md:text-xl text-gray-200 mb-10 leading-relaxed max-w-2xl font-sora font-light">
+                We connect smallholder farmers with AI-driven insights and smart investor matching to revolutionize the agricultural value chain.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-5">
+                <a href="https://agrilync.netlify.app/" target="_blank" rel="noopener noreferrer">
+                  <Button className="w-full sm:w-auto bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] px-8 py-7 text-lg font-bold rounded-full shadow-[0_0_20px_rgba(126,222,86,0.4)] hover:shadow-[0_0_30px_rgba(126,222,86,0.6)] transform hover:-translate-y-1 transition-all duration-300 group">
+                    Join Waitlist
+                    <div className="bg-[#002f37]/10 rounded-full p-1 ml-3 group-hover:bg-[#002f37]/20 transition-colors">
+                      <ArrowRight className="w-5 h-5 text-[#002f37]" />
+                    </div>
+                  </Button>
+                </a>
+
+                <a href="https://www.youtube.com/watch?v=-gOZgTW00GY" target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" className="w-full sm:w-auto border-2 border-white/30 text-white hover:bg-white hover:text-[#002f37] bg-white/5 backdrop-blur-sm px-8 py-7 text-lg font-bold rounded-full transition-all duration-300">
+                    Watch Demo Video
+                    <Play className="w-5 h-5 ml-3 fill-current" />
+                  </Button>
+                </a>
+              </div>
             </div>
           </div>
         </div>
 
+        {/* Yellow Info Strip */}
+        <div className="w-full bg-[#FFD700] py-12 relative z-20 overflow-hidden">
+          {/* Background Pattern for Strip */}
+          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#002f37_1px,transparent_1px)] [background-size:16px_16px]"></div>
 
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 relative">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+
+              {/* Feature 1: Distributing Trust... (Spanning 2 cols) */}
+              <div className="md:col-span-2 flex items-center gap-6 group cursor-pointer">
+                <div className="flex -space-x-4 flex-shrink-0">
+                  {/* Using local success story images for local farmers look */}
+                  <div className="w-12 h-12 rounded-full border-2 border-[#FFD700] bg-white flex items-center justify-center overflow-hidden shadow-md">
+                    <img src="/lovable-uploads/success_story_1.jpg" alt="Local Farmer" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="w-12 h-12 rounded-full border-2 border-[#FFD700] bg-white flex items-center justify-center overflow-hidden shadow-md">
+                    <img src="/lovable-uploads/success_story_2.jpg" alt="Local Farmer" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="w-12 h-12 rounded-full border-2 border-[#FFD700] bg-white flex items-center justify-center overflow-hidden shadow-md">
+                    <img src="/lovable-uploads/success_story_3.jpg" alt="Local Farmer" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="w-12 h-12 rounded-full border-2 border-[#FFD700] bg-[#002f37] flex items-center justify-center text-white text-sm font-bold shadow-md">
+                    200+
+                  </div>
+                </div>
+                <div className="max-w-xl">
+                  <h3 className="font-sora font-bold text-[#002f37] text-lg md:text-xl leading-snug group-hover:underline decoration-[#002f37]/30 underline-offset-4 transition-all">
+                    Distributing trust first, value second, and technology last. <span className="inline-block bg-[#002f37] text-white text-sm px-3 py-1 rounded-full ml-2 align-middle no-underline">Be Part</span>
+                  </h3>
+                </div>
+              </div>
+
+              {/* Feature 3: Arrow Only (Col 3) */}
+              <div className="flex items-center gap-4 justify-start md:justify-end group cursor-pointer pl-8">
+                {/* Arrow pointing down like reference */}
+                <div className="hidden md:block animate-bounce text-[#002f37]">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 5v13M5 12l7 7 7-7" />
+                  </svg>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        {/* Decorative Elements */}
+        <div className="absolute top-20 right-20 w-32 h-32 bg-[#7ede56]/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-40 left-20 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
       </section>
 
       {/* Who We Are Section */}

@@ -28,24 +28,18 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
   const isTealPage = ['/team', '/blog', '/portfolio', '/contact'].includes(location.pathname);
   const isTransparent = isTransparentPage && !isScrolled && !isHovered;
 
-  // Design Constants based on state
+  // Background state
   const navBgClass = isTransparent
     ? 'bg-transparent shadow-none'
     : isTealPage
       ? 'bg-[#002f37] shadow-md'
       : 'bg-white shadow-md';
 
-  const topBarBgClass = isTransparent
-    ? 'bg-transparent text-white/90'
-    : 'bg-[#002f37] text-white';
-
   const textColor = (isTransparent || isTealPage) ? 'text-white' : 'text-[#002f37]';
   const logoTextClass = (isTransparent || isTealPage) ? 'text-white' : 'text-[#002f37]';
-
   const textClass = (isTransparent || isTealPage)
     ? 'text-white hover:text-[#7ede56]'
     : 'text-[#002f37] hover:text-[#7ede56]';
-
   const mobileTextClass = 'text-[#002f37] hover:text-[#7ede56]'; // Always dark on mobile menu
 
   // Navigation Data
@@ -122,40 +116,17 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 flex flex-col font-manrope transition-all duration-300"
+      className="fixed top-0 left-0 right-0 z-50 flex flex-col font-sora transition-all duration-300"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
 
-      {/* Top Bar - Deep Teal */}
-      <div className={`${topBarBgClass} py-2.5 px-4 sm:px-6 lg:px-8 hidden md:block transition-colors duration-300`}>
-        <div className="max-w-7xl mx-auto flex justify-between items-center text-xs font-medium">
-          <div className="flex items-center space-x-6">
-            <span className="opacity-90">Supporting farmers on the continent and beyond</span>
-            <div className="flex items-center space-x-2 opacity-90 hover:opacity-100 transition-opacity">
-              <Phone className="h-3.5 w-3.5 text-[#7ede56]" />
-              <a href="tel:+233506626068" className="hover:text-[#7ede56] transition-colors">(+233) 50 662 6068</a>
-            </div>
-            <div className="flex items-center space-x-2 opacity-90 hover:opacity-100 transition-opacity">
-              <Mail className="h-3.5 w-3.5 text-[#7ede56]" />
-              <a href="mailto:agrilync@gmail.com" className="hover:text-[#7ede56] transition-colors">agrilync@gmail.com</a>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <a href="https://www.facebook.com/share/16SkoNJAsW/" target="_blank" rel="noreferrer" className="w-2 h-2 rounded-full bg-white/40 hover:bg-[#7ede56] hover:scale-125 transition-all duration-300" aria-label="Facebook"></a>
-            <a href="https://x.com/agri_lync" target="_blank" rel="noreferrer" className="w-2 h-2 rounded-full bg-white/40 hover:bg-[#7ede56] hover:scale-125 transition-all duration-300" aria-label="X"></a>
-            <a href="https://instagram.com/agri_lync" target="_blank" rel="noreferrer" className="w-2 h-2 rounded-full bg-white/40 hover:bg-[#7ede56] hover:scale-125 transition-all duration-300" aria-label="Instagram"></a>
-            <a href="https://www.linkedin.com/company/agrilync/" target="_blank" rel="noreferrer" className="w-2 h-2 rounded-full bg-white/40 hover:bg-[#7ede56] hover:scale-125 transition-all duration-300" aria-label="LinkedIn"></a>
-          </div>
-        </div>
-      </div>
-
       {/* Main Navbar */}
       <div className={`w-full ${navBgClass} transition-all duration-300`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-10">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2 ml-0 md:-ml-10" onClick={() => setIsMenuOpen(false)}>
+            <Link to="/" className="flex items-center space-x-2" onClick={() => setIsMenuOpen(false)}>
               <img
                 src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png"
                 alt="AgriLync Logo"

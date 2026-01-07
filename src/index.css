@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -410,6 +410,26 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
+.font-sora {
+  font-family: 'Sora', sans-serif;
+}
+
+/* Sora font weights for public pages */
+.font-sora-regular {
+  font-family: 'Sora', sans-serif;
+  font-weight: 400;
+}
+
+.font-sora-semibold {
+  font-family: 'Sora', sans-serif;
+  font-weight: 600;
+}
+
+.font-sora-bold {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+}
+
 /* AgriLync Font Hierarchy Utilities */
 .dashboard-title {
   font-family: 'Archivo Black', sans-serif;
@@ -698,10 +718,13 @@
 
 /* Hide scrollbar but keep functionality */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari and Opera */
+  display: none;
+  /* Chrome, Safari and Opera */
 }
