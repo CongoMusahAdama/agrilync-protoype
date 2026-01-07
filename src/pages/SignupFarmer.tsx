@@ -12,6 +12,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 
 const SignupFarmer = () => {
     const navigate = useNavigate();

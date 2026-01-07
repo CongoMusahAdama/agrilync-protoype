@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, TrendingUp, Phone } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import Swal from 'sweetalert2';
 
 const SignupInvestor = () => {
     const navigate = useNavigate();
@@ -47,12 +48,21 @@ const SignupInvestor = () => {
         e.preventDefault();
 
         if (!verifyOTP()) {
-            alert('Please enter the correct OTP code');
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid OTP',
+                text: 'Please enter the correct OTP code.'
+            });
             return;
         }
 
         // Show under development message
-        alert('🌾 Thank you for your interest in AgriLync!\n\nOur authentication system and user dashboards are currently under development and will be available very soon.\n\nStay tuned for updates!');
+        Swal.fire({
+            title: 'Under Development',
+            html: `🌾 Thank you for your interest in AgriLync!<br><br>Our authentication system and user dashboards are currently under development and will be available very soon.<br><br>Stay tuned for updates!`,
+            icon: 'info',
+            confirmButtonColor: '#2563eb'
+        });
         return;
 
         // console.log('Investor Registration Data:', formData);

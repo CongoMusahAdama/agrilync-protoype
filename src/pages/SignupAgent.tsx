@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, UserCheck, Phone } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import Swal from 'sweetalert2';
 
 const SignupAgent = () => {
     const navigate = useNavigate();
@@ -48,12 +49,21 @@ const SignupAgent = () => {
         e.preventDefault();
 
         if (!verifyOTP()) {
-            alert('Please enter the correct OTP code');
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid OTP',
+                text: 'Please enter the correct OTP code.'
+            });
             return;
         }
 
         // Show application success message
-        alert('📝 Application Submitted Successfully!\n\nThank you for your interest in becoming a Lync Agent. Your application has been received and is under review.\n\nOur team will contact you shortly regarding the next steps.');
+        Swal.fire({
+            title: 'Application Submitted!',
+            html: `📝 Thank you for your interest in becoming a Lync Agent.<br><br>Your application has been received and is under review.<br><br>Our team will contact you shortly regarding the next steps.`,
+            icon: 'success',
+            confirmButtonColor: '#9333ea'
+        });
         navigate('/');
     };
 

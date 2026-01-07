@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Users, MapPin, UserCheck, Upload, Phone, FileText } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import Swal from 'sweetalert2';
 
 const SignupGrower = () => {
     const navigate = useNavigate();
@@ -63,12 +64,21 @@ const SignupGrower = () => {
         e.preventDefault();
 
         if (!verifyOTP()) {
-            alert('Please enter the correct OTP code');
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid OTP',
+                text: 'Please enter the correct OTP code.'
+            });
             return;
         }
 
         // Show under development message
-        alert('🌾 Thank you for your interest in AgriLync!\n\nOur authentication system and user dashboards are currently under development and will be available very soon.\n\nStay tuned for updates!');
+        Swal.fire({
+            title: 'Under Development',
+            html: `🌾 Thank you for your interest in AgriLync!<br><br>Our authentication system and user dashboards are currently under development and will be available very soon.<br><br>Stay tuned for updates!`,
+            icon: 'info',
+            confirmButtonColor: '#7ede56'
+        });
         return;
 
         // console.log('Grower Registration Data:', formData);

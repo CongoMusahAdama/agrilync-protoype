@@ -84,17 +84,15 @@ const Index = () => {
   };
 
   useEffect(() => {
-    // Only show splash on mobile devices and only on first visit
-    const hasSeenSplash = window.sessionStorage.getItem('agrilync_splash_seen');
-    if (window.innerWidth <= 640 && !hasSeenSplash) {
+    // Show splash on every mobile/tablet page load
+    if (window.innerWidth <= 1024) {
       setShowSplash(true);
       const timeout = setTimeout(() => {
         setShowSplash(false);
-        window.sessionStorage.setItem('agrilync_splash_seen', 'true');
-      }, 2000);
+      }, 3000);
       setSplashTimeout(timeout);
-      // Failsafe: hide splash after 3s no matter what
-      const failsafe = setTimeout(() => setShowSplash(false), 3000);
+
+      const failsafe = setTimeout(() => setShowSplash(false), 3500);
       return () => {
         clearTimeout(timeout);
         clearTimeout(failsafe);
@@ -106,19 +104,18 @@ const Index = () => {
 
   if (showSplash) {
     return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center z-[9999] sm:hidden" style={{ background: '#7ede56' }}>
+      <div className="fixed inset-0 flex flex-col items-center justify-center z-[9999]" style={{ background: '#7ede56' }}>
         <img
           src="/lovable-uploads/logo.png"
           alt="Logo"
-          className="w-24 h-24 animate-spin-slower"
-          style={{ animation: 'spin 2s linear' }}
+          className="w-24 h-24 animate-spin-slow"
         />
         <div className="mt-4 text-center text-base font-semibold text-[#002f37] drop-shadow-sm tracking-wide">
           Join the AgriLync movement
         </div>
         <style>{`
           @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-          .animate-spin-slower { animation: spin 2s linear; }
+          .animate-spin-slow { animation: spin 3s linear infinite; }
         `}</style>
       </div>
     );
@@ -169,11 +166,11 @@ const Index = () => {
         `}</style>
 
         {/* Main Hero Container with Full Background */}
-        <div className="relative w-full h-[80vh] md:h-[85vh] min-h-[500px] md:min-h-[600px] bg-[url('/lovable-uploads/countryside-workers-together-field.jpg')] bg-cover bg-[20%_top] md:bg-[center_35%] bg-no-repeat flex items-end md:items-center mb-0 transition-all duration-500">
+        <div className="relative w-full h-screen md:h-[85vh] bg-[url('/lovable-uploads/countryside-workers-together-field.jpg')] bg-cover bg-[25%_top] md:bg-[center_35%] bg-no-repeat flex items-end mb-0 transition-all duration-500">
           {/* Dark Overlay for text readability - Bottom heavy for content at the bottom */}
           <div className="absolute inset-0 bg-black/40 bg-gradient-to-t from-black/80 via-black/20 to-transparent md:bg-black/30 md:bg-gradient-to-r md:from-black/60 md:to-transparent"></div>
 
-          <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10 pb-16 md:pt-20">
+          <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10 pb-16 md:pb-20">
             <div className="max-w-4xl">
 
               {/* Pill Tag */}
@@ -184,7 +181,7 @@ const Index = () => {
               </div>
 
               {/* Main Headline */}
-              <h1 className="text-2xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight font-sora animate-slide-left">
+              <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight font-sora animate-slide-left">
                 Unlocking Difficult Access to <span className="text-[#FFD700]">Farm Investment and Timely Information Through AI</span>
               </h1>
 
@@ -194,20 +191,17 @@ const Index = () => {
               </p>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-5">
-                <a href="https://agrilync.netlify.app/" target="_blank" rel="noopener noreferrer" className="w-auto">
-                  <Button className="w-fit bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] px-6 py-4 md:py-7 text-base md:text-lg font-bold rounded-full shadow-[0_0_20px_rgba(126,222,86,0.4)] hover:shadow-[0_0_30px_rgba(126,222,86,0.6)] transform hover:-translate-y-1 transition-all duration-300 group">
+              {/* CTA Buttons - Side by Side on Mobile */}
+              <div className="flex flex-row gap-3 md:gap-5">
+                <a href="https://agrilync.netlify.app/" target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-none">
+                  <Button className="w-full sm:w-auto bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] px-4 py-3 md:px-8 md:py-7 text-sm md:text-lg font-bold rounded-full shadow-lg transform hover:-translate-y-1 transition-all duration-300">
                     Join Waitlist
-                    <div className="bg-[#002f37]/10 rounded-full p-1 ml-3 group-hover:bg-[#002f37]/20 transition-colors">
-                      <ArrowRight className="w-5 h-5 text-[#002f37]" />
-                    </div>
                   </Button>
                 </a>
 
-                <a href="https://www.youtube.com/watch?v=-gOZgTW00GY" target="_blank" rel="noopener noreferrer" className="w-auto">
-                  <Button variant="outline" className="w-fit border-2 border-white/30 text-white hover:bg-white hover:text-[#002f37] bg-white/5 backdrop-blur-sm px-6 py-4 md:py-7 text-base md:text-lg font-bold rounded-full transition-all duration-300">
-                    Watch Demo Video
-                    <Play className="w-5 h-5 ml-3 fill-current" />
+                <a href="https://www.youtube.com/watch?v=-gOZgTW00GY" target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-none">
+                  <Button variant="outline" className="w-full sm:w-auto border-2 border-white/30 text-white hover:bg-white hover:text-[#002f37] bg-white/5 backdrop-blur-sm px-4 py-3 md:px-8 md:py-7 text-sm md:text-lg font-bold rounded-full transition-all duration-300">
+                    Watch Demo
                   </Button>
                 </a>
               </div>
@@ -235,7 +229,7 @@ const Index = () => {
         </div>
 
         {/* Yellow Info Strip */}
-        <div className="w-full bg-[#FFD700] pt-2 pb-6 md:py-12 relative z-20 overflow-hidden">
+        <div className="w-full bg-[#FFD700] py-4 md:py-6 relative z-20 overflow-hidden">
           {/* Background Pattern for Strip */}
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#002f37_1px,transparent_1px)] [background-size:16px_16px]"></div>
 
