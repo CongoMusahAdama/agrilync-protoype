@@ -133,117 +133,10 @@ const Index = () => {
       {/* Navbar */}
       <Navbar />
 
-      {/* MOBILE/TABLET HERO SECTION - Hidden on Desktop */}
-      <section className="relative min-h-[60vh] sm:min-h-[70vh] md:min-h-[80vh] lg:hidden bg-white overflow-hidden pt-16 pb-8 sm:pb-12 md:pb-16">
-        {/* Leaf Pattern Background */}
-        <div className="absolute inset-0 opacity-20 z-0">
-          <div className="absolute top-10 left-10 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] rotate-12" /></div>
-          <div className="absolute top-20 right-20 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] -rotate-12" /></div>
-          <div className="absolute top-30 left-24 w-14 h-14"><Leaf className="w-full h-full text-[#7ede56] rotate-45" /></div>
-          <div className="absolute top-40 right-8 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] -rotate-45" /></div>
-          <div className="absolute top-50 left-16 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] rotate-90" /></div>
-          <div className="absolute top-60 right-36 w-14 h-14"><Leaf className="w-full h-full text-[#7ede56] rotate-12" /></div>
-          <div className="absolute top-70 left-8 w-12 h-12"><Leaf className="w-full h-full text-[#7ede56] -rotate-12" /></div>
-          <div className="absolute top-80 right-12 w-10 h-10"><Leaf className="w-full h-full text-[#7ede56] rotate-45" /></div>
-        </div>
 
-        {/* Main Content Container */}
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 gap-8 md:gap-12 items-center">
 
-            {/* Left Side - Text Content */}
-            <div className="order-2 flex flex-col justify-start text-left animate-fade-in-left -mt-16 sm:-mt-20 md:-mt-24">
-              <h1 ref={heroHeadingRef} className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-6 sm:mb-8 transition-all duration-700 ease-in-out leading-tight text-gray-800 font-outfit ${heroHeadingVisible ? " animate-fade-in-left" : " opacity-0"}`}>
-                <span className="animate-hero-glow">Smarter Access</span> to <span className="animate-hero-glow">Finance</span> & <span className="animate-hero-glow">Information</span> Through <span className="animate-hero-glow">AI</span>
-              </h1>
-
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
-                <a
-                  href="https://agrilync.netlify.app"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full sm:w-auto"
-                >
-                  <Button className="w-full sm:w-auto bg-[#002f37] hover:bg-[#001a1f] text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                    Join the Waitlist
-                  </Button>
-                </a>
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto border-2 border-[#002f37] text-[#002f37] hover:bg-[#002f37] hover:text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-                  onClick={() => window.open('https://www.youtube.com/watch?v=-gOZgTW00GY', '_blank')}
-                >
-                  Watch Demo Video
-                </Button>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 text-sm sm:text-base text-gray-600">
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-green-100 border-2 border-white"></div>
-                    <div className="w-8 h-8 rounded-full bg-green-200 border-2 border-white"></div>
-                    <div className="w-8 h-8 rounded-full bg-green-300 border-2 border-white"></div>
-                    <div className="w-8 h-8 rounded-full bg-green-400 border-2 border-white"></div>
-                  </div>
-                  <span className="ml-2">Join us as a lync grower, lync investor or a solo farmer NOW</span>
-                </div>
-                <Button
-                  className="bg-[#7ede56] hover:bg-[#6bc947] text-white px-6 py-2 text-sm font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                  onClick={() => navigate('/signup')}
-                >
-                  Get Started
-                </Button>
-              </div>
-            </div>
-
-            {/* Right Side - Vertical Staggered Cards Layout */}
-            <div className="order-1 relative flex items-center justify-center min-h-[450px] sm:min-h-[550px] md:min-h-[650px] py-8 -mt-8 sm:-mt-0">
-              <div className="relative w-full max-w-sm sm:max-w-md flex items-start justify-center gap-3 sm:gap-4 px-4">
-
-                {/* Left Card - High */}
-                <div className="w-[31%] relative z-10 animate-fade-in-stable delay-0">
-                  <div className="w-full h-[280px] sm:h-[360px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
-                    <img
-                      src="/lovable-uploads/countryside-workers-together-field.jpg"
-                      alt="AgriLync Farmer Left"
-                      className="w-full h-full object-cover"
-                      style={{ objectPosition: '20% center' }}
-                    />
-                  </div>
-                </div>
-
-                {/* Center Card - Up Small */}
-                <div className="w-[31%] relative z-10 mt-2 sm:mt-3 animate-fade-in-stable delay-100">
-                  <div className="w-full h-[280px] sm:h-[360px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
-                    <img
-                      src="/lovable-uploads/countryside-workers-together-field.jpg"
-                      alt="AgriLync Farmer Center"
-                      className="w-full h-full object-cover object-center"
-                      loading="eager"
-                    />
-                  </div>
-                </div>
-
-                {/* Right Card - High */}
-                <div className="w-[31%] relative z-10 animate-fade-in-stable delay-200">
-                  <div className="w-full h-[280px] sm:h-[360px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
-                    <img
-                      src="/lovable-uploads/countryside-workers-together-field.jpg"
-                      alt="AgriLync Farmer Right"
-                      className="w-full h-full object-cover"
-                      style={{ objectPosition: '100% center' }}
-                    />
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* DESKTOP HERO SECTION - Hubtel Style */}
-      <section className="hidden lg:block relative min-h-[100vh] bg-gradient-to-br from-gray-50 via-white to-green-50/30 overflow-hidden">
+      {/* HERO SECTION - Hubtel Style (Responsive) */}
+      <section className="relative min-h-[85vh] bg-gradient-to-br from-gray-50 via-white to-green-50/30 overflow-hidden">
         <style>{`
           @keyframes slideInRight {
             from { 
@@ -276,11 +169,11 @@ const Index = () => {
         `}</style>
 
         {/* Main Hero Container with Full Background */}
-        <div className="relative w-full h-[85vh] min-h-[600px] bg-[url('/lovable-uploads/countryside-workers-together-field.jpg')] bg-cover bg-[center_35%] bg-no-repeat flex items-center mb-0">
+        <div className="relative w-full h-[65vh] md:h-[85vh] min-h-[450px] md:min-h-[600px] bg-[url('/lovable-uploads/countryside-workers-together-field.jpg')] bg-cover bg-[55%_center] md:bg-[center_35%] bg-no-repeat flex items-center mb-0">
           {/* Dark Overlay for text readability - reduced opacity for better visibility */}
           <div className="absolute inset-0 bg-black/30 bg-gradient-to-r from-black/60 to-transparent"></div>
 
-          <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10 pt-20">
+          <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10 pt-10 md:pt-20">
             <div className="max-w-4xl">
 
               {/* Pill Tag */}
@@ -312,11 +205,30 @@ const Index = () => {
                 </a>
 
                 <a href="https://www.youtube.com/watch?v=-gOZgTW00GY" target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" className="w-full sm:w-auto border-2 border-white/30 text-white hover:bg-white hover:text-[#002f37] bg-white/5 backdrop-blur-sm px-8 py-7 text-lg font-bold rounded-full transition-all duration-300">
+                  <Button variant="outline" className="w-full sm:w-auto border-2 border-white/30 text-white hover:bg-white hover:text-[#002f37] bg-white/5 backdrop-blur-sm px-8 py-3 md:py-7 text-base md:text-lg font-bold rounded-full transition-all duration-300">
                     Watch Demo Video
                     <Play className="w-5 h-5 ml-3 fill-current" />
                   </Button>
                 </a>
+              </div>
+
+              {/* Responsive Sub-headline for Mobile */}
+              <div className="mt-8 md:hidden">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex -space-x-2">
+                    <div className="w-8 h-8 rounded-full bg-green-100 border-2 border-white"></div>
+                    <div className="w-8 h-8 rounded-full bg-green-200 border-2 border-white"></div>
+                    <div className="w-8 h-8 rounded-full bg-green-300 border-2 border-white"></div>
+                    <div className="w-8 h-8 rounded-full bg-[#7ede56] border-2 border-white"></div>
+                  </div>
+                  <p className="text-white text-xs font-medium">Join 200+ lync growers & investors</p>
+                </div>
+                <Button
+                  onClick={() => navigate('/signup')}
+                  className="bg-[#7ede56] text-[#002f37] font-bold rounded-full py-4 px-8"
+                >
+                  Get Started
+                </Button>
               </div>
             </div>
           </div>
