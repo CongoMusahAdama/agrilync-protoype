@@ -169,7 +169,7 @@ const Index = () => {
         `}</style>
 
         {/* Main Hero Container with Full Background */}
-        <div className="relative w-full h-[85vh] md:h-[85vh] min-h-[650px] md:min-h-[600px] bg-[url('/lovable-uploads/countryside-workers-together-field.jpg')] bg-cover bg-[35%_top] md:bg-[center_35%] bg-no-repeat flex items-end md:items-center mb-0 transition-all duration-500">
+        <div className="relative w-full h-[80vh] md:h-[85vh] min-h-[500px] md:min-h-[600px] bg-[url('/lovable-uploads/countryside-workers-together-field.jpg')] bg-cover bg-[20%_top] md:bg-[center_35%] bg-no-repeat flex items-end md:items-center mb-0 transition-all duration-500">
           {/* Dark Overlay for text readability - Bottom heavy for content at the bottom */}
           <div className="absolute inset-0 bg-black/40 bg-gradient-to-t from-black/80 via-black/20 to-transparent md:bg-black/30 md:bg-gradient-to-r md:from-black/60 md:to-transparent"></div>
 
