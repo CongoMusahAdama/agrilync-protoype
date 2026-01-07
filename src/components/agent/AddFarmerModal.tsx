@@ -89,44 +89,53 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
     // Initialize form with farmer data if in edit mode
     React.useEffect(() => {
         if (open && farmer && isEditMode) {
-            setFormData({
-                name: farmer.name || '',
-                contact: farmer.contact || '',
-                gender: farmer.gender || '',
-                dob: farmer.dob ? new Date(farmer.dob).toISOString().split('T')[0] : '',
-                language: farmer.language || '',
-                otherLanguage: farmer.otherLanguage || '',
-                email: farmer.email || '',
-                password: '', // Don't show password
-                region: farmer.region || '',
-                district: farmer.district || '',
-                community: farmer.community || '',
-                farmType: farmer.farmType || '',
-                farmSize: farmer.farmSize?.toString() || '',
-                yearsOfExperience: farmer.yearsOfExperience?.toString() || '',
-                landOwnershipStatus: farmer.landOwnershipStatus || '',
-                cropsGrown: farmer.cropsGrown || '',
-                livestockType: farmer.livestockType || '',
-                fieldNotes: farmer.fieldNotes || '',
-                investmentInterest: farmer.investmentInterest || 'no',
-                preferredInvestmentType: farmer.preferredInvestmentType || '',
-                estimatedCapitalNeed: farmer.estimatedCapitalNeed?.toString() || '',
-                hasPreviousInvestment: farmer.hasPreviousInvestment || false,
-                investmentReadinessScore: farmer.investmentReadinessScore || 0
-            });
+            try {
+                setFormData({
+                    name: farmer.name || '',
+                    contact: farmer.contact || '',
+                    gender: farmer.gender || '',
+                    dob: farmer.dob ? (farmer.dob.includes('T') ? new Date(farmer.dob).toISOString().split('T')[0] : farmer.dob.split('T')[0]) : '',
+                    language: farmer.language || '',
+                    otherLanguage: farmer.otherLanguage || '',
+                    email: farmer.email || '',
+                    password: '', // Don't show password
+                    region: farmer.region || '',
+                    district: farmer.district || '',
+                    community: farmer.community || '',
+                    farmType: farmer.farmType || '',
+                    farmSize: farmer.farmSize?.toString() || '',
+                    yearsOfExperience: farmer.yearsOfExperience?.toString() || '',
+                    landOwnershipStatus: farmer.landOwnershipStatus || '',
+                    cropsGrown: farmer.cropsGrown || '',
+                    livestockType: farmer.livestockType || '',
+                    fieldNotes: farmer.fieldNotes || '',
+                    investmentInterest: farmer.investmentInterest || 'no',
+                    preferredInvestmentType: farmer.preferredInvestmentType || '',
+                    estimatedCapitalNeed: farmer.estimatedCapitalNeed?.toString() || '',
+                    hasPreviousInvestment: farmer.hasPreviousInvestment || false,
+                    investmentReadinessScore: farmer.investmentReadinessScore || 0
+                });
 
-            if (farmer.community && !GHANA_COMMUNITIES[farmer.district]?.includes(farmer.community)) {
-                setManualCommunity(farmer.community);
-                setFormData(prev => ({ ...prev, community: 'Other (Specify)' }));
+                if (farmer.community && !GHANA_COMMUNITIES[farmer.district]?.includes(farmer.community)) {
+                    setManualCommunity(farmer.community);
+                    setFormData(prev => ({ ...prev, community: 'Other (Specify)' }));
+                } else {
+                    setManualCommunity('');
+                }
+
+                setProfilePicture(farmer.profilePicture || '');
+                setIdCardFront(farmer.idCardFront || '');
+                setIdCardBack(farmer.idCardBack || '');
+                setIdVerificationChecked(!!(farmer.idCardFront && farmer.idCardBack));
+                setCertificationChecked(true); // Assume already certified if editing
+                setOcrMismatch([]); // Reset mismatch for edit mode
+                setOcrData(null); // Reset OCR data
+                setStep(1);
+                setIsEditable(false);
+            } catch (error) {
+                console.error('Error initializing edit mode:', error);
+                toast.error('Error loading farmer data. Please try again.');
             }
-
-            setProfilePicture(farmer.profilePicture || '');
-            setIdCardFront(farmer.idCardFront || '');
-            setIdCardBack(farmer.idCardBack || '');
-            setIdVerificationChecked(!!(farmer.idCardFront && farmer.idCardBack));
-            setCertificationChecked(true); // Assume already certified if editing
-            setStep(1);
-            setIsEditable(false);
         } else if (open && !isEditMode) {
             // Reset for new onboarding
             setFormData({
@@ -140,6 +149,8 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             setProfilePicture('');
             setIdCardFront('');
             setIdCardBack('');
+            setOcrMismatch([]);
+            setOcrData(null);
             setStep(1);
             setIsEditable(true);
             setIdVerificationChecked(false);
@@ -194,28 +205,57 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
 
             setOcrData(extractedData);
 
-            // Compare with form data
+            // Compare with form data - strict validation
             const mismatches: string[] = [];
+            
+            // Normalize names for comparison (remove extra spaces, convert to lowercase)
+            const normalizeName = (name: string) => name.toLowerCase().trim().replace(/\s+/g, ' ');
+            
             if (extractedData.name && formData.name) {
-                const similarity = extractedData.name.toLowerCase().includes(formData.name.toLowerCase()) ||
-                    formData.name.toLowerCase().includes(extractedData.name.toLowerCase());
-                if (!similarity) {
+                const extractedNormalized = normalizeName(extractedData.name);
+                const formNormalized = normalizeName(formData.name);
+                
+                // Check if names match (exact match or one contains the other with at least 80% similarity)
+                const extractedWords = extractedNormalized.split(' ');
+                const formWords = formNormalized.split(' ');
+                const matchingWords = extractedWords.filter(word => 
+                    formWords.some(fw => fw.includes(word) || word.includes(fw))
+                );
+                
+                const similarity = matchingWords.length / Math.max(extractedWords.length, formWords.length);
+                
+                if (similarity < 0.7) { // Require at least 70% word match
                     mismatches.push('name');
                 }
             }
 
             if (extractedData.dob && formData.dob) {
-                // Basic DOB comparison (would need better date parsing in production)
-                if (!extractedData.dob.includes(formData.dob.split('-').reverse().join('/'))) {
+                // Normalize date formats for comparison
+                const formDate = formData.dob.split('-'); // YYYY-MM-DD
+                const dobFormats = [
+                    `${formDate[2]}/${formDate[1]}/${formDate[0]}`, // DD/MM/YYYY
+                    `${formDate[2]}/${formDate[1]}/${formDate[0].slice(2)}`, // DD/MM/YY
+                    `${formDate[1]}/${formDate[2]}/${formDate[0]}`, // MM/DD/YYYY
+                    `${formDate[1]}/${formDate[2]}/${formDate[0].slice(2)}`, // MM/DD/YY
+                ];
+                
+                const dobMatches = dobFormats.some(format => 
+                    extractedData.dob?.replace(/[-\s]/g, '/').includes(format.replace(/\//g, '')) ||
+                    extractedData.dob?.includes(format)
+                );
+                
+                if (!dobMatches) {
                     mismatches.push('date of birth');
                 }
             }
 
             if (mismatches.length > 0) {
                 setOcrMismatch(mismatches);
-                toast.warning(`ID Card mismatch detected in: ${mismatches.join(', ')}. Please verify manually.`);
+                setIdVerificationChecked(false); // Uncheck if mismatch detected
+                toast.error(`❌ ID Card mismatch detected in: ${mismatches.join(', ')}. Please ensure the information matches before proceeding.`);
             } else if (extractedData.name || extractedData.dob) {
-                toast.success('ID Card information matches form data!');
+                setOcrMismatch([]);
+                toast.success('✅ ID Card information matches form data!');
                 setIdVerificationChecked(true); // Auto-check verification
             }
         } catch (error) {
@@ -357,14 +397,41 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             return;
         }
 
-        if (!idVerificationChecked) {
-            toast.error('Please confirm that ID card details match the provided information');
-            return;
-        }
-
         if (!idCardFront || !idCardBack) {
             toast.error('Please upload both sides of the Ghana Card');
             return;
+        }
+
+        // Strict Ghana Card validation - prevent saving if mismatch detected
+        if (!isEditMode && ocrMismatch.length > 0) {
+            toast.error(`Cannot proceed: ID Card information does not match form data. Please verify the ${ocrMismatch.join(' and ')} on the Ghana Card matches the information provided.`);
+            return;
+        }
+
+        if (!idVerificationChecked) {
+            toast.error('Please confirm that ID card details match the provided information by checking the verification checkbox');
+            return;
+        }
+
+        // Additional validation: If OCR data exists, ensure it matches
+        if (!isEditMode && ocrData && formData.name && ocrData.name) {
+            const normalizeName = (name: string) => name.toLowerCase().trim().replace(/\s+/g, ' ');
+            const extractedNormalized = normalizeName(ocrData.name);
+            const formNormalized = normalizeName(formData.name);
+            
+            const extractedWords = extractedNormalized.split(' ');
+            const formWords = formNormalized.split(' ');
+            const matchingWords = extractedWords.filter(word => 
+                formWords.some(fw => fw.includes(word) || word.includes(fw))
+            );
+            
+            const similarity = matchingWords.length / Math.max(extractedWords.length, formWords.length);
+            
+            if (similarity < 0.7) {
+                toast.error('Name on Ghana Card does not match the name provided. Please verify and ensure they match before submitting.');
+                setIdVerificationChecked(false);
+                return;
+            }
         }
 
         // Required field validation
@@ -379,10 +446,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             'Farm Type': formData.farmType
         };
 
-        // Password only required for new onboarding
-        if (!isEditMode) {
-            requiredFields['Password'] = formData.password;
-        }
+        // Password is auto-generated, no longer required from agent
 
         const missingFields = Object.entries(requiredFields)
             .filter(([_, value]) => !value)
@@ -405,8 +469,17 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         }
 
         const finalCommunity = formData.community === 'Other (Specify)' ? manualCommunity : formData.community;
+        
+        // Generate a temporary password if not provided (for agent-onboarded farmers)
+        let tempPassword = formData.password;
+        if (!isEditMode && !tempPassword) {
+            // Generate a secure random password (farmer will be prompted to change on first login)
+            tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+        }
+        
         const payload = {
             ...formData,
+            password: !isEditMode ? tempPassword : undefined, // Only send password for new farmers, not on edit
             community: finalCommunity,
             farmSize: Number(formData.farmSize),
             estimatedCapitalNeed: formData.estimatedCapitalNeed ? Number(formData.estimatedCapitalNeed) : 0,
@@ -416,6 +489,11 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             idCardBack,
             status: 'active'
         };
+
+        // Remove password from payload if editing (don't update password unless explicitly changed)
+        if (isEditMode) {
+            delete payload.password;
+        }
 
         addFarmerMutation.mutate(payload);
     };
@@ -546,18 +624,6 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                         onChange={(e) => handleInputChange('email', e.target.value)}
                                         disabled={!isEditable}
                                     />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Set Temporary Password *</Label>
-                                    <Input
-                                        type="password"
-                                        placeholder="••••••••"
-                                        className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
-                                        value={formData.password}
-                                        onChange={(e) => handleInputChange('password', e.target.value)}
-                                        disabled={!isEditable && !isEditMode}
-                                    />
-                                    <p className="text-[10px] text-gray-400">Farmer will be prompted to change this on first login</p>
                                 </div>
                             </div>
                         </div>

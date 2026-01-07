@@ -81,6 +81,7 @@ export const TrainingPerformanceContent = () => {
       return response.data.data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache
+    gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false, // Disabled for mobile performance
     retry: 2,
     refetchOnReconnect: true
@@ -98,9 +99,11 @@ export const TrainingPerformanceContent = () => {
       const response = await api.get('/scheduled-visits');
       return response.data.data || [];
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 3 * 60 * 1000, // 3 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false,
-    refetchOnReconnect: true
+    refetchOnReconnect: true,
+    retry: 2
   });
 
   const scheduledVisits = scheduledVisitsData || [];

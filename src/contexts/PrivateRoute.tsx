@@ -2,13 +2,7 @@ import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import Preloader from '@/components/ui/Preloader';
-
-// Check if we're on localhost for development/testing
-const isLocalhost = () => {
-    if (typeof window === 'undefined') return false;
-    const hostname = window.location.hostname;
-    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '';
-};
+import { isLocalhost } from '@/utils/env';
 
 const PrivateRoute = () => {
     const { agent, loading, token } = useAuth();

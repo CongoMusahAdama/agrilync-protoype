@@ -52,7 +52,23 @@ import ReportsAnalytics from "@/pages/super-admin/ReportsAnalytics";
 import SettingsRoles from "@/pages/super-admin/SettingsRoles";
 import DashboardRedirect from "./pages/DashboardRedirect";
 
-const queryClient = new QueryClient();
+// Configure QueryClient with optimized caching defaults
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh for 5 minutes
+            gcTime: 10 * 60 * 1000, // 10 minutes - garbage collection time (was cacheTime in v4)
+            refetchOnWindowFocus: false, // Disabled for better mobile performance
+            refetchOnMount: true, // Refetch on mount to ensure fresh data
+            refetchOnReconnect: true, // Refetch when connection restored
+            retry: 2, // Retry failed requests twice
+            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+        },
+        mutations: {
+            retry: 1, // Retry mutations once on failure
+        },
+    },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

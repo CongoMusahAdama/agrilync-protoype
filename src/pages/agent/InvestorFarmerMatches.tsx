@@ -91,7 +91,10 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
       const response = await api.get('/dashboard/summary');
       return response.data.data;
     },
-    staleTime: 60000
+    staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
+    retry: 2
   });
 
   const { data: farmersList = [] } = useQuery({
@@ -100,91 +103,15 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
       const response = await api.get('/farmers');
       return response.data;
     },
-    staleTime: 60000
+    staleTime: 5 * 60 * 1000, // 5 minutes - consistent caching
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
+    retry: 2
   });
 
-  // MOCK DATA FOR DEMONSTRATION
-  const MOCK_DATA = {
-    matches: [
-      {
-        id: 'm1',
-        farmer: { name: 'Kwame Mensah', region: 'Ashanti', verified: true },
-        investor: { name: 'Agrifund Capital' },
-        category: 'Crop',
-        farmType: 'Maize',
-        investmentValue: 'GHS 15,000',
-        investmentType: 'Input Support',
-        progress: 65,
-        status: 'Active',
-        matchDate: '2025-12-15T10:00:00Z',
-        updates: [1, 2, 3]
-      },
-      {
-        id: 'm2',
-        farmer: { name: 'Abena Osei', region: 'Eastern', verified: true },
-        investor: { name: 'GreenGrowth Partners' },
-        category: 'Livestock',
-        farmType: 'Poultry',
-        investmentValue: 'GHS 25,000',
-        investmentType: 'Cash Support',
-        progress: 30,
-        status: 'Pending Approval',
-        matchDate: '2026-01-02T14:30:00Z',
-        updates: []
-      },
-      {
-        id: 'm3',
-        farmer: { name: 'John Doe', region: 'Northern', verified: false },
-        investor: { name: 'Savannah Investments' },
-        category: 'Crop',
-        farmType: 'Soybean',
-        investmentValue: 'GHS 10,000',
-        investmentType: 'Equipment',
-        progress: 100,
-        status: 'Completed',
-        matchDate: '2025-10-10T09:00:00Z',
-        updates: [1, 2, 3, 4, 5]
-      },
-      {
-        id: 'm4',
-        farmer: { name: 'Emmanuel Yeboah', region: 'Volta', verified: true },
-        investor: { name: 'Global Agri-Tech' },
-        category: 'Crop',
-        farmType: 'Rice',
-        investmentValue: 'GHS 50,000',
-        investmentType: 'Infrastructure',
-        progress: 45,
-        status: 'Flagged',
-        matchDate: '2025-11-20T11:15:00Z',
-        updates: [1, 2]
-      }
-    ],
-    issues: [
-      {
-        id: 'DIS-2024-001',
-        type: 'Breach of Contract',
-        severity: 'High',
-        investor: 'Agrifund Capital',
-        farmer: 'Kwame Mensah',
-        status: 'Pending Review',
-        dateLogged: '2026-01-03',
-        createdAt: '2026-01-03T08:00:00Z'
-      },
-      {
-        id: 'DIS-2024-002',
-        type: 'Delayed Payment',
-        severity: 'Medium',
-        investor: 'GreenGrowth Partners',
-        farmer: 'Abena Osei',
-        status: 'In Progress',
-        dateLogged: '2025-12-28',
-        createdAt: '2025-12-28T14:00:00Z'
-      }
-    ]
-  };
-
-  const matches = (summaryData?.matches && summaryData.matches.length > 0) ? summaryData.matches : MOCK_DATA.matches;
-  const issues = (summaryData?.disputes && summaryData.disputes.length > 0) ? summaryData.disputes : MOCK_DATA.issues;
+  // Use real data from API only - no mock fallback
+  const matches = summaryData?.matches || [];
+  const issues = summaryData?.disputes || [];
   const loading = loadingSummary;
   const isLoaded = !loadingSummary;
 
@@ -229,50 +156,25 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
     }
   };
 
-  // Fetch Opportunities
-  const MOCK_OPPORTUNITIES = [
-    {
-      _id: 'opp1',
-      investor: 'Agrifund Capital',
-      type: 'Crop Production',
-      valueRange: 'GHS 10k - 50k',
-      title: 'Maize Expansion Project',
-      description: 'Looking for verified farmers in Ashanti region to scale up maize production for local processing.',
-      targetRegions: ['Ashanti', 'Bono'],
-      status: 'Open'
-    },
-    {
-      _id: 'opp2',
-      investor: 'GreenGrowth Partners',
-      type: 'Livestock',
-      valueRange: 'GHS 20k - 100k',
-      title: 'Organic Poultry Initiative',
-      description: 'Scaling sustainable poultry farming with focus on organic feed and ethical practices.',
-      targetRegions: ['Eastern', 'Greater Accra'],
-      status: 'Urgent'
-    },
-    {
-      _id: 'opp3',
-      investor: 'TechFarm Ventures',
-      type: 'Agri-Tech',
-      valueRange: 'GHS 5k - 25k',
-      title: 'Smart Solar Irrigation',
-      description: 'Providing solar-powered irrigation systems to dry-season vegetable farmers.',
-      targetRegions: ['Northern', 'Upper East'],
-      status: 'Open'
-    }
-  ];
-
+  // Fetch Opportunities from API only
   const { data: opportunitiesData, isLoading: loadingOpportunities } = useQuery({
     queryKey: ['agentOpportunities'],
     queryFn: async () => {
-      const response = await api.get('/opportunities');
-      return response.data;
+      try {
+        const response = await api.get('/opportunities');
+        return response.data || [];
+      } catch (error) {
+        console.error('Failed to fetch opportunities:', error);
+        return []; // Return empty array on error, no mock fallback
+      }
     },
-    staleTime: 60000
+    staleTime: 5 * 60 * 1000, // 5 minutes - consistent with other queries
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
+    retry: 2
   });
 
-  const opportunities = (opportunitiesData && opportunitiesData.length > 0) ? opportunitiesData : MOCK_OPPORTUNITIES;
+  const opportunities = opportunitiesData || [];
 
   // Calculate metrics
   const totalMatches = matches.length;

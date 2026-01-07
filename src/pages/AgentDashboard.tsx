@@ -124,19 +124,19 @@ const AgentDashboard: React.FC = () => {
   const [activeFarmsModalOpen, setActiveFarmsModalOpen] = useState(false);
   const [journeyModalOpen, setJourneyModalOpen] = useState(false);
 
-  // useQuery for all-in-one dashboard data
+  // useQuery for all-in-one dashboard data with optimized caching
   const { data: summaryData, isLoading: loading, isFetching, refetch: refreshData } = useQuery({
     queryKey: ['agentDashboardSummary'],
     queryFn: async () => {
       const response = await api.get('/dashboard/summary');
       return response.data.data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache
-    cacheTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
-    refetchOnWindowFocus: false, // Disabled for mobile performance - reduces unnecessary refetches
-    refetchOnMount: true, // Still refetch on mount to get fresh data
+    staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache TTL
+    gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache (garbage collection time)
+    refetchOnWindowFocus: false, // Disabled for mobile performance
+    refetchOnMount: true, // Refetch on mount to get fresh data
     retry: 2, // Retry failed requests twice
-    retryDelay: 1000, // Wait 1 second between retries
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
     refetchOnReconnect: true // Refetch when connection is restored
   });
 

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -22,18 +22,11 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
     const [farms, setFarms] = useState<any[]>([]);
     const [, setLoading] = useState(false);
 
-    if (!farmer) return null;
-
     // Mock Rating (To be replaced with real data)
     const rating = farmer?.rating || 4.2;
 
-    useEffect(() => {
-        if (open && farmer?._id) {
-            fetchFarms();
-        }
-    }, [open, farmer?._id]);
-
-    const fetchFarms = async () => {
+    const fetchFarms = useCallback(async () => {
+        if (!farmer?._id) return;
         setLoading(true);
         try {
             const res = await api.get('/farms');
@@ -44,7 +37,13 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
         } finally {
             setLoading(false);
         }
-    };
+    }, [farmer?._id]);
+
+    useEffect(() => {
+        if (open && farmer?._id) {
+            fetchFarms();
+        }
+    }, [open, farmer?._id, fetchFarms]);
 
     if (!farmer) return null;
 

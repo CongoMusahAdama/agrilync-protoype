@@ -142,6 +142,7 @@ const FarmManagement: React.FC = () => {
             return response.data.data;
         },
         staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache
+        gcTime: 10 * 60 * 1000, // 10 minutes
         refetchOnWindowFocus: false, // Disabled for mobile performance
         retry: 2,
         refetchOnReconnect: true
@@ -154,8 +155,11 @@ const FarmManagement: React.FC = () => {
             const response = await api.get('/field-visits');
             return response.data;
         },
-        staleTime: 60000,
-        refetchOnReconnect: true
+        staleTime: 3 * 60 * 1000, // 3 minutes
+        gcTime: 10 * 60 * 1000, // 10 minutes
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: true,
+        retry: 2
     });
 
     // useQuery for reports
@@ -165,8 +169,11 @@ const FarmManagement: React.FC = () => {
             const response = await api.get('/reports/agent');
             return response.data;
         },
-        staleTime: 60000,
-        refetchOnReconnect: true
+        staleTime: 3 * 60 * 1000, // 3 minutes
+        gcTime: 10 * 60 * 1000, // 10 minutes
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: true,
+        retry: 2
     });
 
     const farmers = summaryData?.farmers || [];

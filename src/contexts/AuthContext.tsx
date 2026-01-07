@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '@/utils/api';
+import { isLocalhost } from '@/utils/env';
 
 interface Agent {
     id: string;
@@ -24,36 +25,6 @@ interface Agent {
     };
 }
 
-// Check if we're on localhost for development/testing
-const isLocalhost = () => {
-    if (typeof window === 'undefined') return false;
-    const hostname = window.location.hostname;
-    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '';
-};
-
-// Mock agent for localhost testing
-const getMockAgent = (): Agent => ({
-    id: 'mock-agent-id',
-    name: 'Test Agent',
-    email: 'test@agrilync.com',
-    agentId: 'AGENT001',
-    hasChangedPassword: true,
-    isVerified: true,
-    verificationStatus: 'verified',
-    region: 'Greater Accra',
-    contact: '+233501234567',
-    role: 'agent',
-    status: 'active',
-    stats: {
-        farmersOnboarded: 0,
-        activeFarms: 0,
-        investorMatches: 0,
-        pendingDisputes: 0,
-        reportsThisMonth: 0,
-        trainingsAttended: 0,
-    },
-});
-
 interface AuthContextType {
     agent: Agent | null;
     token: string | null;
@@ -77,25 +48,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             
             if (token) {
                 try {
-                    // Always fetch fresh profile to ensure role and session are valid
+                    // Always fetch fresh profile from database to ensure role and session are valid
                     const res = await api.get('/agents/profile');
                     setAgent(res.data);
-                } catch (err) {
+                } catch (err: any) {
                     console.error('Failed to load agent', err);
                     // If 401, clear token
-                    // @ts-ignore
-                    if (err.response && err.response.status === 401) {
+                    if (err?.response?.status === 401) {
                         localStorage.removeItem('token');
                         setToken(null);
                         setAgent(null);
                     }
-                    // If other error (network), keep token for retry? Or maybe not.
-                    // For now, let's strictly clear on auth failure
                 }
             } else {
-                // On localhost, provide mock agent for testing without login
+                // On localhost, allow access without token but still try to fetch from DB
+                // This allows testing without login while still using real data
                 if (isDev) {
-                    setAgent(getMockAgent());
+                    try {
+                        // Try to fetch agent profile without token (may fail, that's OK)
+                        const res = await api.get('/agents/profile');
+                        setAgent(res.data);
+                    } catch (err) {
+                        // If no token and fetch fails, just allow access without agent
+                        // This is expected on localhost for testing
+                        setAgent(null);
+                    }
                 } else {
                     setAgent(null);
                 }
@@ -104,9 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
 
         loadAgent();
-    }, [token]); // Remove 'agent' from dependency to avoid loop if we wanted to enforce fresh fetch.
-    // Actually, if we depend on 'agent', and we setAgent, it triggers again. 
-    // We only want to run when token changes (login/logout/startup).
+    }, [token]);
 
     const login = async (email: string, password: string) => {
         const res = await api.post('/auth/login', { email, password });

@@ -85,6 +85,7 @@ const DisputeManagement: React.FC = () => {
       return response.data.data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache
+    gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false, // Disabled for mobile performance
     retry: 2
   });
@@ -99,7 +100,10 @@ const DisputeManagement: React.FC = () => {
       const response = await api.get('/farmers');
       return response.data;
     },
-    staleTime: 60000
+    staleTime: 5 * 60 * 1000, // 5 minutes - consistent caching
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
+    retry: 2
   });
 
   // Calculate stats

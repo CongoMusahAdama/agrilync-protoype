@@ -1,7 +1,34 @@
 const jwt = require('jsonwebtoken');
 
+/**
+ * Check if request is from localhost
+ * Allows development without authentication while still fetching from database
+ */
+const isLocalhost = (req) => {
+    const hostname = req.hostname || req.get('host')?.split(':')[0];
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '';
+};
+
 const auth = async (req, res, next) => {
     const token = req.header('x-auth-token');
+    const isDev = isLocalhost(req);
+
+    // On localhost, allow access without token for development (still fetches from DB)
+    if (isDev && !token) {
+        // Try to get first available agent for localhost development
+        try {
+            const Agent = require('../models/Agent');
+            const agent = await Agent.findOne({ status: 'active' }).select('-password');
+            if (agent) {
+                req.agent = agent;
+                console.log('[AUTH] Localhost: Using first active agent for development');
+                return next();
+            }
+        } catch (err) {
+            console.error('[AUTH] Localhost: Error fetching agent:', err.message);
+            // Continue to normal auth flow if agent fetch fails
+        }
+    }
 
     if (!token) {
         return res.status(401).json({ msg: 'No token, authorization denied' });

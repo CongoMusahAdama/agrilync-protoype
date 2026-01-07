@@ -39,22 +39,15 @@ const AgentAccountability = () => {
                         atRisk: res.data.filter((a: any) => a.status === 'at risk').length
                     });
                 } else {
-                    throw new Error('Empty');
+                    // No agents found - show empty state
+                    setAgents([]);
+                    setStats({ activeNow: 0, totalAgents: 0, atRisk: 0 });
                 }
             } catch (err) {
-                // Rich Mock data for agents
-                const mockAgents = [
-                    { agentId: 'AGT-882', name: 'Osei Tutu', region: 'Ashanti', status: 'Online', lastSync: '2 mins ago', reports: 142, compliance: '98%', isLoggedIn: true },
-                    { agentId: 'AGT-112', name: 'Kwame Mensah', region: 'Western', status: 'Offline', lastSync: '4 hours ago', reports: 89, compliance: '85%', isLoggedIn: false },
-                    { agentId: 'AGT-901', name: 'Ibrahim Yakubu', region: 'Northern', status: 'Online', lastSync: 'Just now', reports: 201, compliance: '94%', isLoggedIn: true },
-                    { agentId: 'AGT-420', name: 'Dzifa Gbeho', region: 'Volta', status: 'At Risk', lastSync: '3 days ago', reports: 45, compliance: '60%', isLoggedIn: false },
-                    { agentId: 'AGT-505', name: 'Kofi Appiah', region: 'Bono', status: 'Online', lastSync: '15 mins ago', reports: 112, compliance: '91%', isLoggedIn: true },
-                    { agentId: 'AGT-311', name: 'Sarah Graham', region: 'Greater Accra', status: 'Online', lastSync: '5 mins ago', reports: 165, compliance: '99%', isLoggedIn: true },
-                    { agentId: 'AGT-209', name: 'Ama Serwaa', region: 'Ashanti', status: 'Offline', lastSync: 'Yesterday', reports: 56, compliance: '72%', isLoggedIn: false },
-                    { agentId: 'AGT-134', name: 'Mary Addo', region: 'Eastern', status: 'Online', lastSync: '1 hour ago', reports: 128, compliance: '95%', isLoggedIn: true },
-                ];
-                setAgents(mockAgents);
-                setStats({ activeNow: 5, totalAgents: 42, atRisk: 3 });
+                console.error('Failed to fetch agents:', err);
+                // On error, show empty state rather than mock data
+                setAgents([]);
+                setStats({ activeNow: 0, totalAgents: 0, atRisk: 0 });
             } finally {
                 setLoading(false);
             }

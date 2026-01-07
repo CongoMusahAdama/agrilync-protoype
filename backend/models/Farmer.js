@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 
 const farmerSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    password: { type: String, required: true },
+    password: { type: String, required: false }, // Optional - will be auto-generated if not provided
     region: { type: String, required: true },
     district: { type: String, required: true },
     community: { type: String, required: true },
@@ -88,11 +88,22 @@ const farmerSchema = new mongoose.Schema({
 // Indexing for performance
 farmerSchema.index({ agent: 1, status: 1, region: 1 });
 
-// Hash password before saving
+// Hash password before saving and generate if missing
 farmerSchema.pre('save', async function () {
-    if (!this.isModified('password')) return;
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+    // Generate a random password if not provided (for agent-onboarded farmers)
+    if (!this.password) {
+        const crypto = require('crypto');
+        this.password = crypto.randomBytes(12).toString('hex');
+    }
+    
+    // Hash password if it's new or modified (and not already hashed)
+    if (this.isModified('password') && this.password) {
+        // Only hash if it's not already a bcrypt hash
+        if (!this.password.startsWith('$2a$') && !this.password.startsWith('$2b$')) {
+            const salt = await bcrypt.genSalt(10);
+            this.password = await bcrypt.hash(this.password, salt);
+        }
+    }
 });
 
 // Method to compare password

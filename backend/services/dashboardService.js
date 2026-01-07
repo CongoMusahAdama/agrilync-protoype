@@ -8,9 +8,19 @@ const { Training, AgentTraining } = require('../models/Training');
 const Dispute = require('../models/Dispute');
 const Report = require('../models/Report');
 
-// Simple in-memory cache
+// Simple in-memory cache with improved performance
 const cache = new Map();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes - increased for better mobile performance
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes - optimized for mobile and desktop performance
+
+// Cache cleanup interval to prevent memory leaks
+setInterval(() => {
+    const now = Date.now();
+    for (const [key, value] of cache.entries()) {
+        if (now - value.timestamp > CACHE_TTL * 2) {
+            cache.delete(key);
+        }
+    }
+}, CACHE_TTL); // Clean up expired cache entries every 5 minutes
 
 /**
  * Get dashboard summary for an agent

@@ -1,6 +1,10 @@
-import axios from 'axios';
-import { getMockResponse, isLocalhost } from './mockData';
+import axios, { type AxiosRequestConfig, type AxiosResponse, type AxiosError } from 'axios';
 
+/**
+ * API client with optimized error handling
+ * Always fetches from database - no mock data fallback
+ * Caching is handled by React Query, not at the axios level
+ */
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000/api',
     headers: {
@@ -12,64 +16,37 @@ const api = axios.create({
 
 // Add a request interceptor to include the auth token in all requests
 api.interceptors.request.use(
-    (config) => {
+    (config: AxiosRequestConfig) => {
         const token = localStorage.getItem('token');
-        if (token) {
+        if (token && config.headers) {
             config.headers['x-auth-token'] = token;
         }
         return config;
     },
-    (error) => {
+    (error: AxiosError) => {
         return Promise.reject(error);
     }
 );
 
-// Add response interceptor for better error handling
+// Add response interceptor for error handling
 api.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        // On localhost, if backend is not available, return mock data
-        if (isLocalhost() && (!error.response || error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK')) {
-            const mockResponse = getMockResponse(error.config?.url || '', error.config?.method || 'GET');
-            if (mockResponse) {
-                console.log('[MOCK] Returning mock data for:', error.config?.url);
-                // Return a successful response with mock data
-                return Promise.resolve({
-                    ...error.config,
-                    data: mockResponse.data,
-                    status: 200,
-                    statusText: 'OK',
-                    headers: {},
-                    config: error.config,
-                });
-            }
-        }
-
+    (response: AxiosResponse) => response,
+    (error: any) => {
         // Handle timeout errors specifically
-        if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+        if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
             console.error('Request timeout:', error.config?.url);
             return Promise.reject(new Error('Request timed out. Please check your connection.'));
         }
         
         // Handle network errors
         if (!error.response) {
-            console.error('Network error:', error.message);
-            // On localhost, try to return mock data one more time
-            if (isLocalhost()) {
-                const mockResponse = getMockResponse(error.config?.url || '', error.config?.method || 'GET');
-                if (mockResponse) {
-                    console.log('[MOCK] Returning mock data for network error:', error.config?.url);
-                    return Promise.resolve({
-                        ...error.config,
-                        data: mockResponse.data,
-                        status: 200,
-                        statusText: 'OK',
-                        headers: {},
-                        config: error.config,
-                    });
-                }
-            }
-            return Promise.reject(new Error('Network error. Please check your internet connection.'));
+            console.error('Network error:', error.message || 'Unknown error');
+            return Promise.reject(new Error('Network error. Please ensure the backend server is running and accessible.'));
+        }
+
+        // Handle authentication errors
+        if (error.response?.status === 401) {
+            localStorage.removeItem('token');
         }
         
         return Promise.reject(error);

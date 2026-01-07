@@ -55,20 +55,13 @@ const UserManagement = () => {
             if (res.data && res.data.length > 0) {
                 setUsers(res.data);
             } else {
-                throw new Error('Empty');
+                // No users found - show empty state
+                setUsers([]);
             }
         } catch (err) {
-            // Rich Mock Fallback
-            setUsers([
-                { name: 'Sarah Graham', email: 'sarah.g@agrilync.com', role: 'supervisor', region: 'Greater Accra', contact: '+233 24 555 0101', status: 'active', agentId: 'SUP-001' },
-                { name: 'Osei Tutu', email: 'osei.t@agrilync.com', role: 'agent', region: 'Ashanti', contact: '+233 20 555 0202', status: 'active', agentId: 'AGT-882' },
-                { name: 'Yakubu Ibrahim', email: 'yakubu.i@agrilync.com', role: 'agent', region: 'Northern', contact: '+233 54 555 0303', status: 'active', agentId: 'AGT-901' },
-                { name: 'Efua Mensah', email: 'efua.m@agrilync.com', role: 'supervisor', region: 'Central', contact: '+233 27 555 0404', status: 'active', agentId: 'SUP-002' },
-                { name: 'Kwame Baah', email: 'kwame.b@agrilync.com', role: 'agent', region: 'Western', contact: '+233 24 555 0505', status: 'inactive', agentId: 'AGT-112' },
-                { name: 'Dzifa Gbeho', email: 'dzifa.g@agrilync.com', role: 'agent', region: 'Volta', contact: '+233 20 555 0606', status: 'active', agentId: 'AGT-420' },
-                { name: 'Kofi Appiah', email: 'kofi.a@agrilync.com', role: 'agent', region: 'Bono', contact: '+233 54 555 0707', status: 'active', agentId: 'AGT-505' },
-                { name: 'Mary Addo', email: 'mary.a@agrilync.com', role: 'supervisor', region: 'Eastern', contact: '+233 27 555 0808', status: 'active', agentId: 'SUP-003' },
-            ]);
+            console.error('Failed to fetch users:', err);
+            // On error, show empty state rather than mock data
+            setUsers([]);
         } finally {
             setLoading(false);
         }
