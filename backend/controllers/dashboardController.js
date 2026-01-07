@@ -7,16 +7,25 @@ const dashboardService = require('../services/dashboardService');
  */
 exports.getSummary = async (req, res) => {
     try {
+        console.log('[DASHBOARD] Summary request received for agent:', req.agent?.id || req.agent?._id);
+        if (!req.agent) {
+            return res.status(401).json({
+                success: false,
+                message: 'Agent not authenticated'
+            });
+        }
         const summary = await dashboardService.getDashboardSummary(req.agent);
         res.json({
             success: true,
             data: summary
         });
     } catch (err) {
-        console.error('Dashboard Summary Error:', err.message);
+        console.error('[DASHBOARD] Summary Error:', err.message);
+        console.error('[DASHBOARD] Error stack:', err.stack);
         res.status(500).json({
             success: false,
-            message: 'Failed to fetch dashboard summary'
+            message: 'Failed to fetch dashboard summary',
+            error: process.env.NODE_ENV === 'development' ? err.message : undefined
         });
     }
 };
