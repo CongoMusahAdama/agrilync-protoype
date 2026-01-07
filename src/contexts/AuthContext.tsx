@@ -24,6 +24,36 @@ interface Agent {
     };
 }
 
+// Check if we're on localhost for development/testing
+const isLocalhost = () => {
+    if (typeof window === 'undefined') return false;
+    const hostname = window.location.hostname;
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '';
+};
+
+// Mock agent for localhost testing
+const getMockAgent = (): Agent => ({
+    id: 'mock-agent-id',
+    name: 'Test Agent',
+    email: 'test@agrilync.com',
+    agentId: 'AGENT001',
+    hasChangedPassword: true,
+    isVerified: true,
+    verificationStatus: 'verified',
+    region: 'Greater Accra',
+    contact: '+233501234567',
+    role: 'agent',
+    status: 'active',
+    stats: {
+        farmersOnboarded: 0,
+        activeFarms: 0,
+        investorMatches: 0,
+        pendingDisputes: 0,
+        reportsThisMonth: 0,
+        trainingsAttended: 0,
+    },
+});
+
 interface AuthContextType {
     agent: Agent | null;
     token: string | null;
@@ -43,6 +73,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         const loadAgent = async () => {
+            const isDev = isLocalhost();
+            
             if (token) {
                 try {
                     // Always fetch fresh profile to ensure role and session are valid
@@ -61,7 +93,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     // For now, let's strictly clear on auth failure
                 }
             } else {
-                setAgent(null);
+                // On localhost, provide mock agent for testing without login
+                if (isDev) {
+                    setAgent(getMockAgent());
+                } else {
+                    setAgent(null);
+                }
             }
             setLoading(false);
         };

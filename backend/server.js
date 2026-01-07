@@ -111,8 +111,8 @@ try {
     process.exit(1);
 }
 
-// 404 handler for API routes
-app.use('/api/*', (req, res) => {
+// 404 handler for API routes - catch all unmatched /api routes
+app.use(/^\/api\/.*/, (req, res) => {
     console.log(`[404] API route not found: ${req.method} ${req.originalUrl}`);
     res.status(404).json({
         success: false,

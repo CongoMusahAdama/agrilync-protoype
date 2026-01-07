@@ -226,7 +226,7 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
             <div className="md:hidden flex items-center">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className={`${(isTransparent || isTealPage) ? 'text-white hover:bg-white/20' : 'text-[#002f37] hover:bg-gray-100'} p-2 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7ede56]`}
+                className={`${(isTransparent || isTealPage) ? 'text-white bg-black/30 hover:bg-black/50 backdrop-blur-sm' : 'text-[#002f37] bg-white/90 hover:bg-white'} p-2 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7ede56] shadow-md`}
                 aria-label="Toggle menu"
               >
                 {isMenuOpen ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}

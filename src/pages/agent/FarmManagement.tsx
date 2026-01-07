@@ -80,6 +80,9 @@ const MetricCardSkeleton = () => (
 const FarmManagement: React.FC = () => {
     const { darkMode } = useDarkMode();
     const { agent } = useAuth();
+    const location = useLocation();
+    
+    // All useState hooks must be declared at the top, before any useQuery or conditional logic
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRegion, setSelectedRegion] = useState<string>('all');
     const [selectedFarmType, setSelectedFarmType] = useState<string>('all');
@@ -93,14 +96,36 @@ const FarmManagement: React.FC = () => {
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
     const [verificationQueueModalOpen, setVerificationQueueModalOpen] = useState(false);
     const [selectedTab, setSelectedTab] = useState('personal');
-
-    // Field visit logging state
     const [activeTab, setActiveTab] = useState<'farmers' | 'visits' | 'reports'>('farmers');
     const [fieldVisitModalOpen, setFieldVisitModalOpen] = useState(false);
     const [journeyModalOpen, setJourneyModalOpen] = useState(false);
+    const [selectedVisits, setSelectedVisits] = useState<Set<string>>(new Set());
+    const [isExporting, setIsExporting] = useState<'pdf' | 'excel' | null>(null);
+    const [visitForm, setVisitForm] = useState({
+        farmerId: '',
+        farmerName: '',
+        lyncId: '',
+        phone: '',
+        date: new Date().toISOString().split('T')[0],
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        hoursSpent: '1',
+        purpose: '',
+        otherPurpose: '',
+        notes: '',
+        stage: '',
+        observations: '',
+        recommendations: '',
+        photos: [] as File[],
+        challenges: '',
+        status: 'Completed',
+        isEditing: false,
+        editingId: ''
+    });
+    const [visitImages, setVisitImages] = useState<string[]>([]);
+    const [selectedVisit, setSelectedVisit] = useState<any>(null);
+    const [visitDetailModalOpen, setVisitDetailModalOpen] = useState(false);
 
     // Initial Tab Selection from URL
-    const location = useLocation();
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const tabParam = params.get('tab');
@@ -159,32 +184,6 @@ const FarmManagement: React.FC = () => {
         refetchVisits();
         refetchReports();
     };
-
-    // State moved to useQuery
-
-
-    // visitLogs moved to useQuery
-    const [selectedVisits, setSelectedVisits] = useState<Set<string>>(new Set());
-    const [isExporting, setIsExporting] = useState<'pdf' | 'excel' | null>(null);
-    const [visitForm, setVisitForm] = useState({
-        farmerId: '',
-        farmerName: '',
-        lyncId: '',
-        phone: '',
-        date: new Date().toISOString().split('T')[0],
-        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-        hoursSpent: '1',
-        purpose: '',
-        otherPurpose: '',
-        notes: '',
-        challenges: '',
-        status: 'Completed',
-        isEditing: false,
-        editingId: ''
-    });
-    const [visitImages, setVisitImages] = useState<string[]>([]);
-    const [selectedVisit, setSelectedVisit] = useState<any>(null);
-    const [visitDetailModalOpen, setVisitDetailModalOpen] = useState(false);
 
     const metrics = useMemo(() => {
         const total = farmers.length;

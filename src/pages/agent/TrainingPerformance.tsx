@@ -65,6 +65,15 @@ import Preloader from '@/components/ui/Preloader';
 export const TrainingPerformanceContent = () => {
   const { darkMode } = useDarkMode();
   const [trainingFilter, setTrainingFilter] = useState('all');
+  
+  // All useState hooks must be declared before any conditional returns
+  const [consultationRequests, setConsultationRequests] = useState<any[]>([]);
+  const [isRegistering, setIsRegistering] = useState<string | null>(null);
+  const [isProcessingConsultation, setIsProcessingConsultation] = useState<string | null>(null);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [selectedVisitForSMS, setSelectedVisitForSMS] = useState<string | null>(null);
+  const [selectedVisitForCall, setSelectedVisitForCall] = useState<string | null>(null);
+  
   const { data: summaryData, isLoading: loadingSummary, isFetching: fetchingSummary, refetch } = useQuery({
     queryKey: ['agentDashboardSummary'],
     queryFn: async () => {
@@ -104,13 +113,6 @@ export const TrainingPerformanceContent = () => {
   if ((loading || isFetching) && !summaryData && !scheduledVisitsData) {
     return <Preloader />;
   }
-
-  const [consultationRequests, setConsultationRequests] = useState<any[]>([]);
-  const [isRegistering, setIsRegistering] = useState<string | null>(null);
-  const [isProcessingConsultation, setIsProcessingConsultation] = useState<string | null>(null);
-  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
-  const [selectedVisitForSMS, setSelectedVisitForSMS] = useState<string | null>(null);
-  const [selectedVisitForCall, setSelectedVisitForCall] = useState<string | null>(null);
 
   const loadingAvailable = loadingSummary;
   const loadingMyTrainings = loadingSummary;

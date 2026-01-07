@@ -56,6 +56,9 @@ import ViewDisputeModal from '@/components/agent/ViewDisputeModal';
 
 const DisputeManagement: React.FC = () => {
   const { darkMode } = useDarkMode();
+  const queryClient = useQueryClient();
+  
+  // All useState hooks must be declared at the top, before any useQuery
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -64,7 +67,16 @@ const DisputeManagement: React.FC = () => {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showNewDisputeDialog, setShowNewDisputeDialog] = useState(false);
   const [selectedDispute, setSelectedDispute] = useState<any>(null);
-  const queryClient = useQueryClient();
+  const [newDispute, setNewDispute] = useState({
+    farmerName: '',
+    farmerId: '',
+    investorName: '',
+    type: '',
+    severity: '',
+    region: '',
+    description: '',
+    evidence: [] as File[]
+  });
 
   const { data: summaryData, isLoading: loadingSummary } = useQuery({
     queryKey: ['agentDashboardSummary'],
@@ -88,18 +100,6 @@ const DisputeManagement: React.FC = () => {
       return response.data;
     },
     staleTime: 60000
-  });
-
-  // New dispute form state
-  const [newDispute, setNewDispute] = useState({
-    farmerName: '',
-    farmerId: '',
-    investorName: '',
-    type: '',
-    severity: '',
-    region: '',
-    description: '',
-    evidence: [] as File[]
   });
 
   // Calculate stats

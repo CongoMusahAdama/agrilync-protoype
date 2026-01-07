@@ -54,6 +54,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isNavigating, setIsNavigating] = useState(false);
+    const [isInitialMount, setIsInitialMount] = useState(true);
     const [addFarmerModalOpen, setAddFarmerModalOpen] = useState(false);
     const [notifications, setNotifications] = useState<any[]>([]);
     const location = useLocation();
@@ -80,11 +81,20 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         }
     }, [userType]);
 
-    // Simulate loading on mount and navigation - REMOVED artificial delay
-    // We rely on skeletons and TanStack Query for a smoother content-driven feeling
+    // Track initial mount and show preloader on first dashboard load
     useEffect(() => {
-        setIsLoading(false);
-    }, [activeSidebarItem, title]);
+        if (isInitialMount && location.pathname.startsWith('/dashboard') && agent) {
+            // Show preloader on initial mount for minimum duration
+            const timer = setTimeout(() => {
+                setIsInitialMount(false);
+                setIsLoading(false);
+            }, 800); // Minimum 800ms to ensure visibility on mobile
+            
+            return () => clearTimeout(timer);
+        } else if (!isInitialMount) {
+            setIsLoading(false);
+        }
+    }, [isInitialMount, location.pathname, agent]);
 
     // Show preloader when navigating between dashboard pages
     useEffect(() => {
@@ -92,6 +102,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             // Show preloader when navigating between any dashboard pages
             if (prevPath && prevPath.startsWith('/dashboard') && location.pathname.startsWith('/dashboard')) {
                 setIsNavigating(true);
+                setIsInitialMount(false); // Ensure initial mount doesn't interfere with navigation
                 setPrevPath(location.pathname);
                 
                 // Hide preloader after data starts loading (longer delay for slow connections)
@@ -103,6 +114,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             } else {
                 // Update path even if not dashboard-to-dashboard navigation
                 setPrevPath(location.pathname);
+                // Reset initial mount when navigating to a dashboard from outside
+                if (location.pathname.startsWith('/dashboard') && !prevPath.startsWith('/dashboard')) {
+                    setIsInitialMount(true);
+                } else if (!location.pathname.startsWith('/dashboard')) {
+                    // Reset when leaving dashboard area
+                    setIsInitialMount(true);
+                }
             }
         }
     }, [location.pathname, prevPath]);
@@ -115,8 +133,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <div className={`h-screen overflow-hidden font-manrope ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
             {/* Full-page preloader only on initial app boot if needed, otherwise rely on skeletons */}
             {(isLoading && !agent) && <Preloader />}
-            {/* Preloader when navigating between dashboard pages OR when data is fetching */}
-            {(isNavigating || (isFetching && location.pathname.startsWith('/dashboard') && agent)) && <Preloader />}
+            {/* Preloader when: 
+                1. Navigating between dashboard pages
+                2. Data is fetching (on any dashboard page)
+                3. Initial mount of dashboard pages (to ensure visibility on mobile)
+            */}
+            {(isNavigating || 
+              (isFetching && location.pathname.startsWith('/dashboard') && agent) || 
+              (isInitialMount && location.pathname.startsWith('/dashboard') && agent)) && <Preloader />}
             <div className="flex h-full">
                 {/* Mobile Sidebar */}
                 {isMobile && (
