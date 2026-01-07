@@ -12,11 +12,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { User, MapPin, Briefcase, FileText, Upload, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const AgentProfile: React.FC = () => {
     const navigate = useNavigate();
     const { darkMode } = useDarkMode();
     const { agent, loading } = useAuth();
+    const isMobile = useIsMobile();
     const [activeTab, setActiveTab] = useState('personal');
     const [isEditing, setIsEditing] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
@@ -109,36 +111,46 @@ const AgentProfile: React.FC = () => {
 
                 {/* Tabbed Interface */}
                 <Card className={`${sectionCardClass} shadow-lg`}>
-                    <CardContent className="p-6">
+                    <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                            <TabsList className={`grid w-full grid-cols-4 ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-100'} p-1 rounded-lg`}>
+                            <TabsList className={`${isMobile 
+                                ? 'flex w-full overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1' 
+                                : 'grid w-full grid-cols-4'} ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-100'} ${isMobile ? 'p-1.5' : 'p-1'} rounded-lg`}>
                                 <TabsTrigger
                                     value="personal"
-                                    className={darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white'}
+                                    className={`${isMobile 
+                                        ? 'flex-shrink-0 text-xs px-3 py-2 whitespace-nowrap' 
+                                        : ''} ${darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white'}`}
                                 >
-                                    <User className="h-4 w-4 mr-2" />
-                                    Personal Info
+                                    <User className={`${isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'} ${isMobile ? 'mr-1.5' : 'mr-2'}`} />
+                                    {isMobile ? 'Personal' : 'Personal Info'}
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="work"
-                                    className={darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white'}
+                                    className={`${isMobile 
+                                        ? 'flex-shrink-0 text-xs px-3 py-2 whitespace-nowrap' 
+                                        : ''} ${darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white'}`}
                                 >
-                                    <Briefcase className="h-4 w-4 mr-2" />
-                                    Work Details
+                                    <Briefcase className={`${isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'} ${isMobile ? 'mr-1.5' : 'mr-2'}`} />
+                                    {isMobile ? 'Work' : 'Work Details'}
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="location"
-                                    className={darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white'}
+                                    className={`${isMobile 
+                                        ? 'flex-shrink-0 text-xs px-3 py-2 whitespace-nowrap' 
+                                        : ''} ${darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white'}`}
                                 >
-                                    <MapPin className="h-4 w-4 mr-2" />
+                                    <MapPin className={`${isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'} ${isMobile ? 'mr-1.5' : 'mr-2'}`} />
                                     Location
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="documents"
-                                    className={darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white'}
+                                    className={`${isMobile 
+                                        ? 'flex-shrink-0 text-xs px-3 py-2 whitespace-nowrap' 
+                                        : ''} ${darkMode ? 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white' : 'data-[state=active]:bg-[#1db954] data-[state=active]:text-white'}`}
                                 >
-                                    <FileText className="h-4 w-4 mr-2" />
-                                    Documents
+                                    <FileText className={`${isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'} ${isMobile ? 'mr-1.5' : 'mr-2'}`} />
+                                    {isMobile ? 'Docs' : 'Documents'}
                                 </TabsTrigger>
                             </TabsList>
 

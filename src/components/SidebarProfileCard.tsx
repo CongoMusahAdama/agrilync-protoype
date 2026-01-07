@@ -94,30 +94,30 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({
 
   return (
     <div
-      className={`px-4 py-3 border-b ${sidebarDarkMode ? 'border-gray-200/50' : 'border-[#063840]/20'} ${sidebarCollapsed && !isMobile ? 'flex justify-center' : ''
+      className={`${isMobile ? 'px-3 py-2' : 'px-4 py-3'} border-b ${sidebarDarkMode ? 'border-gray-200/50' : 'border-[#063840]/20'} ${sidebarCollapsed && !isMobile ? 'flex justify-center' : ''
         }`}
     >
       <div
-        className={`w-full flex flex-col items-center gap-2.5 rounded-2xl p-3.5 shadow-sm transition-colors ${sidebarDarkMode ? 'bg-[#082b2f] text-white' : 'bg-[#f4ffee] text-[#002f37]'
+        className={`w-full flex flex-col items-center ${isMobile ? 'gap-1.5 rounded-xl p-2' : 'gap-2.5 rounded-2xl p-3.5'} shadow-sm transition-colors ${sidebarDarkMode ? 'bg-[#082b2f] text-white' : 'bg-[#f4ffee] text-[#002f37]'
           } ${sidebarCollapsed && !isMobile ? 'px-2 py-3' : ''}`}
       >
-        <Avatar className={`${sidebarCollapsed && !isMobile ? 'h-12 w-12' : 'h-16 w-16'}`}>
+        <Avatar className={`${isMobile ? 'h-10 w-10' : sidebarCollapsed && !isMobile ? 'h-12 w-12' : 'h-16 w-16'}`}>
           <AvatarImage src={profile.avatarUrl} alt={profile.name} className="object-cover" />
           <AvatarFallback className="bg-[#002f37]/90 text-white">
-            <UserRound className="h-8 w-8" />
+            <UserRound className={`${isMobile ? 'h-5 w-5' : 'h-8 w-8'}`} />
           </AvatarFallback>
         </Avatar>
         {(!sidebarCollapsed || isMobile) && (
-          <div className="flex flex-col items-center gap-1 text-center">
-            <span className="text-sm font-semibold truncate max-w-[150px]">{profile.name}</span>
-            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${sidebarDarkMode ? 'bg-white/10 text-[#7ede56]' : 'bg-[#002f37] text-white'}`}>
+          <div className={`flex flex-col items-center ${isMobile ? 'gap-0.5' : 'gap-1'} text-center`}>
+            <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold truncate max-w-[150px]`}>{profile.name}</span>
+            <span className={`${isMobile ? 'text-[8px] px-1.5 py-0.5' : 'text-[10px] px-2 py-0.5'} font-black uppercase tracking-widest rounded-full ${sidebarDarkMode ? 'bg-white/10 text-[#7ede56]' : 'bg-[#002f37] text-white'}`}>
               {profile.title || (isSuperAdmin ? 'Super Admin' : 'Staff')}
             </span>
             {!isSuperAdmin && (
-              <span className={`text-xs ${sidebarDarkMode ? 'text-[#b8e4e9]' : 'text-[#285d64]'} mt-1`}>{profile.location}</span>
+              <span className={`${isMobile ? 'text-[10px]' : 'text-xs'} ${sidebarDarkMode ? 'text-[#b8e4e9]' : 'text-[#285d64]'} ${isMobile ? 'mt-0' : 'mt-1'}`}>{profile.location}</span>
             )}
             {profile.id && !isSuperAdmin && (
-              <span className={`text-[10px] font-mono ${sidebarDarkMode ? 'text-[#7ede56]' : 'text-[#1db954]'} font-semibold`}>
+              <span className={`${isMobile ? 'text-[8px]' : 'text-[10px]'} font-mono ${sidebarDarkMode ? 'text-[#7ede56]' : 'text-[#1db954]'} font-semibold`}>
                 ID: {profile.id}
               </span>
             )}

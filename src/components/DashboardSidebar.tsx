@@ -121,16 +121,16 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     return (
         <div className="flex flex-col h-full overflow-hidden">
             {/* Logo/App Name */}
-            <div className={`p-4 border-b flex-shrink-0 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
+            <div className={`${isMobile ? 'p-3' : 'p-4'} border-b flex-shrink-0 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
                 <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                         <img
                             src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png"
                             alt="AgriLync Logo"
-                            className="h-8 w-8"
+                            className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`}
                         />
                         {(!sidebarCollapsed || isMobile) && (
-                            <span className={`text-xl font-bold ${sidebarDarkMode ? 'text-[#f4ffee]' : 'text-[#002f37]'}`}>AgriLync</span>
+                            <span className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold ${sidebarDarkMode ? 'text-[#f4ffee]' : 'text-[#002f37]'}`}>AgriLync</span>
                         )}
                     </div>
                     {!isMobile && userType !== 'grower' && (
@@ -157,13 +157,13 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             />
 
             {/* Navigation */}
-            <nav className={`flex-1 ${isMobile ? 'p-6 space-y-3' : 'p-4 space-y-2'} overflow-y-auto custom-scrollbar`}>
+            <nav className={`flex-1 ${isMobile ? 'p-3 space-y-1.5' : 'p-4 space-y-2'} overflow-y-auto custom-scrollbar`}>
                 {navItems.map((item) => {
                     const isActive = activeSidebarItem === item.id;
                     return (
                         <div
                             key={item.id}
-                            className={`flex items-center gap-3 ${isMobile ? 'p-4' : 'p-3'} rounded-xl cursor-pointer text-sm transition-all duration-300 ${isActive
+                            className={`flex items-center gap-2 ${isMobile ? 'p-2.5' : 'p-3'} rounded-xl cursor-pointer ${isMobile ? 'text-xs' : 'text-sm'} transition-all duration-300 ${isActive
                                 ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37] shadow-lg scale-[1.02]'
                                 : sidebarDarkMode
                                     ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent hover:translate-x-1'
@@ -172,9 +172,9 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                             onClick={() => handleNavigation(item.id)}
                             title={sidebarCollapsed && !isMobile ? item.label : undefined}
                         >
-                            <item.icon className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} shrink-0 ${isActive ? 'animate-pulse' : ''}`} />
+                            <item.icon className={`${isMobile ? 'h-4 w-4' : 'h-4 w-4'} shrink-0 ${isActive ? 'animate-pulse' : ''}`} />
                             {(!sidebarCollapsed || isMobile) && (
-                                <span className={`${isMobile ? 'text-sm' : 'font-medium'}`}>
+                                <span className={`${isMobile ? 'text-xs font-medium' : 'font-medium'}`}>
                                     {item.label}
                                 </span>
                             )}
