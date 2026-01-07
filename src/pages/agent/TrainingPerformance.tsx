@@ -60,11 +60,12 @@ import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 import ScheduleVisitModal from '@/components/agent/ScheduleVisitModal';
+import Preloader from '@/components/ui/Preloader';
 
 export const TrainingPerformanceContent = () => {
   const { darkMode } = useDarkMode();
   const [trainingFilter, setTrainingFilter] = useState('all');
-  const { data: summaryData, isLoading: loadingSummary, refetch } = useQuery({
+  const { data: summaryData, isLoading: loadingSummary, isFetching: fetchingSummary, refetch } = useQuery({
     queryKey: ['agentDashboardSummary'],
     queryFn: async () => {
       const response = await api.get('/dashboard/summary');
@@ -72,28 +73,37 @@ export const TrainingPerformanceContent = () => {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache
     refetchOnWindowFocus: false, // Disabled for mobile performance
-    retry: 2
+    retry: 2,
+    refetchOnReconnect: true
   });
 
   const availableTrainings = summaryData?.trainings || [];
   const myTrainings = summaryData?.myTrainings || [];
   const activities = summaryData?.activities || [];
   const stats = summaryData?.stats || {};
-  const loading = loadingSummary;
-  const isLoaded = !loadingSummary;
 
   // Fetch scheduled visits
-  const { data: scheduledVisitsData, refetch: refetchScheduledVisits } = useQuery({
+  const { data: scheduledVisitsData, isLoading: loadingVisits, isFetching: fetchingVisits, refetch: refetchScheduledVisits } = useQuery({
     queryKey: ['scheduledVisits'],
     queryFn: async () => {
       const response = await api.get('/scheduled-visits');
       return response.data.data || [];
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true
   });
 
   const scheduledVisits = scheduledVisitsData || [];
+
+  const loading = loadingSummary || loadingVisits;
+  const isFetching = fetchingSummary || fetchingVisits;
+  const isLoaded = !loading && !isFetching;
+
+  // Show preloader on initial load or when fetching data
+  if ((loading || isFetching) && !summaryData && !scheduledVisitsData) {
+    return <Preloader />;
+  }
 
   const [consultationRequests, setConsultationRequests] = useState<any[]>([]);
   const [isRegistering, setIsRegistering] = useState<string | null>(null);

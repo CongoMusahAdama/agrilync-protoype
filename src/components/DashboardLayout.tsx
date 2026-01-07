@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -48,6 +49,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const { darkMode, toggleDarkMode } = useDarkMode();
     const isMobile = useIsMobile();
     const { agent } = useAuth();
+    const queryClient = useQueryClient();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -56,6 +58,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const [notifications, setNotifications] = useState<any[]>([]);
     const location = useLocation();
     const [prevPath, setPrevPath] = useState(location.pathname);
+    
+    // Check if any queries are fetching to show preloader
+    const isFetching = queryClient.isFetching() > 0;
 
     // Notifications are now fetched as part of the dashboard summary in most views,
     // but the sidebar needs them globally. keeping them but making it more efficient.
@@ -83,18 +88,22 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
     // Show preloader when navigating between dashboard pages
     useEffect(() => {
-        if (location.pathname !== prevPath && prevPath.startsWith('/dashboard')) {
-            setIsNavigating(true);
-            setPrevPath(location.pathname);
-            
-            // Hide preloader after page starts loading
-            const timer = setTimeout(() => {
-                setIsNavigating(false);
-            }, 500);
-            
-            return () => clearTimeout(timer);
-        } else if (location.pathname !== prevPath) {
-            setPrevPath(location.pathname);
+        if (location.pathname !== prevPath) {
+            // Show preloader when navigating between any dashboard pages
+            if (prevPath && prevPath.startsWith('/dashboard') && location.pathname.startsWith('/dashboard')) {
+                setIsNavigating(true);
+                setPrevPath(location.pathname);
+                
+                // Hide preloader after data starts loading (longer delay for slow connections)
+                const timer = setTimeout(() => {
+                    setIsNavigating(false);
+                }, 1200); // Increased to 1.2 seconds to ensure visibility on slow connections
+                
+                return () => clearTimeout(timer);
+            } else {
+                // Update path even if not dashboard-to-dashboard navigation
+                setPrevPath(location.pathname);
+            }
         }
     }, [location.pathname, prevPath]);
 
@@ -106,8 +115,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <div className={`h-screen overflow-hidden font-manrope ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
             {/* Full-page preloader only on initial app boot if needed, otherwise rely on skeletons */}
             {(isLoading && !agent) && <Preloader />}
-            {/* Preloader when navigating between dashboard pages */}
-            {isNavigating && <Preloader />}
+            {/* Preloader when navigating between dashboard pages OR when data is fetching */}
+            {(isNavigating || (isFetching && location.pathname.startsWith('/dashboard') && agent)) && <Preloader />}
             <div className="flex h-full">
                 {/* Mobile Sidebar */}
                 {isMobile && (

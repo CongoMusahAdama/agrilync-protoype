@@ -27,6 +27,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from "@/components/ui/skeleton";
+import Preloader from '@/components/ui/Preloader';
 import {
     Search,
     Users,
@@ -109,7 +110,7 @@ const FarmManagement: React.FC = () => {
     }, [location.search]);
 
     // useQuery for dashboard data (shared with main dashboard)
-    const { data: summaryData, isLoading: loadingSummary, refetch: refetchSummary } = useQuery({
+    const { data: summaryData, isLoading: loadingSummary, isFetching: fetchingSummary, refetch: refetchSummary } = useQuery({
         queryKey: ['agentDashboardSummary'],
         queryFn: async () => {
             const response = await api.get('/dashboard/summary');
@@ -117,27 +118,30 @@ const FarmManagement: React.FC = () => {
         },
         staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache
         refetchOnWindowFocus: false, // Disabled for mobile performance
-        retry: 2
+        retry: 2,
+        refetchOnReconnect: true
     });
 
     // useQuery for field visits
-    const { data: visitLogsData, isLoading: loadingVisits, refetch: refetchVisits } = useQuery({
+    const { data: visitLogsData, isLoading: loadingVisits, isFetching: fetchingVisits, refetch: refetchVisits } = useQuery({
         queryKey: ['fieldVisits'],
         queryFn: async () => {
             const response = await api.get('/field-visits');
             return response.data;
         },
-        staleTime: 60000
+        staleTime: 60000,
+        refetchOnReconnect: true
     });
 
     // useQuery for reports
-    const { data: reportsData, isLoading: loadingReports, refetch: refetchReports } = useQuery({
+    const { data: reportsData, isLoading: loadingReports, isFetching: fetchingReports, refetch: refetchReports } = useQuery({
         queryKey: ['reports'],
         queryFn: async () => {
             const response = await api.get('/reports/agent');
             return response.data;
         },
-        staleTime: 60000
+        staleTime: 60000,
+        refetchOnReconnect: true
     });
 
     const farmers = summaryData?.farmers || [];
@@ -146,8 +150,9 @@ const FarmManagement: React.FC = () => {
     const visitLogs = visitLogsData || [];
     const reports = reportsData || [];
 
-    const loading = loadingSummary;
-    const isLoaded = !loadingSummary && !loadingVisits && !loadingReports;
+    const loading = loadingSummary || loadingVisits || loadingReports;
+    const isFetching = fetchingSummary || fetchingVisits || fetchingReports;
+    const isLoaded = !loading && !isFetching;
 
     const fetchData = () => {
         refetchSummary();

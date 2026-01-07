@@ -125,7 +125,7 @@ const AgentDashboard: React.FC = () => {
   const [journeyModalOpen, setJourneyModalOpen] = useState(false);
 
   // useQuery for all-in-one dashboard data
-  const { data: summaryData, isLoading: loading, refetch: refreshData } = useQuery({
+  const { data: summaryData, isLoading: loading, isFetching, refetch: refreshData } = useQuery({
     queryKey: ['agentDashboardSummary'],
     queryFn: async () => {
       const response = await api.get('/dashboard/summary');
@@ -136,7 +136,8 @@ const AgentDashboard: React.FC = () => {
     refetchOnWindowFocus: false, // Disabled for mobile performance - reduces unnecessary refetches
     refetchOnMount: true, // Still refetch on mount to get fresh data
     retry: 2, // Retry failed requests twice
-    retryDelay: 1000 // Wait 1 second between retries
+    retryDelay: 1000, // Wait 1 second between retries
+    refetchOnReconnect: true // Refetch when connection is restored
   });
 
   // Extract data from summary with fallbacks
@@ -377,8 +378,8 @@ const AgentDashboard: React.FC = () => {
   const tableBodyRowClass = darkMode ? 'border-b border-[#124b53] hover:bg-[#0d3036]' : '';
   const tableCellClass = darkMode ? 'text-gray-100' : '';
 
-  // Show preloader on initial load
-  if (loading && !summaryData) {
+  // Show preloader on initial load or when fetching data
+  if ((loading || isFetching) && !summaryData) {
     return <Preloader />;
   }
 
