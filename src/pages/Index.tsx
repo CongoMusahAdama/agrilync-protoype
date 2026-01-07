@@ -169,11 +169,11 @@ const Index = () => {
         `}</style>
 
         {/* Main Hero Container with Full Background */}
-        <div className="relative w-full h-[65vh] md:h-[85vh] min-h-[450px] md:min-h-[600px] bg-[url('/lovable-uploads/countryside-workers-together-field.jpg')] bg-cover bg-[55%_center] md:bg-[center_35%] bg-no-repeat flex items-center mb-0">
-          {/* Dark Overlay for text readability - reduced opacity for better visibility */}
-          <div className="absolute inset-0 bg-black/30 bg-gradient-to-r from-black/60 to-transparent"></div>
+        <div className="relative w-full h-[85vh] md:h-[85vh] min-h-[650px] md:min-h-[600px] bg-[url('/lovable-uploads/countryside-workers-together-field.jpg')] bg-cover bg-[35%_top] md:bg-[center_35%] bg-no-repeat flex items-end md:items-center mb-0 transition-all duration-500">
+          {/* Dark Overlay for text readability - Bottom heavy for content at the bottom */}
+          <div className="absolute inset-0 bg-black/40 bg-gradient-to-t from-black/80 via-black/20 to-transparent md:bg-black/30 md:bg-gradient-to-r md:from-black/60 md:to-transparent"></div>
 
-          <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10 pt-10 md:pt-20">
+          <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10 pb-16 md:pt-20">
             <div className="max-w-4xl">
 
               {/* Pill Tag */}
@@ -184,19 +184,19 @@ const Index = () => {
               </div>
 
               {/* Main Headline */}
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight font-sora animate-slide-left">
+              <h1 className="text-2xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight font-sora animate-slide-left">
                 Unlocking Difficult Access to <span className="text-[#FFD700]">Farm Investment and Timely Information Through AI</span>
               </h1>
 
               {/* Subheadline */}
-              <p className="text-lg md:text-xl text-gray-200 mb-10 leading-relaxed max-w-2xl font-sora font-light">
+              <p className="hidden md:block text-sm md:text-xl text-gray-200 mb-8 md:mb-10 leading-relaxed max-w-2xl font-sora font-light">
                 We connect smallholder farmers with AI-driven insights and smart investor matching to revolutionize the agricultural value chain.
               </p>
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-5">
-                <a href="https://agrilync.netlify.app/" target="_blank" rel="noopener noreferrer">
-                  <Button className="w-full sm:w-auto bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] px-8 py-7 text-lg font-bold rounded-full shadow-[0_0_20px_rgba(126,222,86,0.4)] hover:shadow-[0_0_30px_rgba(126,222,86,0.6)] transform hover:-translate-y-1 transition-all duration-300 group">
+                <a href="https://agrilync.netlify.app/" target="_blank" rel="noopener noreferrer" className="w-auto">
+                  <Button className="w-fit bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] px-6 py-4 md:py-7 text-base md:text-lg font-bold rounded-full shadow-[0_0_20px_rgba(126,222,86,0.4)] hover:shadow-[0_0_30px_rgba(126,222,86,0.6)] transform hover:-translate-y-1 transition-all duration-300 group">
                     Join Waitlist
                     <div className="bg-[#002f37]/10 rounded-full p-1 ml-3 group-hover:bg-[#002f37]/20 transition-colors">
                       <ArrowRight className="w-5 h-5 text-[#002f37]" />
@@ -204,8 +204,8 @@ const Index = () => {
                   </Button>
                 </a>
 
-                <a href="https://www.youtube.com/watch?v=-gOZgTW00GY" target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" className="w-full sm:w-auto border-2 border-white/30 text-white hover:bg-white hover:text-[#002f37] bg-white/5 backdrop-blur-sm px-8 py-3 md:py-7 text-base md:text-lg font-bold rounded-full transition-all duration-300">
+                <a href="https://www.youtube.com/watch?v=-gOZgTW00GY" target="_blank" rel="noopener noreferrer" className="w-auto">
+                  <Button variant="outline" className="w-fit border-2 border-white/30 text-white hover:bg-white hover:text-[#002f37] bg-white/5 backdrop-blur-sm px-6 py-4 md:py-7 text-base md:text-lg font-bold rounded-full transition-all duration-300">
                     Watch Demo Video
                     <Play className="w-5 h-5 ml-3 fill-current" />
                   </Button>
@@ -235,7 +235,7 @@ const Index = () => {
         </div>
 
         {/* Yellow Info Strip */}
-        <div className="w-full bg-[#FFD700] py-12 relative z-20 overflow-hidden">
+        <div className="w-full bg-[#FFD700] pt-2 pb-6 md:py-12 relative z-20 overflow-hidden">
           {/* Background Pattern for Strip */}
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#002f37_1px,transparent_1px)] [background-size:16px_16px]"></div>
 
@@ -259,7 +259,7 @@ const Index = () => {
                     200+
                   </div>
                 </div>
-                <div className="max-w-xl">
+                <div className="max-w-xl hidden md:block">
                   <h3 className="font-sora font-bold text-[#002f37] text-lg md:text-xl leading-snug group-hover:underline decoration-[#002f37]/30 underline-offset-4 transition-all">
                     Distributing trust first, value second, and technology last. <span className="inline-block bg-[#002f37] text-white text-sm px-3 py-1 rounded-full ml-2 align-middle no-underline">Be Part</span>
                   </h3>
