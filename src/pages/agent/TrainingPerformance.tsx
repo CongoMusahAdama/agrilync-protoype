@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import AgentLayout from './AgentLayout';
 import {
@@ -59,6 +59,7 @@ import {
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 import ScheduleVisitModal from '@/components/agent/ScheduleVisitModal';
 import Preloader from '@/components/ui/Preloader';
 
@@ -80,11 +81,7 @@ export const TrainingPerformanceContent = () => {
       const response = await api.get('/dashboard/summary');
       return response.data.data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    refetchOnWindowFocus: false, // Disabled for mobile performance
-    retry: 2,
-    refetchOnReconnect: true
+    // Uses global defaults from App.tsx
   });
 
   const availableTrainings = summaryData?.trainings || [];
@@ -99,11 +96,7 @@ export const TrainingPerformanceContent = () => {
       const response = await api.get('/scheduled-visits');
       return response.data.data || [];
     },
-    staleTime: 3 * 60 * 1000, // 3 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: true,
-    retry: 2
+    // Uses global defaults from App.tsx
   });
 
   const scheduledVisits = scheduledVisitsData || [];
@@ -123,13 +116,26 @@ export const TrainingPerformanceContent = () => {
   const loadingActivities = loadingSummary;
 
 
-  const handleConsultationAction = async (id: string, action: 'accept' | 'decline' | 'reschedule') => {
+  const handleConsultationAction = useCallback(async (id: string, action: 'accept' | 'decline' | 'reschedule') => {
     setIsProcessingConsultation(id);
     try {
-      // In a real app, this would be an API call
-      console.log(`Action ${action} on consultation ${id}`);
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate API delay
-      toast.info(`Consultation ${action} for ID: ${id}`);
+      await api.post(`/consultations/${id}/${action}`);
+      await Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        html: `
+          <div style="text-align: center; padding: 10px 0;">
+            <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+              Consultation ${action}d successfully
+            </p>
+          </div>
+        `,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#7ede56',
+        timer: 2000,
+        timerProgressBar: true
+      });
+      refetch();
 
       // Update local state
       setConsultationRequests(prev => prev.map(req => {
@@ -140,10 +146,13 @@ export const TrainingPerformanceContent = () => {
         }
         return req;
       }));
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.msg || error.message || `Failed to ${action} consultation`;
+      toast.error(errorMessage);
     } finally {
       setIsProcessingConsultation(null);
     }
-  };
+  }, [refetch]);
 
   // Send SMS for scheduled visit
   const handleSendSMS = async (visitId: string) => {
@@ -151,7 +160,21 @@ export const TrainingPerformanceContent = () => {
     try {
       const response = await api.post(`/scheduled-visits/${visitId}/send-sms`);
       if (response.data.success) {
-        toast.success(response.data.message || 'SMS sent successfully');
+        await Swal.fire({
+          icon: 'success',
+          title: 'SMS Sent!',
+          html: `
+            <div style="text-align: center; padding: 10px 0;">
+              <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                ${response.data.message || 'SMS sent successfully'}
+              </p>
+            </div>
+          `,
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#7ede56',
+          timer: 2000,
+          timerProgressBar: true
+        });
         refetchScheduledVisits();
       } else {
         toast.error(response.data.message || 'Failed to send SMS');
@@ -162,7 +185,6 @@ export const TrainingPerformanceContent = () => {
                           error.message || 
                           'Failed to send SMS. Please check that farmers have phone numbers.';
       toast.error(errorMessage);
-      console.error('SMS error:', error);
     } finally {
       setSelectedVisitForSMS(null);
     }
@@ -176,7 +198,21 @@ export const TrainingPerformanceContent = () => {
         notes: 'Follow-up phone call made'
       });
       if (response.data.success) {
-        toast.success(response.data.message || 'Phone call logged successfully');
+        await Swal.fire({
+          icon: 'success',
+          title: 'Call Logged!',
+          html: `
+            <div style="text-align: center; padding: 10px 0;">
+              <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                ${response.data.message || 'Phone call logged successfully'}
+              </p>
+            </div>
+          `,
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#7ede56',
+          timer: 2000,
+          timerProgressBar: true
+        });
         refetchScheduledVisits();
       } else {
         toast.error(response.data.message || 'Failed to log phone call');
@@ -555,7 +591,21 @@ export const TrainingPerformanceContent = () => {
                       onClick={async () => {
                         setIsRegistering(training._id);
                         await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
-                        toast.success(`Registered for ${training.title}`);
+                        await Swal.fire({
+                          icon: 'success',
+                          title: 'Registered!',
+                          html: `
+                            <div style="text-align: center; padding: 10px 0;">
+                              <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                                Registered for <strong>${training.title}</strong>
+                              </p>
+                            </div>
+                          `,
+                          confirmButtonText: 'OK',
+                          confirmButtonColor: '#7ede56',
+                          timer: 2000,
+                          timerProgressBar: true
+                        });
                         setIsRegistering(null);
                       }}
                       disabled={isRegistering === training._id}

@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 import { exportToPDF, exportToWord } from '@/utils/reportExport';
 import AgentLayout from './AgentLayout';
 import { useDarkMode } from '@/contexts/DarkModeContext';
@@ -260,9 +261,19 @@ const FarmManagement: React.FC = () => {
         setViewModalOpen(true);
     };
 
-    const handleEditFarmer = (farmer: any) => {
-        setSelectedFarmer(farmer);
-        setEditModalOpen(true);
+    const handleEditFarmer = async (farmer: any) => {
+        try {
+            // Fetch full farmer data including Ghana card images
+            const res = await api.get(`/farmers/${farmer._id}`);
+            setSelectedFarmer(res.data);
+            setEditModalOpen(true);
+        } catch (error: any) {
+            console.error('Error fetching farmer data:', error);
+            toast.error('Failed to load farmer data. Using available data.');
+            // Fallback to available data if fetch fails
+            setSelectedFarmer(farmer);
+            setEditModalOpen(true);
+        }
     };
 
     const generateLyncId = (farmerId: string) => {
@@ -407,7 +418,21 @@ const FarmManagement: React.FC = () => {
             });
 
             doc.save(`AgriLync_VisitLogs_${new Date().toISOString().split('T')[0]}.pdf`);
-            toast.success(`PDF report (${dataToExport.length} records) exported successfully`);
+            await Swal.fire({
+                icon: 'success',
+                title: 'Export Successful!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            PDF report (${dataToExport.length} records) exported successfully
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#7ede56',
+                timer: 2000,
+                timerProgressBar: true
+            });
         } catch (err) {
             console.error('Export error:', err);
             toast.error('Failed to export PDF');
@@ -445,7 +470,21 @@ const FarmManagement: React.FC = () => {
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Visit Logs");
             XLSX.writeFile(wb, `AgriLync_VisitLogs_${new Date().toISOString().split('T')[0]}.xlsx`);
-            toast.success(`Excel spreadsheet (${dataToExport.length} records) exported successfully`);
+            await Swal.fire({
+                icon: 'success',
+                title: 'Export Successful!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            Excel spreadsheet (${dataToExport.length} records) exported successfully
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#7ede56',
+                timer: 2000,
+                timerProgressBar: true
+            });
         } catch (err) {
             console.error('Export error:', err);
             toast.error('Failed to export Excel');
@@ -465,8 +504,22 @@ const FarmManagement: React.FC = () => {
                 return api.post('/field-visits', visitData);
             }
         },
-        onSuccess: () => {
-            toast.success(visitForm.isEditing ? 'Field visit updated successfully!' : 'Field visit logged successfully!');
+        onSuccess: async () => {
+            await Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            ${visitForm.isEditing ? 'Field visit updated successfully!' : 'Field visit logged successfully!'}
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#7ede56',
+                timer: 2000,
+                timerProgressBar: true
+            });
             queryClient.invalidateQueries({ queryKey: ['fieldVisits'] });
             queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
             setFieldVisitModalOpen(false);

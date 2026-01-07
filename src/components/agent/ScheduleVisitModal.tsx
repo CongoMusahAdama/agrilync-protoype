@@ -13,6 +13,7 @@ import { useDarkMode } from '@/contexts/DarkModeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 import {
     Calendar,
     Clock,
@@ -67,8 +68,22 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
             const response = await api.post('/scheduled-visits', data);
             return response.data;
         },
-        onSuccess: () => {
-            toast.success('Visit scheduled successfully!');
+        onSuccess: async () => {
+            await Swal.fire({
+                icon: 'success',
+                title: 'Visit Scheduled!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            Visit scheduled successfully!
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#7ede56',
+                timer: 2000,
+                timerProgressBar: true
+            });
             queryClient.invalidateQueries({ queryKey: ['scheduledVisits'] });
             handleClose();
             onSuccess?.();
@@ -84,8 +99,22 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
             const response = await api.post(`/scheduled-visits/${visitId}/send-sms`, { customMessage });
             return response.data;
         },
-        onSuccess: (data) => {
-            toast.success(`SMS sent to ${data.data?.phoneNumbers?.length || 0} farmer(s)`);
+        onSuccess: async (data) => {
+            await Swal.fire({
+                icon: 'success',
+                title: 'SMS Sent!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            SMS sent to <strong>${data.data?.phoneNumbers?.length || 0} farmer(s)</strong>
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#7ede56',
+                timer: 2000,
+                timerProgressBar: true
+            });
             queryClient.invalidateQueries({ queryKey: ['scheduledVisits'] });
         },
         onError: (error: any) => {

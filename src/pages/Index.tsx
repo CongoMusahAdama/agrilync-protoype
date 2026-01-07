@@ -6,10 +6,6 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 
-// Hero images removed as we switched to static image
-
-
-
 const Index = () => {
   const navigate = useNavigate();
 

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Badge } from '@/components/ui/badge';
 import CountUp from '@/components/CountUp';
@@ -75,7 +76,21 @@ const UserManagement = () => {
         e.preventDefault();
         try {
             await api.post('/super-admin/users', formData);
-            toast.success(`Successfully created new ${formData.role}`);
+            await Swal.fire({
+                icon: 'success',
+                title: 'User Created!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            Successfully created new <strong>${formData.role}</strong>
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#7ede56',
+                timer: 2000,
+                timerProgressBar: true
+            });
             setIsOpen(false);
             fetchUsers();
             setFormData({

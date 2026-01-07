@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AgentLayout from './AgentLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,7 +40,21 @@ const AgentProfile: React.FC = () => {
         setIsUpdating(true);
         try {
             await updateAgent(formData);
-            toast.success('Profile updated successfully');
+            await Swal.fire({
+                icon: 'success',
+                title: 'Profile Updated!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            Profile updated successfully
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#7ede56',
+                timer: 2000,
+                timerProgressBar: true
+            });
             setIsEditing(false);
         } catch (err) {
             toast.error('Failed to update profile');

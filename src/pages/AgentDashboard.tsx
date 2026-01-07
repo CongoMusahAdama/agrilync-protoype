@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -81,6 +81,7 @@ import CountUp from '@/components/CountUp';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 import Preloader from '@/components/ui/Preloader';
 
 const MetricCardSkeleton = () => (
@@ -159,12 +160,9 @@ const AgentDashboard: React.FC = () => {
   const loadingActivities = loading;
   const loadingDisputes = loading;
 
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     refreshData();
-  };
-
-
-  // fetchData is now handled by useQuery
+  }, [refreshData]);
 
   // Notification State
   const [notificationFilter, setNotificationFilter] = useState<'all' | 'alert' | 'update'>('all');
@@ -212,15 +210,55 @@ const AgentDashboard: React.FC = () => {
     setReviewMatchModalOpen(true);
   };
 
-  const handleApproveMatch = (matchId: string) => {
-    // In a real app, this would make an API call
-    console.log('Approved match:', matchId);
-    // Optimistic update could happen here or refresh data
-  };
+  const handleApproveMatch = useCallback(async (matchId: string) => {
+    try {
+      await api.post(`/matches/${matchId}/approve`);
+      queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
+      await Swal.fire({
+        icon: 'success',
+        title: 'Match Approved!',
+        html: `
+          <div style="text-align: center; padding: 10px 0;">
+            <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+              Match approved successfully
+            </p>
+          </div>
+        `,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#7ede56',
+        timer: 2000,
+        timerProgressBar: true
+      });
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.msg || error.message || 'Failed to approve match';
+      toast.error(errorMessage);
+    }
+  }, [queryClient]);
 
-  const handleRejectMatch = (matchId: string) => {
-    console.log('Rejected match:', matchId);
-  };
+  const handleRejectMatch = useCallback(async (matchId: string) => {
+    try {
+      await api.post(`/matches/${matchId}/reject`);
+      queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
+      await Swal.fire({
+        icon: 'success',
+        title: 'Match Rejected',
+        html: `
+          <div style="text-align: center; padding: 10px 0;">
+            <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+              Match rejected successfully
+            </p>
+          </div>
+        `,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#7ede56',
+        timer: 2000,
+        timerProgressBar: true
+      });
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.msg || error.message || 'Failed to reject match';
+      toast.error(errorMessage);
+    }
+  }, [queryClient]);
 
   const handleViewDispute = (dispute: any) => {
     setSelectedDispute(dispute);
@@ -242,9 +280,19 @@ const AgentDashboard: React.FC = () => {
     setViewModalOpen(true);
   };
 
-  const handleEditFarmer = (farmer: any) => {
-    setSelectedFarmer(farmer);
-    setEditModalOpen(true);
+  const handleEditFarmer = async (farmer: any) => {
+    try {
+      // Fetch full farmer data including Ghana card images
+      const res = await api.get(`/farmers/${farmer._id}`);
+      setSelectedFarmer(res.data);
+      setEditModalOpen(true);
+    } catch (error: any) {
+      console.error('Error fetching farmer data:', error);
+      toast.error('Failed to load farmer data. Using available data.');
+      // Fallback to available data if fetch fails
+      setSelectedFarmer(farmer);
+      setEditModalOpen(true);
+    }
   };
 
   const handleTrackJourney = (farmer: any) => {

@@ -75,9 +75,19 @@ const FarmersManagement: React.FC = () => {
     setViewModalOpen(true);
   };
 
-  const handleEditFarmer = (farmer: any) => {
-    setSelectedFarmer(farmer);
-    setEditModalOpen(true);
+  const handleEditFarmer = async (farmer: any) => {
+    try {
+      // Fetch full farmer data including Ghana card images
+      const res = await api.get(`/farmers/${farmer._id}`);
+      setSelectedFarmer(res.data);
+      setEditModalOpen(true);
+    } catch (error: any) {
+      console.error('Error fetching farmer data:', error);
+      toast.error('Failed to load farmer data. Using available data.');
+      // Fallback to available data if fetch fails
+      setSelectedFarmer(farmer);
+      setEditModalOpen(true);
+    }
   };
 
   const filteredFarmers = useMemo(() => {

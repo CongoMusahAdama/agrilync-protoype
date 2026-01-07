@@ -9,11 +9,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
     Leaf, FileText, Sprout, Scissors, Wrench, MoreHorizontal, CheckCircle,
-    Plus, Edit, Activity, Upload, X, Video, Clock
+    Plus, Edit, Activity, Upload, X, Video, Clock, Heart, TrendingUp, ShoppingCart, Users
 } from 'lucide-react';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 import { GHANA_REGIONS, GHANA_COMMUNITIES } from '@/data/ghanaRegions';
 
 interface FarmJourneyModalProps {
@@ -44,12 +45,16 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
         activity: string;
         description: string;
         resources: string;
+        additionalField1?: string;
+        additionalField2?: string;
         media: Array<{ type: 'image' | 'video'; url: string; name: string }>;
     }>({
         date: new Date().toISOString().split('T')[0],
         activity: '',
         description: '',
         resources: '',
+        additionalField1: '',
+        additionalField2: '',
         media: []
     });
 
@@ -63,7 +68,190 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const stages = ['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'];
+    // Determine farm type from farmer's farmType field
+    const farmType = farmer?.farmType?.toLowerCase() || 'crop';
+    const isLivestock = farmType === 'livestock';
+
+    // Define stages based on farm type
+    const cropStages = ['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'];
+    const livestockStages = ['planning', 'acquisition', 'rearing', 'health', 'production', 'marketing', 'maintenance', 'other'];
+    const stages = isLivestock ? livestockStages : cropStages;
+
+    // Get stage-specific form configuration
+    const getStageFormConfig = (stage: string) => {
+        if (isLivestock) {
+            switch (stage) {
+                case 'planning':
+                    return {
+                        activityLabel: 'Activity Type',
+                        activityPlaceholder: 'e.g., Infrastructure Setup, Equipment Purchase',
+                        descriptionPlaceholder: 'Describe the farm setup, infrastructure plans, and equipment requirements...',
+                        resourcesLabel: 'Resources/Equipment',
+                        resourcesPlaceholder: 'e.g., Building materials, feeders, water systems',
+                        additionalFields: [
+                            { label: 'Infrastructure Type', placeholder: 'e.g., Housing, Fencing, Storage', key: 'additionalField1' },
+                            { label: 'Estimated Cost', placeholder: 'e.g., GHS 5,000', key: 'additionalField2' }
+                        ]
+                    };
+                case 'acquisition':
+                    return {
+                        activityLabel: 'Acquisition Activity',
+                        activityPlaceholder: 'e.g., Animal Purchase, Breeding Stock Selection',
+                        descriptionPlaceholder: 'Describe the animals acquired, source, quantity, and health status...',
+                        resourcesLabel: 'Resources Used',
+                        resourcesPlaceholder: 'e.g., Transportation, Health certificates, Purchase documents',
+                        additionalFields: [
+                            { label: 'Animal Count', placeholder: 'e.g., 50 birds, 10 goats', key: 'additionalField1' },
+                            { label: 'Source/Supplier', placeholder: 'e.g., Farm XYZ, Market ABC', key: 'additionalField2' }
+                        ]
+                    };
+                case 'rearing':
+                    return {
+                        activityLabel: 'Rearing Activity',
+                        activityPlaceholder: 'e.g., Feeding, Growth Monitoring, Housing Management',
+                        descriptionPlaceholder: 'Describe feeding schedules, growth progress, housing conditions...',
+                        resourcesLabel: 'Feeds/Supplies',
+                        resourcesPlaceholder: 'e.g., 50kg feed, supplements, bedding materials',
+                        additionalFields: [
+                            { label: 'Feed Type & Quantity', placeholder: 'e.g., Starter feed 25kg, Water 100L', key: 'additionalField1' },
+                            { label: 'Growth Metrics', placeholder: 'e.g., Average weight, Health status', key: 'additionalField2' }
+                        ]
+                    };
+                case 'health':
+                    return {
+                        activityLabel: 'Health Activity',
+                        activityPlaceholder: 'e.g., Vaccination, Treatment, Veterinary Visit',
+                        descriptionPlaceholder: 'Describe health interventions, treatments, and veterinary consultations...',
+                        resourcesLabel: 'Medications/Supplies',
+                        resourcesPlaceholder: 'e.g., Vaccines, Medicines, Veterinary services',
+                        additionalFields: [
+                            { label: 'Health Issue/Treatment', placeholder: 'e.g., Disease prevention, Wound care', key: 'additionalField1' },
+                            { label: 'Animals Treated', placeholder: 'e.g., 25 birds vaccinated, 5 goats treated', key: 'additionalField2' }
+                        ]
+                    };
+                case 'production':
+                    return {
+                        activityLabel: 'Production Activity',
+                        activityPlaceholder: 'e.g., Milk Collection, Egg Collection, Breeding Record',
+                        descriptionPlaceholder: 'Describe production activities, yields, and breeding records...',
+                        resourcesLabel: 'Equipment/Tools',
+                        resourcesPlaceholder: 'e.g., Milking machines, Collection trays, Breeding records',
+                        additionalFields: [
+                            { label: 'Production Quantity', placeholder: 'e.g., 50 liters milk, 120 eggs', key: 'additionalField1' },
+                            { label: 'Quality Notes', placeholder: 'e.g., Grade A, Fresh, Good quality', key: 'additionalField2' }
+                        ]
+                    };
+                case 'marketing':
+                    return {
+                        activityLabel: 'Marketing Activity',
+                        activityPlaceholder: 'e.g., Sale Transaction, Customer Visit, Market Analysis',
+                        descriptionPlaceholder: 'Describe sales activities, customer interactions, and market trends...',
+                        resourcesLabel: 'Sales Resources',
+                        resourcesPlaceholder: 'e.g., Transportation, Packaging, Marketing materials',
+                        additionalFields: [
+                            { label: 'Sales Quantity & Price', placeholder: 'e.g., 30 birds @ GHS 25 each', key: 'additionalField1' },
+                            { label: 'Customer/Market', placeholder: 'e.g., Local market, Retailer XYZ', key: 'additionalField2' }
+                        ]
+                    };
+                case 'maintenance':
+                    return {
+                        activityLabel: 'Maintenance Activity',
+                        activityPlaceholder: 'e.g., Equipment Repair, Facility Maintenance, Infrastructure Upgrade',
+                        descriptionPlaceholder: 'Describe maintenance work, repairs, and facility improvements...',
+                        resourcesLabel: 'Materials/Tools',
+                        resourcesPlaceholder: 'e.g., Repair materials, Tools, Replacement parts',
+                        additionalFields: [
+                            { label: 'Maintenance Type', placeholder: 'e.g., Preventive, Corrective, Upgrade', key: 'additionalField1' },
+                            { label: 'Equipment/Facility', placeholder: 'e.g., Housing structure, Feeding equipment', key: 'additionalField2' }
+                        ]
+                    };
+                default: // other
+                    return {
+                        activityLabel: 'Activity Type',
+                        activityPlaceholder: 'e.g., Special Activity',
+                        descriptionPlaceholder: 'Describe the activity in detail...',
+                        resourcesLabel: 'Resources Used',
+                        resourcesPlaceholder: 'e.g., Materials, Tools, Supplies',
+                        additionalFields: []
+                    };
+            }
+        } else {
+            // Crop farming
+            switch (stage) {
+                case 'planning':
+                    return {
+                        activityLabel: 'Planning Activity',
+                        activityPlaceholder: 'e.g., Farm Setup, Equipment Purchase, Land Preparation Planning',
+                        descriptionPlaceholder: 'Describe your farm planning activities, equipment needs, and preparation steps...',
+                        resourcesLabel: 'Resources/Equipment',
+                        resourcesPlaceholder: 'e.g., Tools, Equipment, Planning materials',
+                        additionalFields: [
+                            { label: 'Equipment Type', placeholder: 'e.g., Plow, Tractor, Irrigation system', key: 'additionalField1' },
+                            { label: 'Land Area', placeholder: 'e.g., 5 acres, 2 hectares', key: 'additionalField2' }
+                        ]
+                    };
+                case 'planting':
+                    return {
+                        activityLabel: 'Planting Activity',
+                        activityPlaceholder: 'e.g., Seed Sowing, Transplanting, Spacing Setup',
+                        descriptionPlaceholder: 'Describe planting methods, seed varieties, spacing, and planting techniques...',
+                        resourcesLabel: 'Seeds/Inputs',
+                        resourcesPlaceholder: 'e.g., 50kg seeds, Planting tools, Fertilizer',
+                        additionalFields: [
+                            { label: 'Seed Type & Quantity', placeholder: 'e.g., Maize seeds 50kg, Tomato seeds 200g', key: 'additionalField1' },
+                            { label: 'Planting Method', placeholder: 'e.g., Direct sowing, Transplanting, Spacing', key: 'additionalField2' }
+                        ]
+                    };
+                case 'growing':
+                    return {
+                        activityLabel: 'Growing Activity',
+                        activityPlaceholder: 'e.g., Fertilizer Application, Irrigation, Pest Control, Weeding',
+                        descriptionPlaceholder: 'Describe crop care activities, growth progress, and management practices...',
+                        resourcesLabel: 'Inputs Used',
+                        resourcesPlaceholder: 'e.g., NPK fertilizer 20kg, Pesticides, Water',
+                        additionalFields: [
+                            { label: 'Input Type & Quantity', placeholder: 'e.g., NPK 20kg, Organic pesticide 5L', key: 'additionalField1' },
+                            { label: 'Growth Stage', placeholder: 'e.g., Seedling, Vegetative, Flowering', key: 'additionalField2' }
+                        ]
+                    };
+                case 'harvesting':
+                    return {
+                        activityLabel: 'Harvesting Activity',
+                        activityPlaceholder: 'e.g., Crop Harvest, Post-Harvest Handling, Storage',
+                        descriptionPlaceholder: 'Describe harvesting methods, yield, post-harvest processing, and storage...',
+                        resourcesLabel: 'Harvest Tools/Storage',
+                        resourcesPlaceholder: 'e.g., Harvesting tools, Storage bags, Processing equipment',
+                        additionalFields: [
+                            { label: 'Harvest Quantity', placeholder: 'e.g., 500kg maize, 200kg tomatoes', key: 'additionalField1' },
+                            { label: 'Harvest Method', placeholder: 'e.g., Manual, Mechanical, Quality grade', key: 'additionalField2' }
+                        ]
+                    };
+                case 'maintenance':
+                    return {
+                        activityLabel: 'Maintenance Activity',
+                        activityPlaceholder: 'e.g., Equipment Repair, Infrastructure Maintenance, Soil Management',
+                        descriptionPlaceholder: 'Describe maintenance work, repairs, and farm improvements...',
+                        resourcesLabel: 'Materials/Tools',
+                        resourcesPlaceholder: 'e.g., Repair materials, Tools, Maintenance supplies',
+                        additionalFields: [
+                            { label: 'Maintenance Type', placeholder: 'e.g., Equipment repair, Soil treatment', key: 'additionalField1' },
+                            { label: 'Area/Equipment', placeholder: 'e.g., Irrigation system, Farm infrastructure', key: 'additionalField2' }
+                        ]
+                    };
+                default: // other
+                    return {
+                        activityLabel: 'Activity Type',
+                        activityPlaceholder: 'e.g., Special Activity',
+                        descriptionPlaceholder: 'Describe the activity in detail...',
+                        resourcesLabel: 'Resources Used',
+                        resourcesPlaceholder: 'e.g., Materials, Tools, Supplies',
+                        additionalFields: []
+                    };
+            }
+        }
+    };
+
+    const stageConfig = getStageFormConfig(activeStageTab);
 
     // Memoized communities based on farmer's region
     const availableCommunities = useMemo(() => {
@@ -127,7 +315,21 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
             await api.put(`/farms/${farm._id}`, { currentStage: newStage });
             setFarm({ ...farm, currentStage: newStage });
             setCurrentStage(newStage);
-            toast.success(`Farm stage updated to ${newStage}`);
+            await Swal.fire({
+                icon: 'success',
+                title: 'Stage Updated!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            Farm stage updated to <strong>${newStage.charAt(0).toUpperCase() + newStage.slice(1)}</strong>
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#7ede56',
+                timer: 2000,
+                timerProgressBar: true
+            });
         } catch (error) {
             console.error("Failed to update stage:", error);
             toast.error("Failed to update farm stage.");
@@ -135,7 +337,15 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
     };
 
     const handleCloseActivityDialog = () => {
-        setNewActivity({ date: new Date().toISOString().split('T')[0], activity: '', description: '', resources: '', media: [] });
+        setNewActivity({ 
+            date: new Date().toISOString().split('T')[0], 
+            activity: '', 
+            description: '', 
+            resources: '', 
+            additionalField1: '',
+            additionalField2: '',
+            media: [] 
+        });
         setShowActivityDialog(false);
     };
 
@@ -145,7 +355,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
         setSavingActivity(true);
         try {
             const activityId = Date.now().toString();
-            const activity = {
+            const activity: any = {
                 id: activityId,
                 date: newActivity.date,
                 activity: newActivity.activity,
@@ -153,6 +363,14 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                 resources: newActivity.resources,
                 media: newActivity.media
             };
+            
+            // Add additional fields if they exist
+            if (newActivity.additionalField1) {
+                activity.additionalField1 = newActivity.additionalField1;
+            }
+            if (newActivity.additionalField2) {
+                activity.additionalField2 = newActivity.additionalField2;
+            }
 
             const updatedStageDetails = JSON.parse(JSON.stringify(farm.stageDetails || {}));
             if (!updatedStageDetails[activeStageTab]) {
@@ -169,7 +387,21 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
 
             await api.put(`/farms/${farm._id}`, { stageDetails: updatedStageDetails });
             setFarm({ ...farm, stageDetails: updatedStageDetails });
-            toast.success("Activity logged successfully!");
+            await Swal.fire({
+                icon: 'success',
+                title: 'Activity Logged!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            Activity logged successfully!
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#7ede56',
+                timer: 2000,
+                timerProgressBar: true
+            });
             handleCloseActivityDialog();
         } catch (error) {
             console.error("Failed to save activity:", error);
@@ -185,20 +417,47 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
 
         setAddingFarm(true);
         try {
+            // Initialize stage details based on farm type
+            const farmerFarmType = farmer?.farmType?.toLowerCase() || 'crop';
+            const isFarmerLivestock = farmerFarmType === 'livestock';
+            const defaultStages = isFarmerLivestock 
+                ? ['planning', 'acquisition', 'rearing', 'health', 'production', 'marketing', 'maintenance', 'other']
+                : ['planning', 'planting', 'growing', 'harvesting', 'maintenance', 'other'];
+            
+            const initialStageDetails: any = {};
+            defaultStages.forEach(stage => {
+                initialStageDetails[stage] = { date: '', notes: '', status: 'pending', activities: [] };
+            });
+
             const farmData = {
                 name: addFarmForm.name,
                 location: addFarmForm.location,
                 crop: addFarmForm.crop,
                 farmer: farmer?._id || farmer?.id,
                 status: 'verified',
-                currentStage: 'planning'
+                currentStage: 'planning',
+                stageDetails: initialStageDetails
             };
 
             const res = await api.post('/farms', farmData);
             setFarm(res.data);
             setCurrentStage('planning');
             setActiveStageTab('planning');
-            toast.success("Farm registered successfully! You can now track the journey.");
+            await Swal.fire({
+                icon: 'success',
+                title: 'Farm Registered!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            Farm registered successfully! You can now track the journey.
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'Start Tracking',
+                confirmButtonColor: '#7ede56',
+                timer: 2500,
+                timerProgressBar: true
+            });
         } catch (error) {
             console.error("Failed to add farm:", error);
             toast.error("Failed to register farm. Please try again.");
@@ -208,7 +467,15 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
     };
 
     const openActivityDialog = () => {
-        setNewActivity({ date: new Date().toISOString().split('T')[0], activity: '', description: '', resources: '', media: [] });
+        setNewActivity({ 
+            date: new Date().toISOString().split('T')[0], 
+            activity: '', 
+            description: '', 
+            resources: '', 
+            additionalField1: '',
+            additionalField2: '',
+            media: [] 
+        });
         setShowActivityDialog(true);
     };
 
@@ -240,14 +507,28 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
     };
 
     const getStageColor = (stage: string) => {
-        switch (stage) {
-            case 'planning': return { bg: '#7ede56', textOnLight: '#0f5132', textOnDark: '#ffffff' };
-            case 'planting': return { bg: '#ffa500', textOnLight: '#8a4a00', textOnDark: '#ffffff' };
-            case 'growing': return { bg: '#ff6347', textOnLight: '#7c1f0a', textOnDark: '#ffffff' };
-            case 'harvesting': return { bg: '#921573', textOnLight: '#5e0e4a', textOnDark: '#ffffff' };
-            case 'maintenance': return { bg: '#5fd646', textOnLight: '#0f5132', textOnDark: '#ffffff' };
-            case 'other': return { bg: '#ffb547', textOnLight: '#8a4a00', textOnDark: '#ffffff' };
-            default: return { bg: '#6b7280', textOnLight: '#374151', textOnDark: '#ffffff' };
+        if (isLivestock) {
+            switch (stage) {
+                case 'planning': return { bg: '#7ede56', textOnLight: '#0f5132', textOnDark: '#ffffff' };
+                case 'acquisition': return { bg: '#3b82f6', textOnLight: '#1e40af', textOnDark: '#ffffff' };
+                case 'rearing': return { bg: '#8b5cf6', textOnLight: '#5b21b6', textOnDark: '#ffffff' };
+                case 'health': return { bg: '#ef4444', textOnLight: '#991b1b', textOnDark: '#ffffff' };
+                case 'production': return { bg: '#10b981', textOnLight: '#065f46', textOnDark: '#ffffff' };
+                case 'marketing': return { bg: '#f59e0b', textOnLight: '#92400e', textOnDark: '#ffffff' };
+                case 'maintenance': return { bg: '#5fd646', textOnLight: '#0f5132', textOnDark: '#ffffff' };
+                case 'other': return { bg: '#ffb547', textOnLight: '#8a4a00', textOnDark: '#ffffff' };
+                default: return { bg: '#6b7280', textOnLight: '#374151', textOnDark: '#ffffff' };
+            }
+        } else {
+            switch (stage) {
+                case 'planning': return { bg: '#7ede56', textOnLight: '#0f5132', textOnDark: '#ffffff' };
+                case 'planting': return { bg: '#ffa500', textOnLight: '#8a4a00', textOnDark: '#ffffff' };
+                case 'growing': return { bg: '#ff6347', textOnLight: '#7c1f0a', textOnDark: '#ffffff' };
+                case 'harvesting': return { bg: '#921573', textOnLight: '#5e0e4a', textOnDark: '#ffffff' };
+                case 'maintenance': return { bg: '#5fd646', textOnLight: '#0f5132', textOnDark: '#ffffff' };
+                case 'other': return { bg: '#ffb547', textOnLight: '#8a4a00', textOnDark: '#ffffff' };
+                default: return { bg: '#6b7280', textOnLight: '#374151', textOnDark: '#ffffff' };
+            }
         }
     };
 
@@ -268,7 +549,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`max-w-6xl w-full max-h-[95vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white'}`}>
+            <DialogContent className={`max-w-6xl w-[95vw] sm:w-full max-h-[95vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white'}`}>
                 <DialogHeader className="mb-4">
                     <DialogTitle className={`flex items-center gap-3 text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                         <div className={`p-2 rounded-lg ${darkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-600'}`}>
@@ -380,12 +661,19 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent className={darkMode ? 'bg-[#002f37] border-white/20 text-white' : ''}>
-                                                    <SelectItem value="planning">Planning</SelectItem>
-                                                    <SelectItem value="planting">Planting</SelectItem>
-                                                    <SelectItem value="growing">Growing</SelectItem>
-                                                    <SelectItem value="harvesting">Harvesting</SelectItem>
-                                                    <SelectItem value="maintenance">Maintenance</SelectItem>
-                                                    <SelectItem value="other">Other</SelectItem>
+                                                    {stages.map((stage) => (
+                                                        <SelectItem key={stage} value={stage}>
+                                                            {stage === 'acquisition' ? 'Acquisition' :
+                                                             stage === 'rearing' ? 'Rearing' :
+                                                             stage === 'health' ? 'Health Management' :
+                                                             stage === 'production' ? 'Production' :
+                                                             stage === 'marketing' ? 'Marketing/Sales' :
+                                                             stage === 'planting' ? 'Planting' :
+                                                             stage === 'growing' ? 'Growing' :
+                                                             stage === 'harvesting' ? 'Harvesting' :
+                                                             stage.charAt(0).toUpperCase() + stage.slice(1)}
+                                                        </SelectItem>
+                                                    ))}
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -399,7 +687,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                         <div
                                             className="h-full bg-gradient-to-r from-[#7ede56] to-[#6bc947] rounded-full transition-all duration-700 ease-in-out"
                                             style={{
-                                                width: `${((stages.indexOf(currentStage) + 0.5) / 6) * 100}%`
+                                                width: `${((stages.indexOf(currentStage) + 0.5) / stages.length) * 100}%`
                                             }}
                                         ></div>
                                     </div>
@@ -415,14 +703,28 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                 if (isCompleted) {
                                                     return <CheckCircle className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
                                                 }
-                                                switch (stage) {
-                                                    case 'planning': return <FileText className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
-                                                    case 'planting': return <Sprout className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
-                                                    case 'growing': return <Leaf className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
-                                                    case 'harvesting': return <Scissors className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
-                                                    case 'maintenance': return <Wrench className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
-                                                    case 'other': return <MoreHorizontal className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
-                                                    default: return <div className="w-4 h-4 rounded-full bg-gray-400"></div>;
+                                                if (isLivestock) {
+                                                    switch (stage) {
+                                                        case 'planning': return <FileText className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
+                                                        case 'acquisition': return <Users className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
+                                                        case 'rearing': return <Leaf className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
+                                                        case 'health': return <Heart className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
+                                                        case 'production': return <TrendingUp className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
+                                                        case 'marketing': return <ShoppingCart className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
+                                                        case 'maintenance': return <Wrench className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
+                                                        case 'other': return <MoreHorizontal className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
+                                                        default: return <div className="w-4 h-4 rounded-full bg-gray-400"></div>;
+                                                    }
+                                                } else {
+                                                    switch (stage) {
+                                                        case 'planning': return <FileText className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
+                                                        case 'planting': return <Sprout className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
+                                                        case 'growing': return <Leaf className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
+                                                        case 'harvesting': return <Scissors className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
+                                                        case 'maintenance': return <Wrench className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
+                                                        case 'other': return <MoreHorizontal className="h-5 w-5 sm:h-7 sm:w-7 text-white" />;
+                                                        default: return <div className="w-4 h-4 rounded-full bg-gray-400"></div>;
+                                                    }
                                                 }
                                             };
 
@@ -444,7 +746,12 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                     <div className="mt-4 text-center">
                                                         <p className={`text-sm sm:text-base font-bold transition-colors ${isCurrent ? 'text-[#7ede56] scale-105' : isCompleted ? (darkMode ? 'text-white' : 'text-gray-800') : (darkMode ? 'text-gray-500' : 'text-gray-400')
                                                             }`}>
-                                                            {stage.charAt(0).toUpperCase() + stage.slice(1)}
+                                                            {stage === 'acquisition' ? 'Acquisition' :
+                                                             stage === 'rearing' ? 'Rearing' :
+                                                             stage === 'health' ? 'Health' :
+                                                             stage === 'production' ? 'Production' :
+                                                             stage === 'marketing' ? 'Marketing' :
+                                                             stage.charAt(0).toUpperCase() + stage.slice(1)}
                                                         </p>
                                                         {isCurrent && (
                                                             <Badge className="bg-[#7ede56] text-white font-bold mt-1 animate-pulse">Active</Badge>
@@ -507,7 +814,12 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                             `}
                                             >
                                                 <span className="flex items-center gap-2">
-                                                    {stage.charAt(0).toUpperCase() + stage.slice(1)}
+                                                    {stage === 'acquisition' ? 'Acquisition' :
+                                                     stage === 'rearing' ? 'Rearing' :
+                                                     stage === 'health' ? 'Health' :
+                                                     stage === 'production' ? 'Production' :
+                                                     stage === 'marketing' ? 'Marketing' :
+                                                     stage.charAt(0).toUpperCase() + stage.slice(1)}
                                                     {isCurrentStage && (
                                                         <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-emerald-500 animate-ping"></div>
                                                     )}
@@ -628,71 +940,94 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
 
                         {/* Add Activity Dialog Content */}
                         <Dialog open={showActivityDialog} onOpenChange={setShowActivityDialog}>
-                            <DialogContent className={`max-w-4xl w-full p-0 overflow-hidden flex flex-col md:flex-row rounded-3xl border-none ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white shadow-2xl'}`}>
-                                <div className="flex-1 p-8 space-y-6 overflow-y-auto max-h-[85vh]">
-                                    <DialogHeader className="mb-4">
-                                        <DialogTitle className="text-3xl font-black tracking-tighter">Log Stage Activity</DialogTitle>
-                                        <DialogDescription className={`text-lg font-medium ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                                            Recording history for the <span className="uppercase">{activeStageTab}</span> phase
+                            <DialogContent className={`max-w-5xl w-[95vw] sm:w-full p-0 overflow-hidden flex flex-col lg:flex-row rounded-2xl sm:rounded-3xl border-none ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white shadow-2xl'}`}>
+                                <div className="flex-1 p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 overflow-y-auto max-h-[85vh]">
+                                    <DialogHeader className="mb-2 sm:mb-4">
+                                        <DialogTitle className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tighter">Log Stage Activity</DialogTitle>
+                                        <DialogDescription className={`text-sm sm:text-base lg:text-lg font-medium ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                                            Recording history for the <span className="uppercase font-bold">{activeStageTab}</span> phase
                                         </DialogDescription>
                                     </DialogHeader>
 
-                                    <div className="space-y-6 mt-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-4 sm:space-y-6 mt-2 sm:mt-4">
+                                        {/* Date and Activity Type */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                             <div className="space-y-2">
-                                                <Label htmlFor="date" className="text-sm font-bold uppercase tracking-widest opacity-70">Operation Date</Label>
+                                                <Label htmlFor="date" className="text-xs sm:text-sm font-bold uppercase tracking-widest opacity-70">Operation Date</Label>
                                                 <Input
                                                     id="date"
                                                     type="date"
                                                     value={newActivity.date}
                                                     onChange={(e) => setNewActivity({ ...newActivity, date: e.target.value })}
-                                                    className={`h-12 text-lg font-medium border-2 ${darkMode ? 'bg-black/20 border-white/10 focus:border-emerald-500' : 'bg-gray-50 border-gray-100'}`}
+                                                    className={`h-10 sm:h-12 text-sm sm:text-base lg:text-lg font-medium border-2 ${darkMode ? 'bg-black/20 border-white/10 focus:border-emerald-500' : 'bg-gray-50 border-gray-100'}`}
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="activity" className="text-sm font-bold uppercase tracking-widest opacity-70">Activity Milestone</Label>
+                                                <Label htmlFor="activity" className="text-xs sm:text-sm font-bold uppercase tracking-widest opacity-70">{stageConfig.activityLabel}</Label>
                                                 <Input
                                                     id="activity"
-                                                    placeholder="e.g., Fertilizer Influx"
+                                                    placeholder={stageConfig.activityPlaceholder}
                                                     value={newActivity.activity}
                                                     onChange={(e) => setNewActivity({ ...newActivity, activity: e.target.value })}
-                                                    className={`h-12 text-lg border-2 ${darkMode ? 'bg-black/20 border-white/10 focus:border-emerald-500 placeholder:text-gray-600' : 'bg-gray-50 border-gray-100'}`}
+                                                    className={`h-10 sm:h-12 text-sm sm:text-base lg:text-lg border-2 ${darkMode ? 'bg-black/20 border-white/10 focus:border-emerald-500 placeholder:text-gray-600' : 'bg-gray-50 border-gray-100'}`}
                                                 />
                                             </div>
                                         </div>
+
+                                        {/* Additional Fields based on stage */}
+                                        {stageConfig.additionalFields && stageConfig.additionalFields.length > 0 && (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                                                {stageConfig.additionalFields.map((field: { label: string; placeholder: string; key: string }, index: number) => (
+                                                    <div key={index} className="space-y-2">
+                                                        <Label htmlFor={field.key} className="text-xs sm:text-sm font-bold uppercase tracking-widest opacity-70">{field.label}</Label>
+                                                        <Input
+                                                            id={field.key}
+                                                            placeholder={field.placeholder}
+                                                            value={(newActivity[field.key as keyof typeof newActivity] as string) || ''}
+                                                            onChange={(e) => setNewActivity({ ...newActivity, [field.key]: e.target.value })}
+                                                            className={`h-10 sm:h-12 text-sm sm:text-base lg:text-lg border-2 ${darkMode ? 'bg-black/20 border-white/10 focus:border-emerald-500 placeholder:text-gray-600' : 'bg-gray-50 border-gray-100'}`}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Description */}
                                         <div className="space-y-2">
-                                            <Label htmlFor="description" className="text-sm font-bold uppercase tracking-widest opacity-70">Activity Narrative</Label>
+                                            <Label htmlFor="description" className="text-xs sm:text-sm font-bold uppercase tracking-widest opacity-70">Activity Narrative</Label>
                                             <Textarea
                                                 id="description"
-                                                placeholder="Describe the field work in detail..."
+                                                placeholder={stageConfig.descriptionPlaceholder}
                                                 value={newActivity.description}
                                                 onChange={(e) => setNewActivity({ ...newActivity, description: e.target.value })}
-                                                className={`min-h-[120px] text-lg border-2 leading-relaxed ${darkMode ? 'bg-black/20 border-white/10 focus:border-emerald-500 placeholder:text-gray-600' : 'bg-gray-50 border-gray-100'}`}
+                                                className={`min-h-[100px] sm:min-h-[120px] text-sm sm:text-base lg:text-lg border-2 leading-relaxed ${darkMode ? 'bg-black/20 border-white/10 focus:border-emerald-500 placeholder:text-gray-600' : 'bg-gray-50 border-gray-100'}`}
                                             />
                                         </div>
+
+                                        {/* Resources */}
                                         <div className="space-y-2">
-                                            <Label htmlFor="resources" className="text-sm font-bold uppercase tracking-widest opacity-70">Inputs Used</Label>
+                                            <Label htmlFor="resources" className="text-xs sm:text-sm font-bold uppercase tracking-widest opacity-70">{stageConfig.resourcesLabel}</Label>
                                             <Input
                                                 id="resources"
-                                                placeholder="e.g., 20kg NPK + 4 Man-hours"
+                                                placeholder={stageConfig.resourcesPlaceholder}
                                                 value={newActivity.resources}
                                                 onChange={(e) => setNewActivity({ ...newActivity, resources: e.target.value })}
-                                                className={`h-12 text-lg border-2 ${darkMode ? 'bg-black/20 border-white/10 focus:border-emerald-500 placeholder:text-gray-600' : 'bg-gray-50 border-gray-100'}`}
+                                                className={`h-10 sm:h-12 text-sm sm:text-base lg:text-lg border-2 ${darkMode ? 'bg-black/20 border-white/10 focus:border-emerald-500 placeholder:text-gray-600' : 'bg-gray-50 border-gray-100'}`}
                                             />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className={`w-full md:w-[380px] p-8 border-l flex flex-col ${darkMode ? 'border-white/5 bg-black/20' : 'border-gray-50 bg-gray-50/30'}`}>
-                                    <div className="mb-6">
-                                        <h4 className={`text-xl font-black mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Media Evidence</h4>
-                                        <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Upload visual proof of the field activity</p>
+                                <div className={`w-full lg:w-[380px] p-4 sm:p-6 lg:p-8 border-t lg:border-t-0 lg:border-l flex flex-col ${darkMode ? 'border-white/5 bg-black/20' : 'border-gray-50 bg-gray-50/30'}`}>
+                                    <div className="mb-4 sm:mb-6">
+                                        <h4 className={`text-lg sm:text-xl font-black mb-1 sm:mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Media Evidence</h4>
+                                        <p className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Upload visual proof of the field activity</p>
                                     </div>
 
                                     <div
                                         onClick={() => fileInputRef.current?.click()}
                                         className={`
-                                        flex-1 border-4 border-dashed rounded-3xl flex flex-col items-center justify-center p-8 cursor-pointer transition-all hover:scale-[1.02]
+                                        flex-1 border-4 border-dashed rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 cursor-pointer transition-all hover:scale-[1.02] min-h-[150px] sm:min-h-[180px]
                                         ${darkMode
                                                 ? 'border-white/10 bg-white/5 hover:border-emerald-500/50 hover:bg-emerald-50/5'
                                                 : 'border-gray-200 bg-white hover:border-emerald-500/50 hover:bg-emerald-50'}
@@ -706,51 +1041,60 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                             accept="image/*,video/*"
                                             className="hidden"
                                         />
-                                        <div className={`p-4 rounded-full mb-4 ${darkMode ? 'bg-white/10 text-white' : 'bg-emerald-100 text-emerald-600'}`}>
-                                            <Upload className="h-8 w-8" />
+                                        <div className={`p-3 sm:p-4 rounded-full mb-3 sm:mb-4 ${darkMode ? 'bg-white/10 text-white' : 'bg-emerald-100 text-emerald-600'}`}>
+                                            <Upload className="h-6 w-6 sm:h-8 sm:w-8" />
                                         </div>
-                                        <p className={`text-base font-bold text-center ${darkMode ? 'text-white' : 'text-gray-700'}`}>
+                                        <p className={`text-sm sm:text-base font-bold text-center ${darkMode ? 'text-white' : 'text-gray-700'}`}>
                                             Select Media
                                         </p>
-                                        <p className={`text-xs mt-2 text-center opacity-60`}>Supports JPG, PNG, MP4</p>
+                                        <p className={`text-[10px] sm:text-xs mt-1 sm:mt-2 text-center opacity-60`}>Supports JPG, PNG, MP4</p>
                                     </div>
 
-                                    <div className="mt-6 space-y-3 h-[180px] overflow-y-auto custom-scrollbar px-2">
-                                        {newActivity.media.map((item, index) => (
-                                            <div key={index} className={`flex items-center gap-4 p-3 rounded-2xl shadow-sm ${darkMode ? 'bg-white/10' : 'bg-white'}`}>
-                                                <div className="h-12 w-12 shrink-0 rounded-xl bg-gray-200 overflow-hidden flex items-center justify-center shadow-inner">
-                                                    {item.type === 'image' ? (
-                                                        <img src={item.url} alt="Preview" className="h-full w-full object-cover" />
-                                                    ) : (
-                                                        <Video className="h-6 w-6 text-emerald-500" />
-                                                    )}
+                                    {newActivity.media.length > 0 && (
+                                        <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3 max-h-[150px] sm:max-h-[180px] overflow-y-auto custom-scrollbar px-1 sm:px-2">
+                                            {newActivity.media.map((item, index) => (
+                                                <div key={index} className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-sm ${darkMode ? 'bg-white/10' : 'bg-white'}`}>
+                                                    <div className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-lg sm:rounded-xl bg-gray-200 overflow-hidden flex items-center justify-center shadow-inner">
+                                                        {item.type === 'image' ? (
+                                                            <img src={item.url} alt="Preview" className="h-full w-full object-cover" />
+                                                        ) : (
+                                                            <Video className="h-4 w-4 sm:h-6 sm:w-6 text-emerald-500" />
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className={`text-xs sm:text-sm font-bold truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>{item.name}</p>
+                                                        <p className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{item.type}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => removeMedia(index)}
+                                                        className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition-colors hover:bg-red-500/10 hover:text-red-500 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}
+                                                    >
+                                                        <X className="h-4 w-4 sm:h-5 sm:w-5" />
+                                                    </button>
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className={`text-sm font-bold truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>{item.name}</p>
-                                                    <p className={`text-xs font-bold uppercase tracking-widest ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{item.type}</p>
-                                                </div>
-                                                <button
-                                                    onClick={() => removeMedia(index)}
-                                                    className={`p-2 rounded-xl transition-colors hover:bg-red-500/10 hover:text-red-500 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}
-                                                >
-                                                    <X className="h-5 w-5" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
+                                            ))}
+                                        </div>
+                                    )}
 
-                                    <div className="mt-8 pt-6 border-t border-white/10 flex flex-col gap-3">
+                                    <div className="mt-4 sm:mt-6 lg:mt-8 pt-4 sm:pt-6 border-t border-white/10 flex flex-col gap-2 sm:gap-3">
                                         <Button
                                             onClick={handleSaveActivity}
-                                            className="w-full bg-[#7ede56] hover:bg-[#6bc947] text-white font-black h-14 rounded-2xl text-lg shadow-lg shadow-emerald-500/20"
+                                            className="w-full bg-[#7ede56] hover:bg-[#6bc947] text-white font-black h-12 sm:h-14 rounded-xl sm:rounded-2xl text-sm sm:text-base lg:text-lg shadow-lg shadow-emerald-500/20"
                                             disabled={!newActivity.date || !newActivity.activity || savingActivity}
                                         >
-                                            {savingActivity ? 'Syncing...' : 'Commit Activity'}
+                                            {savingActivity ? (
+                                                <>
+                                                    <div className="h-4 w-4 sm:h-5 sm:w-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                                                    Syncing...
+                                                </>
+                                            ) : (
+                                                'Commit Activity'
+                                            )}
                                         </Button>
                                         <Button
                                             variant="ghost"
                                             onClick={() => setShowActivityDialog(false)}
-                                            className={`h-12 font-bold rounded-2xl ${darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500'}`}
+                                            className={`h-10 sm:h-12 font-bold rounded-xl sm:rounded-2xl text-sm sm:text-base ${darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500'}`}
                                         >
                                             Discard Changes
                                         </Button>

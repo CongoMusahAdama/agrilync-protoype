@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 import { createWorker } from 'tesseract.js';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -252,10 +253,54 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             if (mismatches.length > 0) {
                 setOcrMismatch(mismatches);
                 setIdVerificationChecked(false); // Uncheck if mismatch detected
-                toast.error(`❌ ID Card mismatch detected in: ${mismatches.join(', ')}. Please ensure the information matches before proceeding.`);
+                
+                // Show sweet alert for mismatch
+                const mismatchFields = mismatches.map(field => field.charAt(0).toUpperCase() + field.slice(1)).join(' and ');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Ghana Card Validation Failed',
+                    html: `
+                        <div style="text-align: left; padding: 10px 0;">
+                            <p style="margin-bottom: 15px; font-size: 16px; color: #1f2937;">
+                                <strong>The Ghana Card information does not match the credentials you provided.</strong>
+                            </p>
+                            <div style="background: #fef2f2; padding: 15px; border-radius: 8px; border-left: 4px solid #ef4444; margin: 15px 0;">
+                                <p style="margin: 0; color: #991b1b; font-weight: 600;">
+                                    Mismatch detected in: <span style="color: #dc2626;">${mismatchFields}</span>
+                                </p>
+                            </div>
+                            <p style="margin-top: 15px; color: #4b5563; font-size: 14px;">
+                                Please ensure the information on the Ghana Card matches exactly with what you entered in the form. 
+                                Verify both the card details and the form data before proceeding.
+                            </p>
+                        </div>
+                    `,
+                    confirmButtonText: 'I Understand',
+                    confirmButtonColor: '#ef4444',
+                    width: '600px',
+                    customClass: {
+                        popup: 'swal2-popup-custom',
+                        title: 'swal2-title-custom',
+                        htmlContainer: 'swal2-html-container-custom'
+                    }
+                });
             } else if (extractedData.name || extractedData.dob) {
                 setOcrMismatch([]);
-                toast.success('✅ ID Card information matches form data!');
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'ID Card Verified!',
+                    html: `
+                        <div style="text-align: center; padding: 10px 0;">
+                            <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                                ✅ ID Card information matches form data!
+                            </p>
+                        </div>
+                    `,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#7ede56',
+                    timer: 2000,
+                    timerProgressBar: true
+                });
                 setIdVerificationChecked(true); // Auto-check verification
             }
         } catch (error) {
@@ -363,8 +408,22 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                 return api.post('/farmers', payload);
             }
         },
-        onSuccess: () => {
-            toast.success(isEditMode ? 'Farmer profile updated successfully!' : 'Farmer onboarded successfully!');
+        onSuccess: async () => {
+            await Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            ${isEditMode ? 'Farmer profile updated successfully!' : 'Farmer onboarded successfully!'}
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'Continue',
+                confirmButtonColor: '#7ede56',
+                timer: 2000,
+                timerProgressBar: true
+            });
             queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
             queryClient.invalidateQueries({ queryKey: ['farmers'] });
             onSuccess?.();
@@ -404,12 +463,62 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
 
         // Strict Ghana Card validation - prevent saving if mismatch detected
         if (!isEditMode && ocrMismatch.length > 0) {
-            toast.error(`Cannot proceed: ID Card information does not match form data. Please verify the ${ocrMismatch.join(' and ')} on the Ghana Card matches the information provided.`);
+            const mismatchFields = ocrMismatch.map(field => field.charAt(0).toUpperCase() + field.slice(1)).join(' and ');
+            Swal.fire({
+                icon: 'error',
+                title: 'Cannot Proceed with Onboarding',
+                html: `
+                    <div style="text-align: left; padding: 10px 0;">
+                        <p style="margin-bottom: 15px; font-size: 16px; color: #1f2937;">
+                            <strong>The Ghana Card credentials do not match the information you provided.</strong>
+                        </p>
+                        <div style="background: #fef2f2; padding: 15px; border-radius: 8px; border-left: 4px solid #ef4444; margin: 15px 0;">
+                            <p style="margin: 0; color: #991b1b; font-weight: 600;">
+                                Verification failed for: <span style="color: #dc2626;">${mismatchFields}</span>
+                            </p>
+                        </div>
+                        <p style="margin-top: 15px; color: #4b5563; font-size: 14px;">
+                            Please verify that the information on the Ghana Card matches exactly with the form data. 
+                            You cannot proceed with onboarding until the credentials match.
+                        </p>
+                        <ul style="margin-top: 15px; padding-left: 20px; color: #6b7280; font-size: 14px;">
+                            <li>Check the name on the Ghana Card</li>
+                            <li>Verify the date of birth</li>
+                            <li>Ensure all information is correctly entered</li>
+                        </ul>
+                    </div>
+                `,
+                confirmButtonText: 'I Understand',
+                confirmButtonColor: '#ef4444',
+                width: '650px'
+            });
             return;
         }
 
         if (!idVerificationChecked) {
-            toast.error('Please confirm that ID card details match the provided information by checking the verification checkbox');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Verification Required',
+                html: `
+                    <div style="text-align: left; padding: 10px 0;">
+                        <p style="margin-bottom: 15px; font-size: 16px; color: #1f2937;">
+                            <strong>Please verify your Ghana Card information.</strong>
+                        </p>
+                        <p style="color: #4b5563; font-size: 14px; margin-bottom: 15px;">
+                            You must confirm that the personal information (name, date of birth) on the Ghana Card matches 
+                            the details you provided in this form by checking the verification checkbox.
+                        </p>
+                        <div style="background: #fffbeb; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 15px 0;">
+                            <p style="margin: 0; color: #92400e; font-weight: 600;">
+                                ✓ Check the "ID Verification" checkbox to confirm the information matches
+                            </p>
+                        </div>
+                    </div>
+                `,
+                confirmButtonText: 'I Understand',
+                confirmButtonColor: '#f59e0b',
+                width: '600px'
+            });
             return;
         }
 
@@ -428,8 +537,33 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             const similarity = matchingWords.length / Math.max(extractedWords.length, formWords.length);
             
             if (similarity < 0.7) {
-                toast.error('Name on Ghana Card does not match the name provided. Please verify and ensure they match before submitting.');
                 setIdVerificationChecked(false);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Name Mismatch Detected',
+                    html: `
+                        <div style="text-align: left; padding: 10px 0;">
+                            <p style="margin-bottom: 15px; font-size: 16px; color: #1f2937;">
+                                <strong>The name on the Ghana Card does not match the name you provided.</strong>
+                            </p>
+                            <div style="background: #fef2f2; padding: 15px; border-radius: 8px; border-left: 4px solid #ef4444; margin: 15px 0;">
+                                <p style="margin: 5px 0; color: #991b1b;">
+                                    <strong>Card Name:</strong> <span style="color: #dc2626;">${ocrData.name}</span>
+                                </p>
+                                <p style="margin: 5px 0; color: #991b1b;">
+                                    <strong>Form Name:</strong> <span style="color: #dc2626;">${formData.name}</span>
+                                </p>
+                            </div>
+                            <p style="margin-top: 15px; color: #4b5563; font-size: 14px;">
+                                Please verify the name on your Ghana Card and ensure it matches exactly with the name entered in the form. 
+                                Names must match to proceed with onboarding.
+                            </p>
+                        </div>
+                    `,
+                    confirmButtonText: 'I Understand',
+                    confirmButtonColor: '#ef4444',
+                    width: '600px'
+                });
                 return;
             }
         }

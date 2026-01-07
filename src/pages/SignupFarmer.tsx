@@ -82,9 +82,22 @@ const SignupFarmer = () => {
             const res = await api.post('/farmers/public/register', payload);
 
             if (res.data.success) {
-                toast.success('Registration successful! Please wait for agent verification.');
-                // Show success message or redirect
-                setTimeout(() => navigate('/login'), 2000);
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Registration Successful!',
+                    html: `
+                        <div style="text-align: center; padding: 10px 0;">
+                            <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                                Registration successful! Please wait for agent verification.
+                            </p>
+                        </div>
+                    `,
+                    confirmButtonText: 'Continue to Login',
+                    confirmButtonColor: '#7ede56',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+                setTimeout(() => navigate('/login'), 1000);
             }
         } catch (err: any) {
             console.error('Registration error:', err);

@@ -31,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from '@/components/ui/badge';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import CountUp from '@/components/CountUp';
 
@@ -67,7 +68,21 @@ const SettingsRoles = () => {
         e.preventDefault();
         try {
             await api.post('/super-admin/users', formData);
-            toast.success('Operational account provisioned successfully');
+            await Swal.fire({
+                icon: 'success',
+                title: 'Account Provisioned!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            Operational account provisioned successfully
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#7ede56',
+                timer: 2000,
+                timerProgressBar: true
+            });
             setFormData({ name: '', email: '', password: 'ChangeMe123!', role: 'agent', region: 'Ashanti', contact: '' });
             fetchUsers();
         } catch (err: any) {

@@ -34,11 +34,11 @@ exports.getDashboardSummary = async (agent) => {
     const cachedData = cache.get(cacheKey);
 
     if (cachedData && (Date.now() - cachedData.timestamp < CACHE_TTL)) {
-        console.log(`[DASHBOARD] Summary served from cache for ${agentId}`);
+        // Summary served from cache
         return cachedData.data;
     }
 
-    console.log(`[DASHBOARD] Fetching summary for ${agentId} in region ${region}...`);
+    // Fetching summary from database
 
     // Calculate start of current month for reports metric
     const startOfMonth = new Date();
@@ -140,7 +140,7 @@ exports.getDashboardSummary = async (agent) => {
     });
 
     const duration = Date.now() - start;
-    console.log(`[DASHBOARD] Summary for ${agentId} took ${duration}ms`);
+    // Summary fetched successfully
 
     return summary;
 };

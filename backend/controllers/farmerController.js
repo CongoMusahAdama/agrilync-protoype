@@ -15,6 +15,28 @@ exports.getFarmers = async (req, res) => {
     }
 };
 
+// @route   GET api/farmers/:id
+// @desc    Get a single farmer by ID (includes Ghana card images for editing)
+exports.getFarmerById = async (req, res) => {
+    try {
+        const farmer = await Farmer.findById(req.params.id).select('-password');
+        if (!farmer) {
+            return res.status(404).json({ success: false, message: 'Farmer not found' });
+        }
+
+        // Security check: Only assigned agent can view full farmer data
+        const isAssignedAgent = farmer.agent && farmer.agent.toString() === req.agent.id;
+        if (!isAssignedAgent) {
+            return res.status(401).json({ success: false, message: 'Not authorized to view this farmer profile' });
+        }
+
+        res.json(farmer);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
 // @route   POST api/farmers/public/register
 // @desc    Solo farmer self-onboarding (pending verification)
 exports.registerFarmerPublic = async (req, res) => {

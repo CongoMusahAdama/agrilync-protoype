@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 
 interface ReportData {
   farmerName: string;
@@ -11,7 +12,7 @@ interface ReportData {
   media?: Array<{ type: string; url: string; name: string }>;
 }
 
-export const exportToPDF = (data: ReportData) => {
+export const exportToPDF = async (data: ReportData) => {
   try {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -129,14 +130,28 @@ export const exportToPDF = (data: ReportData) => {
     }
 
     doc.save(`AgriLync_Report_${data.farmerName.replace(/\s+/g, '_')}_${data.date}.pdf`);
-    toast.success('Professional PDF report generated!');
+    await Swal.fire({
+        icon: 'success',
+        title: 'PDF Generated!',
+        html: `
+            <div style="text-align: center; padding: 10px 0;">
+                <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                    Professional PDF report generated!
+                </p>
+            </div>
+        `,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#7ede56',
+        timer: 2000,
+        timerProgressBar: true
+    });
   } catch (error) {
     console.error('Error generating PDF:', error);
     toast.error('Failed to generate PDF report.');
   }
 };
 
-export const exportToWord = (data: ReportData) => {
+export const exportToWord = async (data: ReportData) => {
   try {
     const logoUrl = window.location.origin + '/lovable-uploads/logo.png';
     const content = `
@@ -212,7 +227,21 @@ export const exportToWord = (data: ReportData) => {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    toast.success('Word report generated successfully!');
+    await Swal.fire({
+        icon: 'success',
+        title: 'Word Report Generated!',
+        html: `
+            <div style="text-align: center; padding: 10px 0;">
+                <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                    Word report generated successfully!
+                </p>
+            </div>
+        `,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#7ede56',
+        timer: 2000,
+        timerProgressBar: true
+    });
   } catch (error) {
     console.error('Error generating Word doc:', error);
     toast.error('Failed to generate Word report.');

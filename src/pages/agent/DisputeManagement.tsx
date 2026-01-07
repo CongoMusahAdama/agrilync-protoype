@@ -52,12 +52,13 @@ import {
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 import ViewDisputeModal from '@/components/agent/ViewDisputeModal';
 
 const DisputeManagement: React.FC = () => {
   const { darkMode } = useDarkMode();
   const queryClient = useQueryClient();
-  
+
   // All useState hooks must be declared at the top, before any useQuery
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -84,10 +85,7 @@ const DisputeManagement: React.FC = () => {
       const response = await api.get('/dashboard/summary');
       return response.data.data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    refetchOnWindowFocus: false, // Disabled for mobile performance
-    retry: 2
+    // Uses global defaults from App.tsx
   });
 
   const disputes = summaryData?.disputes || [];
@@ -100,10 +98,7 @@ const DisputeManagement: React.FC = () => {
       const response = await api.get('/farmers');
       return response.data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - consistent caching
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    refetchOnWindowFocus: false,
-    retry: 2
+    // Uses global defaults from App.tsx
   });
 
   // Calculate stats
@@ -169,8 +164,22 @@ const DisputeManagement: React.FC = () => {
     mutationFn: async (disputeData: any) => {
       return api.post('/disputes', disputeData);
     },
-    onSuccess: () => {
-      toast.success('Dispute logged successfully');
+    onSuccess: async () => {
+      await Swal.fire({
+        icon: 'success',
+        title: 'Dispute Logged!',
+        html: `
+          <div style="text-align: center; padding: 10px 0;">
+            <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+              Dispute logged successfully
+            </p>
+          </div>
+        `,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#7ede56',
+        timer: 2000,
+        timerProgressBar: true
+      });
       queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
       setShowNewDisputeDialog(false);
       setNewDispute({

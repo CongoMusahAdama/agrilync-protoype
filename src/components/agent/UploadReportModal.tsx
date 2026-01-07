@@ -9,6 +9,7 @@ import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Upload, File, X, Calendar, FileText, Image as ImageIcon, Video, Paperclip } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 import { useAuth } from '@/contexts/AuthContext';
 import { exportToPDF, exportToWord } from '@/utils/reportExport';
 import { CheckCircle2, Download } from 'lucide-react';
@@ -72,7 +73,21 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
 
             const response = await api.post('/reports', reportData);
 
-            toast.success(`Report uploaded successfully for ${farmer?.name}!`);
+            await Swal.fire({
+                icon: 'success',
+                title: 'Report Uploaded!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            Report uploaded successfully for <strong>${farmer?.name}</strong>!
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#7ede56',
+                timer: 2000,
+                timerProgressBar: true
+            });
 
             setLastReport({
                 ...reportData,

@@ -21,7 +21,7 @@ const auth = async (req, res, next) => {
             const agent = await Agent.findOne({ status: 'active' }).select('-password');
             if (agent) {
                 req.agent = agent;
-                console.log('[AUTH] Localhost: Using first active agent for development');
+                // Using first active agent for localhost development
                 return next();
             }
         } catch (err) {

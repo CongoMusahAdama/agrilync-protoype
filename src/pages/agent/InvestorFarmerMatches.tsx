@@ -61,6 +61,7 @@ import AgentLayout from './AgentLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 
 // Helper functions used in the file
 const getStatusBadge = (status: string) => {
@@ -91,10 +92,7 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
       const response = await api.get('/dashboard/summary');
       return response.data.data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    refetchOnWindowFocus: false,
-    retry: 2
+    // Uses global defaults from App.tsx
   });
 
   const { data: farmersList = [] } = useQuery({
@@ -103,10 +101,7 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
       const response = await api.get('/farmers');
       return response.data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - consistent caching
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    refetchOnWindowFocus: false,
-    retry: 2
+    // Uses global defaults from App.tsx
   });
 
   // Use real data from API only - no mock fallback
@@ -145,7 +140,21 @@ const InvestorFarmerMatchesDashboard: React.FC = () => {
         investmentType: selectedOpportunity.type,
         category: 'Partnership'
       });
-      toast.success('Match proposal submitted successfully!');
+      await Swal.fire({
+        icon: 'success',
+        title: 'Match Proposal Submitted!',
+        html: `
+          <div style="text-align: center; padding: 10px 0;">
+            <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+              Match proposal submitted successfully!
+            </p>
+          </div>
+        `,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#7ede56',
+        timer: 2000,
+        timerProgressBar: true
+      });
       setShowMatchModal(false);
       // Refresh matches
       window.location.reload(); // Simple refresh for now or invalidate query if I had queryClient

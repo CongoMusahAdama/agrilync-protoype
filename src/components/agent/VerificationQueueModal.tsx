@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { UserCheck, Calendar, Eye, Edit, Loader2 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 
 interface VerificationQueueModalProps {
     open: boolean;
@@ -46,7 +47,21 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
         setIsVerifying(farmer._id);
         try {
             await api.put(`/farmers/${farmer._id}`, { status: 'active' });
-            toast.success('Grower verified successfully!');
+            await Swal.fire({
+                icon: 'success',
+                title: 'Grower Verified!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            Grower verified successfully!
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#7ede56',
+                timer: 2000,
+                timerProgressBar: true
+            });
             onSuccess();
         } catch (err) {
             toast.error('Failed to verify grower');

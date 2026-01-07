@@ -10,6 +10,7 @@ import Navbar from '@/components/Navbar';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -41,7 +42,33 @@ const Login = () => {
 
     try {
       await login(formData.email, formData.password);
-      toast.success('Welcome back!');
+      
+      // Show sweet alert for successful login
+      await Swal.fire({
+        icon: 'success',
+        title: 'Login Successful!',
+        html: `
+          <div style="text-align: center; padding: 10px 0;">
+            <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+              Welcome back! You have successfully logged in.
+            </p>
+            <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">
+              Redirecting to your dashboard...
+            </p>
+          </div>
+        `,
+        confirmButtonText: 'Continue',
+        confirmButtonColor: '#7ede56',
+        timer: 2000,
+        timerProgressBar: true,
+        showClass: {
+          popup: 'animate__animated animate__fadeInDown'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOutUp'
+        }
+      });
+      
       navigate('/dashboard/redirect');
     } catch (err: any) {
       console.error('Login error:', err);

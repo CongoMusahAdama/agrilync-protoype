@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,7 +26,21 @@ const ChangePassword = () => {
         setLoading(true);
         try {
             await api.post('/auth/change-password', { newPassword });
-            toast.success('Password updated successfully!');
+            await Swal.fire({
+                icon: 'success',
+                title: 'Password Updated!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            Password updated successfully!
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'Continue',
+                confirmButtonColor: '#7ede56',
+                timer: 2000,
+                timerProgressBar: true
+            });
             // Update local state and navigate to redirector
             if (agent) {
                 setAgent({ ...agent, hasChangedPassword: true });
