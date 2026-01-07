@@ -253,9 +253,11 @@ const Index = () => {
                     200+
                   </div>
                 </div>
-                <div className="max-w-xl hidden md:block">
+                <div className="max-w-xl">
                   <h3 className="font-sora font-bold text-[#002f37] text-lg md:text-xl leading-snug group-hover:underline decoration-[#002f37]/30 underline-offset-4 transition-all">
-                    Distributing trust first, value second, and technology last. <span className="inline-block bg-[#002f37] text-white text-sm px-3 py-1 rounded-full ml-2 align-middle no-underline">Be Part</span>
+                    <span className="md:hidden">Community Trust</span>
+                    <span className="hidden md:inline">Distributing trust first, value second, and technology last.</span>
+                    <span className="inline-block bg-[#002f37] text-white text-sm px-3 py-1 rounded-full ml-2 align-middle no-underline">Be Part</span>
                   </h3>
                 </div>
               </div>
