@@ -52,11 +52,14 @@ import {
   Filter,
   Sprout,
   Handshake,
-  Loader2
+  Loader2,
+  MessageSquare,
+  Phone
 } from 'lucide-react';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import ScheduleVisitModal from '@/components/agent/ScheduleVisitModal';
 
 export const TrainingPerformanceContent = () => {
   const { darkMode } = useDarkMode();
@@ -67,7 +70,9 @@ export const TrainingPerformanceContent = () => {
       const response = await api.get('/dashboard/summary');
       return response.data.data;
     },
-    staleTime: 60000
+    staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache
+    refetchOnWindowFocus: false, // Disabled for mobile performance
+    retry: 2
   });
 
   const availableTrainings = summaryData?.trainings || [];
@@ -77,9 +82,25 @@ export const TrainingPerformanceContent = () => {
   const loading = loadingSummary;
   const isLoaded = !loadingSummary;
 
+  // Fetch scheduled visits
+  const { data: scheduledVisitsData, refetch: refetchScheduledVisits } = useQuery({
+    queryKey: ['scheduledVisits'],
+    queryFn: async () => {
+      const response = await api.get('/scheduled-visits');
+      return response.data.data || [];
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchOnWindowFocus: false
+  });
+
+  const scheduledVisits = scheduledVisitsData || [];
+
   const [consultationRequests, setConsultationRequests] = useState<any[]>([]);
   const [isRegistering, setIsRegistering] = useState<string | null>(null);
   const [isProcessingConsultation, setIsProcessingConsultation] = useState<string | null>(null);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [selectedVisitForSMS, setSelectedVisitForSMS] = useState<string | null>(null);
+  const [selectedVisitForCall, setSelectedVisitForCall] = useState<string | null>(null);
 
   const loadingAvailable = loadingSummary;
   const loadingMyTrainings = loadingSummary;
@@ -106,6 +127,54 @@ export const TrainingPerformanceContent = () => {
       }));
     } finally {
       setIsProcessingConsultation(null);
+    }
+  };
+
+  // Send SMS for scheduled visit
+  const handleSendSMS = async (visitId: string) => {
+    setSelectedVisitForSMS(visitId);
+    try {
+      const response = await api.post(`/scheduled-visits/${visitId}/send-sms`);
+      if (response.data.success) {
+        toast.success(response.data.message || 'SMS sent successfully');
+        refetchScheduledVisits();
+      } else {
+        toast.error(response.data.message || 'Failed to send SMS');
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error ||
+                          error.message || 
+                          'Failed to send SMS. Please check that farmers have phone numbers.';
+      toast.error(errorMessage);
+      console.error('SMS error:', error);
+    } finally {
+      setSelectedVisitForSMS(null);
+    }
+  };
+
+  // Log phone call
+  const handleLogPhoneCall = async (visitId: string) => {
+    setSelectedVisitForCall(visitId);
+    try {
+      const response = await api.post(`/scheduled-visits/${visitId}/phone-call`, {
+        notes: 'Follow-up phone call made'
+      });
+      if (response.data.success) {
+        toast.success(response.data.message || 'Phone call logged successfully');
+        refetchScheduledVisits();
+      } else {
+        toast.error(response.data.message || 'Failed to log phone call');
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error ||
+                          error.message || 
+                          'Failed to log phone call. Please try again.';
+      toast.error(errorMessage);
+      console.error('Phone call error:', error);
+    } finally {
+      setSelectedVisitForCall(null);
     }
   };
 
@@ -179,6 +248,151 @@ export const TrainingPerformanceContent = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column (2/3 width) */}
         <div className="lg:col-span-2 space-y-8">
+          {/* Schedule Visit Section */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className={`section-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>Scheduled Visits</h2>
+              <Button
+                onClick={() => setScheduleModalOpen(true)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Schedule Visit
+              </Button>
+            </div>
+            <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} overflow-hidden`}>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className={darkMode ? 'bg-[#0b3d32]' : 'bg-[#10b981]'}>
+                    <TableRow className={darkMode ? 'border-[#124b53] hover:bg-transparent' : 'border-emerald-500 hover:bg-transparent'}>
+                      <TableHead className="text-white btn-text h-10">Type</TableHead>
+                      <TableHead className="text-white btn-text h-10">Farmers/Community</TableHead>
+                      <TableHead className="text-white btn-text h-10">Date & Time</TableHead>
+                      <TableHead className="text-white btn-text h-10">Purpose</TableHead>
+                      <TableHead className="text-white btn-text h-10">Status</TableHead>
+                      <TableHead className="text-right text-white btn-text h-10">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {scheduledVisits.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                          No scheduled visits. Click "Schedule Visit" to create one.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      scheduledVisits.map((visit: any) => {
+                        const visitDate = new Date(visit.scheduledDate);
+                        const dateStr = visitDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                        const isUpcoming = visitDate >= new Date() && visit.status === 'scheduled';
+                        
+                        return (
+                          <TableRow key={visit._id || visit.id} className={darkMode ? 'border-gray-800 hover:bg-gray-800/20' : 'border-gray-50 hover:bg-gray-50'}>
+                            <TableCell>
+                              <Badge className={`text-[10px] uppercase ${
+                                visit.visitType === 'farm-visit' ? 'bg-blue-500/10 text-blue-500' :
+                                visit.visitType === 'community-visit' ? 'bg-purple-500/10 text-purple-500' :
+                                'bg-orange-500/10 text-orange-500'
+                              }`}>
+                                {visit.visitType === 'farm-visit' ? 'Farm' :
+                                 visit.visitType === 'community-visit' ? 'Community' : 'Meeting'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {visit.visitType === 'community-visit' ? (
+                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>{visit.community}</span>
+                              ) : (
+                                <div className="flex flex-col">
+                                  <span className={`text-xs font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    {visit.farmers?.length || 0} farmer(s)
+                                  </span>
+                                  {visit.farmers?.slice(0, 2).map((f: any) => (
+                                    <span key={f._id || f.id} className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                      {f.name}
+                                    </span>
+                                  ))}
+                                  {visit.farmers?.length > 2 && (
+                                    <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                      +{visit.farmers.length - 2} more
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className={`flex flex-col text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                <span>{dateStr}</span>
+                                <span>{visit.scheduledTime}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                {visit.purpose?.substring(0, 40)}
+                                {visit.purpose?.length > 40 ? '...' : ''}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={`text-[10px] ${
+                                visit.status === 'scheduled' && isUpcoming ? 'bg-yellow-500/10 text-yellow-500' :
+                                visit.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' :
+                                visit.status === 'cancelled' ? 'bg-red-500/10 text-red-500' :
+                                'bg-gray-500/10 text-gray-500'
+                              }`}>
+                                {visit.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                {isUpcoming && (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 text-[10px] border-blue-500 text-blue-500 hover:bg-blue-500/10"
+                                      onClick={() => handleSendSMS(visit._id || visit.id)}
+                                      disabled={selectedVisitForSMS === (visit._id || visit.id) || visit.smsSent}
+                                      title={visit.smsSent ? 'SMS already sent' : 'Send SMS notification'}
+                                    >
+                                      {selectedVisitForSMS === (visit._id || visit.id) ? (
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                      ) : (
+                                        <>
+                                          <MessageSquare className="h-3 w-3 mr-1" />
+                                          {visit.smsSent ? 'Sent' : 'SMS'}
+                                        </>
+                                      )}
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 text-[10px] border-green-500 text-green-500 hover:bg-green-500/10"
+                                      onClick={() => handleLogPhoneCall(visit._id || visit.id)}
+                                      disabled={selectedVisitForCall === (visit._id || visit.id)}
+                                      title="Log phone call"
+                                    >
+                                      {selectedVisitForCall === (visit._id || visit.id) ? (
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                      ) : (
+                                        <>
+                                          <Phone className="h-3 w-3 mr-1" />
+                                          {visit.phoneCallMade ? 'Called' : 'Call'}
+                                        </>
+                                      )}
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </Card>
+          </section>
+
           {/* Incoming Consultation Requests Section */}
           <section>
             <div className="flex items-center justify-between mb-4">
@@ -518,6 +732,15 @@ export const TrainingPerformanceContent = () => {
           </Card>
         </div>
       </div>
+
+      {/* Schedule Visit Modal */}
+      <ScheduleVisitModal
+        open={scheduleModalOpen}
+        onOpenChange={setScheduleModalOpen}
+        onSuccess={() => {
+          refetchScheduledVisits();
+        }}
+      />
     </div>
   );
 };

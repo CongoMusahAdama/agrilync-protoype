@@ -10,7 +10,7 @@ const Report = require('../models/Report');
 
 // Simple in-memory cache
 const cache = new Map();
-const CACHE_TTL = 30 * 1000; // 30 seconds
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes - increased for better mobile performance
 
 /**
  * Get dashboard summary for an agent
@@ -57,19 +57,28 @@ exports.getDashboardSummary = async (agent) => {
         Farmer.find({ agent: agentId })
             .sort({ createdAt: -1 })
             .limit(20)
-            .select('name status region district community farmType contact avatar') // Only select what's needed for the list
+            .select('name status region district community farmType contact profilePicture') // Include profilePicture for avatar display
             .lean(),
         Farm.find({ agent: agentId })
             .sort({ createdAt: -1 })
             .limit(20)
-            .select('name farmer location crop status nextVisit lastVisit') // Only select what's needed for cards
+            .select('name farmer location crop status nextVisit lastVisit createdAt') // Only select what's needed for cards
             .populate('farmer', 'name region community farmType')
             .lean(),
         Notification.find({ agent: agentId }).sort({ createdAt: -1 }).limit(20).lean(),
-        Match.find({ agent: agentId }).populate('farmer', 'name').lean(),
+        // Limit matches to recent 20 to prevent loading all matches
+        Match.find({ agent: agentId })
+            .sort({ createdAt: -1 })
+            .limit(20)
+            .select('id farmer investor status approvalStatus createdAt')
+            .populate('farmer', 'name')
+            .lean(),
         Activity.find({ agent: agentId }).sort({ createdAt: -1 }).limit(10).lean(),
+        // Limit disputes to recent 20 to prevent loading all disputes
         Dispute.find({ agent: agentId })
-            .select('id farmer investor agent type severity status dateLogged region description')
+            .sort({ createdAt: -1 })
+            .limit(20)
+            .select('id farmer investor agent type severity status dateLogged region description createdAt')
             .populate('farmer', 'name region')
             .lean(),
         // Pending queue for the agent's region
@@ -78,8 +87,12 @@ exports.getDashboardSummary = async (agent) => {
             .limit(10)
             .select('name status region date') // minimal fields for queue count/list
             .lean(),
-        Training.find().sort({ date: 1 }).limit(5).lean(),
-        AgentTraining.find({ agent: agentId }).populate('training').lean(),
+        Training.find().sort({ date: 1 }).limit(5).select('title date location status').lean(),
+        AgentTraining.find({ agent: agentId })
+            .limit(10)
+            .select('training status completedAt')
+            .populate('training', 'title date location')
+            .lean(),
         // Actual counts for metrics
         Farmer.countDocuments({ agent: agentId }),
         Farm.countDocuments({ agent: agentId }),

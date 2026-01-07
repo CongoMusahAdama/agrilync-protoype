@@ -38,6 +38,7 @@ app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/opportunities', require('./routes/opportunityRoutes'));
 app.use('/api/super-admin', require('./routes/superAdminRoutes'));
+app.use('/api/scheduled-visits', require('./routes/scheduledVisitRoutes'));
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

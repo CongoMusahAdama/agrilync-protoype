@@ -115,7 +115,9 @@ const FarmManagement: React.FC = () => {
             const response = await api.get('/dashboard/summary');
             return response.data.data;
         },
-        staleTime: 60000
+        staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache
+        refetchOnWindowFocus: false, // Disabled for mobile performance
+        retry: 2
     });
 
     // useQuery for field visits
@@ -582,7 +584,7 @@ const FarmManagement: React.FC = () => {
                                 }`}
                         >
                             <ClipboardList className="h-4 w-4 mr-2" />
-                            Field Visits
+                            Field Visits ({visitLogs.length})
                         </TabsTrigger>
                         <TabsTrigger
                             value="reports"

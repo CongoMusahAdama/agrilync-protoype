@@ -81,6 +81,7 @@ import CountUp from '@/components/CountUp';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import Preloader from '@/components/ui/Preloader';
 
 const MetricCardSkeleton = () => (
   <Card className="bg-gray-800/50 border-gray-700 rounded-lg p-3 sm:p-6 shadow-lg animate-pulse">
@@ -130,8 +131,12 @@ const AgentDashboard: React.FC = () => {
       const response = await api.get('/dashboard/summary');
       return response.data.data;
     },
-    staleTime: 60000, // 1 minute
-    refetchOnWindowFocus: true
+    staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache
+    cacheTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    refetchOnWindowFocus: false, // Disabled for mobile performance - reduces unnecessary refetches
+    refetchOnMount: true, // Still refetch on mount to get fresh data
+    retry: 2, // Retry failed requests twice
+    retryDelay: 1000 // Wait 1 second between retries
   });
 
   // Extract data from summary with fallbacks
@@ -371,6 +376,11 @@ const AgentDashboard: React.FC = () => {
   const tableHeaderRowClass = 'bg-[#1db954] border-[#1db954] text-white';
   const tableBodyRowClass = darkMode ? 'border-b border-[#124b53] hover:bg-[#0d3036]' : '';
   const tableCellClass = darkMode ? 'text-gray-100' : '';
+
+  // Show preloader on initial load
+  if (loading && !summaryData) {
+    return <Preloader />;
+  }
 
   return (
     <AgentLayout

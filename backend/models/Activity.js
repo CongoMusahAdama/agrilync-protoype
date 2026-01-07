@@ -8,7 +8,7 @@ const ActivitySchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['training', 'report', 'verification', 'dispute', 'info'],
+        enum: ['training', 'report', 'verification', 'dispute', 'info', 'event'],
         default: 'info'
     },
     title: {

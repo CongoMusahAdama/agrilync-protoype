@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -51,8 +51,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isNavigating, setIsNavigating] = useState(false);
     const [addFarmerModalOpen, setAddFarmerModalOpen] = useState(false);
     const [notifications, setNotifications] = useState<any[]>([]);
+    const location = useLocation();
+    const [prevPath, setPrevPath] = useState(location.pathname);
 
     // Notifications are now fetched as part of the dashboard summary in most views,
     // but the sidebar needs them globally. keeping them but making it more efficient.
@@ -78,6 +81,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         setIsLoading(false);
     }, [activeSidebarItem, title]);
 
+    // Show preloader when navigating between dashboard pages
+    useEffect(() => {
+        if (location.pathname !== prevPath && prevPath.startsWith('/dashboard')) {
+            setIsNavigating(true);
+            setPrevPath(location.pathname);
+            
+            // Hide preloader after page starts loading
+            const timer = setTimeout(() => {
+                setIsNavigating(false);
+            }, 500);
+            
+            return () => clearTimeout(timer);
+        } else if (location.pathname !== prevPath) {
+            setPrevPath(location.pathname);
+        }
+    }, [location.pathname, prevPath]);
+
     const effectiveSubtitle = description || subtitle;
     const currentTitle = title || 'Dashboard';
     const activeNotifications = userType === 'agent' ? notifications : agentNotifications;
@@ -86,6 +106,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <div className={`h-screen overflow-hidden font-manrope ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
             {/* Full-page preloader only on initial app boot if needed, otherwise rely on skeletons */}
             {(isLoading && !agent) && <Preloader />}
+            {/* Preloader when navigating between dashboard pages */}
+            {isNavigating && <Preloader />}
             <div className="flex h-full">
                 {/* Mobile Sidebar */}
                 {isMobile && (

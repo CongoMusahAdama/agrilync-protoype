@@ -29,7 +29,7 @@ exports.getSummary = async (req, res) => {
 exports.refreshSummary = async (req, res) => {
     try {
         dashboardService.invalidateCache(req.agent.id);
-        const summary = await dashboardService.getDashboardSummary(req.agent.id, req.agent.region);
+        const summary = await dashboardService.getDashboardSummary(req.agent);
         res.json({
             success: true,
             data: summary
