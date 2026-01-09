@@ -87,6 +87,7 @@ const farmerSchema = new mongoose.Schema({
 
 // Indexing for performance
 farmerSchema.index({ agent: 1, status: 1, region: 1 });
+farmerSchema.index({ status: 1, region: 1 });
 
 // Hash password before saving and generate if missing
 farmerSchema.pre('save', async function () {
@@ -95,7 +96,7 @@ farmerSchema.pre('save', async function () {
         const crypto = require('crypto');
         this.password = crypto.randomBytes(12).toString('hex');
     }
-    
+
     // Hash password if it's new or modified (and not already hashed)
     if (this.isModified('password') && this.password) {
         // Only hash if it's not already a bcrypt hash

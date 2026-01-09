@@ -132,7 +132,7 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
                 alt="AgriLync Logo"
                 className="h-10 w-10"
               />
-              <span className={`font-bold text-2xl ${logoTextClass} transition-colors duration-300`}>AgriLync</span>
+              <span className={`hidden md:block font-bold text-2xl ${logoTextClass} transition-colors duration-300`}>AgriLync</span>
             </Link>
 
             {/* Desktop Navigation - Aligned to Right */}

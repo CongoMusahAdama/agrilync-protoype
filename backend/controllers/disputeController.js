@@ -1,5 +1,6 @@
 const Dispute = require('../models/Dispute');
 const Activity = require('../models/Activity');
+const mongoose = require('mongoose');
 
 // @route   GET api/disputes
 // @desc    Get all disputes for current agent
@@ -75,17 +76,38 @@ exports.updateDispute = async (req, res) => {
     const { status, action, resolution, notes } = req.body;
 
     try {
-        let dispute = await Dispute.findById(req.params.id);
-        if (!dispute) return res.status(404).json({ msg: 'Dispute not found' });
+        let dispute;
 
-        if (dispute.agent.toString() !== req.agent.id) {
-            return res.status(401).json({ msg: 'Not authorized' });
+        // Try to find by MongoDB _id if it's a valid ObjectId
+        if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+            dispute = await Dispute.findById(req.params.id);
         }
 
+        // If not found by _id, try to find by the custom 'id' field (e.g., DIST-123456)
+        if (!dispute) {
+            dispute = await Dispute.findOne({ id: req.params.id });
+        }
+
+        if (!dispute) {
+            return res.status(404).json({ msg: 'Dispute not found' });
+        }
+
+        // Verify ownership (agent who logged it)
+        if (dispute.agent.toString() !== req.agent.id) {
+            return res.status(401).json({ msg: 'Not authorized: You can only update disputes you logged' });
+        }
+
+        // Update fields if provided
         if (status) dispute.status = status;
         if (resolution) dispute.resolution = resolution;
-        if (notes) dispute.notes = notes;
 
+        if (notes) {
+            const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+            const prefix = `[${dateStr}] `;
+            dispute.notes = (dispute.notes ? dispute.notes + "\n" : "") + prefix + notes;
+        }
+
+        // Add to timeline if an action is specified
         if (action) {
             dispute.timeline.push({
                 date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
@@ -95,9 +117,13 @@ exports.updateDispute = async (req, res) => {
         }
 
         await dispute.save();
+
+        // Populate farmer for consistency in the response
+        await dispute.populate('farmer', 'name region');
+
         res.json(dispute);
     } catch (err) {
-        console.error(err.message);
+        console.error('[DISPUTE_UPDATE] Error:', err.message);
         res.status(500).send('Server error');
     }
 };

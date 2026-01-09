@@ -52,5 +52,6 @@ const farmSchema = new mongoose.Schema({
 
 // Indexing for performance
 farmSchema.index({ agent: 1, status: 1 });
+farmSchema.index({ agent: 1, createdAt: -1 });
 
 module.exports = mongoose.models.Farm || mongoose.model('Farm', farmSchema);

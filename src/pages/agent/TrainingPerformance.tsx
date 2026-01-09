@@ -66,7 +66,7 @@ import Preloader from '@/components/ui/Preloader';
 export const TrainingPerformanceContent = () => {
   const { darkMode } = useDarkMode();
   const [trainingFilter, setTrainingFilter] = useState('all');
-  
+
   // All useState hooks must be declared before any conditional returns
   const [consultationRequests, setConsultationRequests] = useState<any[]>([]);
   const [isRegistering, setIsRegistering] = useState<string | null>(null);
@@ -74,7 +74,7 @@ export const TrainingPerformanceContent = () => {
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [selectedVisitForSMS, setSelectedVisitForSMS] = useState<string | null>(null);
   const [selectedVisitForCall, setSelectedVisitForCall] = useState<string | null>(null);
-  
+
   const { data: summaryData, isLoading: loadingSummary, isFetching: fetchingSummary, refetch } = useQuery({
     queryKey: ['agentDashboardSummary'],
     queryFn: async () => {
@@ -104,17 +104,6 @@ export const TrainingPerformanceContent = () => {
   const loading = loadingSummary || loadingVisits;
   const isFetching = fetchingSummary || fetchingVisits;
   const isLoaded = !loading && !isFetching;
-
-  // Show preloader on initial load or when fetching data
-  if ((loading || isFetching) && !summaryData && !scheduledVisitsData) {
-    return <Preloader />;
-  }
-
-  const loadingAvailable = loadingSummary;
-  const loadingMyTrainings = loadingSummary;
-  const loadingStats = loadingSummary;
-  const loadingActivities = loadingSummary;
-
 
   const handleConsultationAction = useCallback(async (id: string, action: 'accept' | 'decline' | 'reschedule') => {
     setIsProcessingConsultation(id);
@@ -154,6 +143,16 @@ export const TrainingPerformanceContent = () => {
     }
   }, [refetch]);
 
+  // Show preloader on initial load or when fetching data
+  if ((loading || isFetching) && !summaryData && !scheduledVisitsData) {
+    return <Preloader />;
+  }
+
+  const loadingAvailable = loadingSummary;
+  const loadingMyTrainings = loadingSummary;
+  const loadingStats = loadingSummary;
+  const loadingActivities = loadingSummary;
+
   // Send SMS for scheduled visit
   const handleSendSMS = async (visitId: string) => {
     setSelectedVisitForSMS(visitId);
@@ -180,10 +179,10 @@ export const TrainingPerformanceContent = () => {
         toast.error(response.data.message || 'Failed to send SMS');
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error ||
-                          error.message || 
-                          'Failed to send SMS. Please check that farmers have phone numbers.';
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Failed to send SMS. Please check that farmers have phone numbers.';
       toast.error(errorMessage);
     } finally {
       setSelectedVisitForSMS(null);
@@ -218,10 +217,10 @@ export const TrainingPerformanceContent = () => {
         toast.error(response.data.message || 'Failed to log phone call');
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error ||
-                          error.message || 
-                          'Failed to log phone call. Please try again.';
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Failed to log phone call. Please try again.';
       toast.error(errorMessage);
       console.error('Phone call error:', error);
     } finally {
@@ -336,17 +335,16 @@ export const TrainingPerformanceContent = () => {
                         const visitDate = new Date(visit.scheduledDate);
                         const dateStr = visitDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                         const isUpcoming = visitDate >= new Date() && visit.status === 'scheduled';
-                        
+
                         return (
                           <TableRow key={visit._id || visit.id} className={darkMode ? 'border-gray-800 hover:bg-gray-800/20' : 'border-gray-50 hover:bg-gray-50'}>
                             <TableCell>
-                              <Badge className={`text-[10px] uppercase ${
-                                visit.visitType === 'farm-visit' ? 'bg-blue-500/10 text-blue-500' :
-                                visit.visitType === 'community-visit' ? 'bg-purple-500/10 text-purple-500' :
-                                'bg-orange-500/10 text-orange-500'
-                              }`}>
+                              <Badge className={`text-[10px] uppercase ${visit.visitType === 'farm-visit' ? 'bg-blue-500/10 text-blue-500' :
+                                  visit.visitType === 'community-visit' ? 'bg-purple-500/10 text-purple-500' :
+                                    'bg-orange-500/10 text-orange-500'
+                                }`}>
                                 {visit.visitType === 'farm-visit' ? 'Farm' :
-                                 visit.visitType === 'community-visit' ? 'Community' : 'Meeting'}
+                                  visit.visitType === 'community-visit' ? 'Community' : 'Meeting'}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -383,12 +381,11 @@ export const TrainingPerformanceContent = () => {
                               </span>
                             </TableCell>
                             <TableCell>
-                              <Badge className={`text-[10px] ${
-                                visit.status === 'scheduled' && isUpcoming ? 'bg-yellow-500/10 text-yellow-500' :
-                                visit.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' :
-                                visit.status === 'cancelled' ? 'bg-red-500/10 text-red-500' :
-                                'bg-gray-500/10 text-gray-500'
-                              }`}>
+                              <Badge className={`text-[10px] ${visit.status === 'scheduled' && isUpcoming ? 'bg-yellow-500/10 text-yellow-500' :
+                                  visit.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' :
+                                    visit.status === 'cancelled' ? 'bg-red-500/10 text-red-500' :
+                                      'bg-gray-500/10 text-gray-500'
+                                }`}>
                                 {visit.status}
                               </Badge>
                             </TableCell>

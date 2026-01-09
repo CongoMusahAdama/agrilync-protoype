@@ -49,6 +49,8 @@ import {
   Wind,
   Thermometer
 } from 'lucide-react';
+import { Pie, Cell, XAxis, YAxis, CartesianGrid, Legend, BarChart, Bar, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import DashboardLayout from '@/components/DashboardLayout';
 
 const Dashboard = () => {
@@ -132,7 +134,27 @@ const Dashboard = () => {
         totalProjects: 12,
         activeConnections: 8,
         totalInvestment: 45000,
-        monthlyGrowth: 15.2
+        monthlyGrowth: 15.2,
+        totalEarnings: 45000,
+        activeProjects: 5,
+        totalCrops: 12,
+        investorMatches: 3
+      },
+      chartData: {
+        revenue: [
+          { month: 'Jan', value: 3500 },
+          { month: 'Feb', value: 4200 },
+          { month: 'Mar', value: 3800 },
+          { month: 'Apr', value: 5100 },
+          { month: 'May', value: 4800 },
+          { month: 'Jun', value: 6200 },
+        ],
+        composition: [
+          { name: 'Maize', value: 40, color: '#7ede56' },
+          { name: 'Cassava', value: 30, color: '#ffa500' },
+          { name: 'Vegetables', value: 20, color: '#ff6347' },
+          { name: 'Other', value: 10, color: '#921573' },
+        ]
       },
       recentActivities: [
         { id: 1, type: 'connection', message: 'New farmer connection: Sarah from Kumasi', time: '2 hours ago' },
@@ -143,6 +165,13 @@ const Dashboard = () => {
         { id: 1, name: 'Rice Farming Project', location: 'Kumasi', status: 'active', progress: 75, investment: 15000 },
         { id: 2, name: 'Vegetable Garden', location: 'Accra', status: 'planning', progress: 25, investment: 8000 },
         { id: 3, name: 'Poultry Farm', location: 'Tamale', status: 'completed', progress: 100, investment: 22000 }
+      ],
+      trainingSessions: [
+        { id: 1, title: 'Modern Irrigation Techniques', date: '2024-01-25', time: '10:00 AM', status: 'upcoming', type: 'workshop' },
+        { id: 2, title: 'Soil Health Management', date: '2024-01-20', time: '2:00 PM', status: 'completed', type: 'webinar' }
+      ],
+      notifications: [
+        { id: 1, type: 'info', title: 'System Update', message: 'Dashboard features updated.', time: '2 hours ago', read: false }
       ]
     },
     investor: {
@@ -151,7 +180,25 @@ const Dashboard = () => {
         totalInvestments: 6,
         activePortfolio: 4,
         totalReturns: 12500,
-        monthlyGrowth: 8.7
+        monthlyGrowth: 8.7,
+        totalEarnings: 12500,
+        investorMatches: 6
+      },
+      chartData: {
+        revenue: [
+          { month: 'Jan', value: 1200 },
+          { month: 'Feb', value: 1500 },
+          { month: 'Mar', value: 1300 },
+          { month: 'Apr', value: 2100 },
+          { month: 'May', value: 2400 },
+          { month: 'Jun', value: 2800 },
+        ],
+        composition: [
+          { name: 'Crop Farms', value: 50, color: '#7ede56' },
+          { name: 'Livestock', value: 30, color: '#ffa500' },
+          { name: 'Processing', value: 15, color: '#ff6347' },
+          { name: 'Tech', value: 5, color: '#921573' },
+        ]
       },
       recentActivities: [
         { id: 1, type: 'return', message: 'Received $2,500 return from rice project', time: '1 hour ago' },
@@ -162,6 +209,12 @@ const Dashboard = () => {
         { id: 1, name: 'Rice Farming - Kumasi', farmer: 'Sarah Mensah', amount: 15000, returns: 2500, status: 'active' },
         { id: 2, name: 'Vegetable Garden - Accra', farmer: 'Kwame Asante', amount: 8000, returns: 1200, status: 'active' },
         { id: 3, name: 'Poultry Farm - Tamale', farmer: 'Aisha Ibrahim', amount: 22000, returns: 3500, status: 'completed' }
+      ],
+      trainingSessions: [
+        { id: 1, title: 'Investment Strategies 101', date: '2024-02-01', time: '11:00 AM', status: 'upcoming', type: 'webinar' }
+      ],
+      notifications: [
+        { id: 1, type: 'success', title: 'Return Received', message: 'You received a return of GHS 2,500.', time: '1 hour ago', read: false }
       ]
     },
     farmer: {
@@ -224,6 +277,21 @@ const Dashboard = () => {
         investorMatches: 2,
         pendingMatches: 1
       },
+      chartData: {
+        revenue: [
+          { month: 'Jan', value: 800 },
+          { month: 'Feb', value: 1200 },
+          { month: 'Mar', value: 950 },
+          { month: 'Apr', value: 1500 },
+          { month: 'May', value: 1800 },
+          { month: 'Jun', value: 2200 },
+        ],
+        composition: [
+          { name: 'Rice', value: 60, color: '#7ede56' },
+          { name: 'Maize', value: 25, color: '#ffa500' },
+          { name: 'Vegetables', value: 15, color: '#ff6347' },
+        ]
+      },
       recentActivities: [
         { id: 1, type: 'harvest', message: 'Rice harvest completed - 2.5 tons', time: '30 minutes ago' },
         { id: 2, type: 'weather', message: 'Weather alert: Optimal conditions for planting', time: '2 hours ago' },
@@ -272,7 +340,26 @@ const Dashboard = () => {
         totalFarmers: 25,
         activeProjects: 8,
         totalEarnings: 12000,
-        monthlyGrowth: 18.5
+        monthlyGrowth: 18.5,
+        investorMatches: 12,
+        activeInvestments: 5,
+        trainingSessions: 4,
+        totalCrops: 45
+      },
+      chartData: {
+        revenue: [
+          { month: 'Jan', value: 1500 },
+          { month: 'Feb', value: 1800 },
+          { month: 'Mar', value: 1600 },
+          { month: 'Apr', value: 2400 },
+          { month: 'May', value: 2800 },
+          { month: 'Jun', value: 3200 },
+        ],
+        composition: [
+          { name: 'Onboarded', value: 45, color: '#7ede56' },
+          { name: 'Pending', value: 30, color: '#ffa500' },
+          { name: 'Waitlisted', value: 25, color: '#ff6347' },
+        ]
       },
       recentActivities: [
         { id: 1, type: 'farmer', message: 'New farmer onboarded: Kwame from Kumasi', time: '1 hour ago' },
@@ -283,6 +370,12 @@ const Dashboard = () => {
         { id: 1, name: 'Kwame Asante', location: 'Kumasi', status: 'active', crops: 'Rice, Maize', lastVisit: '2 days ago' },
         { id: 2, name: 'Sarah Mensah', location: 'Accra', status: 'active', crops: 'Tomatoes', lastVisit: '1 week ago' },
         { id: 3, name: 'Aisha Ibrahim', location: 'Tamale', status: 'pending', crops: 'Cassava', lastVisit: '2 weeks ago' }
+      ],
+      trainingSessions: [
+        { id: 1, title: 'Field Agent Training', date: '2024-02-10', time: '09:00 AM', status: 'upcoming', type: 'workshop' }
+      ],
+      notifications: [
+        { id: 1, type: 'warning', title: 'Farmer Dispute', message: 'Pending dispute requiring attention.', time: '30 minutes ago', read: false }
       ]
     }
   };
@@ -599,6 +692,77 @@ const Dashboard = () => {
         </Card>
       </div>
 
+      {/* Analytics Charts Support Section */}
+      {'chartData' in currentData && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Revenue/Earnings Chart */}
+          <Card className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+            <CardHeader>
+              <CardTitle className={darkMode ? 'text-white' : ''}>
+                {userType === 'investor' ? 'Portfolio Growth' : userType === 'agent' ? 'Earnings Trend' : 'Farm Revenue'}
+              </CardTitle>
+              <CardDescription className={darkMode ? 'text-gray-400' : ''}>
+                Monthly performance overview
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={currentData.chartData.revenue}>
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#7ede56" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#7ede56" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#374151' : '#e5e7eb'} />
+                    <XAxis dataKey="month" stroke={darkMode ? '#9ca3af' : '#6b7280'} />
+                    <YAxis stroke={darkMode ? '#9ca3af' : '#6b7280'} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area type="monotone" dataKey="value" stroke="#7ede56" fillOpacity={1} fill="url(#colorRevenue)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Composition/Mix Chart */}
+          <Card className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+            <CardHeader>
+              <CardTitle className={darkMode ? 'text-white' : ''}>
+                {userType === 'investor' ? 'Portfolio Diversity' : userType === 'agent' ? 'Farmer Status' : 'Crop Mix'}
+              </CardTitle>
+              <CardDescription className={darkMode ? 'text-gray-400' : ''}>
+                Distribution of assets
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={currentData.chartData.composition}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {currentData.chartData.composition.map((entry: any, index: number) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Farm Management Center */}
       <div className="relative bg-gradient-to-r from-[#002f37] to-[#921573] rounded-lg p-8 mb-8 overflow-hidden">
         {/* Leaf Pattern Background - Positioned around edges */}
@@ -633,8 +797,16 @@ const Dashboard = () => {
         {/* Content */}
         <div className="relative z-10 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-[#f4ffee] mb-2">Farm Management Center</h2>
-            <p className="text-[#f4ffee] text-opacity-90">Helping farmers easily manage their {getFarmTypeLabelLower()} farm</p>
+            <h2 className="text-2xl font-bold text-[#f4ffee] mb-2">{
+              userType === 'investor' ? 'Investment Portfolio Hub' :
+                userType === 'agent' ? 'Agent Operations Center' :
+                  'Farm Management Center'
+            }</h2>
+            <p className="text-[#f4ffee] text-opacity-90">{
+              userType === 'investor' ? 'Monitor and optimize your agricultural investments' :
+                userType === 'agent' ? 'Manage your farmers and field activities efficiently' :
+                  `Helping farmers easily manage their ${getFarmTypeLabelLower()} farm`
+            }</p>
           </div>
           <div className="w-12 h-12 bg-[#f4ffee] bg-opacity-20 rounded-full flex items-center justify-center">
             <Activity className="h-6 w-6 text-[#f4ffee]" />
@@ -1003,66 +1175,138 @@ const Dashboard = () => {
         ) : (
           // Default Dashboard Layout for other user types
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Recent Activities */}
-            <Card className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
-              <CardHeader>
-                <CardTitle className={darkMode ? 'text-white' : ''}>Recent Activities</CardTitle>
-                <CardDescription className={darkMode ? 'text-gray-400' : ''}>Your latest updates and notifications</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {currentData.recentActivities.map((activity) => (
-                    <div key={activity.id} className={`flex items-start gap-3 p-3 rounded-lg ${darkMode ? 'bg-gray-900/50' : 'bg-gray-50'}`}>
-                      <div className="w-2 h-2 bg-[#7ede56] rounded-full mt-2"></div>
-                      <div className="flex-1">
-                        <p className={`text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{activity.message}</p>
-                        <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>{activity.time}</p>
+
+            {/* Column 1: Specific List or Recent Activities */}
+            {'farmers' in currentData ? (
+              <Card className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+                <CardHeader>
+                  <CardTitle className={darkMode ? 'text-white' : ''}>My Farmers</CardTitle>
+                  <CardDescription className={darkMode ? 'text-gray-400' : ''}>Recently active farmers</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {(currentData as any).farmers.map((farmer: any) => (
+                      <div key={farmer.id} className={`flex items-center justify-between p-3 rounded-lg border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-100'}`}>
+                        <div>
+                          <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{farmer.name}</p>
+                          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{farmer.location}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className={`text-sm font-medium ${darkMode ? 'text-[#7ede56]' : 'text-green-600'}`}>{farmer.status}</p>
+                          <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{farmer.crops}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : 'investments' in currentData ? (
+              <Card className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+                <CardHeader>
+                  <CardTitle className={darkMode ? 'text-white' : ''}>Active Investments</CardTitle>
+                  <CardDescription className={darkMode ? 'text-gray-400' : ''}>Portfolio performance</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {(currentData as any).investments.map((inv: any) => (
+                      <div key={inv.id} className={`flex items-center justify-between p-3 rounded-lg border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-100'}`}>
+                        <div>
+                          <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{inv.name}</p>
+                          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{inv.farmer}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className={`text-sm font-medium ${darkMode ? 'text-[#7ede56]' : 'text-green-600'}`}>GHS {inv.amount}</p>
+                          <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{inv.status}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              /* Default Recent Activities if no specific list */
+              <Card className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+                <CardHeader>
+                  <CardTitle className={darkMode ? 'text-white' : ''}>Recent Activities</CardTitle>
+                  <CardDescription className={darkMode ? 'text-gray-400' : ''}>Your latest updates and notifications</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {currentData.recentActivities.map((activity) => (
+                      <div key={activity.id} className={`flex items-start gap-3 p-3 rounded-lg ${darkMode ? 'bg-gray-900/50' : 'bg-gray-50'}`}>
+                        <div className="w-2 h-2 bg-[#7ede56] rounded-full mt-2"></div>
+                        <div className="flex-1">
+                          <p className={`text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{activity.message}</p>
+                          <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>{activity.time}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card className={`rounded-lg shadow-sm border ${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-[#002f37] border-none'}`}>
-              <CardHeader>
-                <CardTitle className="text-white">Quick Actions</CardTitle>
-                <CardDescription className="text-gray-300">Quick access to important tasks</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  <Button
-                    className="h-auto min-h-[5rem] py-3 flex flex-col items-center justify-center gap-2 text-center whitespace-normal bg-[#01424d] !text-white hover:bg-[#02596b]"
-                    onClick={() => {
-                      if (userType === 'farmer' || userType === 'grower') {
-                        navigate(`/dashboard/${userType}/farm-management?create=true`);
-                      } else {
-                        // Handle other user types as needed
-                      }
-                    }}
-                  >
-                    <Plus className="h-5 w-5 shrink-0 !text-white" />
-                    <span className="text-[11px] sm:text-sm leading-tight !text-white">
-                      {userType === 'farmer' ? `Add ${getFarmTypeLabelSingular()}` : userType === 'investor' ? 'New Investment' : userType === 'agent' ? 'Add Farmer' : 'Create a project for your farm'}
-                    </span>
-                  </Button>
-                  <Button variant="outline" className="h-auto min-h-[5rem] py-3 flex flex-col items-center justify-center gap-2 text-center whitespace-normal bg-[#01424d] !text-white border-[#0f4a53] hover:bg-[#02596b] hover:text-white">
-                    <Search className="h-5 w-5 shrink-0 text-white" />
-                    <span className="text-[11px] sm:text-sm leading-tight text-white">Find information</span>
-                  </Button>
-                  <Button variant="outline" className="h-auto min-h-[5rem] py-3 flex flex-col items-center justify-center gap-2 text-center whitespace-normal bg-[#01424d] !text-white border-[#0f4a53] hover:bg-[#02596b] hover:text-white">
-                    <Filter className="h-5 w-5 shrink-0 text-white" />
-                    <span className="text-[11px] sm:text-sm leading-tight text-white">Sort items</span>
-                  </Button>
-                  <Button variant="outline" className="h-auto min-h-[5rem] py-3 flex flex-col items-center justify-center gap-2 text-center whitespace-normal bg-[#01424d] !text-white border-[#0f4a53] hover:bg-[#02596b] hover:text-white">
-                    <BarChart3 className="h-5 w-5 shrink-0 text-white" />
-                    <span className="text-[11px] sm:text-sm leading-tight text-white">View reports</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Column 2: Recent Activities (if Specific List in Col 1) OR Quick Actions */}
+            {('farmers' in currentData || 'investments' in currentData) ? (
+              <Card className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+                <CardHeader>
+                  <CardTitle className={darkMode ? 'text-white' : ''}>Recent Activities</CardTitle>
+                  <CardDescription className={darkMode ? 'text-gray-400' : ''}>Your latest updates and notifications</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {currentData.recentActivities.map((activity) => (
+                      <div key={activity.id} className={`flex items-start gap-3 p-3 rounded-lg ${darkMode ? 'bg-gray-900/50' : 'bg-gray-50'}`}>
+                        <div className="w-2 h-2 bg-[#7ede56] rounded-full mt-2"></div>
+                        <div className="flex-1">
+                          <p className={`text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{activity.message}</p>
+                          <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>{activity.time}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              /* Quick Actions for generic users */
+              <Card className={`rounded-lg shadow-sm border ${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-[#002f37] border-none'}`}>
+                <CardHeader>
+                  <CardTitle className="text-white">Quick Actions</CardTitle>
+                  <CardDescription className="text-gray-300">Quick access to important tasks</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    <Button
+                      className="h-auto min-h-[5rem] py-3 flex flex-col items-center justify-center gap-2 text-center whitespace-normal bg-[#01424d] !text-white hover:bg-[#02596b]"
+                      onClick={() => {
+                        if (userType === 'farmer' || userType === 'grower') {
+                          navigate(`/dashboard/${userType}/farm-management?create=true`);
+                        } else {
+                          // Handle other user types as needed
+                        }
+                      }}
+                    >
+                      <Plus className="h-5 w-5 shrink-0 !text-white" />
+                      <span className="text-[11px] sm:text-sm leading-tight !text-white">
+                        {userType === 'farmer' ? `Add ${getFarmTypeLabelSingular()}` : userType === 'investor' ? 'New Investment' : userType === 'agent' ? 'Add Farmer' : 'Create a project for your farm'}
+                      </span>
+                    </Button>
+                    <Button variant="outline" className="h-auto min-h-[5rem] py-3 flex flex-col items-center justify-center gap-2 text-center whitespace-normal bg-[#01424d] !text-white border-[#0f4a53] hover:bg-[#02596b] hover:text-white">
+                      <Search className="h-5 w-5 shrink-0 text-white" />
+                      <span className="text-[11px] sm:text-sm leading-tight text-white">Find information</span>
+                    </Button>
+                    <Button variant="outline" className="h-auto min-h-[5rem] py-3 flex flex-col items-center justify-center gap-2 text-center whitespace-normal bg-[#01424d] !text-white border-[#0f4a53] hover:bg-[#02596b] hover:text-white">
+                      <Filter className="h-5 w-5 shrink-0 text-white" />
+                      <span className="text-[11px] sm:text-sm leading-tight text-white">Sort items</span>
+                    </Button>
+                    <Button variant="outline" className="h-auto min-h-[5rem] py-3 flex flex-col items-center justify-center gap-2 text-center whitespace-normal bg-[#01424d] !text-white border-[#0f4a53] hover:bg-[#02596b] hover:text-white">
+                      <BarChart3 className="h-5 w-5 shrink-0 text-white" />
+                      <span className="text-[11px] sm:text-sm leading-tight text-white">View reports</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
       </div>

@@ -88,7 +88,7 @@ exports.getDashboardSummary = async (agent) => {
         Dispute.find({ agent: agentId })
             .sort({ createdAt: -1 })
             .limit(20)
-            .select('id farmer investor agent type severity status dateLogged region description createdAt')
+            .select('_id id farmer investor agent type severity status dateLogged region description createdAt timeline evidence notes resolution')
             .populate('farmer', 'name region')
             .lean(),
         // Pending queue for the agent's region

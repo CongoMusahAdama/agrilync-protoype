@@ -67,7 +67,7 @@ const DisputeManagement: React.FC = () => {
   const [severityFilter, setSeverityFilter] = useState('all');
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showNewDisputeDialog, setShowNewDisputeDialog] = useState(false);
-  const [selectedDispute, setSelectedDispute] = useState<any>(null);
+  const [selectedDisputeId, setSelectedDisputeId] = useState<string | null>(null);
   const [newDispute, setNewDispute] = useState({
     farmerName: '',
     farmerId: '',
@@ -91,6 +91,11 @@ const DisputeManagement: React.FC = () => {
   const disputes = summaryData?.disputes || [];
   const loading = loadingSummary;
   const isLoaded = !loadingSummary;
+
+  const selectedDispute = disputes.find((d: any) =>
+    (d._id && String(d._id) === selectedDisputeId) ||
+    (d.id && String(d.id) === selectedDisputeId)
+  );
 
   const { data: farmersList = [] } = useQuery({
     queryKey: ['agentFarmers'],
@@ -151,7 +156,7 @@ const DisputeManagement: React.FC = () => {
   };
 
   const handleViewDetails = (dispute: any) => {
-    setSelectedDispute(dispute);
+    setSelectedDisputeId(dispute._id || dispute.id);
     setShowDetailsDialog(true);
   };
 
