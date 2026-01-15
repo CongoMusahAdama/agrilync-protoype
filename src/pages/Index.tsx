@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Leaf, Users, TrendingUp, MapPin, Calendar, Shield, Award, Play, MessageCircle, X, ArrowUp, Quote, ArrowRight, Bot } from 'lucide-react';
+import { Leaf, Users, TrendingUp, MapPin, Calendar, Shield, Award, Play, MessageCircle, X, ArrowUp, Quote, ArrowRight, Bot, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
@@ -21,9 +21,45 @@ const Index = () => {
   const [whoWeAreRef, whoWeAreVisible] = useScrollReveal();
   const [farmersCryingRef, farmersCryingVisible] = useScrollReveal();
   const [successStoriesRef, successStoriesVisible] = useScrollReveal();
+  const [faqRef, faqVisible] = useScrollReveal();
+  // Services ref will be handled manually
+
+  const [showServices, setShowServices] = useState(false);
 
 
   const [activeStory, setActiveStory] = useState(0);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+
+  const toggleFaq = (index: number) => {
+    setOpenFaqIndex(openFaqIndex === index ? null : index);
+  };
+
+  const faqs = [
+    {
+      question: "How does AgriLync ensure the safety of my investment?",
+      answer: "We employ a rigorous vetting process for all farmers and implement strict monitoring protocols. Additionally, we work with insurance partners to provide coverage for crops against unforeseen weather events and pests."
+    },
+    {
+      question: "How accurate is the AI crop consultation?",
+      answer: "Our AI model is trained on a vast database of plant pathology and continuously updated by agricultural experts. It currently boasts a 95% accuracy rate in early disease detection, though we always recommend verifying with our human experts for critical issues."
+    },
+    {
+      question: "Can I choose which specific farm to invest in?",
+      answer: "Yes! Our platform provides detailed profiles for each farm, including their crop history, risk assessment, and projected yield. You can browse and select the partnerships that align with your financial goals and values."
+    },
+    {
+      question: "Is AgriLync available to small-scale farmers?",
+      answer: "Absolutely. Our core mission is to empower smallholder farmers. The platform is designed to be accessible even on basic smartphones, and we have local agents to assist farmers with limited digital literacy."
+    },
+    {
+      question: "What is the minimum amount required to start investing?",
+      answer: "We believe in democratizing agricultural investment. You can start supporting a farm with as little as GHS 500. We offer various tiers to suit different investment capacities."
+    },
+    {
+      question: "Do you support livestock farming as well?",
+      answer: "Yes! We support livestock sectors including poultry and small ruminants. Our health monitoring protocols are adapted to ensure animal welfare and secure returns for investors."
+    }
+  ];
   const [showSplash, setShowSplash] = useState(false);
   const [splashTimeout, setSplashTimeout] = useState<NodeJS.Timeout | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -123,6 +159,19 @@ const Index = () => {
 
   const handleFeatureClick = (path: string) => {
     navigate(path);
+  };
+
+  const toggleServices = () => {
+    setShowServices(!showServices);
+    // Optional: scroll slightly if opening
+    if (!showServices) {
+      setTimeout(() => {
+        const element = document.getElementById('core-services');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
   };
 
   return (
@@ -335,142 +384,195 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Everything You Need to Succeed Section - Updated with staggered animations */}
-      <section className="py-10 sm:py-16 md:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-          <div className="text-center mb-10 sm:mb-14 md:mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
-            <h2 ref={succeedHeadingRef} className={"text-base sm:text-lg md:text-2xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (succeedHeadingVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: '#002f37' }}>
-              Everything You Need to Succeed
-            </h2>
-            <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3 mx-auto"></div>
-            <p className="text-xs sm:text-sm text-gray-600 max-w-xs sm:max-w-md md:max-w-3xl mx-auto">
-              From AI-powered consultation to investment opportunities, we provide comprehensive tools for modern farming.
-            </p>
-          </div>
+      {/* Everything You Need to Succeed Section - Inspiration Redesign */}
+      <section className="py-16 sm:py-24 bg-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
 
-          {/* Feature 1 - AI Consultation with scroll-triggered slide-in */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center mb-10 sm:mb-16 md:mb-20">
-            <div className="order-2 lg:order-1 animate-fade-in-right delay-400 mt-6 sm:mt-0 lg:col-start-1">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl font-bold text-purple-600">01</span>
-                <Leaf className="h-12 w-12 text-purple-600" />
+            {/* Left Column: Heading, Text, Button */}
+            <div className="flex flex-col justify-center animate-fade-in-right transition-all duration-700 ease-in-out">
+              <div>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-[#002f37] font-sora leading-tight">
+                  Everything You Need to <span className="text-[#7ede56]">Succeed & Grow.</span>
+                </h2>
+                <p className="text-gray-600 text-lg leading-relaxed mb-8 max-w-xl">
+                  From AI-powered consultation to investment opportunities, we provide comprehensive tools for modern farming.
+                  We connect verified farmers with impact investors to revolutionize the agricultural ecosystem.
+                </p>
+
+                <Button
+                  onClick={toggleServices}
+                  className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-[#002f37] rounded-full px-8 py-6 text-lg font-bold shadow-lg transition-transform hover:-translate-y-1"
+                >
+                  Explore Services
+                  <div className="ml-3 bg-[#002f37] rounded-full p-1">
+                    <ArrowRight className="w-4 h-4 text-[#FFD700]" />
+                  </div>
+                </Button>
               </div>
-              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in transition-all duration-700 ease-in-out" style={{ color: '#002f37' }}
-                onClick={() => handleFeatureClick('/who-we-are')}>
-                AI-Powered Crop Consultation
-              </h3>
-              <p className="text-lg text-gray-600 mb-6">
-                Get instant, personalized advice for your crops. Upload photos of plant diseases,
-                pests, or growth issues and receive expert recommendations powered by advanced AI technology.
-              </p>
-              <ul className="space-y-2 text-gray-600 mb-6">
-                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>• Instant disease identification</li>
-                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>• Personalized treatment recommendations</li>
-                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}>• Connect with human experts</li>
-                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>• Track crop health over time</li>
-              </ul>
-              <Button
-                onClick={() => handleFeatureClick('/who-we-are')}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                Learn More
-              </Button>
             </div>
-            <div ref={feature1Ref} className={(feature1Visible ? "animate-slide-in-left" : "opacity-0") + " order-1 lg:order-2 lg:col-start-2"}>
-              <img
-                src="/lovable-uploads/889a4eaa-0299-4896-8399-849a40f5565a.png"
-                alt="AI Consultation"
-                className="shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300 rounded-2xl"
-                onClick={() => handleFeatureClick('/who-we-are')}
-              />
-            </div>
-          </div>
 
-          {/* Feature 2 - Weather with scroll-triggered slide-in */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center mb-10 sm:mb-16 md:mb-20">
-            <div ref={feature2Ref} className={(feature2Visible ? "animate-slide-in-left" : "opacity-0") + " order-1 lg:order-1 lg:col-start-1"}>
-              <img
-                src="/lovable-uploads/3e19a1d1-e890-436d-ba69-4227c2a1c8b1.png"
-                alt="Weather Forecast"
-                className="shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300 rounded-2xl"
-                onClick={() => handleFeatureClick('/who-we-are')}
-              />
-            </div>
-            <div className="order-2 lg:order-2 animate-fade-in-left delay-600 lg:col-start-2 mt-6 sm:mt-0">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl font-bold text-purple-600">02</span>
-                <MapPin className="h-12 w-12 text-purple-600" />
+            {/* Right Column: Large Image */}
+            <div className="animate-fade-in-left transition-all duration-700 ease-in-out delay-200">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl group">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+                <img
+                  src="/lovable-uploads/889a4eaa-0299-4896-8399-849a40f5565a.png"
+                  alt="AI-Powered Crop Consultation"
+                  className="w-full h-[400px] sm:h-[500px] lg:h-[600px] object-cover transform group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute bottom-6 left-6 z-20">
+                  <p className="text-white font-bold text-xl font-sora">Empowering 50+ Communities</p>
+                </div>
               </div>
-              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in transition-all duration-700 ease-in-out" style={{ color: '#002f37' }}
-                onClick={() => handleFeatureClick('/who-we-are')}>
-                Hyperlocal Weather Insights
-              </h3>
-              <p className="text-lg text-gray-600 mb-6">
-                Access precise, farm-specific weather forecasts and receive intelligent
-                recommendations for planting, irrigation, and harvesting based on local conditions.
-              </p>
-              <ul className="space-y-2 text-gray-600 mb-6">
-                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>• 7-day hyperlocal forecasts</li>
-                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>• SMS weather alerts</li>
-                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}>• Farming calendar notifications</li>
-                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>• AI-driven recommendations</li>
-              </ul>
-              <Button
-                onClick={() => handleFeatureClick('/who-we-are')}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                Learn More
-              </Button>
-            </div>
-          </div>
-
-          {/* Feature 3 - FarmPartner with scroll-triggered slide-in */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
-            <div className="order-2 lg:order-1 animate-fade-in-right delay-800 mt-6 sm:mt-0">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl font-bold text-purple-600">03</span>
-                <TrendingUp className="h-12 w-12 text-purple-600" />
-              </div>
-              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 cursor-pointer hover:text-purple-600 transition-colors animate-fade-in transition-all duration-700 ease-in-out" style={{ color: '#002f37' }}
-                onClick={() => handleFeatureClick('/who-we-are')}>
-                FarmPartner Investment Initiative
-              </h3>
-              <p className="text-lg text-gray-600 mb-6">
-                Connect verified farmers with impact investors through our transparent
-                partnership platform. Choose from flexible partnership models that work for you.
-              </p>
-
-              {/* Partnership Models */}
-              <ul className="space-y-3 text-gray-600 mb-6">
-                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
-                  <span className="font-semibold text-gray-800">• Profit Sharing</span> — Share profits after harvest with your investor partner
-                </li>
-                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
-                  <span className="font-semibold text-gray-800">• Buy-back Agreement</span> — Investor purchases your produce at agreed prices
-                </li>
-                <li className="opacity-0 animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}>
-                  <span className="font-semibold text-gray-800">• Input Financing</span> — Receive loans for seeds, fertilizers, and equipment
-                </li>
-              </ul>
-
-              <Button
-                onClick={() => handleFeatureClick('/who-we-are')}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                Learn More
-              </Button>
-            </div>
-            <div ref={feature3Ref} className={(feature3Visible ? "animate-slide-in-left delay-800" : "opacity-0") + " order-1 lg:order-2 lg:col-start-2"}>
-              <img
-                src="/lovable-uploads/d5bee012-8bd6-4f66-bd49-d60d2468bcb3.png"
-                alt="FarmPartner Investment"
-                className="shadow-2xl w-full h-64 sm:h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300 rounded-2xl"
-                onClick={() => handleFeatureClick('/who-we-are')}
-              />
             </div>
           </div>
         </div>
       </section>
+
+      {/* Core Services Section - Initially Hidden, toggled by Explore Services button */}
+      {/* Core Services Section - Redesigned to Match Reference */}
+      {showServices && (
+        <section id="core-services" className="py-20 bg-white animate-fade-in-up">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="space-y-24">
+
+              {/* Service 1: AI Consultancy */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                <div className="order-2 lg:order-1">
+                  <div className="flex items-center gap-4 mb-6">
+                    <span className="text-4xl font-bold text-purple-600 font-sora">01</span>
+                    <Leaf className="w-10 h-10 text-purple-600" />
+                  </div>
+                  <h3 className="text-3xl font-bold text-[#002f37] mb-6 font-sora">
+                    AI-Powered Crop Consultation
+                  </h3>
+                  <p className="text-gray-600 text-lg leading-relaxed mb-8">
+                    Get instant, personalized advice for your crops. Upload photos of plant diseases, pests, or growth issues and receive expert recommendations powered by advanced AI technology.
+                  </p>
+
+                  <ul className="space-y-4 mb-8">
+                    {[
+                      "Instant disease identification",
+                      "Personalized treatment recommendations",
+                      "Connect with human experts",
+                      "Track crop health over time"
+                    ].map((item, i) => (
+                      <li key={i} className="flex items-center text-gray-700">
+                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-3"></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Button
+                    onClick={() => handleFeatureClick('/who-we-are')}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-6 text-base font-bold rounded-lg shadow-md transition-transform hover:-translate-y-1"
+                  >
+                    Learn More
+                  </Button>
+                </div>
+                <div className="order-1 lg:order-2">
+                  <img
+                    src="/lovable-uploads/889a4eaa-0299-4896-8399-849a40f5565a.png"
+                    alt="AI Consultation"
+                    className="rounded-[2rem] shadow-2xl w-full object-cover h-[400px] sm:h-[500px]"
+                  />
+                </div>
+              </div>
+
+              {/* Service 2: Smart Weather */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                <div className="order-1">
+                  <img
+                    src="/lovable-uploads/3e19a1d1-e890-436d-ba69-4227c2a1c8b1.png"
+                    alt="Smart Weather"
+                    className="rounded-[2rem] shadow-2xl w-full object-cover h-[400px] sm:h-[500px]"
+                  />
+                </div>
+                <div className="order-2">
+                  <div className="flex items-center gap-4 mb-6">
+                    <span className="text-4xl font-bold text-purple-600 font-sora">02</span>
+                    <MapPin className="w-10 h-10 text-purple-600" />
+                  </div>
+                  <h3 className="text-3xl font-bold text-[#002f37] mb-6 font-sora">
+                    Hyperlocal Weather Insights
+                  </h3>
+                  <p className="text-gray-600 text-lg leading-relaxed mb-8">
+                    Access precise, farm-specific weather forecasts and receive intelligent recommendations for planting, irrigation, and harvesting based on local conditions.
+                  </p>
+
+                  <ul className="space-y-4 mb-8">
+                    {[
+                      "7-day hyperlocal forecasts",
+                      "SMS weather alerts",
+                      "Farming calendar notifications",
+                      "AI-driven recommendations"
+                    ].map((item, i) => (
+                      <li key={i} className="flex items-center text-gray-700">
+                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-3"></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Button
+                    onClick={() => handleFeatureClick('/who-we-are')}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-6 text-base font-bold rounded-lg shadow-md transition-transform hover:-translate-y-1"
+                  >
+                    Learn More
+                  </Button>
+                </div>
+              </div>
+
+              {/* Service 3: FarmPartner Wallet */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                <div className="order-2 lg:order-1">
+                  <div className="flex items-center gap-4 mb-6">
+                    <span className="text-4xl font-bold text-purple-600 font-sora">03</span>
+                    <TrendingUp className="w-10 h-10 text-purple-600" />
+                  </div>
+                  <h3 className="text-3xl font-bold text-[#002f37] mb-6 font-sora">
+                    FarmPartner Investment Initiative
+                  </h3>
+                  <p className="text-gray-600 text-lg leading-relaxed mb-8">
+                    Connect verified farmers with impact investors through our transparent partnership platform. Choose from flexible partnership models that work for you.
+                  </p>
+
+                  <ul className="space-y-4 mb-8">
+                    {[
+                      "Profit Sharing Models",
+                      "Buy-back Agreements",
+                      "Input Financing Options",
+                      "Transparent Tracking"
+                    ].map((item, i) => (
+                      <li key={i} className="flex items-center text-gray-700">
+                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-3"></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Button
+                    onClick={() => handleFeatureClick('/who-we-are')}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-6 text-base font-bold rounded-lg shadow-md transition-transform hover:-translate-y-1"
+                  >
+                    Learn More
+                  </Button>
+                </div>
+                <div className="order-1 lg:order-2">
+                  <img
+                    src="/lovable-uploads/d5bee012-8bd6-4f66-bd49-d60d2468bcb3.png"
+                    alt="FarmPartner"
+                    className="rounded-[2rem] shadow-2xl w-full object-cover h-[400px] sm:h-[500px]"
+                  />
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Scroll to Top Button - Mobile Optimized */}
       {showScrollTop && (
@@ -594,6 +696,67 @@ const Index = () => {
                 />
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      {/* FAQ Section */}
+      <section className="py-10 sm:py-14 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10 animate-fade-in-up transition-all duration-700 ease-in-out">
+            <h2 ref={faqRef} className={"text-xl sm:text-2xl md:text-3xl font-bold mb-3 transition-all duration-700 ease-in-out " + (faqVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: '#002f37' }}>
+              Frequently Asked Questions
+            </h2>
+            <div className="w-16 h-1 bg-[#7ede56] mb-4 mx-auto rounded-full"></div>
+            <p className="text-gray-600 text-sm max-w-xl mx-auto">
+              Everything you need to know about investing and growing with AgriLync.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {faqs.map((faq, index) => (
+              <div
+                key={index}
+                className={"bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-500 ease-in-out " + (faqVisible ? " opacity-100 translate-y-0" : " opacity-0 translate-y-10")}
+                style={{
+                  transitionDelay: `${index * 50}ms`
+                }}
+              >
+                <button
+                  onClick={() => toggleFaq(index)}
+                  className="w-full px-5 py-4 text-left flex items-start justify-between gap-3 focus:outline-none group hover:bg-gray-50 transition-colors"
+                  aria-expanded={openFaqIndex === index}
+                >
+                  <span className={`font-sora text-sm sm:text-base font-medium transition-colors leading-snug ${openFaqIndex === index ? 'text-[#7ede56]' : 'text-[#002f37] group-hover:text-[#002f37]/80'}`}>
+                    {faq.question}
+                  </span>
+                  {openFaqIndex === index ? (
+                    <ChevronUp className="w-5 h-5 text-[#7ede56] flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-400 group-hover:text-gray-600 flex-shrink-0 mt-0.5" />
+                  )}
+                </button>
+                <div
+                  className={`px-5 overflow-hidden transition-all duration-300 ease-in-out ${openFaqIndex === index ? 'max-h-32 opacity-100 pb-5' : 'max-h-0 opacity-0'
+                    }`}
+                >
+                  <p className="text-gray-600 text-xs sm:text-sm leading-relaxed border-t border-gray-100 pt-3">
+                    {faq.answer}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <Button
+              onClick={() => navigate('/contact')}
+              variant="outline"
+              className="border-2 border-[#002f37] text-[#002f37] hover:bg-[#002f37] hover:text-white bg-transparent rounded-full px-6 py-2 text-sm font-bold transition-all"
+            >
+              Contact Support
+            </Button>
           </div>
         </div>
       </section>
