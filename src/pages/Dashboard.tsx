@@ -49,8 +49,8 @@ import {
   Wind,
   Thermometer
 } from 'lucide-react';
-import { Pie, Cell, XAxis, YAxis, CartesianGrid, Legend, BarChart, Bar, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Legend, BarChart, Bar, ResponsiveContainer, AreaChart, Area, Tooltip } from 'recharts';
+
 import DashboardLayout from '@/components/DashboardLayout';
 
 const Dashboard = () => {
@@ -718,7 +718,7 @@ const Dashboard = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#374151' : '#e5e7eb'} />
                     <XAxis dataKey="month" stroke={darkMode ? '#9ca3af' : '#6b7280'} />
                     <YAxis stroke={darkMode ? '#9ca3af' : '#6b7280'} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Tooltip contentStyle={{ backgroundColor: darkMode ? '#002f37' : 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }} />
                     <Area type="monotone" dataKey="value" stroke="#7ede56" fillOpacity={1} fill="url(#colorRevenue)" />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -753,7 +753,7 @@ const Dashboard = () => {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Tooltip contentStyle={{ backgroundColor: darkMode ? '#002f37' : 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }} />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>

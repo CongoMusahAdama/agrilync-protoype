@@ -17,7 +17,7 @@ import Signup from "./pages/Signup";
 import SignupFarmer from "./pages/SignupFarmer";
 import SignupGrower from "./pages/SignupGrower";
 import SignupInvestor from "./pages/SignupInvestor";
-import SignupAgent from "./pages/SignupAgent";
+
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AgentDashboard from "./pages/AgentDashboard";
@@ -54,20 +54,20 @@ import DashboardRedirect from "./pages/DashboardRedirect";
 
 // Configure QueryClient with optimized caching defaults
 const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh for 5 minutes
-            gcTime: 10 * 60 * 1000, // 10 minutes - garbage collection time (was cacheTime in v4)
-            refetchOnWindowFocus: false, // Disabled for better mobile performance
-            refetchOnMount: true, // Refetch on mount to ensure fresh data
-            refetchOnReconnect: true, // Refetch when connection restored
-            retry: 2, // Retry failed requests twice
-            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
-        },
-        mutations: {
-            retry: 1, 
-        },
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh for 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes - garbage collection time (was cacheTime in v4)
+      refetchOnWindowFocus: false, // Disabled for better mobile performance
+      refetchOnMount: true, // Refetch on mount to ensure fresh data
+      refetchOnReconnect: true, // Refetch when connection restored
+      retry: 2, // Retry failed requests twice
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
     },
+    mutations: {
+      retry: 1,
+    },
+  },
 });
 
 const App = () => (
@@ -91,7 +91,7 @@ const App = () => (
               <Route path="/signup/farmer" element={<SignupFarmer />} />
               <Route path="/signup/grower" element={<SignupGrower />} />
               <Route path="/signup/investor" element={<SignupInvestor />} />
-              <Route path="/signup/agent" element={<SignupAgent />} />
+
 
               {/* Protected Routes */}
               <Route element={<PrivateRoute />}>

@@ -59,7 +59,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const [notifications, setNotifications] = useState<any[]>([]);
     const location = useLocation();
     const [prevPath, setPrevPath] = useState(location.pathname);
-    
+
     // Check if any queries are fetching to show preloader
     const isFetching = queryClient.isFetching() > 0;
 
@@ -89,7 +89,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 setIsInitialMount(false);
                 setIsLoading(false);
             }, 800); // Minimum 800ms to ensure visibility on mobile
-            
+
             return () => clearTimeout(timer);
         } else if (!isInitialMount) {
             setIsLoading(false);
@@ -104,12 +104,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 setIsNavigating(true);
                 setIsInitialMount(false); // Ensure initial mount doesn't interfere with navigation
                 setPrevPath(location.pathname);
-                
+
                 // Hide preloader after data starts loading (longer delay for slow connections)
                 const timer = setTimeout(() => {
                     setIsNavigating(false);
                 }, 1200); // Increased to 1.2 seconds to ensure visibility on slow connections
-                
+
                 return () => clearTimeout(timer);
             } else {
                 // Update path even if not dashboard-to-dashboard navigation
@@ -138,9 +138,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 2. Data is fetching (on any dashboard page)
                 3. Initial mount of dashboard pages (to ensure visibility on mobile)
             */}
-            {(isNavigating || 
-              (isFetching && location.pathname.startsWith('/dashboard') && agent) || 
-              (isInitialMount && location.pathname.startsWith('/dashboard') && agent)) && <Preloader />}
+            {(isNavigating ||
+                (isFetching && location.pathname.startsWith('/dashboard') && agent) ||
+                (isInitialMount && location.pathname.startsWith('/dashboard') && agent)) && <Preloader />}
             <div className="flex h-full">
                 {/* Mobile Sidebar */}
                 {isMobile && (

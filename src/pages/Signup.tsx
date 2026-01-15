@@ -45,13 +45,7 @@ const Signup = () => {
   }, []);
 
   const userTypes = [
-    {
-      id: 'agent',
-      title: 'Apply as Lync Agent',
-      description: 'Join our professional extension network',
-      icon: <UserCheck className="h-6 w-6 text-white" />,
-      color: 'bg-gradient-to-br from-[#7ede56] to-[#00b25c] border-none shadow-2xl hover:shadow-[#7ede56]/40 [&_h3]:!text-white [&_p]:!text-white/80 ring-8 ring-[#7ede56]/10'
-    },
+
     {
       id: 'farmer',
       title: 'Solo Farmer',
@@ -598,113 +592,7 @@ const Signup = () => {
           </>
         );
 
-      case 'agent':
-        return (
-          <>
-            {/* Personal Info */}
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <UserCheck className="h-5 w-5" />
-                Personal Information
-              </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="fullName">Full Name *</Label>
-                  <Input
-                    id="fullName"
-                    value={formData.fullName}
-                    onChange={(e) => handleInputChange('fullName', e.target.value)}
-                    placeholder="Enter your full name"
-                    className="mt-1"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="gender">Gender *</Label>
-                  <Select onValueChange={(value) => handleInputChange('gender', value)}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <Label htmlFor="phone">Phone Number *</Label>
-                  <div className="mt-2">
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      placeholder="+233 XX XXX XXXX"
-                      className="w-full"
-                      required
-                    />
-                  </div>
-                  <div className="mt-3">
-                    <Button
-                      type="button"
-                      onClick={sendOTP}
-                      disabled={!formData.phone}
-                      className="w-full sm:w-auto"
-                    >
-                      Send OTP
-                    </Button>
-                  </div>
-                  {otpSent && (
-                    <div className="mt-4">
-                      <Label htmlFor="otp">Enter OTP Code</Label>
-                      <Input
-                        id="otp"
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value)}
-                        placeholder="Enter 4-digit OTP"
-                        maxLength={4}
-                        className="mt-1 w-full"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <Label htmlFor="email">Email Address *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder="Enter your email address"
-                    className="mt-1"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="password">Password *</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
-                    placeholder="Create a password"
-                    className="mt-1"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-          </>
-        );
 
       default:
         return null;
@@ -806,23 +694,29 @@ const Signup = () => {
           {/* Content: Either Role Selection OR Form */}
           {!userType ? (
             <div className="flex flex-col items-center gap-6 max-w-lg mx-auto w-full text-center mt-4">
-              {/* Standalone Agent Pill */}
-              <button
-                onClick={() => window.open('https://form.jotform.com/253482683266062', '_blank')}
-                className="group relative w-full h-14 rounded-full bg-[#002f37] border-[1px] border-white/10 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_40px_-10px_rgba(0,0,0,0.4)] transition-all duration-300 flex items-center justify-center gap-4 px-8 text-white font-semibold hover:border-[#7ede56]/50"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-white/10 text-[#7ede56]">
-                    <UserCheck className="w-5 h-5" />
-                  </div>
-                  <span>Apply as Lync Agent</span>
-                </div>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform opacity-60" />
-              </button>
+
 
               {/* Roles Dropdown Pill */}
               <div className="relative w-full">
-                <Select onValueChange={(val) => setUserType(val)}>
+                <Select onValueChange={(val) => {
+                  toast({
+                    title: "🚧 Signup Under Development",
+                    description: (
+                      <div className="mt-2">
+                        <p className="mb-3">Our registration system is currently being optimized. Join our WhatsApp community for updates!</p>
+                        <a
+                          href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 bg-[#25D366] text-white px-4 py-2 rounded-full font-semibold text-sm hover:bg-[#128C7E] transition-colors"
+                        >
+                          Join WhatsApp Community
+                        </a>
+                      </div>
+                    ),
+                    duration: 10000,
+                  });
+                }}>
                   <SelectTrigger
                     className="w-full h-14 rounded-full bg-white border-[1px] border-gray-200 shadow-[0_8px_20px_-8px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_24px_-8px_rgba(0,0,0,0.1)] transition-all duration-300 px-8 text-[#002f37] font-semibold hover:border-[#7ede56]/50 focus:ring-0 focus:ring-offset-0 flex justify-center"
                   >

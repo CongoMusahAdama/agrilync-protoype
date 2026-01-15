@@ -540,20 +540,43 @@ const About = () => {
           </div>
 
           {/* Mobile App Mockups */}
-          <div className="relative max-w-6xl mx-auto">
-            {/* Phone Mockups Container */}
-            <div className="flex items-center justify-center">
-              <img
-                src="/lovable-uploads/ui.jpg"
-                alt="AgriLync Mobile App Interface"
-                className="w-full max-w-2xl h-auto"
-                loading="eager"
-                fetchPriority="high"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
-              />
+          <div className="relative max-w-5xl mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 items-center">
+              {/* Menu Screen (Left) */}
+              <div className="order-2 md:order-1 transform transition-all duration-500 hover:scale-105 hover:-rotate-2">
+                <div className="rounded-[2rem] overflow-hidden border-8 border-gray-900 shadow-2xl">
+                  <img
+                    src="/lovable-uploads/app-menu.png"
+                    alt="AgriLync Mobile Menu"
+                    className="w-full h-auto"
+                  />
+                </div>
+                <p className="text-center mt-4 text-gray-500 text-sm font-medium">Navigation Drawer</p>
+              </div>
+
+              {/* Dashboard Screen (Center/Main) */}
+              <div className="order-1 md:order-2 transform transition-all duration-500 hover:scale-110 z-10">
+                <div className="rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] bg-white">
+                  <img
+                    src="/lovable-uploads/app-dashboard.png"
+                    alt="AgriLync Mobile Dashboard"
+                    className="w-full h-auto"
+                  />
+                </div>
+                <p className="text-center mt-4 text-[#002f37] font-bold">Field Dashboard</p>
+              </div>
+
+              {/* Directory Screen (Right) */}
+              <div className="order-3 md:order-3 transform transition-all duration-500 hover:scale-105 hover:rotate-2">
+                <div className="rounded-[2rem] overflow-hidden border-8 border-gray-900 shadow-2xl">
+                  <img
+                    src="/lovable-uploads/app-grower-directory.png"
+                    alt="AgriLync Grower Directory"
+                    className="w-full h-auto"
+                  />
+                </div>
+                <p className="text-center mt-4 text-gray-500 text-sm font-medium">Grower Directory</p>
+              </div>
             </div>
           </div>
         </div>
