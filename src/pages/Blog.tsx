@@ -75,20 +75,43 @@ const Blog = () => {
     });
   };
 
-  // Handle direct navigation to webinar section
+  // Handle direct navigation to sections via hash
   useEffect(() => {
-    if (window.location.hash === '#upcoming-webinars') {
-      const element = document.getElementById('upcoming-webinars');
+    const hash = window.location.hash;
+    if (hash) {
+      const id = hash.replace('#', '');
+      const element = document.getElementById(id);
       if (element) {
         setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 500);
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // If it's the mushroom card, we might want to highlight it
+          if (id === 'mushroom-farming') {
+            element.classList.add('ring-4', 'ring-[#7ede56]', 'ring-offset-4');
+            setTimeout(() => {
+              element.classList.remove('ring-4', 'ring-[#7ede56]', 'ring-offset-4');
+            }, 3000);
+          }
+        }, 800);
       }
     }
   }, []);
 
   // Enhanced blog posts with categories and tags
   const blogPosts = [
+    {
+      id: 8,
+      slug: "mushroom-farming",
+      title: "A Beginner's Guide to Mushroom Farming: From Planning to Profit",
+      excerpt: "Learn the essentials of mushroom farming, from initial planning and setup to harvesting and selling for profit. A comprehensive guide for aspiring Ghanaian agropreneurs.",
+      author: "AgriLync Team",
+      date: "2026-01-16",
+      readTime: "6 min read",
+      category: "Agribusiness",
+      tags: ["Mushroom Farming", "Agropreneur", "Guided Farming"],
+      image: "/lovable-uploads/mushroom-farming.jpg",
+      link: "https://agri-insider-series.beehiiv.com/p/a-beginner-s-guide-to-mushroom-farming-from-planning-to-profit-post",
+      featured: true
+    },
     {
       id: 1,
       title: "Ghana Faces Agricultural Crisis as Maize Imports Surge",
@@ -433,6 +456,7 @@ const Blog = () => {
             {filteredPosts.map((post, index) => (
               <article
                 key={post.id}
+                id={(post as any).slug}
                 className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-[#7ede56]/30 animate-fade-in-up"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
