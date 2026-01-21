@@ -104,7 +104,7 @@ const SettingsRoles = () => {
     const regions = ["Ahafo", "Ashanti", "Bono", "Bono East", "Central", "Eastern", "Greater Accra", "Northern", "North East", "Oti", "Savannah", "Upper East", "Upper West", "Volta", "Western", "Western North"];
 
     return (
-        <div className="space-y-8 pb-12 animate-in fade-in duration-700">
+        <div className="space-y-8 pb-12 animate-in fade-in duration-300">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div className="space-y-1">
@@ -337,7 +337,7 @@ const SettingsRoles = () => {
 
                         <div className="space-y-8">
                             <Card className={`border-none shadow-premium overflow-hidden bg-slate-950 text-white p-10 relative group`}>
-                                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity duration-700">
+                                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity duration-300">
                                     <Lock className="w-48 h-48 rotate-12" />
                                 </div>
                                 <div className="relative z-10">
