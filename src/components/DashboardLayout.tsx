@@ -52,9 +52,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const queryClient = useQueryClient();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [isNavigating, setIsNavigating] = useState(false);
-    const [isInitialMount, setIsInitialMount] = useState(true);
+    const [isInitialMount, setIsInitialMount] = useState(false);
     const [addFarmerModalOpen, setAddFarmerModalOpen] = useState(false);
     const [notifications, setNotifications] = useState<any[]>([]);
     const location = useLocation();
@@ -83,47 +83,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
     // Track initial mount and show preloader on first dashboard load
     useEffect(() => {
-        if (isInitialMount && location.pathname.startsWith('/dashboard')) {
-            // If we have an agent or we're on localhost (where agent might be null for a while),
-            // start the timer to hide the loader.
-            const timer = setTimeout(() => {
-                setIsInitialMount(false);
-                setIsLoading(false);
-            }, 400);
-
-            return () => clearTimeout(timer);
-        } else if (!isInitialMount) {
+        if (location.pathname.startsWith('/dashboard')) {
             setIsLoading(false);
+            setIsNavigating(false);
+            setIsInitialMount(false);
         }
-    }, [isInitialMount, location.pathname, agent]);
-
-    // Show preloader when navigating between dashboard pages
-    useEffect(() => {
-        if (location.pathname !== prevPath) {
-            // Show preloader when navigating between any dashboard pages
-            if (prevPath && prevPath.startsWith('/dashboard') && location.pathname.startsWith('/dashboard')) {
-                setIsNavigating(true);
-                setIsInitialMount(false); // Ensure initial mount doesn't interfere with navigation
-                setPrevPath(location.pathname);
-
-                const timer = setTimeout(() => {
-                    setIsNavigating(false);
-                }, 450);
-
-                return () => clearTimeout(timer);
-            } else {
-                // Update path even if not dashboard-to-dashboard navigation
-                setPrevPath(location.pathname);
-                // Reset initial mount when navigating to a dashboard from outside
-                if (location.pathname.startsWith('/dashboard') && !prevPath.startsWith('/dashboard')) {
-                    setIsInitialMount(true);
-                } else if (!location.pathname.startsWith('/dashboard')) {
-                    // Reset when leaving dashboard area
-                    setIsInitialMount(true);
-                }
-            }
-        }
-    }, [location.pathname, prevPath]);
+    }, [location.pathname, agent]);
 
     const effectiveSubtitle = description || subtitle;
     const currentTitle = title || 'Dashboard';
@@ -132,14 +97,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     return (
         <div className={`h-screen overflow-hidden font-manrope ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
             {/* Full-page preloader only on initial app boot if needed, otherwise rely on skeletons */}
-            {(isLoading && !agent) && <Preloader />}
-            {/* Preloader when: 
-                1. Navigating between dashboard pages
-                2. Data is fetching (on any dashboard page)
-                3. Initial mount of dashboard pages (to ensure visibility on mobile)
-            */}
-            {(isNavigating ||
-                (isInitialMount && location.pathname.startsWith('/dashboard'))) && <Preloader />}
+            {/* Preloader removed to improve perceived performance */}
             <div className="flex h-full">
                 {/* Mobile Sidebar */}
                 {isMobile && (
@@ -292,9 +250,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                     onClick={() => navigate(`/dashboard/${userType}/settings`)}
                                 >
                                     <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-[#7ede56]">
-                                        <AvatarImage src={agent?.avatar} alt={agent?.name} />
-                                        <AvatarFallback className="bg-[#002f37] text-white text-xs sm:text-sm font-semibold">
-                                            {agent?.name ? agent.name.split(' ').map(n => n[0]).join('') : 'JA'}
+                                        <AvatarFallback className="bg-[#002f37] text-white text-xs sm:text-sm font-semibold hover:bg-emerald-800 transition-colors">
+                                            {agent?.name ? agent.name.split(' ').map(n => n[0]).join('') : 'AD'}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div className="hidden sm:flex flex-col items-start min-w-0">
