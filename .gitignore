@@ -25,3 +25,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Security & Architecture (Added)
+SYSTEM_ARCHITECTURE.md
+*.key
+*.pem
+credentials.txt
+backend/scripts/field_agents_credentials.txt
+backend/scripts/credentials.txt

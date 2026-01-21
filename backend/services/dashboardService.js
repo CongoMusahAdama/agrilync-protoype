@@ -7,20 +7,22 @@ const Agent = require('../models/Agent');
 const { Training, AgentTraining } = require('../models/Training');
 const Dispute = require('../models/Dispute');
 const Report = require('../models/Report');
+const redis = require('../utils/redis');
 
-// Simple in-memory cache with improved performance
-const cache = new Map();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes - optimized for mobile and desktop performance
+// Fallback in-memory cache for when Redis is unavailable
+const memoryCache = new Map();
+const CACHE_TTL_SEC = 300; // 5 minutes in seconds for Redis
+const CACHE_TTL_MS = CACHE_TTL_SEC * 1000;
 
-// Cache cleanup interval to prevent memory leaks
+// Cleanup for in-memory fallback
 setInterval(() => {
     const now = Date.now();
-    for (const [key, value] of cache.entries()) {
-        if (now - value.timestamp > CACHE_TTL * 2) {
-            cache.delete(key);
+    for (const [key, value] of memoryCache.entries()) {
+        if (now - value.timestamp > CACHE_TTL_MS) {
+            memoryCache.delete(key);
         }
     }
-}, CACHE_TTL); // Clean up expired cache entries every 5 minutes
+}, CACHE_TTL_MS); // Clean up expired cache entries every 5 minutes
 
 /**
  * Get dashboard summary for an agent
@@ -31,11 +33,17 @@ exports.getDashboardSummary = async (agent) => {
     const region = agent.region;
     const start = Date.now();
     const cacheKey = `dashboard_${agentId}`;
-    const cachedData = cache.get(cacheKey);
 
-    if (cachedData && (Date.now() - cachedData.timestamp < CACHE_TTL)) {
-        // Summary served from cache
-        return cachedData.data;
+    // 1. Try Redis first
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+        return JSON.parse(cachedData);
+    }
+
+    // 2. Try Memory fallback second
+    const memoryData = memoryCache.get(cacheKey);
+    if (memoryData && (Date.now() - memoryData.timestamp < CACHE_TTL_MS)) {
+        return memoryData.data;
     }
 
     // Fetching summary from database
@@ -67,7 +75,7 @@ exports.getDashboardSummary = async (agent) => {
         Farmer.find({ agent: agentId })
             .sort({ createdAt: -1 })
             .limit(20)
-            .select('name status region district community farmType contact profilePicture') // Include profilePicture for avatar display
+            .select('name status region district community farmType contact') // Excluded profilePicture for performance
             .lean(),
         Farm.find({ agent: agentId })
             .sort({ createdAt: -1 })
@@ -133,8 +141,12 @@ exports.getDashboardSummary = async (agent) => {
         timestamp: new Date().toISOString()
     };
 
-    // Update cache
-    cache.set(cacheKey, {
+    // Update caches
+    // Save to Redis (async, don't block response)
+    redis.set(cacheKey, JSON.stringify(summary), CACHE_TTL_SEC);
+
+    // Save to memory fallback
+    memoryCache.set(cacheKey, {
         timestamp: Date.now(),
         data: summary
     });
@@ -149,5 +161,7 @@ exports.getDashboardSummary = async (agent) => {
  * Invalidate cache for a specific agent
  */
 exports.invalidateCache = (agentId) => {
-    cache.delete(`dashboard_${agentId}`);
+    const cacheKey = `dashboard_${agentId}`;
+    redis.del(cacheKey);
+    memoryCache.delete(cacheKey);
 };

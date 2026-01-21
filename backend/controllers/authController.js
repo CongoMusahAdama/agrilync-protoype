@@ -1,6 +1,7 @@
 const Agent = require('../models/Agent');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 // @route   POST api/auth/login
 // @desc    Authenticate agent & get token
@@ -22,8 +23,8 @@ exports.login = async (req, res) => {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
-        // Mark as logged in and generate session ID
-        const sessionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        // Mark as logged in and generate secure session ID
+        const sessionId = crypto.randomBytes(32).toString('hex');
         agent.isLoggedIn = true;
         agent.currentSessionId = sessionId;
 
@@ -52,7 +53,6 @@ exports.login = async (req, res) => {
                         hasChangedPassword: agent.hasChangedPassword,
                         isVerified: agent.isVerified,
                         verificationStatus: agent.verificationStatus,
-                        region: agent.region,
                         region: agent.region,
                         avatar: agent.avatar,
                         role: agent.role,
