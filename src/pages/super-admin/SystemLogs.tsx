@@ -75,7 +75,7 @@ const SystemLogs = () => {
     ];
 
     return (
-        <div className="space-y-8 pb-12 animate-in fade-in duration-700">
+        <div className="space-y-8 pb-12 animate-in fade-in duration-300">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div className="space-y-1">
@@ -216,7 +216,7 @@ const SystemLogs = () => {
 
             <div className={`p-8 rounded-[32px] border border-dashed ${darkMode ? 'bg-[#002f37]/20 border-[#7ede56]/20' : 'bg-[#eefcf0] border-[#7ede56]/20'} flex items-center justify-center transition-all bg-transparent group`}>
                 <Button variant="ghost" className="text-[11px] font-black uppercase tracking-widest text-[#7ede56] group-hover:bg-[#7ede56] group-hover:text-[#002f37] transition-all gap-3 h-12 px-12 rounded-xl">
-                    Synchronize Tactical archives <RefreshCcw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-700" />
+                    Synchronize Tactical archives <RefreshCcw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" />
                 </Button>
             </div>
         </div>

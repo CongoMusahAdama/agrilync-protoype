@@ -15,7 +15,6 @@ const profileMapping: Record<
   {
     name: string;
     location: string;
-    avatarUrl?: string;
     id?: string;
     contact?: string;
     districts?: string[];
@@ -25,25 +24,21 @@ const profileMapping: Record<
   grower: {
     name: 'John Agribusiness',
     location: 'Ejisu, Ashanti',
-    avatarUrl: '/lovable-uploads/profile.png',
     title: 'Grower'
   },
   investor: {
     name: 'Maria Investment',
     location: 'Airport City, Accra',
-    avatarUrl: '/lovable-uploads/profile.png',
     title: 'Investor'
   },
   farmer: {
     name: 'Kwame Mensah',
     location: 'Kumasi, Ashanti',
-    avatarUrl: '/lovable-uploads/profile.png',
     title: 'Farmer'
   },
   agent: {
     name: 'Lync Agent',
     location: 'Region',
-    avatarUrl: '/lovable-uploads/profile.png',
     id: '---',
     contact: '',
     districts: [],
@@ -52,7 +47,6 @@ const profileMapping: Record<
   'super-admin': {
     name: 'Super Admin',
     location: 'Headquarters',
-    avatarUrl: '/lovable-uploads/profile.png',
     title: 'Super Admin'
   }
 };
@@ -70,7 +64,6 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({
   const profile = (userType === 'agent' || isSuperAdmin) && agent ? {
     name: agent.name,
     location: isSuperAdmin ? 'AgriLync Systems' : (agent.region || 'Field Operations'),
-    avatarUrl: agent.avatar || '/lovable-uploads/profile.png',
     id: isSuperAdmin ? null : (agent.agentId || agent.id?.substring(0, 8)),
     contact: agent.contact,
     districts: [],
@@ -82,7 +75,6 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({
     profileMapping['agent'] = {
       name: 'Agent',
       location: 'Region',
-      avatarUrl: '/lovable-uploads/profile.png',
       id: '---',
       contact: '',
       districts: []
@@ -102,7 +94,6 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({
           } ${sidebarCollapsed && !isMobile ? 'px-2 py-3' : ''}`}
       >
         <Avatar className={`${isMobile ? 'h-10 w-10' : sidebarCollapsed && !isMobile ? 'h-12 w-12' : 'h-16 w-16'}`}>
-          <AvatarImage src={profile.avatarUrl} alt={profile.name} className="object-cover" />
           <AvatarFallback className="bg-[#002f37]/90 text-white">
             <UserRound className={`${isMobile ? 'h-5 w-5' : 'h-8 w-8'}`} />
           </AvatarFallback>

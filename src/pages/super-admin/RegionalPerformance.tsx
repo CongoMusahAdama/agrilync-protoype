@@ -114,7 +114,7 @@ const RegionalPerformance = () => {
     ];
 
     return (
-        <div className="space-y-8 pb-12 animate-in fade-in duration-700">
+        <div className="space-y-8 pb-12 animate-in fade-in duration-300">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div className="space-y-1">
@@ -280,7 +280,7 @@ const RegionalPerformance = () => {
                 </TabsContent>
 
                 {/* GIS INTELLIGENCE */}
-                <TabsContent value="gis" className="h-[600px] relative rounded-[40px] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-8 duration-700">
+                <TabsContent value="gis" className="h-[600px] relative rounded-[40px] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-8 duration-300">
                     <div className={`absolute inset-0 ${darkMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
                         {/* Radar Grid Visual */}
                         <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: `radial-gradient(${darkMode ? '#7ede56' : '#002f37'} 1px, transparent 1px)`, backgroundSize: '40px 40px' }}></div>
@@ -338,7 +338,7 @@ const RegionalPerformance = () => {
                 </TabsContent>
 
                 {/* WAREHOUSE MONITORING (WH TAB) */}
-                <TabsContent value="warehouse" className="space-y-6 pt-2 animate-in slide-in-from-right-8 duration-700">
+                <TabsContent value="warehouse" className="space-y-6 pt-2 animate-in slide-in-from-right-8 duration-300">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <Card className={`border-none shadow-premium ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
                             <CardHeader className="flex flex-row items-center justify-between">
