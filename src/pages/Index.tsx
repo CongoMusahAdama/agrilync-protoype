@@ -27,7 +27,7 @@ const Index = () => {
   const [showServices, setShowServices] = useState(false);
 
 
-  const [activeStory, setActiveStory] = useState(0);
+
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   const toggleFaq = (index: number) => {
@@ -93,13 +93,7 @@ const Index = () => {
 
 
 
-  // Auto-play for Success Stories
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveStory((prev) => (prev + 1) % 3);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+
 
   // Handle scroll to top button visibility
   useEffect(() => {
@@ -586,116 +580,72 @@ const Index = () => {
       )}
 
       {/* Success Stories Section */}
-      <section className="py-4 sm:py-6 bg-white">
+      <section className="py-10 sm:py-16" style={{ backgroundColor: '#002f37' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-4 animate-fade-in-up transition-all duration-700 ease-in-out">
-            <h2 ref={successStoriesRef} className={"text-xl sm:text-2xl font-bold mb-2 transition-all duration-700 ease-in-out " + (successStoriesVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: '#002f37' }}>
+          <div className="text-center mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
+            <h2 ref={successStoriesRef} className={"text-4xl md:text-5xl font-bold text-white mb-6 transition-all duration-700 ease-in-out " + (successStoriesVisible ? " animate-fade-in-up" : " opacity-0")}>
               Success Stories
             </h2>
-            <div className="w-16 h-1 bg-[#7ede56] mb-3 mx-auto rounded-full"></div>
-            <p className="text-xs text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Hear from the farmers and investors transforming agriculture with AgriLync.
+            <div className="w-64 h-[1px] bg-white mb-6 mx-auto opacity-70"></div>
+            <p className="text-white text-lg font-medium max-w-2xl mx-auto">
+              What Our Clients Say About Us
             </p>
           </div>
 
-
-          {/* Carousel Implementation */}
-          <div className="relative py-12 px-4 max-w-5xl mx-auto">
-            {/* Story Content */}
-            <div className="flex flex-col md:flex-row items-center justify-center gap-0 md:gap-0 relative">
-
-              {/* Profile Side (Left) */}
-              <div className="z-20 flex flex-col items-center">
-                <div className="w-48 h-56 sm:w-56 sm:h-64 rounded-xl overflow-hidden border-4 border-[#7ede56] shadow-xl relative bg-white">
-                  <img
-                    src={[
-                      "/lovable-uploads/success_story_1.jpg",
-                      "/lovable-uploads/success_story_2.jpg",
-                      "/lovable-uploads/success_story_3.jpg"
-                    ][activeStory] || "/lovable-uploads/hero2.jpg"} // Fallback
-                    alt="Success Story Profile"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      // Fallback logic if needed, e.g. show initials
-                      (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${["Gabienu Emmanuel", "Sarah Mensah", "John Baah"][activeStory]}&background=random`
-                    }}
-                  />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+            {[
+              {
+                name: "Gabienu Emmanuel",
+                role: "Vegetable Farmer",
+                location: "Ashanti Region, Ejura",
+                image: "/lovable-uploads/success_story_1.jpg",
+                feedback: "Finding investors for my vegetable farm was always a struggle until I joined AgriLync. Within weeks, I secured funding to expand my operations."
+              },
+              {
+                name: "Sarah Mensah",
+                role: "Agri-Investor",
+                location: "Greater Accra, East Legon",
+                image: "/lovable-uploads/success_story_2.jpg",
+                feedback: "The transparency AgriLync offers is unmatched. I can track my investments in real-time and see the actual impact on the farms."
+              },
+              {
+                name: "John Baah",
+                role: "Maize Farmer",
+                location: "Brong Ahafo, Techiman",
+                image: "/lovable-uploads/success_story_3.jpg",
+                feedback: "The AI crop consultation saved my maize harvest from a pest outbreak. The advice was timely, accurate, and easy to follow."
+              }
+            ].map((story, index) => (
+              <div
+                key={index}
+                className={"bg-white rounded-sm p-8 sm:p-10 shadow-lg flex flex-col h-full transform transition-all duration-500 hover:-translate-y-1 " + (successStoriesVisible ? " opacity-100 translate-y-0" : " opacity-0 translate-y-20")}
+                style={{ transitionDelay: `${index * 150}ms` }}
+              >
+                <div className="mb-8 flex-grow">
+                  <p className="text-gray-800 text-base leading-relaxed font-manrope">
+                    {story.feedback}
+                  </p>
                 </div>
-                <div className="mt-4 text-center">
-                  <h3 className="font-bold text-xl text-[#002f37]">
-                    {["Gabienu Emmanuel", "Sarah Mensah", "John Baah"][activeStory]}
-                  </h3>
-                  <div className="flex items-center justify-center gap-2 mt-1">
-                    <div className="bg-red-500 rounded-full p-0.5">
-                      <div className="text-[10px] font-bold text-white px-1">GH</div>
-                    </div>
-                    <p className="text-sm font-medium text-gray-600">
-                      {["Vegetable Farmer", "Agri-Investor", "Maize Farmer"][activeStory]}
-                    </p>
+
+                <div className="flex items-center gap-4 mt-auto">
+                  <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-gray-100">
+                    <img
+                      src={story.image}
+                      alt={story.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${story.name}&background=random`
+                      }}
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <h4 className="font-bold text-gray-900 text-base">{story.name}</h4>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider mt-0.5">{story.role}</p>
+                    <p className="text-xs text-gray-400 font-medium mt-0.5">{story.location}</p>
                   </div>
                 </div>
               </div>
-
-              {/* Connector Lines (SVG) - Visible on MD+ */}
-              <div className="hidden md:block w-32 h-64 -mx-4 z-10 relative">
-                <svg className="w-full h-full" viewBox="0 0 100 200" preserveAspectRatio="none">
-                  {/* Top line to card top */}
-                  <path d="M 0 40 C 50 40, 50 20, 100 20" fill="none" stroke="#7ede56" strokeWidth="2" />
-                  <circle cx="0" cy="40" r="4" fill="#002f37" stroke="#7ede56" strokeWidth="2" />
-
-                  {/* Bottom line to card bottom */}
-                  <path d="M 0 180 C 50 180, 50 180, 100 180" fill="none" stroke="#7ede56" strokeWidth="2" />
-                  <circle cx="0" cy="180" r="4" fill="#002f37" stroke="#7ede56" strokeWidth="2" />
-                </svg>
-              </div>
-
-              {/* Feedback Card (Right) */}
-              <div className="relative mt-8 md:mt-0 z-20 flex-1 max-w-xl">
-                {/* Connector nub for card (Left side of card) - Desktop only */}
-                <div className="hidden md:block absolute -left-1 top-5 bottom-0 w-4 bg-[#7ede56] rounded-l-lg"></div>
-
-                <div className="bg-[#002f37] rounded-3xl p-2 shadow-2xl relative transform transition-all duration-500">
-                  <div className="border border-dashed border-[#7ede56]/30 rounded-2xl p-6 sm:p-10 min-h-[300px] flex flex-col justify-center relative">
-                    {/* Quote Icon Background */}
-                    <Quote className="absolute top-6 right-8 w-16 h-16 text-[#7ede56]/5" />
-
-                    <div className="mb-6">
-                      <h4 className="text-[#7ede56] text-sm font-bold tracking-widest uppercase mb-1">SUCCESS STORY</h4>
-                      <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">CLIENT'S<br />FEEDBACK</h2>
-                      <div className="h-1 w-24 bg-white rounded-full"></div>
-                    </div>
-
-                    <p className="text-gray-200 text-lg leading-relaxed mb-6">
-                      "{[
-                        "Finding investors for my vegetable farm was always a struggle until I joined AgriLync. Within weeks, I secured funding to expand my operations.",
-                        "The transparency AgriLync offers is unmatched. I can track my investments in real-time and see the actual impact on the farms.",
-                        "The AI crop consultation saved my maize harvest from a pest outbreak. The advice was timely, accurate, and easy to follow."
-                      ][activeStory]}"
-                    </p>
-
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4, 5].map(star => (
-                        <Award key={star} className="w-6 h-6 text-[#7ede56] fill-current" />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Navigation Dots */}
-            <div className="flex justify-center gap-3 mt-12">
-              {[0, 1, 2].map((index) => (
-                <button
-                  key={index}
-                  onClick={() => setActiveStory(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${activeStory === index ? 'bg-[#7ede56] w-8' : 'bg-gray-300 hover:bg-[#7ede56]/50'
-                    }`}
-                  aria-label={`View success story ${index + 1}`}
-                />
-              ))}
-            </div>
+            ))}
           </div>
         </div>
       </section>
