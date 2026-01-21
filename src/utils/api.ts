@@ -1,4 +1,4 @@
-import axios, { type AxiosRequestConfig, type AxiosResponse, type AxiosError } from 'axios';
+import axios, { type InternalAxiosRequestConfig, type AxiosResponse, type AxiosError } from 'axios';
 
 /**
  * API client with optimized error handling
@@ -10,13 +10,13 @@ const api = axios.create({
     headers: {
         'Content-Type': 'application/json'
     },
-    timeout: 30000, // 30 second timeout for mobile/slow connections
+    timeout: 60000, // 60 second timeout for mobile/slow connections
     timeoutErrorMessage: 'Request timed out. Please check your connection and try again.'
 });
 
 // Add a request interceptor to include the auth token in all requests
 api.interceptors.request.use(
-    (config: AxiosRequestConfig) => {
+    (config: InternalAxiosRequestConfig) => {
         const token = localStorage.getItem('token');
         if (token && config.headers) {
             config.headers['x-auth-token'] = token;
@@ -37,7 +37,7 @@ api.interceptors.response.use(
             console.error('Request timeout:', error.config?.url);
             return Promise.reject(new Error('Request timed out. Please check your connection.'));
         }
-        
+
         // Handle network errors
         if (!error.response) {
             console.error('Network error:', error.message || 'Unknown error');
@@ -48,7 +48,7 @@ api.interceptors.response.use(
         if (error.response?.status === 401) {
             localStorage.removeItem('token');
         }
-        
+
         return Promise.reject(error);
     }
 );
