@@ -83,12 +83,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
     // Track initial mount and show preloader on first dashboard load
     useEffect(() => {
-        if (isInitialMount && location.pathname.startsWith('/dashboard') && agent) {
-            // Show preloader on initial mount for minimum duration
+        if (isInitialMount && location.pathname.startsWith('/dashboard')) {
+            // If we have an agent or we're on localhost (where agent might be null for a while),
+            // start the timer to hide the loader.
             const timer = setTimeout(() => {
                 setIsInitialMount(false);
                 setIsLoading(false);
-            }, 800); // Minimum 800ms to ensure visibility on mobile
+            }, 400);
 
             return () => clearTimeout(timer);
         } else if (!isInitialMount) {
@@ -105,10 +106,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 setIsInitialMount(false); // Ensure initial mount doesn't interfere with navigation
                 setPrevPath(location.pathname);
 
-                // Hide preloader after data starts loading (longer delay for slow connections)
                 const timer = setTimeout(() => {
                     setIsNavigating(false);
-                }, 1200); // Increased to 1.2 seconds to ensure visibility on slow connections
+                }, 450);
 
                 return () => clearTimeout(timer);
             } else {
@@ -139,8 +139,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 3. Initial mount of dashboard pages (to ensure visibility on mobile)
             */}
             {(isNavigating ||
-                (isFetching && location.pathname.startsWith('/dashboard') && agent) ||
-                (isInitialMount && location.pathname.startsWith('/dashboard') && agent)) && <Preloader />}
+                (isInitialMount && location.pathname.startsWith('/dashboard'))) && <Preloader />}
             <div className="flex h-full">
                 {/* Mobile Sidebar */}
                 {isMobile && (

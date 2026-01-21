@@ -2,6 +2,7 @@ const Agent = require('../models/Agent');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const AuditLog = require('../models/AuditLog');
 
 // @route   POST api/auth/login
 // @desc    Authenticate agent & get token
@@ -29,6 +30,15 @@ exports.login = async (req, res) => {
         agent.currentSessionId = sessionId;
 
         await agent.save();
+
+        // Log session start
+        await AuditLog.create({
+            action: 'LOGIN',
+            user: agent.id,
+            userRole: agent.role,
+            details: `Agent ${agent.name} logged in from ${req.ip || 'unknown'}`,
+            ipAddress: req.ip || 'unknown'
+        });
 
         const payload = {
             agent: {
@@ -97,6 +107,15 @@ exports.logout = async (req, res) => {
         agent.isLoggedIn = false;
         agent.currentSessionId = null;
         await agent.save();
+
+        // Log session end
+        await AuditLog.create({
+            action: 'LOGOUT',
+            user: agent.id,
+            userRole: agent.role,
+            details: `Agent ${agent.name} logged out`,
+            ipAddress: req.ip || 'unknown'
+        });
 
         res.json({ msg: 'Logged out successfully' });
     } catch (err) {
