@@ -5,6 +5,11 @@ const { uploadBase64ToS3 } = require('../utils/s3');
 // @desc    Get current agent profile
 exports.getProfile = async (req, res) => {
     try {
+        // DEV BYPASS: If using mock user, skip DB lookup
+        if (req.agent && req.agent.isMock) {
+            return res.json(req.agent);
+        }
+
         const agent = await Agent.findById(req.agent.id).select('-password').lean();
         res.json(agent);
     } catch (err) {

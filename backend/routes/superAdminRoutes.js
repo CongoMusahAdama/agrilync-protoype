@@ -35,6 +35,7 @@ router.post('/users', createUser);
 router.get('/users-list', getUsersList);
 router.get('/escalations', getEscalations);
 router.get('/audit-logs', getSystemLogs);
+router.get('/logs', getSystemLogs); // Added alias for frontend
 router.get('/farms', getFarmsOversight);
 router.get('/partnerships', getPartnershipsSummary);
 
