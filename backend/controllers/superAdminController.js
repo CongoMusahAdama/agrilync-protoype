@@ -216,13 +216,33 @@ exports.getPartnershipsSummary = async (req, res) => {
 };
 
 // @route   GET api/super-admin/users-list
-// @desc    Get all supervisors and agents
+// @desc    Get all supervisors and agents (with pagination)
 exports.getUsersList = async (req, res) => {
     try {
-        const users = await Agent.find({ role: { $in: ['supervisor', 'agent'] } })
-            .select('name email role region status agentId contact')
-            .sort({ role: 1, name: 1 });
-        res.json(users);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const roleQuery = { role: { $in: ['supervisor', 'agent'] } };
+
+        const [users, total] = await Promise.all([
+            Agent.find(roleQuery)
+                .select('name email role region status agentId contact')
+                .sort({ role: 1, name: 1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Agent.countDocuments(roleQuery)
+        ]);
+
+        res.json({
+            success: true,
+            page,
+            limit,
+            total,
+            pages: Math.ceil(total / limit),
+            data: users
+        });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

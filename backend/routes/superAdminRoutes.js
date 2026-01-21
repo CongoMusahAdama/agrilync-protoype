@@ -26,10 +26,7 @@ const isSuperAdmin = async (req, res, next) => {
 };
 
 router.use(auth); // All routes require login
-
-// Apply explicit role check for extra security (though checking req.agent.role in logic is also fine)
-// We need to fetch the full agent in auth middleware to check role, or rely on token payload if we add it there.
-// For now, assuming auth middleware populates req.agent from DB or we trust the logic.
+router.use(isSuperAdmin); // All routes in this file require Super Admin role
 
 router.get('/stats', getDashboardStats);
 router.get('/regions', getRegionalPerformance); // Updated from regional-performance for shorter path

@@ -1,4 +1,5 @@
 const Agent = require('../models/Agent');
+const { uploadBase64ToS3 } = require('../utils/s3');
 
 // @route   GET api/agents/profile
 // @desc    Get current agent profile
@@ -30,6 +31,12 @@ exports.updateProfile = async (req, res) => {
         let agent = await Agent.findById(req.agent.id);
 
         if (!agent) return res.status(404).json({ success: false, message: 'Agent not found' });
+
+        if (avatar && avatar.startsWith('data:')) {
+            profileFields.avatar = await uploadBase64ToS3(avatar, 'agents/avatars');
+        } else if (avatar) {
+            profileFields.avatar = avatar;
+        }
 
         agent = await Agent.findByIdAndUpdate(
             req.agent.id,

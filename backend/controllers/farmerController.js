@@ -2,16 +2,37 @@ const Farmer = require('../models/Farmer');
 const Agent = require('../models/Agent');
 const Notification = require('../models/Notification');
 const Activity = require('../models/Activity');
+const { uploadBase64ToS3 } = require('../utils/s3');
 
 // @route   GET api/farmers
-// @desc    Get all farmers for current agent
+// @desc    Get all farmers for current agent (with pagination)
 exports.getFarmers = async (req, res) => {
     try {
-        const farmers = await Farmer.find({ agent: req.agent.id }).select('-idCardFront -idCardBack -password');
-        res.json(farmers);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const [farmers, total] = await Promise.all([
+            Farmer.find({ agent: req.agent.id })
+                .select('-idCardFront -idCardBack -password')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Farmer.countDocuments({ agent: req.agent.id })
+        ]);
+
+        res.json({
+            success: true,
+            page,
+            limit,
+            total,
+            pages: Math.ceil(total / limit),
+            data: farmers
+        });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('getFarmers error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -40,13 +61,19 @@ exports.getFarmerById = async (req, res) => {
 // @route   POST api/farmers/public/register
 // @desc    Solo farmer self-onboarding (pending verification)
 exports.registerFarmerPublic = async (req, res) => {
-    const {
-        name, region, district, community, farmType, contact, gender, dob,
-        language, otherLanguage, email, farmSize, yearsOfExperience,
-        landOwnershipStatus, cropsGrown, livestockType, password
-    } = req.body;
-
     try {
+        const {
+            name, region, district, community, farmType, contact, gender, dob,
+            language, otherLanguage, email, farmSize, yearsOfExperience,
+            landOwnershipStatus, cropsGrown, livestockType, password,
+            profilePicture, idCardFront, idCardBack
+        } = req.body;
+
+        // Upload images to S3 if present
+        const s3ProfilePicture = await uploadBase64ToS3(req.body.profilePicture, 'farmers/profiles');
+        const s3IdCardFront = await uploadBase64ToS3(req.body.idCardFront, 'farmers/ids');
+        const s3IdCardBack = await uploadBase64ToS3(req.body.idCardBack, 'farmers/ids');
+
         const newFarmer = new Farmer({
             name,
             password,
@@ -65,6 +92,9 @@ exports.registerFarmerPublic = async (req, res) => {
             landOwnershipStatus,
             cropsGrown,
             livestockType,
+            profilePicture: s3ProfilePicture,
+            idCardFront: s3IdCardFront,
+            idCardBack: s3IdCardBack,
             status: 'pending', // Self-onboarded farmers must be verified
             lastUpdated: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
         });
@@ -101,17 +131,28 @@ exports.registerFarmerPublic = async (req, res) => {
 // @desc    Add a new farmer
 exports.addFarmer = async (req, res) => {
     try {
-        const farmerData = { ...req.body };
+        const {
+            name, region, district, community, farmType, contact, gender,
+            dob, language, otherLanguage, email, farmSize, yearsOfExperience,
+            landOwnershipStatus, cropsGrown, livestockType, profilePicture,
+            idCardFront, idCardBack, fieldNotes, investmentInterest,
+            preferredInvestmentType, estimatedCapitalNeed, hasPreviousInvestment
+        } = req.body;
 
-        // Trim string fields
-        Object.keys(farmerData).forEach(key => {
-            if (typeof farmerData[key] === 'string') {
-                farmerData[key] = farmerData[key].trim();
-            }
-        });
+        // Upload images to S3 if present
+        const s3ProfilePicture = await uploadBase64ToS3(profilePicture, 'farmers/profiles');
+        const s3IdCardFront = await uploadBase64ToS3(idCardFront, 'farmers/ids');
+        const s3IdCardBack = await uploadBase64ToS3(idCardBack, 'farmers/ids');
 
         const newFarmer = new Farmer({
-            ...farmerData,
+            name, region, district, community, farmType, contact, gender,
+            dob, language, otherLanguage, email, farmSize, yearsOfExperience,
+            landOwnershipStatus, cropsGrown, livestockType,
+            profilePicture: s3ProfilePicture,
+            idCardFront: s3IdCardFront,
+            idCardBack: s3IdCardBack,
+            fieldNotes, investmentInterest,
+            preferredInvestmentType, estimatedCapitalNeed, hasPreviousInvestment,
             agent: req.agent.id,
             status: 'active', // Agent-onboarded farmers are active by default
             lastUpdated: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -180,12 +221,31 @@ exports.updateFarmer = async (req, res) => {
             farmer.agent = req.agent.id;
         }
 
-        // Update fields if provided
-        Object.keys(updateData).forEach(key => {
+        // Explicitly allowed fields for update
+        const allowedUpdates = [
+            'name', 'region', 'district', 'community', 'farmType', 'contact', 'gender',
+            'dob', 'language', 'otherLanguage', 'email', 'farmSize', 'yearsOfExperience',
+            'landOwnershipStatus', 'cropsGrown', 'livestockType', 'profilePicture',
+            'idCardFront', 'idCardBack', 'fieldNotes', 'investmentInterest', 'status',
+            'preferredInvestmentType', 'estimatedCapitalNeed', 'hasPreviousInvestment',
+            'currentStage', 'stageDetails'
+        ];
+
+        // Update fields if provided and allowed
+        for (const key of allowedUpdates) {
             if (updateData[key] !== undefined) {
-                farmer[key] = typeof updateData[key] === 'string' ? updateData[key].trim() : updateData[key];
+                // If it's a Base64 image, upload to S3 first
+                if (['profilePicture', 'idCardFront', 'idCardBack'].includes(key) &&
+                    typeof updateData[key] === 'string' &&
+                    updateData[key].startsWith('data:')) {
+
+                    const folder = key === 'profilePicture' ? 'farmers/profiles' : 'farmers/ids';
+                    farmer[key] = await uploadBase64ToS3(updateData[key], folder);
+                } else {
+                    farmer[key] = typeof updateData[key] === 'string' ? updateData[key].trim() : updateData[key];
+                }
             }
-        });
+        }
 
         farmer.lastUpdated = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
