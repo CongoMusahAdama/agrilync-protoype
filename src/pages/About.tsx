@@ -157,7 +157,10 @@ const About = () => {
             {/* Right Column - Content */}
             <div className="space-y-6 animate-fade-in-left transition-all duration-700 ease-in-out">
               <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-4">
-                AgriLync is a revolutionary agricultural technology platform that connects farmers, investors, and agricultural experts in a seamless ecosystem. We bridge the gap between traditional farming practices and modern agricultural innovation, empowering farmers with the resources, knowledge, and financial support they need to thrive in today's competitive agricultural landscape.
+                AgriLync is a revolutionary agricultural technology platform that connects farmers, investors, and agricultural experts in a seamless ecosystem. We bridge the gap between traditional farming practices and modern agricultural innovation, empowering farmers with the resources and knowledge they need to thrive in today's competitive agricultural landscape.
+              </p>
+              <p className="text-gray-500 text-xs italic mb-4 p-4 border-l-4 border-purple-200 bg-purple-50">
+                "AgriLync is a technology-enabled agricultural platform that connects farmers, agricultural experts, and independent investors. We do not operate as a fund manager, financial institution, or farm operator. AgriLync does not custody user funds or guarantee investment returns. The platform acts only as a technology facilitator."
               </p>
 
               {/* Impact Figures */}
@@ -425,16 +428,89 @@ const About = () => {
               </p>
             </div>
 
-            {/* Step 3: Invest */}
+            {/* Step 3: Support */}
             <div className="text-center group">
               <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-white group-hover:text-blue-400 transition-colors duration-300 mb-6" style={{ fontFamily: 'Arial, sans-serif' }}>
                 03
               </div>
-              <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">Invest</h3>
+              <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">Strategic Support</h3>
               <p className="text-gray-300 leading-relaxed text-sm sm:text-base">
-                Investment can be in the form of money, tools, or equipment, providing comprehensive support for agricultural projects and ensuring success.
+                AgriLync provides agricultural guidance and education for farmers and investors. We support project planning and best practices without offering regulated financial advice.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Monitoring & Verification Section */}
+      <section className="py-10 sm:py-16 md:py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="flex items-center mb-4">
+                <div className="w-2 h-2" style={{ backgroundColor: BRAND_MAGENTA }}></div>
+                <span className="text-gray-500 text-sm uppercase tracking-wider ml-3">ACCOUNTABILITY</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 text-[#002f37]">
+                Field Monitoring & Transparency
+              </h2>
+              <div className="w-16 h-0.5 bg-purple-600 mb-6"></div>
+              <p className="text-gray-700 text-lg leading-relaxed mb-6">
+                AgriLync uses independent field verification agents to monitor farm project progress and improve transparency between farmers and investors.
+              </p>
+              <p className="text-gray-600 leading-relaxed mb-8">
+                These agents collect data, photos, and progress updates. They do not manage farm operations, handle funds, or make agricultural decisions. This ensures that all stakeholders have access to accurate, real-time information about the project's status.
+              </p>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                  <h4 className="font-bold text-[#002f37] mb-2">Real-time Data</h4>
+                  <p className="text-sm text-gray-500">Live updates from the field directly to your dashboard.</p>
+                </div>
+                <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                  <h4 className="font-bold text-[#002f37] mb-2">Verified Updates</h4>
+                  <p className="text-sm text-gray-500">Independent verification of all project milestones.</p>
+                </div>
+              </div>
+            </div>
+            <div className="relative flex justify-center lg:justify-end">
+              <div className="rounded-3xl overflow-hidden shadow-2xl max-w-[280px] sm:max-w-xs md:max-w-sm border-4 border-gray-900">
+                <img
+                  src="/lovable-uploads/app-dashboard.png"
+                  alt="Monitoring App"
+                  className="w-full h-auto"
+                />
+              </div>
+              <div className="absolute -bottom-4 -right-2 md:-bottom-6 md:-right-6 p-4 md:p-6 bg-white rounded-2xl shadow-xl max-w-[180px] md:max-w-xs hidden sm:block">
+                <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
+                  <div className="w-2 h-2 md:w-3 md:h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="font-bold text-xs md:text-sm">Active Monitoring</span>
+                </div>
+                <p className="text-[10px] md:text-xs text-gray-500">Field agent verified 2 hours ago</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust & Compliance Section */}
+      <section className="py-10 sm:py-16 md:py-20" style={{ backgroundColor: BRAND_TEAL }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-white">Trust & Compliance</h2>
+          <div className="w-16 h-0.5 bg-purple-400 mb-12 mx-auto"></div>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {[
+              { title: "Registered Business Entity", desc: "Fully compliant with local regulations." },
+              { title: "Secure Payment Processing", desc: "International standard encryption." },
+              { title: "Data Protection Compliant", desc: "Your information is safe with us." },
+              { title: "Encrypted Platform Security", desc: "Advanced cybersecurity measures." },
+              { title: "Transparent Reporting System", desc: "Full visibility for all stakeholders." },
+              { title: "Independent Verification", desc: "Third-party field monitoring agents." }
+            ].map((item, i) => (
+              <div key={i} className="p-6 rounded-2xl border border-white/10 hover:border-white/20 transition-colors bg-white/5">
+                <h3 className="font-bold text-white mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-300">{item.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

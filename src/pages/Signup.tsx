@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { UserCheck, Leaf, Users, TrendingUp, ArrowLeft, ArrowRight, ChevronDown, MapPin, Upload, Check, Loader2 } from 'lucide-react';
+import { UserCheck, Leaf, Users, TrendingUp, ArrowLeft, ArrowRight, ChevronDown, MapPin, Upload, Check, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 
 const Signup = () => {
@@ -49,7 +49,7 @@ const Signup = () => {
     {
       id: 'farmer',
       title: 'Solo Farmer',
-      description: 'Direct access to tools & markets',
+      description: 'Direct access to tools & expertise',
       icon: <Leaf className="h-6 w-6 text-orange-600" />,
       color: 'bg-white border-gray-100 hover:border-[#7ede56] hover:bg-white shadow-xl'
     },
@@ -733,7 +733,7 @@ const Signup = () => {
                         <Leaf className="w-4 h-4 text-orange-500" />
                         <div>
                           <p className="font-bold">Solo Farmer</p>
-                          <p className="text-xs text-gray-500">Direct access to tools & markets</p>
+                          <p className="text-xs text-gray-500">Direct access to tools & expertise</p>
                         </div>
                       </div>
                     </SelectItem>
@@ -790,6 +790,14 @@ const Signup = () => {
                     By creating an account, you agree to our Terms of Service and Privacy Policy.
                   </p>
                 </div>
+              </div>
+
+              {/* Investor Risk Notice */}
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  <strong>Investor Risk Notice:</strong> Agriculture involves natural and market risks. Returns are not guaranteed. AgriLync does not provide financial advice. Users are responsible for their participation decisions.
+                </p>
               </div>
 
               <Button type="submit" className="w-full bg-[#002f37] hover:bg-[#003f4a] text-white h-12 rounded-xl text-lg font-medium" disabled={!formData.acceptTerms}>
