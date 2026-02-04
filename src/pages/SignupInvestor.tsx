@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, TrendingUp, Phone } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Phone, AlertCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Swal from 'sweetalert2';
@@ -182,6 +182,13 @@ const SignupInvestor = () => {
 
                             {/* Terms */}
                             <div className="space-y-3 border-t pt-6">
+                                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4 flex gap-3">
+                                    <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                                    <p className="text-sm text-amber-800 leading-relaxed">
+                                        <strong>Investor Risk Notice:</strong> Agriculture involves natural and market risks. Returns are not guaranteed. AgriLync does not provide financial advice. Users are responsible for their participation decisions.
+                                    </p>
+                                </div>
+
                                 <div className="flex items-center space-x-2">
                                     <Checkbox
                                         id="acceptTerms"

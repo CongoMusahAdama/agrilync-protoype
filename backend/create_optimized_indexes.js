@@ -12,6 +12,7 @@ try {
     Notification = require('./models/Notification');
     Activity = require('./models/Activity');
     Report = require('./models/Report');
+    AuditLog = require('./models/AuditLog');
     const TrainingModels = require('./models/Training');
     Training = TrainingModels.Training;
     AgentTraining = TrainingModels.AgentTraining;
@@ -58,6 +59,9 @@ const createIndexes = async () => {
 
         console.log('Indexing Activities...');
         await Activity.createIndexes();
+
+        console.log('Indexing AuditLogs...');
+        await AuditLog.createIndexes();
 
         console.log('Indexing Reports...');
         await Report.createIndexes();
