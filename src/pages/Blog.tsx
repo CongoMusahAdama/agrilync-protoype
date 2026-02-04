@@ -235,14 +235,14 @@ const Blog = () => {
     },
     {
       id: 3,
-      title: "Post-Harvest Losses and Market Access for Smallholder Farmers",
+      title: "Post-Harvest Strategy and Strategic Growth for Smallholder Farmers",
       date: "2025-08-09",
       time: "6:00 PM - 7:30 PM",
       location: "Virtual (Google Meet)",
       spots: 100,
       registered: 45,
       image: "/lovable-uploads/webinar4.jpg",
-      description: "Comprehensive strategies to reduce post-harvest losses and improve market access for smallholder farmers in Ghana.",
+      description: "Comprehensive strategies to reduce post-harvest losses and improve strategic growth for smallholder farmers in Ghana.",
       speaker: "Mrs Erica Adjoa Appaih",
       status: "completed",
       recordingLink: "https://drive.google.com/file/d/1kqJWei0rrOflXEF1DzfKnoD-s5ElcMEw/view?usp=sharing"

@@ -7,11 +7,11 @@ const AuditLog = require('../models/AuditLog');
 const bcrypt = require('bcryptjs');
 
 // Helper to enforce timeout on DB operations (fail fast to mock data)
-const withTimeout = (promise, ms = 5000) => {
+const withTimeout = (promise, ms = 10000) => {
     return Promise.race([
         promise,
         new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('DB_TIMEOUT')), ms)
+            setTimeout(() => reject(new Error(`DB_TIMEOUT_EXCEEDED_${ms}ms`)), ms)
         )
     ]);
 };
@@ -103,7 +103,11 @@ exports.getDashboardStats = async (req, res) => {
         });
         console.timeEnd(timerLabel);
     } catch (err) {
-        console.error('Error fetching dashboard stats:', err);
+        console.error('Error fetching dashboard stats:', err.message);
+        if (err.message.includes('DB_TIMEOUT')) {
+            console.error('TIMING CRITICAL: Database queries took too long.');
+        }
+        console.error(err.stack);
         res.status(500).json({ msg: 'Database connection issue. Could not fetch statistics.' });
         console.timeEnd(timerLabel);
     }

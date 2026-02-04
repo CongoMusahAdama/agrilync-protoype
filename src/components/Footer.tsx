@@ -27,8 +27,8 @@ const Footer = () => {
 
   return (
     <footer className="bg-gray-900 text-white mt-4">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-8">
           {/* Logo and Brand */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
@@ -40,7 +40,10 @@ const Footer = () => {
               <span className="font-bold text-xl">AgriLync</span>
             </div>
             <p className="text-gray-400 text-sm mb-4 max-w-md">
-              Transforming African agriculture through AI and digital technologies. Empowering farmers with tools for sustainable growth, higher yields, and improved market access.
+              Transforming African agriculture through AI and digital technologies. Empowering farmers with tools for sustainable growth and higher yields.
+            </p>
+            <p className="text-gray-500 text-[10px] leading-relaxed mb-6 border-t border-gray-800 pt-4">
+              AgriLync is a technology-enabled agricultural platform that connects farmers, agricultural experts, and independent investors. We do not operate as a fund manager, financial institution, or farm operator. AgriLync does not custody user funds or guarantee investment returns. The platform acts only as a technology facilitator.
             </p>
             <div className="flex space-x-4">
               <a href="https://www.facebook.com/share/16SkoNJAsW/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 transition-colors">
@@ -60,79 +63,98 @@ const Footer = () => {
 
           {/* Contact Information */}
           <div className="col-span-1">
-            <h3 className="font-semibold text-lg mb-4">Contact Us</h3>
+            <h3 className="font-semibold text-lg mb-4 text-white">Contact Support</h3>
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4 text-green-400" />
-                <a href="mailto:agrilync@email.com" className="text-gray-400 hover:text-green-400 text-sm transition-colors">
+                <a href="mailto:agrilync@email.com" className="text-gray-400 hover:text-green-400 text-xs transition-colors">
                   agrilync@gmail.com
                 </a>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4 text-green-400" />
-                <a href="tel:+233506626068" className="text-gray-400 hover:text-green-400 text-sm transition-colors">
+                <a href="tel:+233506626068" className="text-gray-400 hover:text-green-400 text-xs transition-colors">
                   +233 50 662 6068
                 </a>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-4 w-4 text-green-400" />
-                <span className="text-gray-400 text-sm">
+                <span className="text-gray-400 text-xs">
                   Accra, Ghana
                 </span>
               </div>
             </div>
           </div>
 
+          {/* Trust & Compliance */}
+          <div className="col-span-1">
+            <h3 className="font-semibold text-lg mb-4 text-white">Trust & Compliance</h3>
+            <ul className="space-y-2 text-xs text-gray-400">
+              <li className="flex items-center gap-2">
+                <div className="w-1 h-1 bg-green-400 rounded-full" />
+                Registered business entity
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-1 h-1 bg-green-400 rounded-full" />
+                Secure payment processing
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-1 h-1 bg-green-400 rounded-full" />
+                Data protection compliant
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-1 h-1 bg-green-400 rounded-full" />
+                Encrypted platform security
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-1 h-1 bg-green-400 rounded-full" />
+                Transparent reporting
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-1 h-1 bg-green-400 rounded-full" />
+                Independent verification
+              </li>
+            </ul>
+          </div>
+
           {/* Quick Links */}
           <div className="col-span-1">
-            <h3 className="font-semibold text-lg mb-4">Quick Links</h3>
+            <h3 className="font-semibold text-lg mb-4 text-white">Legal Links</h3>
             <div className="space-y-3">
-              <Link to="/" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Home</Link>
-              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">About</Link>
-              <Link to="/blog" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Blog</Link>
-              <Link to="/contact" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Contact</Link>
-
-              <a href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Community</a>
-              <Link to="#" className="block text-gray-400 hover:text-green-400 text-sm transition-colors">Privacy Policy</Link>
+              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Terms of Service</Link>
+              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Privacy Policy</Link>
+              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Risk Disclosure</Link>
+              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Refund Policy</Link>
+              <a href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Community</a>
             </div>
           </div>
 
           {/* Newsletter Subscription */}
           <div className="col-span-1">
-            <h3 className="font-semibold text-lg mb-4">Subscribe to Our Newsletter</h3>
-            <p className="text-gray-400 text-sm mb-4">
-              Stay updated with the latest agricultural insights, tips, and news from AgriLync.
+            <h3 className="font-semibold text-lg mb-4 text-white">Subscribe</h3>
+            <p className="text-gray-400 text-[10px] mb-4">
+              Stay updated with agricultural insights and news.
             </p>
             {isSubmitted ? (
-              <div className="bg-green-600 text-white p-3 rounded-lg text-sm">
-                Successfully subscribed! Thank you.
+              <div className="bg-green-600 text-white p-3 rounded-lg text-xs">
+                Successfully subscribed!
               </div>
             ) : (
               <form onSubmit={handleNewsletterSubmit} className="space-y-3">
                 <Input
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="Your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-green-400"
+                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-green-400 h-8 text-xs"
                   required
                 />
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white text-sm"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white text-xs h-8"
                 >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
-                      Subscribing...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="mr-2 h-3 w-3" />
-                      Subscribe
-                    </>
-                  )}
+                  {isSubmitting ? 'Subscribing...' : 'Subscribe'}
                 </Button>
               </form>
             )}
@@ -141,16 +163,17 @@ const Footer = () => {
 
         {/* Bottom Section */}
         <div className="border-t border-gray-800 mt-8 pt-6 flex flex-col md:flex-row items-center justify-between">
-          <p className="text-gray-400 text-xs mb-2 md:mb-0">© 2024 AgriLync. All rights reserved.</p>
+          <p className="text-gray-500 text-[10px] mb-2 md:mb-0">© 2024 AgriLync. All rights reserved.</p>
           <div className="flex items-center space-x-2">
             <MessageCircle className="h-4 w-4 text-green-400" />
-            <a href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 text-xs transition-colors">
+            <a href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 text-[10px] transition-colors">
               Join our WhatsApp Community
             </a>
           </div>
         </div>
       </div>
     </footer>
+
   );
 };
 

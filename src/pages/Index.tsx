@@ -242,7 +242,7 @@ const Index = () => {
                   </Button>
                 </a>
 
-                <a href="https://www.youtube.com/watch?v=-gOZgTW00GY" target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-none">
+                <a href="https://youtube.com/shorts/HxPYnwCG6QE?feature=share" target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-none">
                   <Button variant="outline" className="w-full sm:w-auto border-2 border-white/30 text-white hover:bg-white hover:text-[#002f37] bg-white/5 backdrop-blur-sm px-4 py-3 md:px-8 md:py-7 text-sm md:text-lg font-bold rounded-full transition-all duration-300">
                     Watch Demo
                   </Button>
@@ -343,7 +343,7 @@ const Index = () => {
             <div className="animate-fade-in-left transition-all duration-700 ease-in-out">
               <div className="max-w-4xl">
                 <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                  We are Agrilync, revolutionizing African agriculture through AI and digital technologies. Our platform connects farmers with investors, markets, and intelligent farming solutions. <span className="font-bold text-[#002f37]">We distribute trust first, value second, and technology last.</span>
+                  We are Agrilync, revolutionizing African agriculture through AI and digital technologies. Our platform connects farmers with investors and intelligent farming solutions. <span className="font-bold text-[#002f37]">We distribute trust first, value second, and technology last.</span>
                 </p>
               </div>
             </div>
@@ -370,7 +370,7 @@ const Index = () => {
             <div className="animate-fade-in-left transition-all duration-700 ease-in-out">
               <div className="max-w-4xl">
                 <p className="text-gray-300 leading-relaxed text-sm sm:text-base">
-                  Farmers are not crying without reason. They need timely access to the right information to boost productivity, ready markets immediately after harvest to reduce post-harvest losses, and most importantly, flexible financing and investor partnerships to scale and improve yield.
+                  Farmers are not crying without reason. They need timely access to the right information to boost productivity, and most importantly, flexible financing and investor partnerships to scale and improve yield.
                 </p>
               </div>
             </div>

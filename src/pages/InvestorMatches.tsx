@@ -448,6 +448,14 @@ const InvestorMatches = () => {
     <DashboardLayout activeSidebarItem="investor-matches" title="Investor Matches" description="Find and manage your financial partners">
 
       <div className="w-full p-3 sm:p-4 md:p-6">
+        {/* Investor Risk Notice */}
+        <div className={`mb-6 p-4 rounded-xl border flex gap-3 ${darkMode ? 'bg-amber-900/20 border-amber-800 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
+          <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+          <p className="text-xs sm:text-sm leading-relaxed">
+            <strong>Investor Risk Notice:</strong> Agriculture involves natural and market risks. Returns are not guaranteed. AgriLync does not provide financial advice. Users are responsible for their participation decisions.
+          </p>
+        </div>
+
         {/* Tabs */}
         {/* Tabs - Scrollable on mobile */}
         <div className="mb-6 flex gap-1 border-b border-gray-200 dark:border-gray-700 overflow-x-auto no-scrollbar snap-x">

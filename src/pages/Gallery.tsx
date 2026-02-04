@@ -257,7 +257,7 @@ const farmVisits = [
     region: "Eastern Region",
     category: "Palm Nut Farming",
     date: "2024",
-    description: "Operation in the Eastern Region led by Oti Gabriel Wontumi, our Chief of Operations, working with palm nut farmers to improve yield and market access."
+    description: "Operation in the Eastern Region led by Oti Gabriel Wontumi, our Chief of Operations, working with palm nut farmers to improve yield and operational efficiency."
   },
   {
     id: 26,
