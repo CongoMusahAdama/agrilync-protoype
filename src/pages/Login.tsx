@@ -7,22 +7,28 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Eye, EyeOff, MessageCircle, Construction, Star, Quote } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-
+import api from '@/utils/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
+import RegionSelectionModal from '@/components/auth/RegionSelectionModal';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { setSession } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    region: '',
     rememberMe: false
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  // Regional verification states
+  const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
+  const [pendingSession, setPendingSession] = useState<{ token: string; agent: any } | null>(null);
 
   useEffect(() => {
     // Trigger animations after component mounts
@@ -38,59 +44,68 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
 
     try {
-      await login(formData.email, formData.password);
-      
-      // Show sweet alert for successful login
-      await Swal.fire({
-        icon: 'success',
-        title: 'Login Successful!',
-        html: `
-          <div style="text-align: center; padding: 10px 0;">
-            <p style="font-size: 18px; color: #059669; margin: 15px 0;">
-              Welcome back! You have successfully logged in.
-            </p>
-            <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">
-              Redirecting to your dashboard...
-            </p>
-          </div>
-        `,
-        confirmButtonText: 'Continue',
-        confirmButtonColor: '#7ede56',
-        timer: 2000,
-        timerProgressBar: true,
-        showClass: {
-          popup: 'animate__animated animate__fadeInDown'
-        },
-        hideClass: {
-          popup: 'animate__animated animate__fadeOutUp'
-        }
+      // Step 1: Verify Credentials only (we don't pass region here anymore)
+      const res = await api.post('/auth/login', { 
+        email: formData.email, 
+        password: formData.password 
       });
       
-      navigate('/dashboard/redirect');
-    } catch (err: any) {
-      console.error('Login error:', err);
-      const errorMsg = err.response?.data?.msg || err.message || 'Login failed. Please check your credentials.';
-      toast.error(errorMsg);
-
-      if (!err.response && !err.status) {
-        toast.info('This might be a network issue. Please ensure VITE_API_URL is correctly set in your hosting platform.');
-      }
+      const { token, agent } = res.data;
+      
+      // Step 2: Store session data temporarily and open verification modal
+      setPendingSession({ token, agent });
+      setIsRegionModalOpen(true);
+      
+      toast.info('Credentials Verified. Please confirm your region.');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      const msg = error.response?.data?.msg || 'Invalid Credentials';
+      toast.error(msg);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
+    }
+  };
+
+  const handleRegionSuccess = (region: string) => {
+    if (pendingSession) {
+      // Step 3: Finalize session and navigate to dashboard
+      // Ensure the newly verified region is merged into the agent object
+      setSession(pendingSession.token, { ...pendingSession.agent, region });
+      setIsRegionModalOpen(false);
+      navigate('/dashboard/agent');
     }
   };
 
   return (
     <div className="min-h-screen w-full flex font-manrope">
+      {/* Region Selection Modal */}
+      {pendingSession && (
+        <RegionSelectionModal 
+          isOpen={isRegionModalOpen}
+          onClose={() => setIsRegionModalOpen(false)}
+          onSuccess={handleRegionSuccess}
+          assignedRegion={pendingSession.agent.region}
+        />
+      )}
 
-      {/* Left Side - Brand Panel (Deep Teal) */}
+      {/* Left Side - Brand Panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#002f37] relative overflow-hidden flex-col justify-between p-16 text-white">
+        {/* Background Image with Deep Teal Overlay */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/lovable-uploads/image%20copy%2012.png" 
+            alt="Background" 
+            className="w-full h-full object-cover opacity-60"
+          />
+          <div className="absolute inset-0 bg-[#002f37]/75 mix-blend-multiply" />
+        </div>
+        
         {/* Decorative Circles */}
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-white/5 blur-3xl"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-[#7ede56]/10 blur-3xl"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-white/5 blur-3xl z-10"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-[#7ede56]/10 blur-3xl z-10"></div>
 
         <div className="relative z-20">
           <Button
@@ -111,8 +126,6 @@ const Login = () => {
             Empower your agricultural journey with smart insights, trusted connections, and innovative tools designed to help you grow, succeed, and make lasting impact.
           </p>
         </div>
-
-        {/* Testimonial Removed as per user request */}
       </div>
 
       {/* Right Side - Login Form */}
@@ -126,14 +139,30 @@ const Login = () => {
             </Button>
           </div>
 
+          {/* Mobile Hero Image (Top) */}
+          <div className="lg:hidden relative">
+            <div className="w-full h-48 rounded-[2rem] overflow-hidden shadow-2xl relative mb-10 group">
+                <img 
+                    src="/lovable-uploads/image%20copy%2012.png" 
+                    alt="Heritage Background" 
+                    className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#002f37]/90 to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#7ede56] mb-1">Our Heritage</p>
+                    <h2 className="text-xl font-black text-white leading-tight">AgriLync Community</h2>
+                </div>
+            </div>
+            {/* Soft decorative elements on mobile */}
+            <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#7ede56]/10 blur-2xl rounded-full" />
+          </div>
+
           <div className="space-y-2">
             <h2 className="text-4xl font-bold text-[#002f37]">Welcome back!</h2>
             <p className="text-gray-500">
               Your agricultural journey provides you with the building blocks necessary to create true success.
             </p>
           </div>
-
-
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -195,9 +224,9 @@ const Login = () => {
             <Button
               type="submit"
               className="w-full h-12 bg-[#002f37] hover:bg-[#002f37]/90 text-white font-semibold text-lg rounded-lg shadow-lg"
-              disabled={isLoading}
+              disabled={loading}
             >
-              {isLoading ? 'Signing In...' : 'Sign In'}
+              {loading ? 'Signing In...' : 'Sign In'}
             </Button>
           </form>
 

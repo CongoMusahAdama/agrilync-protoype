@@ -7,6 +7,8 @@ interface ReportData {
   type: string;
   date: string;
   notes: string;
+  healthScore?: string;
+  cropStage?: string;
   agentName?: string;
   agentId?: string;
   media?: Array<{ type: string; url: string; name: string }>;
@@ -82,8 +84,20 @@ export const exportToPDF = async (data: ReportData) => {
     doc.setFont('times', 'bold');
     doc.text(data.type.replace('-', ' ').toUpperCase(), 145, 87);
 
+    // New Agricultural Metadata
+    if (data.healthScore || data.cropStage) {
+      doc.setFillColor(245, 250, 245);
+      doc.rect(15, 96, pageWidth - 30, 8, 'F');
+      doc.setFontSize(8);
+      doc.setTextColor(6, 95, 70);
+      let agriText = '';
+      if (data.cropStage) agriText += `STAGE: ${data.cropStage.toUpperCase()}    `;
+      if (data.healthScore) agriText += `COMPUTED HEALTH SCORE: ${data.healthScore}%`;
+      doc.text(agriText, 20, 101);
+    }
+
     // Content
-    let y = 110;
+    let y = 115;
     doc.setTextColor(0, 47, 55);
     doc.setFontSize(14);
     doc.setFont('times', 'bold');
@@ -131,19 +145,19 @@ export const exportToPDF = async (data: ReportData) => {
 
     doc.save(`AgriLync_Report_${data.farmerName.replace(/\s+/g, '_')}_${data.date}.pdf`);
     await Swal.fire({
-        icon: 'success',
-        title: 'PDF Generated!',
-        html: `
+      icon: 'success',
+      title: 'PDF Generated!',
+      html: `
             <div style="text-align: center; padding: 10px 0;">
                 <p style="font-size: 18px; color: #059669; margin: 15px 0;">
                     Professional PDF report generated!
                 </p>
             </div>
         `,
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#7ede56',
-        timer: 2000,
-        timerProgressBar: true
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#7ede56',
+      timer: 2000,
+      timerProgressBar: true
     });
   } catch (error) {
     console.error('Error generating PDF:', error);
@@ -228,19 +242,19 @@ export const exportToWord = async (data: ReportData) => {
     URL.revokeObjectURL(url);
 
     await Swal.fire({
-        icon: 'success',
-        title: 'Word Report Generated!',
-        html: `
+      icon: 'success',
+      title: 'Word Report Generated!',
+      html: `
             <div style="text-align: center; padding: 10px 0;">
                 <p style="font-size: 18px; color: #059669; margin: 15px 0;">
                     Word report generated successfully!
                 </p>
             </div>
         `,
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#7ede56',
-        timer: 2000,
-        timerProgressBar: true
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#7ede56',
+      timer: 2000,
+      timerProgressBar: true
     });
   } catch (error) {
     console.error('Error generating Word doc:', error);

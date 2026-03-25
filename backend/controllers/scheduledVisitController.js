@@ -7,6 +7,38 @@ const Notification = require('../models/Notification');
 // @desc    Get all scheduled visits for current agent
 exports.getScheduledVisits = async (req, res) => {
     try {
+        if (req.agent && req.agent.isMock) {
+            // Return rich mock data for development
+            const mockVisits = [
+                {
+                    _id: 'mock-visit-1',
+                    visitType: 'farm-visit',
+                    farmers: [
+                        { name: 'Kwame Mensah', contact: '024 123 4567', region: 'Ashanti', district: 'Ejisu', community: 'Bonwire' },
+                        { name: 'Ama Serwaa', contact: '050 987 6543', region: 'Ashanti', district: 'Juaben', community: 'Nobewam' }
+                    ],
+                    scheduledDate: new Date(Date.now() + 86400000), // Tomorrow
+                    scheduledTime: '08:30',
+                    purpose: 'Post-planting inspection and technical assistance',
+                    status: 'scheduled',
+                    region: 'Ashanti',
+                    smsSent: true
+                },
+                {
+                    _id: 'mock-visit-2',
+                    visitType: 'community-visit',
+                    community: 'Bonwire Community Center',
+                    scheduledDate: new Date(Date.now() + 172800000), // Day after tomorrow
+                    scheduledTime: '14:00',
+                    purpose: 'Investor matching info session for all cocoa growers',
+                    status: 'scheduled',
+                    region: 'Ashanti',
+                    smsSent: false
+                }
+            ];
+            return res.json({ success: true, data: mockVisits });
+        }
+
         const agentId = req.agent._id || req.agent.id;
         const visits = await ScheduledVisit.find({ agent: agentId })
             .populate('farmers', 'name contact region district community')
@@ -92,8 +124,9 @@ exports.sendSMSNotification = async (req, res) => {
     const { customMessage } = req.body;
 
     try {
-        if (!req.agent) {
-            return res.status(401).json({ success: false, message: 'Authentication required' });
+        if (req.agent && req.agent.isMock) {
+            console.log('[MOCK REQ] sendSMSNotification for visit:', id);
+            return res.json({ success: true, message: 'Mock SMS sent successfully' });
         }
 
         const visit = await ScheduledVisit.findById(id).populate('farmers', 'name contact');
@@ -218,8 +251,9 @@ exports.logPhoneCall = async (req, res) => {
     const { farmerId, notes, callDuration } = req.body;
 
     try {
-        if (!req.agent) {
-            return res.status(401).json({ success: false, message: 'Authentication required' });
+        if (req.agent && req.agent.isMock) {
+            console.log('[MOCK REQ] logPhoneCall for visit:', id);
+            return res.json({ success: true, message: 'Mock phone call logged' });
         }
 
         const visit = await ScheduledVisit.findById(id).populate('farmers', 'name contact');

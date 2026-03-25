@@ -6,12 +6,19 @@ const Agent = require('../models/Agent');
  */
 
 const auth = async (req, res, next) => {
-    const token = req.header('x-auth-token');
+    // Accept both x-auth-token header and Authorization: Bearer token
+    let token = req.header('x-auth-token');
+    if (!token) {
+        const authHeader = req.header('Authorization');
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            token = authHeader.split(' ')[1];
+        }
+    }
 
     // MOCK USER GENERATOR for Dev Bypass
     const getMockUser = (role = 'super_admin') => ({
-        _id: role === 'super_admin' ? 'mock-super-admin-id' : 'mock-agent-id',
-        id: role === 'super_admin' ? 'mock-super-admin-id' : 'mock-agent-id',
+        _id: role === 'super_admin' ? '507f191e810c19729de860ea' : '507f1f77bcf86cd799439011',
+        id: role === 'super_admin' ? '507f191e810c19729de860ea' : '507f1f77bcf86cd799439011',
         name: role === 'super_admin' ? 'Dev Super Admin' : 'Dev Field Agent',
         email: role === 'super_admin' ? 'dev.admin@agrilync.com' : 'dev.agent@agrilync.com',
         role: role,

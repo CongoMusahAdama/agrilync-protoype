@@ -56,7 +56,8 @@ app.get('/api/routes', (req, res) => {
             'GET /api/reports/*',
             'GET /api/opportunities/*',
             'GET /api/super-admin/*',
-            'GET /api/scheduled-visits/*'
+            'GET /api/scheduled-visits/*',
+            'GET /api/tasks/*'
         ],
         timestamp: new Date().toISOString()
     });
@@ -104,6 +105,14 @@ try {
     console.log('✓ Super admin routes registered');
     app.use('/api/scheduled-visits', require('./routes/scheduledVisitRoutes'));
     console.log('✓ Scheduled visit routes registered');
+    app.use('/api/media', require('./routes/media'));
+    console.log('✓ Media routes registered');
+    app.use('/api/tasks', require('./routes/taskRoutes'));
+    console.log('✓ Tasks routes registered');
+    app.use('/api/support', require('./routes/supportRoutes'));
+    console.log('✓ Support routes registered');
+    app.use('/api/consultations', require('./routes/consultationRoutes'));
+    console.log('✓ Consultation routes registered');
     console.log('✓ All routes registered successfully');
 } catch (error) {
     console.error('✗ Error registering routes:', error);

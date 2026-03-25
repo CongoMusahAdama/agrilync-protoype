@@ -3,16 +3,18 @@ const Report = require('../models/Report');
 // @route   POST api/reports
 // @desc    Create a new report
 exports.createReport = async (req, res) => {
-    const { farmerId, type, date, notes, media } = req.body;
+    const { farmerId, type, date, notes, media, cropStage, healthScore } = req.body;
 
     try {
         const newReport = new Report({
             farmer: farmerId,
             agent: req.agent.id,
             type,
-            date,
+            date: date || new Date().toISOString().split('T')[0],
             notes,
-            media
+            media,
+            cropStage,
+            healthScore
         });
 
         const report = await newReport.save();
@@ -54,10 +56,15 @@ exports.getFarmerReports = async (req, res) => {
     }
 };
 
-// @route   GET api/reports
+// @route   GET api/reports/agent  (also GET api/reports)
 // @desc    Get reports created by the current agent (with pagination)
 exports.getAgentReports = async (req, res) => {
     try {
+        // Guard: mock users have non-ObjectId IDs — skip DB query
+        if (req.agent.isMock) {
+            return res.json({ success: true, page: 1, limit: 20, total: 0, pages: 0, data: [] });
+        }
+
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;
         const skip = (page - 1) * limit;

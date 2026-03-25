@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Button } from '@/components/ui/button';
@@ -307,7 +307,7 @@ const FarmManagement = () => {
         };
       case 'harvesting':
         return {
-          bg: '#921573',
+          bg: '#7ede56',
           textOnLight: '#5e0e4a',
           textOnDark: '#f3d1f0'
         };
@@ -450,7 +450,7 @@ const FarmManagement = () => {
           </Card>
 
           {/* Total Investment - Pink/Magenta */}
-          <Card className="hover:shadow-md transition-shadow bg-[#921573] border-none overflow-hidden">
+          <Card className="hover:shadow-md transition-shadow bg-[#7ede56] border-none overflow-hidden">
             <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
               <div className="flex flex-col gap-0.5 sm:gap-1 min-w-0">
                 <span className="text-[10px] sm:text-xs font-medium text-white/90">Investment</span>
@@ -1101,3 +1101,7 @@ const FarmManagement = () => {
 };
 
 export default FarmManagement;
+
+
+
+

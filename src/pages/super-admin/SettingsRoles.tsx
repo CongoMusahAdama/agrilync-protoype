@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -78,7 +78,7 @@ const SettingsRoles = () => {
                 title: 'Account Provisioned!',
                 html: `
                     <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                        <p style="font-size: 18px; color: #7ede56; margin: 15px 0;">
                             Operational account provisioned successfully
                         </p>
                     </div>
@@ -215,14 +215,14 @@ const SettingsRoles = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5 text-center">
-                                                <Badge variant="outline" className={`font-black text-[9px] uppercase tracking-widest border-2 ${user.role === 'supervisor' ? 'border-purple-500/30 text-purple-500' : 'border-sky-500/30 text-sky-500'} rounded-lg px-2.5 py-1`}>
+                                                <Badge variant="outline" className={`font-black text-[9px] uppercase tracking-widest border-2 ${user.role === 'supervisor' ? 'border-[#7ede56]/30 text-[#7ede56]' : 'border-sky-500/30 text-sky-500'} rounded-lg px-2.5 py-1`}>
                                                     {user.role}
                                                 </Badge>
                                             </td>
                                             <td className="px-6 py-5 text-center">
                                                 <div className="flex items-center justify-center">
                                                     {user.isVerified ? (
-                                                        <Badge className="bg-emerald-500/10 text-emerald-500 border-none font-black text-[9px] px-3 py-1 rounded-lg flex gap-1.5 items-center italic tracking-widest"><UserCheck className="w-3.5 h-3.5" /> VERIFIED</Badge>
+                                                        <Badge className="bg-[#7ede56]/10 text-[#7ede56] border-none font-black text-[9px] px-3 py-1 rounded-lg flex gap-1.5 items-center italic tracking-widest"><UserCheck className="w-3.5 h-3.5" /> VERIFIED</Badge>
                                                     ) : (
                                                         <Badge className="bg-rose-500/10 text-rose-500 border-none font-black text-[9px] px-3 py-1 rounded-lg animate-pulse flex gap-1.5 items-center tracking-widest"><RefreshCcw className="w-3.5 h-3.5" /> PENDING</Badge>
                                                     )}
@@ -461,3 +461,7 @@ const SettingsRoles = () => {
 };
 
 export default SettingsRoles;
+
+
+
+

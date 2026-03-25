@@ -5,6 +5,10 @@ const Activity = require('../models/Activity');
 // @desc    Get all notifications for current agent
 exports.getNotifications = async (req, res) => {
     try {
+        // Guard: mock users have non-ObjectId IDs — skip DB query
+        if (req.agent.isMock) {
+            return res.json([]);
+        }
         const notifications = await Notification.find({ agent: req.agent.id }).sort({ createdAt: -1 }).lean();
         res.json(notifications);
     } catch (err) {

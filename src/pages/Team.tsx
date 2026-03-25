@@ -106,7 +106,7 @@ const Team = () => {
           <div className="w-24 h-1.5 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full mb-8"></div>
 
           <p className="text-lg sm:text-x text-gray-500 max-w-2xl leading-relaxed">
-            Meet our exceptional team at AgriLync! Comprising diverse talents and expertise, we are a dedicated group committed to delivering excellence in every project.
+            Meet our exceptional team at Agrilync Nexus! Comprising diverse talents and expertise, we are dedicated to unlocking capital and knowledge for Lync Growers across Africa.
           </p>
         </div>
 

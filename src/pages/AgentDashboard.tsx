@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
@@ -36,10 +36,14 @@ import ReviewMatchModal from '@/components/agent/ReviewMatchModal';
 import ViewDisputeModal from '@/components/agent/ViewDisputeModal';
 import ViewVisitDetailsModal from '@/components/agent/ViewVisitDetailsModal';
 import VerificationQueueModal from '@/components/agent/VerificationQueueModal';
+import UploadReportModal from '@/components/agent/UploadReportModal';
+import ScheduleVisitModal from '@/components/agent/ScheduleVisitModal';
 import { TrainingPerformanceContent } from './agent/TrainingPerformance';
 import { Button } from '@/components/ui/button';
 import ActiveFarmsModal from '@/components/agent/ActiveFarmsModal';
 import FarmJourneyModal from '@/components/agent/FarmJourneyModal';
+import OperationalMap from '@/components/agent/OperationalMap';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Users,
   Sprout,
@@ -65,7 +69,23 @@ import {
   DollarSign,
   TrendingUp,
   BarChart3,
-  ClipboardCheck
+  ClipboardCheck,
+  LayoutDashboard,
+  ClipboardList,
+  Image as ImageIcon,
+  LineChart,
+  MapPin,
+  Clock,
+  Activity,
+  GraduationCap,
+  ArrowRight,
+  ChevronRight,
+  HelpCircle,
+  Download,
+  Star,
+  MessageSquareText,
+  FileDown,
+  Bot
 } from 'lucide-react';
 import {
   Bar,
@@ -85,10 +105,10 @@ import Swal from 'sweetalert2';
 import Preloader from '@/components/ui/Preloader';
 
 const MetricCardSkeleton = () => (
-  <Card className="bg-gray-800/50 border-gray-700 rounded-lg p-3 sm:p-6 shadow-lg animate-pulse">
+  <Card className="bg-gray-800/50 border-gray-700 p-3 sm:p-6 shadow-lg animate-pulse">
     <div className="flex flex-col h-full gap-4">
       <div className="flex items-center gap-3">
-        <Skeleton className="h-8 w-8 rounded-lg bg-gray-700" />
+        <Skeleton className="h-8 w-8 bg-gray-700" />
         <Skeleton className="h-4 w-24 bg-gray-700" />
       </div>
       <div className="flex-1 flex items-center">
@@ -105,7 +125,20 @@ const AgentDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { darkMode } = useDarkMode();
   const { agent } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
+  
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialTab = queryParams.get('tab') || 'overview';
+  
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  // Sync tab with URL if it changes
+  useEffect(() => {
+    const tab = new URLSearchParams(location.search).get('tab');
+    if (tab && tab !== activeTab) {
+      setActiveTab(tab);
+    }
+  }, [location.search]);
   const [farmerSearch, setFarmerSearch] = useState('');
   const [farmerStatusFilter, setFarmerStatusFilter] = useState<'all' | 'Completed' | 'Pending' | 'inactive'>('all');
   const [farmStatusFilter, setFarmStatusFilter] = useState<'all' | 'verified' | 'scheduled' | 'needs-attention'>('all');
@@ -121,11 +154,24 @@ const AgentDashboard: React.FC = () => {
   const [viewDisputeModalOpen, setViewDisputeModalOpen] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState<any>(null);
   const [viewVisitModalOpen, setViewVisitModalOpen] = useState(false);
-  const [verificationQueueModalOpen, setVerificationQueueModalOpen] = useState(false);
-  const [activeFarmsModalOpen, setActiveFarmsModalOpen] = useState(false);
-  const [journeyModalOpen, setJourneyModalOpen] = useState(false);
+  const [isVerificationQueueModalOpen, setIsVerificationQueueModalOpen] = useState(false);
+  const [isActiveFarmsModalOpen, setIsActiveFarmsModalOpen] = useState(false);
+  const [isJourneyModalOpen, setIsJourneyModalOpen] = useState(false);
+  const [isUploadReportModalOpen, setIsUploadReportModalOpen] = useState(false);
+  const [isAddFarmerModalOpen, setIsAddFarmerModalOpen] = useState(false);
+  const [logVisitModalOpen, setLogVisitModalOpen] = useState(false);
 
   // useQuery for all-in-one dashboard data with optimized caching
+  const [activeMetric, setActiveMetric] = useState('onboarding');
+  const metricData: Record<string, any> = {
+    onboarding: { color: 'var(--lgreen)', data: [45, 52, 68, 74, 85, 93], target: '100%' },
+    visits: { color: 'var(--teal)', data: [55, 60, 70, 65, 72, 80], target: '100%' },
+    sync: { color: '#921573', data: [88, 90, 94, 92, 96, 96], target: '95%' },
+    training: { color: 'var(--amber)', data: [30, 38, 45, 52, 58, 61], target: '100%' },
+  };
+
+  const currentMetric = metricData[activeMetric];
+
   const { data: summaryData, isLoading: loading, isFetching, refetch: refreshData } = useQuery({
     queryKey: ['agentDashboardSummary'],
     queryFn: async () => {
@@ -141,15 +187,154 @@ const AgentDashboard: React.FC = () => {
     refetchOnReconnect: true // Refetch when connection is restored
   });
 
-  // Extract data from summary with fallbacks
+  // Fetch scheduled visits for the summary card
+  const { data: scheduledVisitsData = [] } = useQuery({
+    queryKey: ['scheduledVisits'],
+    queryFn: async () => {
+      const response = await api.get('/scheduled-visits');
+      const resData = response.data;
+      return Array.isArray(resData) ? resData : (resData?.data || []);
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const scheduledVisits = useMemo(() => {
+    const effectiveRegion = agent?.region || "Ashanti Region";
+    return (scheduledVisitsData || []).filter((v: any) => !effectiveRegion || v.region === effectiveRegion);
+  }, [scheduledVisitsData, agent?.region]);
+  
+  // Fetch Media Items for the archive tab
+  const { data: mediaItems = [] } = useQuery({
+    queryKey: ['mediaItems'],
+    queryFn: async () => {
+      try {
+        const res = await api.get('/media');
+        return Array.isArray(res.data) ? res.data : (res.data.data || []);
+      } catch (err) {
+        console.error('Error fetching media:', err);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000
+  });
+
+  // Ghana region → {lat, lng} map for weather lookup
+  const GHANA_COORDS: Record<string, { lat: number; lng: number }> = {
+    'Ashanti Region':        { lat: 6.6885,  lng: -1.6244 },
+    'Greater Accra Region':  { lat: 5.6037,  lng: -0.1870 },
+    'Northern Region':       { lat: 9.4008,  lng: -0.8393 },
+    'Western Region':        { lat: 5.1264,  lng: -2.0014 },
+    'Eastern Region':        { lat: 6.5581,  lng: -0.2166 },
+    'Central Region':        { lat: 5.1054,  lng: -1.2466 },
+    'Volta Region':          { lat: 6.6120,  lng: 0.4590  },
+    'Upper East Region':     { lat: 10.7887, lng: -0.8476 },
+    'Upper West Region':     { lat: 10.2529, lng: -2.3242 },
+    'Brong-Ahafo Region':    { lat: 7.9497,  lng: -2.3347 },
+    'Bono Region':           { lat: 7.9497,  lng: -2.3347 },
+    'Oti Region':            { lat: 7.9000,  lng: 0.3000  },
+    'Savannah Region':       { lat: 9.0880,  lng: -1.8230 },
+    'North East Region':     { lat: 10.5105, lng: -0.3616 },
+    'Ahafo Region':          { lat: 7.5600,  lng: -2.5500 },
+    'Western North Region':  { lat: 6.3093,  lng: -2.7905 },
+  };
+
+  const agentCoords = GHANA_COORDS[agent?.region || 'Ashanti Region'] || GHANA_COORDS['Ashanti Region'];
+
+  // Real-time weather via Open-Meteo (free, no API key)
+  const { data: weatherData } = useQuery({
+    queryKey: ['weather', agentCoords.lat, agentCoords.lng],
+    queryFn: async () => {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${agentCoords.lat}&longitude=${agentCoords.lng}&current=weather_code,temperature_2m,precipitation&timezone=Africa%2FAccra`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Weather fetch failed');
+      return res.json();
+    },
+    staleTime: 10 * 60 * 1000, // refresh every 10 mins
+    retry: 1,
+  });
+
+  // WMO weather code → human-readable label + emoji
+  const getWeatherInfo = (code: number | undefined, precip: number | undefined) => {
+    if (code === undefined) return null;
+    const isRainingNow = (precip ?? 0) > 0;
+    if (code === 0) return { emoji: '☀️', label: 'Clear skies. Great day for field visits!', color: 'text-amber-500' };
+    if (code <= 2) return { emoji: '⛅', label: 'Partly cloudy conditions.', color: 'text-sky-500' };
+    if (code === 3) return { emoji: '☁️', label: 'Overcast skies today.', color: 'text-gray-500' };
+    if (code <= 49) return { emoji: '🌫️', label: 'Foggy conditions. Drive carefully.', color: 'text-gray-400' };
+    if (code <= 69 || isRainingNow) return { emoji: '🌧️', label: 'It\'s raining. Please plan your field visits carefully!', color: 'text-blue-600' };
+    if (code <= 79) return { emoji: '🌨️', label: 'Sleet or snow conditions detected.', color: 'text-blue-400' };
+    if (code <= 84) return { emoji: '🌦️', label: 'Rain showers expected. Carry rain gear.', color: 'text-blue-500' };
+    if (code <= 99) return { emoji: '⛈️', label: 'Thunderstorm warning! Avoid open fields.', color: 'text-red-500' };
+    return { emoji: '🌡️', label: 'Checking weather...', color: 'text-gray-400' };
+  };
+
+  const currentWeather = weatherData?.current;
+  const weatherInfo = getWeatherInfo(currentWeather?.weather_code, currentWeather?.precipitation);
+  const weatherTemp = currentWeather?.temperature_2m;
+
+  // Extract data from summary with fallbacks and filter by agent's region
   const stats = summaryData?.stats || {};
-  const farmers = summaryData?.farmers || [];
-  const farms = summaryData?.farms || [];
+  const farmersRaw = summaryData?.farmers || [];
+  const farmsRaw = summaryData?.farms || [];
   const notifications = summaryData?.notifications || [];
-  const activities = summaryData?.activities || [];
-  const matches = summaryData?.matches || [];
-  const disputes = summaryData?.disputes || [];
-  const pendingFarmers = summaryData?.pendingQueue || [];
+  const activitiesRaw = summaryData?.activities || [];
+  const matchesRaw = summaryData?.matches || [];
+  const disputesRaw = summaryData?.disputes || [];
+  const pendingFarmersRaw = summaryData?.pendingQueue || [];
+
+  const farmers = useMemo(() => {
+    const effectiveRegion = agent?.region || "Ashanti Region";
+    const regSearch = (effectiveRegion || '').toLowerCase().replace(' region', '').trim();
+    return farmersRaw.filter((f: any) => {
+      const fReg = (f.region || '').toLowerCase().replace(' region', '').trim();
+      return !regSearch || fReg === regSearch || fReg.includes(regSearch) || regSearch.includes(fReg);
+    });
+  }, [farmersRaw, agent?.region]);
+
+  const farms = useMemo(() => {
+    const effectiveRegion = agent?.region || "Ashanti Region";
+    const regSearch = (effectiveRegion || '').toLowerCase().replace(' region', '').trim();
+    return farmsRaw.filter((f: any) => {
+      const fReg = (f.region || '').toLowerCase().replace(' region', '').trim();
+      return !regSearch || fReg === regSearch || fReg.includes(regSearch) || regSearch.includes(fReg);
+    });
+  }, [farmsRaw, agent?.region]);
+
+  const activities = useMemo(() => {
+    const effectiveRegion = agent?.region || "Ashanti Region";
+    const regSearch = (effectiveRegion || '').toLowerCase().replace(' region', '').trim();
+    return activitiesRaw.filter((a: any) => {
+      const aReg = (a.region || '').toLowerCase().replace(' region', '').trim();
+      return !regSearch || aReg === regSearch || aReg.includes(regSearch) || regSearch.includes(aReg);
+    });
+  }, [activitiesRaw, agent?.region]);
+
+  const matches = useMemo(() => {
+    const effectiveRegion = agent?.region || "Ashanti Region";
+    const regSearch = (effectiveRegion || '').toLowerCase().replace(' region', '').trim();
+    return matchesRaw.filter((m: any) => {
+      const mReg = (m.region || '').toLowerCase().replace(' region', '').trim();
+      return !regSearch || mReg === regSearch || mReg.includes(regSearch) || regSearch.includes(mReg);
+    });
+  }, [matchesRaw, agent?.region]);
+
+  const disputes = useMemo(() => {
+    const effectiveRegion = agent?.region || "Ashanti Region";
+    const regSearch = (effectiveRegion || '').toLowerCase().replace(' region', '').trim();
+    return disputesRaw.filter((d: any) => {
+      const dReg = (d.region || '').toLowerCase().replace(' region', '').trim();
+      return !regSearch || dReg === regSearch || dReg.includes(regSearch) || regSearch.includes(dReg);
+    });
+  }, [disputesRaw, agent?.region]);
+
+  const pendingFarmers = useMemo(() => {
+    const effectiveRegion = agent?.region || "Ashanti Region";
+    const regSearch = (effectiveRegion || '').toLowerCase().replace(' region', '').trim();
+    return pendingFarmersRaw.filter((f: any) => {
+      const fReg = (f.region || '').toLowerCase().replace(' region', '').trim();
+      return !regSearch || fReg === regSearch || fReg.includes(regSearch) || regSearch.includes(fReg);
+    });
+  }, [pendingFarmersRaw, agent?.region]);
 
   const loadingStats = loading;
   const loadingFarmers = loading;
@@ -219,13 +404,13 @@ const AgentDashboard: React.FC = () => {
         title: 'Match Approved!',
         html: `
           <div style="text-align: center; padding: 10px 0;">
-            <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+            <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
               Match approved successfully
             </p>
           </div>
         `,
         confirmButtonText: 'OK',
-        confirmButtonColor: '#7ede56',
+        confirmButtonColor: '#065f46',
         timer: 2000,
         timerProgressBar: true
       });
@@ -244,13 +429,13 @@ const AgentDashboard: React.FC = () => {
         title: 'Match Rejected',
         html: `
           <div style="text-align: center; padding: 10px 0;">
-            <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+            <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
               Match rejected successfully
             </p>
           </div>
         `,
         confirmButtonText: 'OK',
-        confirmButtonColor: '#7ede56',
+        confirmButtonColor: '#065f46',
         timer: 2000,
         timerProgressBar: true
       });
@@ -280,6 +465,11 @@ const AgentDashboard: React.FC = () => {
     setViewModalOpen(true);
   };
 
+  const handleNewVisit = (farmer: any) => {
+    setSelectedFarmer(farmer);
+    setIsUploadReportModalOpen(true);
+  };
+
   const handleEditFarmer = async (farmer: any) => {
     try {
       // Fetch full farmer data including Ghana card images
@@ -297,7 +487,7 @@ const AgentDashboard: React.FC = () => {
 
   const handleTrackJourney = (farmer: any) => {
     setSelectedFarmer(farmer);
-    setJourneyModalOpen(true);
+    setIsJourneyModalOpen(true);
   };
 
   const filteredFarmers = useMemo(() => {
@@ -310,6 +500,7 @@ const AgentDashboard: React.FC = () => {
       const searchValue = farmerSearch.toLowerCase();
       const matchesSearch =
         farmer.name?.toLowerCase().includes(searchValue) ||
+        (farmer.contact && farmer.contact.includes(searchValue)) ||
         (farmer.region && farmer.region.toLowerCase().includes(searchValue)) ||
         (farmer.community && farmer.community.toLowerCase().includes(searchValue));
       const matchesStatus =
@@ -327,62 +518,63 @@ const AgentDashboard: React.FC = () => {
 
   const highlightCards = [
     {
-      id: 'farmers-management',
-      title: 'Farmers Onboarded',
-      value: farmers.length || 0,
-      color: 'bg-emerald-600',
+      id: 'total-farms',
+      title: 'Grower Impact',
+      value: summaryData?.stats?.farmersOnboarded || stats.farmersOnboarded || 0,
+      subtext: 'Farmers Empowered',
+      color: 'bg-[#065f46]',
       icon: Users,
-      path: '/dashboard/agent/farmers-management'
     },
     {
-      id: 'farm-monitoring',
-      title: 'Active Farms',
-      value: farms.length || 0,
-      color: 'bg-[#ffa500]',
-      icon: Sprout,
-      onClick: () => setActiveFarmsModalOpen(true)
+      id: 'active-farms',
+      title: 'Verified Farms',
+      value: summaryData?.stats?.activeFarms || stats.activeFarms || 0,
+      subtext: 'Active deliveries',
+      color: 'bg-blue-600',
+      icon: CheckCircle2,
     },
     {
-      id: 'investor-farmer-matches',
-      title: 'Investor Matches',
-      value: stats?.investorMatches || 0,
-      color: 'bg-[#ff6347]',
-      icon: Handshake,
-      path: '/dashboard/agent/investor-farmer-matches'
-    },
-    {
-      id: 'reports-submitted',
-      title: 'Reports Filed',
-      value: stats?.reportsThisMonth || 0,
-      color: 'bg-[#921573]',
-      icon: ClipboardCheck,
-      path: '/dashboard/agent/farm-management?tab=reports'
-    },
-    {
-      id: 'dispute-management',
-      title: 'Pending Disputes',
-      value: stats?.pendingDisputes || 0,
-      color: 'bg-[#1d9bf0]',
+      id: 'farms-at-risk',
+      title: 'Farms at Risk',
+      value: summaryData?.stats?.pendingDisputes || stats.pendingDisputes || 0,
+      subtext: 'Critical attention',
+      color: 'bg-rose-600',
       icon: AlertTriangle,
-      path: '/dashboard/agent/dispute-management'
+    },
+    {
+      id: 'scheduled-visits',
+      title: 'Scheduled Visits',
+      value: scheduledVisits.length,
+      subtext: 'Next 7 days',
+      color: 'bg-purple-600',
+      icon: Calendar,
+    },
+    {
+      id: 'reports-due',
+      title: 'Digital Proofs',
+      value: summaryData?.stats?.reportsThisMonth || stats.reportsThisMonth || 0,
+      subtext: 'Field Evidence',
+      color: 'bg-orange-500',
+      icon: FileText,
     }
   ];
 
   const statusStyles: Record<string, string> = {
-    active: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
+    active: 'bg-[#065f46]/10 text-[#065f46]',
     pending: 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
     inactive: 'bg-slate-500/10 text-slate-600 dark:bg-slate-500/20 dark:text-slate-300',
-    verified: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
-    Completed: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
+    verified: 'bg-[#065f46]/10 text-[#065f46]',
+    Completed: 'bg-[#065f46]/10 text-[#065f46]',
     Pending: 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
     scheduled: 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
     'needs-attention': 'bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
+    'at-risk': 'bg-rose-600/10 text-rose-700 dark:bg-rose-600/20 dark:text-rose-400',
     'Pending Funding': 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
-    'Pending Approval': 'bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300',
-    'Under Review': 'bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300',
-    Active: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
-    Ongoing: 'bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300',
-    Resolved: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300'
+    'Pending Approval': 'bg-[#065f46]/10 text-[#065f46]',
+    'Under Review': 'bg-[#065f46]/10 text-[#065f46]',
+    Active: 'bg-[#065f46]/10 text-[#065f46]',
+    Ongoing: 'bg-[#065f46]/10 text-[#065f46]',
+    Resolved: 'bg-[#065f46]/10 text-[#065f46]'
   };
 
 
@@ -398,10 +590,7 @@ const AgentDashboard: React.FC = () => {
     <div className="hidden gap-3 md:flex">
       <Button
         variant="outline"
-        className={`${darkMode
-          ? 'border-[#1b5b65] text-gray-100 hover:bg-[#0d3036]'
-          : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
-          }`}
+        className={`border-[#065f46]/30 text-[#065f46] hover:bg-[#065f46]/5`}
         onClick={() => navigate('/dashboard/agent/farmers-management')}
       >
         <Users className="mr-2 h-4 w-4" />
@@ -422,9 +611,35 @@ const AgentDashboard: React.FC = () => {
     ? 'bg-[#10363d] border-[#1b5b65] text-gray-100'
     : '';
 
-  const tableHeaderRowClass = 'bg-[#1db954] border-[#1db954] text-white';
-  const tableBodyRowClass = darkMode ? 'border-b border-[#124b53] hover:bg-[#0d3036]' : '';
-  const tableCellClass = darkMode ? 'text-gray-100' : '';
+  const tableHeaderRowClass = 'bg-[#065f46] text-white border-[#065f46]';
+  const tableBodyRowClass = 'border-b border-gray-100 hover:bg-gray-50';
+  const tableCellClass = 'text-gray-900';
+
+  const getLocalizedGreeting = () => {
+    const hour = new Date().getHours();
+    const displayName = agent?.name || 'Agent';
+
+    let timeGreeting = '';
+    if (hour < 12) timeGreeting = 'Good morning';
+    else if (hour < 17) timeGreeting = 'Good afternoon';
+    else timeGreeting = 'Good evening';
+
+    return (
+      <div className="flex flex-col gap-1">
+        <span className="flex items-center gap-2">
+          {timeGreeting}, <span className="text-[#065f46]">{displayName}</span>
+        </span>
+        {weatherInfo && (
+          <span className={`text-sm font-medium flex items-center gap-1.5 ${weatherInfo.color}`}>
+            {weatherInfo.emoji} Weather Alert: {weatherInfo.label}
+            {weatherTemp !== undefined && (
+              <span className="text-xs font-bold ml-1 text-gray-400">({Math.round(weatherTemp)}°C)</span>
+            )}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   // Show preloader on initial load or when fetching data
   if ((loading || isFetching) && !summaryData) {
@@ -433,111 +648,71 @@ const AgentDashboard: React.FC = () => {
 
   return (
     <AgentLayout
-      activeSection="profile-overview"
-      title="Dashboard"
+      activeSection={activeTab === 'performance' ? 'performance' : 'dashboard'}
+      title={activeTab === 'performance' ? 'My Performance' : 'Dashboard'}
     >
-      <div className="mb-6 sm:mb-8">
-        <h2 className={`dashboard-title mb-1 sm:mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-          {getGreeting()}, {agent?.name?.split(' ')[0] || 'Agent'}!
-        </h2>
-        <p className={`text-sm sm:text-base ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          Track your field operations and grower support pipeline.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-[24px] font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              {getLocalizedGreeting()}
+            </h2>
+          </div>
+          <p className="text-[14px] font-medium text-gray-500" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Operations Tracker • {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+          <Button
+            className="bg-[#065f46] hover:bg-[#065f46]/90 text-white font-semibold text-[14px] px-6 h-12 rounded-xl shadow-lg shadow-[#065f46]/20 flex items-center justify-center gap-2 border-none w-full sm:w-auto"
+            onClick={() => {
+              setSelectedFarmer(null);
+              setIsAddFarmerModalOpen(true);
+            }}
+          >
+            <Plus className="h-5 w-5" />
+            <span>Onboard Grower</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="border-2 border-[#065f46] text-[#065f46] hover:bg-[#065f46] hover:text-white font-semibold text-[14px] px-6 h-12 rounded-xl flex items-center justify-center gap-2 transition-all w-full sm:w-auto"
+            onClick={() => setLogVisitModalOpen(true)}
+          >
+            <Calendar className="h-5 w-5" />
+            <span>Log Visit</span>
+          </Button>
+        </div>
       </div>
 
-      {/* Key Metric Cards - 6-column Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-6 mb-8">
-        {/* Verification Queue - Deep Teal */}
-        {loadingQueue ? (
-          <MetricCardSkeleton />
-        ) : (
-          <Card
-            className={`bg-[#002f37] rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-200 cursor-pointer hover:scale-105 relative overflow-hidden opacity-100 translate-y-0`}
-            style={{ transitionDelay: '0ms' }}
-            onClick={() => setVerificationQueueModalOpen(true)}
-          >
-            {/* Background Decoration */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              <div className="absolute -right-4 -bottom-4 opacity-10">
-                <UserCheck className="h-24 w-24 sm:h-32 sm:w-32 text-white rotate-12" />
-              </div>
-              {/* Subtle pulsating circles for "active queue" feel */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-emerald-500/10 rounded-full animate-pulse pointer-events-none" />
-            </div>
-
-            <div className="flex flex-col h-full relative z-10">
-              <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-white/10">
-                  <UserCheck className="h-4 w-4 sm:h-6 sm:w-6 text-emerald-400" />
-                </div>
-                <p className="text-[10px] sm:text-sm font-medium text-white uppercase tracking-wider">Verification Queue</p>
-              </div>
-              <div className="flex-1 flex flex-col justify-center">
-                <div className="flex items-baseline gap-1 sm:gap-2 mb-0.5 sm:mb-2 text-white">
-                  <p className="big-metric">
-                    <CountUp end={pendingFarmers.length} duration={1000} />
-                  </p>
-                  <span className="text-[10px] sm:text-xs font-medium uppercase tracking-widest text-emerald-400">Backlog</span>
-                </div>
-                <p className="text-[10px] sm:text-sm text-white/80 line-clamp-1 italic">Growers awaiting accreditation</p>
-              </div>
-              <div className="mt-2 sm:mt-4 flex items-center justify-between">
-                <div className="flex -space-x-2">
-                  {[1, 2, 3].map((i: number) => (
-                    <div key={i} className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-[#002f37] bg-gray-500 overflow-hidden`}>
-                      <img src={`https://i.pravatar.cc/150?u=${i + 10}`} alt="Farmer" className="w-full h-full object-cover" />
-                    </div>
-                  ))}
-                </div>
-                <div className="text-[10px] sm:text-xs text-[#7ede56] font-bold flex items-center gap-1">
-                  Process <ArrowUpRight className="h-3 w-3" />
-                </div>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Other Metric Cards */}
-        {highlightCards.map((card: any, index: number) => {
-          const isLoading =
-            (card.id === 'farmers-management' && loadingFarmers) ||
-            (card.id === 'farm-monitoring' && loadingFarms) ||
-            ((card.id === 'investor-farmer-matches' || card.id === 'reports-submitted' || card.id === 'dispute-management') && loadingStats);
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        {highlightCards.map((item: any, idx: number) => {
+          const isLoading = loading;
 
           return isLoading ? (
-            <MetricCardSkeleton key={`skeleton-${card.id}`} />
+            <MetricCardSkeleton key={`skeleton-${idx}`} />
           ) : (
             <Card
-              key={card.id}
-              className={`${card.color} rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-200 cursor-pointer hover:scale-105 relative overflow-hidden opacity-100 translate-y-0`}
-              style={{ transitionDelay: `${(index + 1) * 50}ms` }}
-              onClick={() => {
-                if (card.onClick) {
-                  card.onClick();
-                } else if (card.path) {
-                  navigate(card.path as string);
-                }
-              }}
+              key={item.id}
+              className={`${item.id === 'total-farms' ? item.color : 'bg-white'} p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden h-36 flex flex-col justify-between group border-none cursor-pointer`}
             >
-              {/* Background Pattern */}
-              <div className="absolute inset-0 opacity-10 pointer-events-none">
-                <card.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
+              <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
+                <item.icon className={`h-24 w-24 ${item.id === 'total-farms' ? 'text-white' : item.color.replace('bg-', 'text-')} -rotate-12`} />
               </div>
 
-              <div className="flex flex-col h-full relative z-10">
-                <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
-                  <card.icon className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
-                  <p className="text-[10px] sm:text-sm font-medium text-white">{card.title}</p>
+              <div className="flex items-center justify-between">
+                <div className={`p-2 ${item.id === 'total-farms' ? 'bg-white/10' : item.color.replace('bg-', 'bg-').concat('/10')} rounded-lg`}>
+                  <item.icon className={`h-5 w-5 ${item.id === 'total-farms' ? 'text-white' : item.color.replace('bg-', 'text-')}`} />
                 </div>
-                <div className="flex-1 flex items-center">
-                  <p className="big-metric text-white">
-                    <CountUp end={Number(card.value)} duration={1000} />
-                  </p>
-                </div>
-                <div className="flex justify-end mt-2 sm:mt-4">
-                  <div className="text-[10px] sm:text-sm font-medium text-white hover:underline flex items-center gap-1">
-                    Details <ArrowUpRight className="h-3 w-3" />
-                  </div>
+                <span className={`text-[10px] font-black ${item.id === 'total-farms' ? 'text-white/40' : 'text-gray-400'} uppercase tracking-widest`}>STATUS</span>
+              </div>
+
+              <div>
+                <p className={`text-[10px] font-black ${item.id === 'total-farms' ? 'text-white/60' : 'text-gray-500'} uppercase tracking-widest mb-1`}>{item.title}</p>
+                <div className="flex items-baseline gap-2">
+                  <h3 className={`text-4xl font-black ${item.id === 'total-farms' ? 'text-white' : 'text-gray-900'} leading-none`}>
+                    <CountUp end={parseInt(String(item.value).replace(/,/g, '')) || 0} duration={1000} />
+                  </h3>
+                  <span className={`text-[10px] font-bold ${item.id === 'total-farms' ? 'text-white/80' : 'text-gray-500'}`}>{item.subtext}</span>
                 </div>
               </div>
             </Card>
@@ -545,708 +720,493 @@ const AgentDashboard: React.FC = () => {
         })}
       </div>
 
+      {/* ZakatSmart Style Secondary Navigation Bar */}
+      <div className="bg-white border border-gray-100 rounded-2xl mb-8 p-1.5 flex overflow-x-auto whitespace-nowrap scrollbar-hide shadow-sm gap-1 w-full">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`px-4 sm:px-8 py-3.5 rounded-xl text-[12px] sm:text-[14px] font-bold tracking-wider transition-all flex-1 sm:flex-none ${activeTab === 'overview' ? 'bg-[#065f46] text-white shadow-lg shadow-[#065f46]/20' : 'text-gray-500 hover:text-[#065f46] hover:bg-gray-50'}`}
+        >
+          OVERVIEW
+        </button>
+        <button
+          onClick={() => setActiveTab('quick-reports')}
+          className={`px-4 sm:px-8 py-3.5 rounded-xl text-[12px] sm:text-[14px] font-bold tracking-wider transition-all flex-1 sm:flex-none ${activeTab === 'quick-reports' ? 'bg-[#065f46] text-white shadow-lg shadow-[#065f46]/20' : 'text-gray-500 hover:text-[#065f46] hover:bg-gray-50'}`}
+        >
+          REPORTS
+        </button>
+        <button
+          onClick={() => setActiveTab('operational-map')}
+          className={`px-4 sm:px-8 py-3.5 rounded-xl text-[12px] sm:text-[14px] font-bold tracking-wider transition-all flex items-center justify-center gap-1.5 flex-1 sm:flex-none ${activeTab === 'operational-map' ? 'bg-[#065f46] text-white shadow-lg shadow-[#065f46]/20' : 'text-gray-500 hover:text-[#065f46] hover:bg-gray-50'}`}
+        >
+          <MapPin className="h-4 w-4" />
+          <span className="hidden xs:inline">MAP</span>
+          <span className="xs:hidden">MAP</span>
+        </button>
+      </div>
+
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className={`flex w-full overflow-x-auto whitespace-nowrap scrollbar-hide bg-transparent p-0 h-auto gap-2 sm:gap-4 mb-4 sm:mb-8 border-b ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
+        <TabsList className={`flex w-full overflow-x-auto whitespace-nowrap scrollbar-hide bg-transparent p-0 h-auto gap-0 sm:gap-4 mb-4 sm:mb-8 border-b ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
           <TabsTrigger
             value="overview"
-            className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'overview'
-              ? 'border-[#7ede56] text-[#7ede56] bg-[#7ede56]/5'
+            onClick={() => navigate('/dashboard/agent?tab=overview')}
+            className={`flex-1 sm:flex-none px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'overview'
+              ? 'border-[#065f46] text-[#065f46] bg-[#065f46]/5'
               : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
           >
-            <BarChart3 className="w-4 h-4 mr-2" />
+            <LayoutDashboard className="w-4 h-4 mr-2 hidden xs:block" />
             Overview
           </TabsTrigger>
           <TabsTrigger
-            value="farmers"
-            className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'farmers'
-              ? 'border-[#7ede56] text-[#7ede56] bg-[#7ede56]/5'
+            value="farms"
+            className={`flex-1 sm:flex-none px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'farms'
+              ? 'border-[#065f46] text-[#065f46] bg-[#065f46]/5'
               : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
           >
-            <Users className="w-4 h-4 mr-2" />
-            Farmers
+            <Sprout className="w-4 h-4 mr-2 hidden xs:block" />
+            Farms
           </TabsTrigger>
           <TabsTrigger
-            value="field-ops"
-            className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'field-ops'
-              ? 'border-[#7ede56] text-[#7ede56] bg-[#7ede56]/5'
+            value="visits"
+            className={`flex-1 sm:flex-none px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'visits'
+              ? 'border-[#065f46] text-[#065f46] bg-[#065f46]/5'
               : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
           >
-            <Sprout className="w-4 h-4 mr-2" />
-            Field Ops
+            <Calendar className="w-4 h-4 mr-2 hidden xs:block" />
+            <span className="hidden sm:inline">Visits & Reports</span>
+            <span className="sm:hidden">Visits</span>
           </TabsTrigger>
           <TabsTrigger
-            value="partnerships"
-            className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'partnerships'
-              ? 'border-[#7ede56] text-[#7ede56] bg-[#7ede56]/5'
+            value="media"
+            className={`flex-1 sm:flex-none px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'media'
+              ? 'border-[#065f46] text-[#065f46] bg-[#065f46]/5'
               : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
           >
-            <Handshake className="w-4 h-4 mr-2" />
-            Partnerships
-          </TabsTrigger>
-          <TabsTrigger
-            value="training"
-            className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'training'
-              ? 'border-[#7ede56] text-[#7ede56] bg-[#7ede56]/5'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-          >
-            <Calendar className="w-4 h-4 mr-2" />
-            Training & Perf.
+            <ImageIcon className="w-4 h-4 mr-2 hidden xs:block" />
+            Media
           </TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Recent Activity */}
-            <Card className={`${sectionCardClass} transition-colors h-[500px] flex flex-col`}>
-              <CardHeader className="pb-3 border-b border-gray-100 dark:border-gray-800">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className={`h-5 w-5 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
-                  <CardTitle className={`section-title ${darkMode ? 'text-gray-100' : ''}`}>Recent Activity</CardTitle>
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* Today's Priority */}
+            <Card className="lg:col-span-2 border-none bg-white shadow-xl rounded-2xl">
+              <CardHeader className="pb-3 border-b border-gray-50 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-black text-[#002f37]">Active Field Missions</CardTitle>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tasks for you today</p>
                 </div>
               </CardHeader>
-              <CardContent className="p-0 flex-1 overflow-hidden">
-                <div className="h-full overflow-y-auto p-4 space-y-4 custom-scrollbar">
-                  {loadingActivities ? (
-                    Array(5).fill(0).map((_: any, i: number) => (
-                      <div key={`activity-skeleton-${i}`} className="flex gap-4">
-                        <Skeleton className="h-10 w-10 shrink-0 rounded-full bg-gray-700" />
-                        <div className="flex-1 space-y-2">
-                          <Skeleton className="h-4 w-3/4 bg-gray-700" />
-                          <Skeleton className="h-3 w-1/4 bg-gray-700" />
+              <CardContent className="p-0">
+                <div className="divide-y divide-gray-50">
+                  {farms.slice(0, 4).map((farm: any) => (
+                    <div key={farm._id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors group">
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-xl bg-gray-100 overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
+                          <img src={farm.farmer?.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${farm.name}`} alt={farm.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                          <p className="text-[13px] font-black text-[#002f37] mb-0.5">{farm.name}</p>
+                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{farm.region || 'Assigned Region'}</span>
                         </div>
                       </div>
-                    ))
-                  ) : activities.length > 0 ? (
-                    activities.map((activity: any, index: number) => (
-                      <div key={activity._id || index} className="flex gap-4 relative">
-                        {index !== activities.length - 1 && (
-                          <div className={`absolute left-[19px] top-8 bottom-0 w-0.5 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`} />
-                        )}
-                        <div className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-4 ${darkMode ? 'border-[#0b2528] bg-gray-800' : 'border-white bg-gray-50'
-                          }`}>
-                          {activity.type === 'training' ? <Users className="h-4 w-4 text-emerald-500" /> :
-                            activity.type === 'report' ? <FileText className="h-4 w-4 text-blue-500" /> :
-                              activity.type === 'verification' ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> :
-                                activity.type === 'dispute' ? <AlertTriangle className="h-4 w-4 text-amber-500" /> :
-                                  <Info className="h-4 w-4 text-blue-500" />}
-                        </div>
-                        <div className="flex-1 pt-1 pb-4">
-                          <p className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{activity.title}</p>
-                          <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                            {new Date(activity.createdAt).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center p-6 opacity-60">
-                      <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-3">
-                        <ClipboardCheck className="h-8 w-8 text-gray-400" />
-                      </div>
-                      <p className="text-sm font-medium text-gray-500">No recent activity</p>
-                      <p className="text-xs text-gray-400">Your recent actions will appear here</p>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg group-hover:bg-[#002f37] group-hover:text-white transition-colors"
+                        onClick={() => handleNewVisit(farm.farmer)}
+                      >
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Notifications Hub */}
-            <Card className={`${sectionCardClass} transition-colors h-[500px] flex flex-col`}>
-              <CardHeader className="pb-3 border-b border-gray-100 dark:border-gray-800">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="relative">
-                      <Bell className={`h-5 w-5 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
-                      {unreadNotifications > 0 && (
-                        <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-[10px] text-white animate-pulse">
-                          {unreadNotifications}
-                        </span>
-                      )}
-                    </div>
-                    <CardTitle className={`section-title ${darkMode ? 'text-gray-100' : ''}`}>Notifications</CardTitle>
-                  </div>
-                  {unreadNotifications > 0 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleMarkAllRead}
-                      className="text-xs text-[#1db954] hover:text-[#17a447] hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
-                    >
-                      Mark all read
-                    </Button>
-                  )}
-                </div>
-
-                {/* Filter Tabs */}
-                <div className="flex gap-2 mt-4">
-                  {['all', 'alert', 'update'].map((filter: string) => (
-                    <button
-                      key={filter}
-                      onClick={() => setNotificationFilter(filter as any)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${notificationFilter === filter
-                        ? 'bg-[#1db954] text-white shadow-md'
-                        : darkMode
-                          ? 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                    >
-                      {filter.charAt(0).toUpperCase() + filter.slice(1)}s
-                    </button>
                   ))}
                 </div>
-              </CardHeader>
+              </CardContent>
+            </Card>
 
-              <CardContent className="p-0 flex-1 overflow-hidden">
-                <div className="h-full overflow-y-auto p-4 space-y-3 custom-scrollbar">
-                  {loadingNotifications ? (
-                    Array(5).fill(0).map((_: any, i: number) => (
-                      <div key={`notif-skeleton-${i}`} className="flex gap-4 p-3 h-20">
-                        <Skeleton className="h-10 w-10 shrink-0 rounded-full bg-gray-700" />
-                        <div className="flex-1 space-y-2">
-                          <Skeleton className="h-4 w-3/4 bg-gray-700" />
-                          <Skeleton className="h-3 w-1/4 bg-gray-700" />
-                          <Skeleton className="h-3 w-1/2 bg-gray-700" />
+            {/* Farm Activity Timeline */}
+            <Card className={`${sectionCardClass} transition-colors min-h-[400px]`}>
+              <CardHeader className="pb-3 border-b border-gray-100 dark:border-gray-800">
+                <div className="flex items-center gap-2">
+                  <Activity className={`h-5 w-5 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
+                  <CardTitle className={`section-title ${darkMode ? 'text-gray-100' : ''}`}>Farm Updates</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 h-[400px] overflow-y-auto custom-scrollbar">
+                <div className="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-100 dark:before:bg-gray-800">
+                  {activities.filter((a: any) => a.type !== 'match' && a.type !== 'dispute').map((activity: any, index: number) => (
+                    <div key={activity._id || index} className="relative pl-8 group">
+                      <div className={`absolute left-0 top-1.5 w-6 h-6 rounded-full z-10 flex items-center justify-center border-4 ${darkMode ? 'bg-[#0b2528] border-gray-800' : 'bg-white border-gray-100'}`}>
+                        {activity.type === 'training' ? <GraduationCap className="h-2.5 w-2.5 text-[#065f46]" /> :
+                          activity.type === 'report' ? <ClipboardList className="h-2.5 w-2.5 text-blue-500" /> :
+                            activity.type === 'verification' ? <UserCheck className="h-2.5 w-2.5 text-[#065f46]" /> :
+                              <Info className="h-2.5 w-2.5 text-blue-400" />}
+                      </div>
+                      <div>
+                        <p className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                          {new Date(activity.createdAt).toLocaleDateString()}
+                        </p>
+                        <p className={`text-sm mt-0.5 font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900 group-hover:text-[#065f46] transition-colors'}`}>
+                          {activity.title}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-6">
+              <Card className="border-none bg-[#002f37] text-white rounded-2xl shadow-xl overflow-hidden relative p-8 group">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform duration-700">
+                  <TrendingUp className="h-24 w-24" />
+                </div>
+                <div className="mb-6 relative z-10">
+                  <p className="text-[10px] font-black text-[#065f46] uppercase tracking-widest mb-1.5">Your Performance Summary</p>
+                  <h3 className="text-3xl font-black">Elite Agent</h3>
+                </div>
+                <div className="space-y-4 mb-10 relative z-10">
+                  <div className="flex justify-between items-end">
+                    <span className="text-[11px] font-bold text-gray-400">Progress to Gold Level</span>
+                    <span className="text-base font-black">85%</span>
+                  </div>
+                  <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#065f46]" style={{ width: '85%' }}></div>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => {
+                    navigate('/dashboard/agent/performance');
+                  }}
+                  variant="ghost" 
+                  className="w-full justify-between text-[10px] font-black tracking-widest text-[#065f46] p-0 hover:bg-transparent hover:text-white transition-colors uppercase group/btn border-none"
+                >
+                  VIEW FULL PERFORMANCE <ChevronRight className="h-3 w-3 group-hover/btn:translate-x-1 transition-transform" />
+                </Button>
+              </Card>
+
+              <Card className="border-none bg-white shadow-xl rounded-2xl">
+                <CardHeader className="pb-2 border-b border-gray-50">
+                  <CardTitle className="text-sm font-black text-[#002f37]">Support Status</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {[1, 2].map(i => (
+                    <div key={i} className="p-4 border-b border-gray-50 last:border-none flex items-center justify-between group cursor-pointer hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-[#065f46]/10 flex items-center justify-center text-[#065f46]">
+                          <HelpCircle className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-black text-[#002f37]">Issue #{4512 + i}</p>
+                          <p className="text-[9px] font-bold text-gray-400">Processing • 2h ago</p>
                         </div>
                       </div>
-                    ))
-                  ) : filteredNotifications.length > 0 ? (
-                    filteredNotifications.map((notification: any) => (
-                      <div
-                        key={notification._id}
-                        onClick={() => toggleReadStatus(notification._id, notification.type)}
-                        className={`group relative flex items-start gap-4 rounded-xl p-3 transition-all cursor-pointer border ${darkMode
-                          ? notification.read
-                            ? 'bg-transparent border-transparent hover:bg-[#0f3035]'
-                            : 'bg-[#0f3035]/50 border-[#1b5b65] hover:bg-[#0f3035]'
-                          : notification.read
-                            ? 'bg-transparent border-transparent hover:bg-gray-50'
-                            : 'bg-blue-50/50 border-blue-100 hover:bg-blue-50'
-                          }`}
-                      >
-                        {/* Status Indicator */}
-                        {!notification.read && (
-                          <div className="absolute right-3 top-3 h-2 w-2 rounded-full bg-[#1db954]" />
-                        )}
+                      <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-[#002f37] transition-colors" />
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
 
-                        {/* Icon */}
-                        <div className={`mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${notification.type === 'alert' || notification.priority === 'high'
-                          ? 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400'
-                          : notification.type === 'training' || notification.type === 'verification'
-                            ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400'
-                            : 'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
-                          }`}>
-                          {notification.type === 'alert' ? <AlertTriangle className="h-5 w-5" /> :
-                            notification.type === 'training' ? <Users className="h-5 w-5" /> :
-                              notification.type === 'report' ? <FileText className="h-5 w-5" /> :
-                                <Info className="h-5 w-5" />}
-                        </div>
+        {/* Farms Tab */}
+        <TabsContent value="farms" className="space-y-6">
+          <Card className="border-none bg-white shadow-xl rounded-2xl overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-gray-50">
+              <div>
+                <CardTitle className="text-lg font-black text-[#002f37]">Grower Network Overview</CardTitle>
+                <CardDescription className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  Real-time health & productivity monitoring
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-6">
+                <div className="relative w-full md:w-80">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <Input
+                    placeholder="Search farms..."
+                    className="pl-10 border-none bg-gray-50 rounded-xl focus:ring-[#065f46]"
+                    value={farmerSearch}
+                    onChange={(e) => setFarmerSearch(e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="ghost" className="text-[10px] font-black tracking-widest text-[#002f37] hover:bg-gray-100">
+                    <Filter className="h-4 w-4 mr-2" /> FILTER
+                  </Button>
+                  <Button variant="ghost" className="text-[10px] font-black tracking-widest text-[#002f37] hover:bg-gray-100">
+                    <TrendingUp className="h-4 w-4 mr-2" /> SORT
+                  </Button>
+                </div>
+              </div>
 
-                        {/* Content */}
-                        <div className="flex-1 pr-4">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className={`text-xs font-medium px-2 py-0.5 rounded ${darkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-100 text-gray-500'
-                              }`}>
-                              {notification.type}
-                            </span>
-                            <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                              {new Date(notification.createdAt).toLocaleDateString()}
-                            </span>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-[#065f46]">
+                    <TableRow className="border-none hover:bg-transparent">
+                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4 px-6">Farm Information</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4 text-center">Health Status</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4">Next Visit</TableHead>
+                      <TableHead className="text-right font-black text-[10px] uppercase tracking-widest text-white py-4 px-6">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredFarms.map((farm: any) => (
+                      <TableRow key={farm._id} className="hover:bg-gray-50 transition-colors group">
+                        <TableCell className="py-4 px-6">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-gray-100 overflow-hidden shadow-sm">
+                              <img src={farm.farmer?.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${farm.name}`} alt={farm.name} className="w-full h-full object-cover" />
+                            </div>
+                            <div>
+                              <p className="text-[13px] font-black text-[#002f37] mb-0.5">{farm.name}</p>
+                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{farm.farmer?.name || 'Assigned Grower'}</p>
+                            </div>
                           </div>
-                          <h4 className={`text-sm font-semibold mb-1 leading-snug ${darkMode
-                            ? notification.read ? 'text-gray-400' : 'text-gray-100'
-                            : notification.read ? 'text-gray-600' : 'text-gray-900'
-                            }`}>
-                            {notification.message}
-                          </h4>
+                        </TableCell>
+                        <TableCell className="py-4">
+                          <div className="flex flex-col items-center gap-1.5 px-4 w-32 mx-auto">
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-[11px] font-black text-[#002f37]">85%</span>
+                              <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Health</span>
+                            </div>
+                            <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+                              <div className="h-full bg-[#065f46]" style={{ width: '85%' }}></div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-4">
+                          <div className="flex flex-col">
+                            <p className="text-[11px] font-black text-[#002f37] mb-0.5">{farm.nextVisit || 'TBD'}</p>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Scheduled</p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right py-4 px-6">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 rounded-lg text-gray-400 hover:bg-[#002f37] hover:text-white transition-all shadow-sm"
+                              onClick={() => handleViewFarmer(farm.farmer)}
+                            >
+                              <Users className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              className="bg-[#065f46] hover:bg-[#002f37] text-white h-8 text-[9px] font-black rounded-lg px-4 transition-all shadow-lg shadow-[#065f46]/20 uppercase tracking-widest border-none"
+                              onClick={() => handleNewVisit(farm.farmer)}
+                            >
+                              Start Visit
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                          {/* Action Link (appearing on hover) */}
-                          <div className="mt-2 flex items-center gap-1 text-xs text-[#1db954] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                            View Details <ArrowUpRight className="h-3 w-3" />
+        {/* Visits & Reports Tab */}
+        <TabsContent value="visits" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <Card className="lg:col-span-2 xl:col-span-2 border-none bg-white shadow-xl rounded-2xl overflow-hidden">
+              <CardHeader className="border-b border-gray-50 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-black text-[#002f37]">Visit Log & History</CardTitle>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Complete history of field audits</p>
+                </div>
+                <div className="p-2 bg-[#065f46]/10 rounded-xl">
+                  <ClipboardCheck className="h-5 w-5 text-[#065f46]" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y divide-gray-50">
+                  {activities.filter((a: any) => a.type === 'report').length > 0 ? (
+                    activities.filter((a: any) => a.type === 'report').map((report: any) => (
+                      <div key={report._id} className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors group">
+                        <div className="flex items-center gap-4">
+                          <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-[#002f37] transition-all">
+                            <FileText className="h-6 w-6 text-blue-600 group-hover:text-white" />
+                          </div>
+                          <div>
+                            <p className="text-[13px] font-black text-[#002f37]">{report.title}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[9px] font-bold text-gray-400 uppercase bg-gray-100 px-2 py-0.5 rounded-full">{new Date(report.createdAt).toLocaleDateString('en-GB')}</span>
+                              <span className="text-[9px] font-black text-[#065f46] uppercase tracking-widest">VERIFIED</span>
+                            </div>
                           </div>
                         </div>
+                        <Button variant="ghost" className="h-10 text-[10px] font-black tracking-widest text-blue-600 hover:bg-blue-50 rounded-xl px-6">
+                          VIEW PDF
+                        </Button>
                       </div>
                     ))
                   ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center p-6 opacity-60">
-                      <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-3">
-                        <Bell className="h-8 w-8 text-gray-400" />
+                    <div className="py-20 text-center">
+                      <div className="h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <ClipboardList className="h-8 w-8 text-gray-200" />
                       </div>
-                      <p className="text-sm font-medium text-gray-500">No notifications</p>
-                      <p className="text-xs text-gray-400">We'll let you know when something happens</p>
+                      <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No reports archived yet</p>
                     </div>
                   )}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Quick Stats */}
-            <Card className={`${sectionCardClass} transition-colors`}>
-              <CardHeader>
-                <CardTitle className={`section-title ${darkMode ? 'text-gray-100' : ''}`}>This Month</CardTitle>
-                <CardDescription className={darkMode ? 'text-gray-400' : ''}>
-                  Your monthly performance summary
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className={`rounded-lg border p-4 ${darkMode ? 'border-[#1b5b65] bg-[#0f3035]' : 'border-gray-200 bg-gray-50'}`}>
-                  <div className="flex items-center justify-between">
-                    <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                      Reports Submitted
-                    </span>
-                    <span className={`text-2xl font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                      {stats?.reportsThisMonth || 0}
-                    </span>
-                  </div>
+            <div className="space-y-6">
+              <Card className="bg-[#065f46] text-white border-none shadow-xl rounded-2xl p-6 relative overflow-hidden group">
+                <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
+                  <Activity className="h-24 w-24 -rotate-12" />
                 </div>
-                <div className={`rounded-lg border p-4 ${darkMode ? 'border-[#1b5b65] bg-[#0f3035]' : 'border-gray-200 bg-gray-50'}`}>
-                  <div className="flex items-center justify-between">
-                    <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                      Training Sessions
-                    </span>
-                    <span className={`text-2xl font-bold ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-                      {stats?.trainingsAttended || 0}
-                    </span>
-                  </div>
-                </div>
-                <div className={`rounded-lg border p-4 ${darkMode ? 'border-[#1b5b65] bg-[#0f3035]' : 'border-gray-200 bg-gray-50'}`}>
-                  <div className="flex items-center justify-between">
-                    <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                      Field Visits
-                    </span>
-                    <span className={`text-2xl font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>
-                      {farms.length}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Farmers Tab */}
-        <TabsContent value="farmers" className="space-y-6">
-          <Card className={`${sectionCardClass} transition-colors`}>
-            <CardHeader>
-              <CardTitle className={`section-title ${darkMode ? 'text-gray-100' : ''}`}>Farmers Management</CardTitle>
-              <CardDescription className={darkMode ? 'text-gray-400' : ''}>
-                Search, onboard, and verify farmers on your roster
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="relative w-full sm:w-64">
-                  <Search
-                    className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${darkMode ? 'text-gray-300' : 'text-gray-400'
-                      }`}
-                  />
-                  <Input
-                    placeholder="Search farmers..."
-                    value={farmerSearch}
-                    onChange={(event) => setFarmerSearch(event.target.value)}
-                    className={`pl-9 ${inputBaseClasses}`}
-                  />
-                </div>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <Select value={farmerStatusFilter} onValueChange={(value) => setFarmerStatusFilter(value as typeof farmerStatusFilter)}>
-                    <SelectTrigger className={`w-full sm:w-40 ${selectTriggerClasses}`}>
-                      <SelectValue placeholder="Filter" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Farmers</SelectItem>
-                      <SelectItem value="Completed">Completed</SelectItem>
-                      <SelectItem value="Pending">Pending</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <AddFarmerModal
-                    trigger={
-                      <Button className="bg-[#1db954] hover:bg-[#17a447] text-white">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Farmer
-                      </Button>
-                    }
-                    onSuccess={fetchData}
-                  />
-                </div>
-              </div>
-              <div className={`rounded-lg overflow-hidden ${darkMode ? 'bg-[#0b2528]' : 'bg-white'}`}>
-                <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
-                  <Table>
-                    <TableHeader className="sticky top-0 z-10">
-                      <TableRow className="bg-[#1db954] border-[#1db954]">
-                        <TableHead className="w-12 pl-6">
-                          <div className="flex items-center justify-center w-5 h-5 rounded border-2 border-white/50"></div>
-                        </TableHead>
-                        <TableHead className="text-white font-medium">FARMER NAME</TableHead>
-                        <TableHead className="text-white font-medium">REGION</TableHead>
-                        <TableHead className="text-white font-medium">LOCATION</TableHead>
-                        <TableHead className="text-white font-medium">FARM TYPE</TableHead>
-                        <TableHead className="text-white font-medium">STATUS</TableHead>
-                        <TableHead className="text-right text-white font-medium pr-6">ACTIONS</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredFarmers.map((farmer: any, index: number) => (
-                        <TableRow
-                          key={farmer._id || index}
-                          className={`border-b transition-colors ${darkMode
-                            ? 'border-[#124b53] hover:bg-[#0d3036]'
-                            : 'border-gray-100 hover:bg-gray-50'
-                            }`}
-                        >
-                          <TableCell className="pl-6">
-                            <div className={`flex items-center justify-center w-5 h-5 rounded ${index % 3 === 0
-                              ? 'bg-[#FDB022] border-2 border-[#FDB022]'
-                              : 'border-2 border-gray-300'
-                              }`}>
-                              {index % 3 === 0 && (
-                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                </svg>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className={`py-4 ${darkMode ? 'text-gray-200' : 'text-gray-700'} font-medium`}>
-                            {farmer.name}
-                          </TableCell>
-                          <TableCell className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                            {farmer.region}
-                          </TableCell>
-                          <TableCell className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                            {farmer.community}
-                          </TableCell>
-                          <TableCell className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                            {farmer.farmType}
-                          </TableCell>
-                          <TableCell>
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${farmer.displayStatus === 'Completed'
-                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'
-                              : farmer.displayStatus === 'Pending'
-                                ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300'
-                                : 'bg-gray-100 text-gray-600 dark:bg-gray-500/20 dark:text-gray-300'
-                              }`}>
-                              {farmer.displayStatus}
-                            </span>
-                          </TableCell>
-                          <TableCell className="pr-6">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() => handleViewFarmer(farmer)}
-                                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${darkMode
-                                  ? 'bg-cyan-600 hover:bg-cyan-500'
-                                  : 'bg-cyan-600 hover:bg-cyan-700'
-                                  }`}
-                                title="View Details"
-                              >
-                                <Eye className="w-4 h-4 text-white" />
-                              </button>
-                              <button
-                                onClick={() => handleEditFarmer(farmer)}
-                                className="w-8 h-8 rounded-full bg-[#E91E63] hover:bg-[#C2185B] flex items-center justify-center transition-colors"
-                                title="Edit"
-                              >
-                                <Edit className="w-4 h-4 text-white" />
-                              </button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Field Ops Tab */}
-        <TabsContent value="field-ops" className="space-y-6">
-
-          {/* Scheduled Visits Section */}
-          <Card className={`${sectionCardClass} transition-colors border-l-4 border-l-blue-500`}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className={darkMode ? 'text-gray-100' : ''}>Scheduled Farm Visits</CardTitle>
-                  <CardDescription className={darkMode ? 'text-gray-400' : ''}>Upcoming visits requested by farmers</CardDescription>
-                </div>
-                <Button variant="outline" size="sm" className={darkMode ? 'border-gray-600' : ''}>
-                  <Calendar className="mr-2 h-4 w-4" /> View Calendar
+                <h3 className="font-black text-xl mb-2">Ready for a Visit?</h3>
+                <p className="text-[11px] font-bold text-white/70 leading-relaxed mb-8 uppercase tracking-wider">
+                  Generate instant field audits with AI-powered diagnostics.
+                </p>
+                <Button
+                  className="w-full bg-[#002f37] text-white hover:bg-[#003c47] font-black py-7 rounded-2xl shadow-xl transition-all"
+                  onClick={() => setIsUploadReportModalOpen(true)}
+                >
+                  <Plus className="h-5 w-5 mr-1" /> START NEW AUDIT
                 </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className={tableHeaderRowClass}>
-                      <TableHead className="text-white font-medium">FARMER</TableHead>
-                      <TableHead className="text-white font-medium">FARM</TableHead>
-                      <TableHead className="text-white font-medium">DATE & TIME</TableHead>
-                      <TableHead className="text-white font-medium">PURPOSE</TableHead>
-                      <TableHead className="text-white font-medium">STATUS</TableHead>
-                      <TableHead className="text-right text-white font-medium">ACTIONS</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {farms.filter((f: any) => f.nextVisit).map((farm: any) => (
-                      <TableRow key={farm._id} className={darkMode ? 'border-gray-700 hover:bg-[#0f3035]' : 'hover:bg-gray-50'}>
-                        <TableCell className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{farm.farmer?.name || 'N/A'}</TableCell>
-                        <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{farm.name}</TableCell>
-                        <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
-                          <div className="flex flex-col">
-                            <span>{farm.nextVisit}</span>
-                            <span className="text-xs opacity-70">09:00 AM</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{farm.crop} Inspection</TableCell>
-                        <TableCell>
-                          <Badge className="bg-blue-500/10 text-blue-600 hover:bg-blue-500/20">
-                            Scheduled
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className={darkMode ? 'text-gray-300' : 'text-gray-600'}
-                              onClick={() => handleViewVisit(farm)}
-                            >
-                              Details
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {farms.filter((f: any) => f.nextVisit).length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                          No upcoming visits scheduled
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-1">
-              <Card className={`${sectionCardClass} h-full transition-colors`}>
-                <CardHeader>
-                  <CardTitle className={darkMode ? 'text-gray-100' : ''}>Filters</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <label className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Status</label>
-                    <Select value={farmStatusFilter} onValueChange={(value: any) => setFarmStatusFilter(value)}>
-                      <SelectTrigger className={darkMode ? 'bg-[#0b2528] border-gray-600 text-gray-200' : ''}>
-                        <SelectValue placeholder="All Statuses" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Statuses</SelectItem>
-                        <SelectItem value="verified">Verified</SelectItem>
-                        <SelectItem value="scheduled">Visit Scheduled</SelectItem>
-                        <SelectItem value="needs-attention">Needs Attention</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
               </Card>
-            </div>
-            <div className="md:col-span-2">
-              <Card className={`${sectionCardClass} transition-colors`}>
-                <CardHeader>
-                  <CardTitle className={darkMode ? 'text-gray-100' : ''}>Active Farms</CardTitle>
-                  <CardDescription className={darkMode ? 'text-gray-400' : ''}>
-                    Monitoring {farms.length} assigned farms
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className={tableHeaderRowClass}>
-                          <TableHead className="text-white uppercase font-medium">Farm Name</TableHead>
-                          <TableHead className="text-white uppercase font-medium">Farmer</TableHead>
-                          <TableHead className="text-white uppercase font-medium">Location</TableHead>
-                          <TableHead className="text-white uppercase font-medium">Status</TableHead>
-                          <TableHead className="text-white uppercase font-medium">Last Visit</TableHead>
-                          <TableHead className="text-white uppercase font-medium text-right">Action</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredFarms.map((farm: any, index: number) => (
-                          <TableRow key={farm.id || farm._id || index} className={tableBodyRowClass}>
-                            <TableCell className={`${tableCellClass} font-medium`}>{farm.name}</TableCell>
-                            <TableCell className={tableCellClass}>{farm.farmer?.name || 'N/A'}</TableCell>
-                            <TableCell className={tableCellClass}>{farm.location || (farm.farmer ? `${farm.farmer.region}, ${farm.farmer.community}` : 'N/A')}</TableCell>
-                            <TableCell className={tableCellClass}>
-                              <Badge className={statusStyles[farm.status] ?? (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600')}>
-                                {farm.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className={tableCellClass}>{farm.lastVisit || 'No visits yet'}</TableCell>
-                            <TableCell className={`${tableCellClass} text-right`}>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className={darkMode ? 'text-emerald-300 hover:bg-[#0d3036]' : 'text-emerald-700'}
-                                onClick={() => handleViewFarmer(farm.farmer)}
-                              >
-                                View
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
+
+              <Card className="border-none bg-white shadow-xl rounded-2xl overflow-hidden p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-black text-[10px] uppercase tracking-widest text-[#002f37]">Weekly Progress</h3>
+                  <span className="text-[10px] font-black text-emerald-600">80%</span>
+                </div>
+                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden mb-3">
+                  <div className="h-full bg-[#065f46]" style={{ width: '80%' }}></div>
+                </div>
+                <p className="text-[9px] font-bold text-gray-400 italic">2 audits remaining for your weekly goal.</p>
               </Card>
             </div>
           </div>
         </TabsContent>
 
-        {/* Partnerships Tab */}
-        <TabsContent value="partnerships" className="space-y-6">
-
-          {/* Pending Approvals Section */}
-          {matches.some((m: any) => m.approvalStatus === 'pending') && (
-            <Card className={`${sectionCardClass} border-purple-200 dark:border-purple-900/50 transition-colors mb-6`}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className={`h-5 w-5 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
-                  <CardTitle className={darkMode ? 'text-purple-100' : 'text-purple-900'}>Pending Approvals</CardTitle>
-                </div>
-                <CardDescription className={darkMode ? 'text-purple-300/70' : 'text-purple-700/70'}>
-                  These matches require your verification and approval
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className={tableHeaderRowClass}>
-                        <TableHead className="text-white font-medium">INVESTOR</TableHead>
-                        <TableHead className="text-white font-medium">FARMER</TableHead>
-                        <TableHead className="text-white font-medium">VALUE</TableHead>
-                        <TableHead className="text-white font-medium">DOCUMENTS</TableHead>
-                        <TableHead className="text-right text-white font-medium">ACTION</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {matches.filter((m: any) => m.approvalStatus === 'pending').map((match: any) => (
-                        <TableRow key={match.id} className={darkMode ? 'border-purple-900/30' : 'border-purple-100'}>
-                          <TableCell className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{match.investor}</TableCell>
-                          <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{match.farmer?.name || 'N/A'}</TableCell>
-                          <TableCell className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{match.value}</TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Badge variant="outline" className={`${match.documents?.farmerSignature ? 'bg-green-500/10 text-green-600 border-green-200' : 'text-gray-500'}`}>
-                                Farmer
-                              </Badge>
-                              <Badge variant="outline" className={`${match.documents?.investorSignature ? 'bg-green-500/10 text-green-600 border-green-200' : 'text-gray-500'}`}>
-                                Investor
-                              </Badge>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              size="sm"
-                              className="bg-purple-600 hover:bg-purple-700 text-white"
-                              onClick={() => handleReviewMatch(match)}
-                            >
-                              Review
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <Card className={`${sectionCardClass} transition-colors`}>
-            <CardHeader>
-              <CardTitle className={darkMode ? 'text-gray-100' : ''}>Active Investments</CardTitle>
-              <CardDescription className={darkMode ? 'text-gray-400' : ''}>
-                Monitor ongoing investment progress and history
-              </CardDescription>
+        {/* Media Tab */}
+        <TabsContent value="media" className="space-y-6">
+          <Card className="border-none bg-white shadow-xl rounded-2xl overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-gray-50">
+              <div>
+                <CardTitle className="text-lg font-black text-[#002f37]">Media Archive</CardTitle>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Visual evidence and field logs</p>
+              </div>
+              <Button className="bg-[#002f37] hover:bg-[#003c47] text-white font-black text-[10px] tracking-widest px-6 rounded-xl">
+                <ImageIcon className="h-4 w-4 mr-2" /> UPLOAD BATCH
+              </Button>
             </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className={tableHeaderRowClass}>
-                      <TableHead className="text-white uppercase">INVESTOR</TableHead>
-                      <TableHead className="text-white uppercase">FARMER</TableHead>
-                      <TableHead className="text-white uppercase">FARM TYPE</TableHead>
-                      <TableHead className="text-white uppercase">MATCH DATE</TableHead>
-                      <TableHead className="text-white uppercase">VALUE</TableHead>
-                      <TableHead className="text-white uppercase">STATUS</TableHead>
-                      <TableHead className="text-right text-white uppercase">ACTIONS</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {matches.filter((m: any) => m.status === 'Active Match').map((match: any) => (
-                      <TableRow key={match._id} className={tableBodyRowClass}>
-                        <TableCell className={`${tableCellClass} font-medium`}>{match.investor}</TableCell>
-                        <TableCell className={tableCellClass}>{match.farmer?.name || 'N/A'}</TableCell>
-                        <TableCell className={tableCellClass}>{match.farmType}</TableCell>
-                        <TableCell className={tableCellClass}>{match.matchDate}</TableCell>
-                        <TableCell className={tableCellClass}>{match.value}</TableCell>
-                        <TableCell className={tableCellClass}>
-                          <Badge className={statusStyles[match.status] ?? (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600')}>
-                            {match.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className={`${tableCellClass} text-right`}>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={darkMode ? 'text-emerald-300 hover:bg-[#0d3036]' : 'text-emerald-700'}
-                            onClick={() => handleViewMatch(match)}
-                          >
-                            View
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {matches.filter((m: any) => m.approvalStatus !== 'pending').length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                          No active investments found
-                        </TableCell>
-                      </TableRow>
+            <CardContent className="p-6">
+              <div className="flex gap-2 mb-8">
+                {['All Assets', 'Field Growth', 'Crop Issues', 'Harvesting'].map((tag, idx) => (
+                  <Badge key={tag} variant="outline" className={`cursor-pointer px-4 py-1.5 rounded-full font-black text-[9px] uppercase tracking-widest transition-all ${idx === 0 ? 'bg-[#065f46] text-white border-transparent' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 border-transparent'}`}>
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {mediaItems.length > 0 ? (
+                  mediaItems.slice(0, 10).map((item: any, i: number) => (
+                  <div key={item._id || i} className="group relative aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
+                    {item.thumbnail || item.url ? (
+                      <img
+                        src={item.thumbnail || item.url}
+                        alt={item.name}
+                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-gray-400">
+                        <ImageIcon className="h-8 w-8 mb-2" />
+                        <p className="text-[10px] font-black uppercase tracking-tighter px-2 text-center line-clamp-2">{item.name}</p>
+                      </div>
                     )}
-                  </TableBody>
-                </Table>
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#002f37]/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 p-4 flex flex-col justify-end">
+                      <p className="text-white text-[11px] font-black leading-tight line-clamp-1">
+                        {typeof item.farm === 'object' ? item.farm?.name : (item.farm || 'General')}
+                      </p>
+                      <p className="text-[#065f46] text-[9px] font-bold uppercase tracking-widest mt-1">{item.type || 'Field Media'}</p>
+                    </div>
+                  </div>
+                ))
+                ) : (
+                  <div className="col-span-full py-20 text-center flex flex-col items-center justify-center">
+                    <div className="h-20 w-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                      <ImageIcon className="h-10 w-10 text-gray-200" />
+                    </div>
+                    <h4 className="text-sm font-black text-[#002f37] uppercase tracking-widest">No Media Discovered</h4>
+                    <p className="text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-tight">Captured field photos and evidence will appear here</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Training Hub Tab */}
-        <TabsContent value="training">
-          <TrainingPerformanceContent />
+
+        {/* Quick Reports Tab */}
+        <TabsContent value="quick-reports" className="space-y-6">
+          <Card className={`${sectionCardClass} border-none shadow-xl rounded-2xl overflow-hidden min-h-[500px] flex flex-col`}>
+            <CardHeader className="bg-white border-b border-gray-50">
+              <CardTitle className="text-xl font-black text-[#002f37]">Quick Reports Engine</CardTitle>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Generate and download standard templates</p>
+            </CardHeader>
+            <CardContent className="p-8 flex-1 grid md:grid-cols-2 gap-6 bg-gray-50/50">
+              <Card className="border border-gray-100 shadow-sm hover:shadow-md transition-all hover:border-[#065f46]/30 cursor-pointer">
+                <CardContent className="p-6 flex flex-col h-full bg-white">
+                  <div className="h-12 w-12 rounded-2xl bg-[#065f46]/10 flex items-center justify-center mb-4">
+                    <FileText className="h-6 w-6 text-[#065f46]" />
+                  </div>
+                  <h4 className="text-sm font-black text-[#002f37] mb-2 uppercase tracking-wide">Daily Field Report</h4>
+                  <p className="text-xs text-gray-500 mb-6 flex-1">Standard summary of all field operations, visits, and challenges recorded today.</p>
+                  <Button className="w-full bg-[#002f37] hover:bg-[#002f37]/90 text-white font-bold rounded-xl text-xs flex items-center gap-2">
+                    <Download className="h-4 w-4" /> GENERATE REPORT
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="border border-gray-100 shadow-sm hover:shadow-md transition-all hover:border-[#065f46]/30 cursor-pointer">
+                <CardContent className="p-6 flex flex-col h-full bg-white">
+                  <div className="h-12 w-12 rounded-2xl bg-[#065f46]/10 flex items-center justify-center mb-4">
+                    <BarChart3 className="h-6 w-6 text-[#065f46]" />
+                  </div>
+                  <h4 className="text-sm font-black text-[#002f37] mb-2 uppercase tracking-wide">Weekly Performance KPI</h4>
+                  <p className="text-xs text-gray-500 mb-6 flex-1">Aggregated statistics on verification rates, farm onboarding, and agent productivity.</p>
+                  <Button className="w-full bg-[#002f37] hover:bg-[#002f37]/90 text-white font-bold rounded-xl text-xs flex items-center gap-2">
+                    <Download className="h-4 w-4" /> GENERATE REPORT
+                  </Button>
+                </CardContent>
+              </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Operational Map Tab */}
+        <TabsContent value="operational-map" className="space-y-6">
+          <Card className={`${sectionCardClass} border-none shadow-xl rounded-2xl overflow-hidden h-[600px] flex flex-col relative`}>
+            <CardHeader className="bg-white border-b border-gray-50 z-10">
+              <CardTitle className="text-xl font-black text-[#002f37] flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-[#065f46]" /> Field Operations Map
+              </CardTitle>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Geospatial overview of registered farms and active missions</p>
+            </CardHeader>
+            <div className="w-full flex-1 bg-gray-100 relative overflow-hidden">
+               <OperationalMap farms={farms} darkMode={darkMode} />
+            </div>
+          </Card>
         </TabsContent>
       </Tabs>
 
-      {/* Modals */}
       <ViewFarmerModal open={viewModalOpen} onOpenChange={setViewModalOpen} farmer={selectedFarmer} />
+      <AddFarmerModal open={isAddFarmerModalOpen} onOpenChange={setIsAddFarmerModalOpen} onSuccess={fetchData} />
       <AddFarmerModal open={editModalOpen} onOpenChange={setEditModalOpen} farmer={selectedFarmer} isEditMode={true} onSuccess={fetchData} />
       <ViewMatchModal open={viewMatchModalOpen} onOpenChange={setViewMatchModalOpen} match={selectedMatch} />
       <ReviewMatchModal
@@ -1259,8 +1219,8 @@ const AgentDashboard: React.FC = () => {
       <ViewDisputeModal open={viewDisputeModalOpen} onOpenChange={setViewDisputeModalOpen} dispute={selectedDispute} />
       <ViewVisitDetailsModal open={viewVisitModalOpen} onOpenChange={setViewVisitModalOpen} visit={selectedVisit} />
       <VerificationQueueModal
-        open={verificationQueueModalOpen}
-        onOpenChange={setVerificationQueueModalOpen}
+        open={isVerificationQueueModalOpen}
+        onOpenChange={setIsVerificationQueueModalOpen}
         pendingFarmers={pendingFarmers}
         agent={agent}
         darkMode={darkMode}
@@ -1270,16 +1230,29 @@ const AgentDashboard: React.FC = () => {
       />
 
       <ActiveFarmsModal
-        open={activeFarmsModalOpen}
-        onOpenChange={setActiveFarmsModalOpen}
+        open={isActiveFarmsModalOpen}
+        onOpenChange={setIsActiveFarmsModalOpen}
         farms={farms}
         onTrackJourney={handleTrackJourney}
       />
 
       <FarmJourneyModal
-        open={journeyModalOpen}
-        onOpenChange={setJourneyModalOpen}
+        open={isJourneyModalOpen}
+        onOpenChange={setIsJourneyModalOpen}
         farmer={selectedFarmer}
+      />
+
+      <UploadReportModal
+        open={isUploadReportModalOpen}
+        onOpenChange={setIsUploadReportModalOpen}
+        farmer={selectedFarmer}
+        onUpload={fetchData}
+      />
+
+      <ScheduleVisitModal
+        open={logVisitModalOpen}
+        onOpenChange={setLogVisitModalOpen}
+        onSuccess={fetchData}
       />
     </AgentLayout>
   );

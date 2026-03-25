@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 
 // Brand colors
-const BRAND_MAGENTA = '#921573';
+const BRAND_MAGENTA = '#7ede56';
 const BRAND_GREEN = '#7ede56';
 const BRAND_TEAL = '#002F37';
 
@@ -103,7 +103,7 @@ const Blog = () => {
       slug: "mushroom-farming",
       title: "A Beginner's Guide to Mushroom Farming: From Planning to Profit",
       excerpt: "Learn the essentials of mushroom farming, from initial planning and setup to harvesting and selling for profit. A comprehensive guide for aspiring Ghanaian agropreneurs.",
-      author: "AgriLync Team",
+      author: "Agrilync Nexus Team",
       date: "2026-01-16",
       readTime: "6 min read",
       category: "Agribusiness",
@@ -128,8 +128,8 @@ const Blog = () => {
     {
       id: 2,
       title: "5 Challenges Ghanaian Farmers Face Without Smart Tools",
-      excerpt: "Discover how AgriLync is helping to solve agricultural challenges with AI and finance access. Learn about the key obstacles facing Ghanaian farmers and how technology is providing solutions.",
-      author: "AgriLync Team",
+      excerpt: "Discover how Agrilync Nexus is helping to solve agricultural challenges with AI and finance access. Learn about the key obstacles facing Ghanaian farmers and how technology is providing solutions.",
+      author: "Agrilync Nexus Team",
       date: "2024-06-25",
       readTime: "5 min read",
       category: "Agribusiness",
@@ -235,14 +235,14 @@ const Blog = () => {
     },
     {
       id: 3,
-      title: "Post-Harvest Strategy and Strategic Growth for Smallholder Farmers",
+      title: "Post-Harvest Strategy and Strategic Growth for Lync Growers",
       date: "2025-08-09",
       time: "6:00 PM - 7:30 PM",
       location: "Virtual (Google Meet)",
       spots: 100,
       registered: 45,
       image: "/lovable-uploads/webinar4.jpg",
-      description: "Comprehensive strategies to reduce post-harvest losses and improve strategic growth for smallholder farmers in Ghana.",
+      description: "Comprehensive strategies to reduce post-harvest losses and improve strategic growth for Lync Growers in Ghana.",
       speaker: "Mrs Erica Adjoa Appaih",
       status: "completed",
       recordingLink: "https://drive.google.com/file/d/1kqJWei0rrOflXEF1DzfKnoD-s5ElcMEw/view?usp=sharing"
@@ -279,7 +279,7 @@ const Blog = () => {
     if (webinar.registrationLink) {
       window.open(webinar.registrationLink, '_blank');
     } else if (webinar.id === 3) {
-      window.open('https://is.gd/agrilyncwebinar', '_blank');
+      window.open('https://is.gd/agrilyncwebinarnexus', '_blank');
     } else {
       setSelectedWebinar(webinar);
       setShowRegistration(true);
@@ -320,16 +320,17 @@ const Blog = () => {
       <section className="relative py-20 md:py-28 overflow-hidden bg-white">
         {/* Decorative Elements - subtle on white */}
         <div className="absolute top-20 right-10 w-72 h-72 bg-[#7ede56]/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#921573]/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#7ede56]/5 rounded-full blur-3xl"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12 animate-fade-in-up">
 
             <h1
               ref={heroHeadingRef}
-              className={`text-4xl sm:text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-[#921573] via-[#002F37] to-[#7ede56] bg-clip-text text-transparent transition-all duration-700 ${heroHeadingVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+              className={`text-4xl sm:text-5xl md:text-6xl font-bold mb-6 transition-all duration-700 ${heroHeadingVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+              style={{ color: BRAND_TEAL }}
             >
-              AgriLync Blog & Events
+              Agrilync Nexus Blog & Events
             </h1>
 
             <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8">
@@ -388,7 +389,7 @@ const Blog = () => {
             >
               Featured Articles
             </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full mx-auto"></div>
+            <div className="w-24 h-1 bg-gradient-to-r from-[#7ede56] to-[#7ede56] rounded-full mx-auto"></div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -449,7 +450,7 @@ const Blog = () => {
             <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-[#002F37]">
               Latest Articles
             </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full mx-auto"></div>
+            <div className="w-24 h-1 bg-gradient-to-r from-[#7ede56] to-[#7ede56] rounded-full mx-auto"></div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -476,13 +477,13 @@ const Blog = () => {
                 <div className="p-6">
                   <div className="flex flex-wrap gap-2 mb-3">
                     {post.tags.slice(0, 2).map((tag, tagIndex) => (
-                      <Badge key={tagIndex} variant="outline" className="text-xs border-[#921573]/20 text-[#921573]">
+                      <Badge key={tagIndex} variant="outline" className="text-xs border-[#7ede56]/20 text-[#7ede56]">
                         {tag}
                       </Badge>
                     ))}
                   </div>
 
-                  <h3 className="text-xl font-bold mb-3 text-[#002F37] group-hover:text-[#921573] transition-colors leading-tight">
+                  <h3 className="text-xl font-bold mb-3 text-[#002F37] group-hover:text-[#7ede56] transition-colors leading-tight">
                     {post.title}
                   </h3>
 
@@ -545,7 +546,7 @@ const Blog = () => {
             >
               Upcoming Webinars & Events
             </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full mx-auto mb-4"></div>
+            <div className="w-24 h-1 bg-gradient-to-r from-[#7ede56] to-[#7ede56] rounded-full mx-auto mb-4"></div>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Join our expert-led webinars and events to learn about the latest agricultural innovations.
             </p>
@@ -568,7 +569,7 @@ const Blog = () => {
                 </div>
 
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold group-hover:text-[#921573] transition-colors">
+                  <CardTitle className="text-xl font-bold group-hover:text-[#7ede56] transition-colors">
                     {webinar.title}
                   </CardTitle>
                   <div className="space-y-2 text-sm text-gray-600 mt-4">
@@ -632,7 +633,7 @@ const Blog = () => {
             >
               Completed Events
             </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full mx-auto mb-4"></div>
+            <div className="w-24 h-1 bg-gradient-to-r from-[#7ede56] to-[#7ede56] rounded-full mx-auto mb-4"></div>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Watch recordings of our previous webinars and learn from expert sessions.
             </p>
@@ -640,7 +641,7 @@ const Blog = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {webinars.filter(w => w.status === 'completed').map((webinar, index) => (
-              <Card key={webinar.id} className="group hover:shadow-2xl transition-all duration-500 overflow-hidden border-2 hover:border-[#921573]/30 rounded-2xl">
+              <Card key={webinar.id} className="group hover:shadow-2xl transition-all duration-500 overflow-hidden border-2 hover:border-[#7ede56]/30 rounded-2xl">
                 <div className="relative overflow-hidden h-64">
                   <img
                     src={webinar.image}
@@ -651,7 +652,7 @@ const Blog = () => {
                     <Play className="h-20 w-20 text-white" />
                   </div>
                   <div className="absolute top-4 right-4">
-                    <Badge className="bg-emerald-600 text-white flex items-center gap-2">
+                    <Badge className="bg-[#7ede56] text-[#002f37] flex items-center gap-2">
                       <CheckCircle className="h-4 w-4" />
                       Completed
                     </Badge>
@@ -659,7 +660,7 @@ const Blog = () => {
                 </div>
 
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold group-hover:text-[#921573] transition-colors">
+                  <CardTitle className="text-xl font-bold group-hover:text-[#7ede56] transition-colors">
                     {webinar.title}
                   </CardTitle>
                   <div className="space-y-2 text-sm text-gray-600 mt-4">
@@ -681,7 +682,7 @@ const Blog = () => {
                   <div className="flex flex-col gap-3">
                     <Button
                       variant="outline"
-                      className="w-full border-2 border-[#921573] text-[#921573] hover:bg-[#921573] hover:text-white rounded-full transition-all duration-300"
+                      className="w-full border-2 border-[#7ede56] text-[#7ede56] hover:bg-[#7ede56] hover:text-white rounded-full transition-all duration-300"
                       onClick={() => webinar.recordingLink && window.open(webinar.recordingLink, '_blank')}
                     >
                       <Play className="mr-2 h-4 w-4" />
@@ -734,7 +735,7 @@ const Blog = () => {
           </Button>
 
           <p className="text-sm text-gray-400 mt-6">
-            Free 30-minute session • No credit card required
+            Free 30-minute session � No credit card required
           </p>
         </div>
       </section>
