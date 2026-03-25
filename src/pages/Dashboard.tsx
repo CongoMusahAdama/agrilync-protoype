@@ -131,91 +131,42 @@ const Dashboard = () => {
         ]
       },
       stats: {
-        totalProjects: 12,
-        activeConnections: 8,
-        totalInvestment: 45000,
-        monthlyGrowth: 15.2,
-        totalEarnings: 45000,
-        activeProjects: 5,
-        totalCrops: 12,
-        investorMatches: 3
+        totalProjects: 0,
+        activeConnections: 0,
+        totalInvestment: 0,
+        monthlyGrowth: 0,
+        totalEarnings: 0,
+        activeProjects: 0,
+        totalCrops: 0,
+        investorMatches: 0
       },
       chartData: {
-        revenue: [
-          { month: 'Jan', value: 3500 },
-          { month: 'Feb', value: 4200 },
-          { month: 'Mar', value: 3800 },
-          { month: 'Apr', value: 5100 },
-          { month: 'May', value: 4800 },
-          { month: 'Jun', value: 6200 },
-        ],
-        composition: [
-          { name: 'Maize', value: 40, color: '#7ede56' },
-          { name: 'Cassava', value: 30, color: '#ffa500' },
-          { name: 'Vegetables', value: 20, color: '#ff6347' },
-          { name: 'Other', value: 10, color: '#921573' },
-        ]
+        revenue: [],
+        composition: []
       },
-      recentActivities: [
-        { id: 1, type: 'connection', message: 'New farmer connection: Sarah from Kumasi', time: '2 hours ago' },
-        { id: 2, type: 'investment', message: 'Investment proposal approved for rice farming', time: '1 day ago' },
-        { id: 3, type: 'update', message: 'Weather alert: Heavy rain expected tomorrow', time: '2 days ago' }
-      ],
-      projects: [
-        { id: 1, name: 'Rice Farming Project', location: 'Kumasi', status: 'active', progress: 75, investment: 15000 },
-        { id: 2, name: 'Vegetable Garden', location: 'Accra', status: 'planning', progress: 25, investment: 8000 },
-        { id: 3, name: 'Poultry Farm', location: 'Tamale', status: 'completed', progress: 100, investment: 22000 }
-      ],
-      trainingSessions: [
-        { id: 1, title: 'Modern Irrigation Techniques', date: '2024-01-25', time: '10:00 AM', status: 'upcoming', type: 'workshop' },
-        { id: 2, title: 'Soil Health Management', date: '2024-01-20', time: '2:00 PM', status: 'completed', type: 'webinar' }
-      ],
-      notifications: [
-        { id: 1, type: 'info', title: 'System Update', message: 'Dashboard features updated.', time: '2 hours ago', read: false }
-      ]
+      recentActivities: [],
+      projects: [],
+      trainingSessions: [],
+      notifications: []
     },
     investor: {
       name: 'Maria Investment',
       stats: {
-        totalInvestments: 6,
-        activePortfolio: 4,
-        totalReturns: 12500,
-        monthlyGrowth: 8.7,
-        totalEarnings: 12500,
-        investorMatches: 6
+        totalInvestments: 0,
+        activePortfolio: 0,
+        totalReturns: 0,
+        monthlyGrowth: 0,
+        totalEarnings: 0,
+        investorMatches: 0
       },
       chartData: {
-        revenue: [
-          { month: 'Jan', value: 1200 },
-          { month: 'Feb', value: 1500 },
-          { month: 'Mar', value: 1300 },
-          { month: 'Apr', value: 2100 },
-          { month: 'May', value: 2400 },
-          { month: 'Jun', value: 2800 },
-        ],
-        composition: [
-          { name: 'Crop Farms', value: 50, color: '#7ede56' },
-          { name: 'Livestock', value: 30, color: '#ffa500' },
-          { name: 'Processing', value: 15, color: '#ff6347' },
-          { name: 'Tech', value: 5, color: '#921573' },
-        ]
+        revenue: [],
+        composition: []
       },
-      recentActivities: [
-        { id: 1, type: 'return', message: 'Received $2,500 return from rice project', time: '1 hour ago' },
-        { id: 2, type: 'proposal', message: 'New investment opportunity: Cassava farming', time: '3 hours ago' },
-        { id: 3, type: 'update', message: 'Portfolio performance report available', time: '1 day ago' }
-      ],
-      investments: [
-        { id: 1, name: 'Rice Farming - Kumasi', farmer: 'Sarah Mensah', amount: 15000, returns: 2500, status: 'active' },
-        { id: 2, name: 'Vegetable Garden - Accra', farmer: 'Kwame Asante', amount: 8000, returns: 1200, status: 'active' },
-        { id: 3, name: 'Poultry Farm - Tamale', farmer: 'Aisha Ibrahim', amount: 22000, returns: 3500, status: 'completed' }
-      ],
-      trainingSessions: [
-        { id: 1, title: 'Investment Strategies 101', date: '2024-02-01', time: '11:00 AM', status: 'upcoming', type: 'webinar' }
-      ],
-      notifications: [
-        { id: 1, type: 'success', title: 'Return Received', message: 'You received a return of GHS 2,500.', time: '1 hour ago', read: false }
-      ]
+      recentActivities: [],
+      investments: [],
+      trainingSessions: [],
+      notifications: []
     },
     farmer: {
       name: 'Kwame Asante',
@@ -270,113 +221,46 @@ const Dashboard = () => {
         region: 'Ashanti'
       },
       stats: {
-        totalCrops: 5,
-        activeProjects: 3,
-        totalEarnings: 8500,
-        monthlyGrowth: 12.3,
-        investorMatches: 2,
-        pendingMatches: 1
+        totalCrops: 0,
+        activeProjects: 0,
+        totalEarnings: 0,
+        monthlyGrowth: 0,
+        investorMatches: 0,
+        pendingMatches: 0
       },
       chartData: {
-        revenue: [
-          { month: 'Jan', value: 800 },
-          { month: 'Feb', value: 1200 },
-          { month: 'Mar', value: 950 },
-          { month: 'Apr', value: 1500 },
-          { month: 'May', value: 1800 },
-          { month: 'Jun', value: 2200 },
-        ],
-        composition: [
-          { name: 'Rice', value: 60, color: '#7ede56' },
-          { name: 'Maize', value: 25, color: '#ffa500' },
-          { name: 'Vegetables', value: 15, color: '#ff6347' },
-        ]
+        revenue: [],
+        composition: []
       },
-      recentActivities: [
-        { id: 1, type: 'harvest', message: 'Rice harvest completed - 2.5 tons', time: '30 minutes ago' },
-        { id: 2, type: 'weather', message: 'Weather alert: Optimal conditions for planting', time: '2 hours ago' },
-        { id: 3, type: 'ai', message: 'AI recommendation: Apply fertilizer this week', time: '1 day ago' },
-        { id: 4, type: 'investor', message: 'New investor interest in your rice project', time: '2 days ago' },
-        { id: 5, type: 'training', message: 'Training session: Modern irrigation techniques', time: '3 days ago' }
-      ],
-      crops: [
-        { id: 1, name: 'Rice', variety: 'Jasmine', area: '2 acres', status: 'harvested', yield: '2.5 tons', investment: 'GHS 15,000' },
-        { id: 2, name: 'Tomatoes', variety: 'Cherry', area: '0.5 acres', status: 'growing', yield: 'Expected 1 ton', investment: 'GHS 8,000' },
-        { id: 3, name: 'Maize', variety: 'Hybrid', area: '1.5 acres', status: 'planted', yield: 'Expected 3 tons', investment: 'GHS 12,000' },
-        { id: 4, name: 'Cassava', variety: 'Local', area: '1 acre', status: 'planning', yield: 'Expected 4 tons', investment: 'GHS 6,000' }
-      ],
-      livestock: [
-        { id: 1, name: 'Poultry', variety: 'Broiler', quantity: '200 birds', status: 'growing', production: '150 kg/month', investment: 'GHS 20,000' },
-        { id: 2, name: 'Cattle', variety: 'Local', quantity: '15 heads', status: 'active', production: '50L milk/day', investment: 'GHS 35,000' },
-        { id: 3, name: 'Goat', variety: 'West African Dwarf', quantity: '30 heads', status: 'active', production: 'Growing herd', investment: 'GHS 15,000' }
-      ],
-      investorMatches: [
-        { id: 1, investorName: 'Green Investment Ltd', amount: 'GHS 25,000', status: 'matched', interest: 'Rice farming', date: '2024-01-15' },
-        { id: 2, investorName: 'AgriFund Ghana', amount: 'GHS 18,000', status: 'matched', interest: 'Mixed farming', date: '2024-01-10' },
-        { id: 3, investorName: 'Farm Capital Partners', amount: 'GHS 30,000', status: 'pending', interest: 'Vegetable farming', date: '2024-01-20' }
-      ],
-      trainingSessions: [
-        { id: 1, title: 'Modern Irrigation Techniques', date: '2024-01-25', time: '10:00 AM', status: 'upcoming', type: 'workshop' },
-        { id: 2, title: 'Soil Health Management', date: '2024-01-20', time: '2:00 PM', status: 'completed', type: 'webinar' },
-        { id: 3, title: 'Pest and Disease Control', date: '2024-01-18', time: '9:00 AM', status: 'completed', type: 'field visit' }
-      ],
-      notifications: [
-        { id: 1, type: 'info', title: 'Weather Update', message: 'Heavy rain expected tomorrow. Consider covering your crops.', time: '2 hours ago', read: false },
-        { id: 2, type: 'success', title: 'Investment Approved', message: 'Your rice farming project has been approved for GHS 25,000 investment.', time: '1 day ago', read: true },
-        { id: 3, type: 'warning', title: 'Training Reminder', message: 'Modern Irrigation Techniques workshop starts in 2 days.', time: '2 days ago', read: false },
-        { id: 4, type: 'info', title: 'Extension Agent Visit', message: 'Dr. Sarah Mensah will visit your farm next week.', time: '3 days ago', read: true }
-      ],
+      recentActivities: [],
+      crops: [],
+      livestock: [],
+      investorMatches: [],
+      trainingSessions: [],
+      notifications: [],
       // Livestock-specific notifications (used when farmType is 'Livestock')
-      livestockNotifications: [
-        { id: 1, type: 'info', title: 'Health Alert', message: 'Vaccination schedule reminder: Poultry vaccination due this week.', time: '2 hours ago', read: false },
-        { id: 2, type: 'success', title: 'Investment Approved', message: 'Your livestock farming project has been approved for GHS 35,000 investment.', time: '1 day ago', read: true },
-        { id: 3, type: 'warning', title: 'Training Reminder', message: 'Livestock Health Management workshop starts in 2 days.', time: '2 days ago', read: false },
-        { id: 4, type: 'info', title: 'Extension Agent Visit', message: 'Dr. Sarah Mensah will visit your farm next week.', time: '3 days ago', read: true }
-      ]
+      livestockNotifications: []
     },
     agent: {
       name: 'Aisha Agent',
       stats: {
-        totalFarmers: 25,
-        activeProjects: 8,
-        totalEarnings: 12000,
-        monthlyGrowth: 18.5,
-        investorMatches: 12,
-        activeInvestments: 5,
-        trainingSessions: 4,
-        totalCrops: 45
+        totalFarmers: 0,
+        activeProjects: 0,
+        totalEarnings: 0,
+        monthlyGrowth: 0,
+        investorMatches: 0,
+        activeInvestments: 0,
+        trainingSessions: 0,
+        totalCrops: 0
       },
       chartData: {
-        revenue: [
-          { month: 'Jan', value: 1500 },
-          { month: 'Feb', value: 1800 },
-          { month: 'Mar', value: 1600 },
-          { month: 'Apr', value: 2400 },
-          { month: 'May', value: 2800 },
-          { month: 'Jun', value: 3200 },
-        ],
-        composition: [
-          { name: 'Onboarded', value: 45, color: '#7ede56' },
-          { name: 'Pending', value: 30, color: '#ffa500' },
-          { name: 'Waitlisted', value: 25, color: '#ff6347' },
-        ]
+        revenue: [],
+        composition: []
       },
-      recentActivities: [
-        { id: 1, type: 'farmer', message: 'New farmer onboarded: Kwame from Kumasi', time: '1 hour ago' },
-        { id: 2, type: 'monitoring', message: 'Farm inspection completed for rice project', time: '3 hours ago' },
-        { id: 3, type: 'update', message: 'Weather alert sent to 15 farmers', time: '1 day ago' }
-      ],
-      farmers: [
-        { id: 1, name: 'Kwame Asante', location: 'Kumasi', status: 'active', crops: 'Rice, Maize', lastVisit: '2 days ago' },
-        { id: 2, name: 'Sarah Mensah', location: 'Accra', status: 'active', crops: 'Tomatoes', lastVisit: '1 week ago' },
-        { id: 3, name: 'Aisha Ibrahim', location: 'Tamale', status: 'pending', crops: 'Cassava', lastVisit: '2 weeks ago' }
-      ],
-      trainingSessions: [
-        { id: 1, title: 'Field Agent Training', date: '2024-02-10', time: '09:00 AM', status: 'upcoming', type: 'workshop' }
-      ],
-      notifications: [
-        { id: 1, type: 'warning', title: 'Farmer Dispute', message: 'Pending dispute requiring attention.', time: '30 minutes ago', read: false }
-      ]
+      recentActivities: [],
+      farmers: [],
+      trainingSessions: [],
+      notifications: []
     }
   };
 
@@ -559,7 +443,7 @@ const Dashboard = () => {
               <div className="flex-1 flex flex-col justify-center">
                 <div className="flex items-baseline gap-1 sm:gap-2 mb-0.5 sm:mb-2">
                   <p className="text-2xl sm:text-4xl font-bold text-white">
-                    {currentData.weather.temperature}°
+                    {currentData.weather.temperature}Â°
                   </p>
                   <span className="text-xs sm:text-lg text-white/80">C</span>
                 </div>
@@ -600,8 +484,8 @@ const Dashboard = () => {
           </div>
         </Card>
 
-        {/* Investor Matches - Orange */}
-        <Card className={`bg-[#ffa500] rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-700 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ transitionDelay: isLoaded ? '200ms' : '0ms' }}>
+        {/* Investor Matches - Light Green */}
+        <Card className={`bg-[#7ede56] rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-700 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ transitionDelay: isLoaded ? '200ms' : '0ms' }}>
           {/* Leaf Pattern Background */}
           <div className="absolute inset-0 opacity-10 pointer-events-none">
             <Users className="absolute top-1 right-1 h-12 w-12 text-white/20" />
@@ -627,8 +511,8 @@ const Dashboard = () => {
           </div>
         </Card>
 
-        {/* Training Sessions - Red/Coral */}
-        <Card className={`bg-[#ff6347] rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-700 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ transitionDelay: isLoaded ? '300ms' : '0ms' }}>
+        {/* Training Sessions - Light Green */}
+        <Card className={`bg-[#7ede56] rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-700 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ transitionDelay: isLoaded ? '300ms' : '0ms' }}>
           <div className="flex flex-col h-full relative z-10">
             <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
               <Calendar className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
@@ -651,7 +535,7 @@ const Dashboard = () => {
         </Card>
 
         {/* Total Earnings - Deep Magenta */}
-        <Card className={`bg-[#921573] rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-700 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ transitionDelay: isLoaded ? '400ms' : '0ms' }}>
+        <Card className={`bg-[#7ede56] rounded-lg p-3 sm:p-6 shadow-lg transition-all duration-700 relative overflow-hidden ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ transitionDelay: isLoaded ? '400ms' : '0ms' }}>
           <div className="flex flex-col h-full relative z-10">
             <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
               <DollarSign className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
@@ -764,7 +648,7 @@ const Dashboard = () => {
       )}
 
       {/* Farm Management Center */}
-      <div className="relative bg-gradient-to-r from-[#002f37] to-[#921573] rounded-lg p-8 mb-8 overflow-hidden">
+      <div className="relative bg-gradient-to-r from-[#002f37] to-[#7ede56] rounded-lg p-8 mb-8 overflow-hidden">
         {/* Leaf Pattern Background - Positioned around edges */}
         <div className="absolute inset-0 opacity-15 z-0">
           {/* Top edge leaves */}
@@ -1000,7 +884,7 @@ const Dashboard = () => {
                       <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Investor Matches</p>
                       <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{'investorMatches' in currentData.stats ? currentData.stats.investorMatches : 0}</p>
                     </div>
-                    <Users className="h-8 w-8 text-purple-600" />
+                    <Users className="h-8 w-8 text-[#7ede56]" />
                   </div>
                 </CardContent>
               </Card>
@@ -1325,7 +1209,7 @@ const Dashboard = () => {
           </DialogHeader>
           <div className="mt-4 p-4 bg-[#7ede56] bg-opacity-10 border border-[#7ede56] border-opacity-20 rounded-lg">
             <p className="text-sm text-gray-700">
-              💡 <strong>Tip:</strong> Keep your farm information updated regularly to get the most accurate insights and recommendations from AgriLync.
+              ðŸ’¡ <strong>Tip:</strong> Keep your farm information updated regularly to get the most accurate insights and recommendations from AgriLync.
             </p>
           </div>
           <DialogFooter>
@@ -1382,7 +1266,7 @@ const Dashboard = () => {
                     </p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-7xl font-bold text-white">
-                        {currentData.weather.temperature}°
+                        {currentData.weather.temperature}Â°
                       </span>
                     </div>
                   </div>
@@ -1416,7 +1300,7 @@ const Dashboard = () => {
                               {hour.icon === 'rain' ? <CloudRain className="h-6 w-6 text-[#7ede56]" /> : hour.icon === 'cloud' ? <Cloud className="h-6 w-6 text-gray-400" /> : <Sun className="h-6 w-6 text-yellow-400" />}
                             </div>
                             <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                              {hour.temperature}°
+                              {hour.temperature}Â°
                             </p>
                           </div>
                         ))}
@@ -1434,7 +1318,7 @@ const Dashboard = () => {
                         <Thermometer className="h-6 w-6 text-[#7ede56]" />
                         <div>
                           <p className="text-xs text-gray-500">Real Feel</p>
-                          <p className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{currentData.weather.feelsLike}°</p>
+                          <p className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{currentData.weather.feelsLike}Â°</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -1457,7 +1341,7 @@ const Dashboard = () => {
                         <span className={`text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{day.day}</span>
                         <div className="flex items-center gap-2">
                           {day.icon === 'rain' ? <CloudRain className="h-5 w-5 text-[#7ede56]" /> : day.icon === 'cloud' ? <Cloud className="h-5 w-5 text-gray-400" /> : <Sun className="h-5 w-5 text-yellow-400" />}
-                          <span className="text-sm font-semibold text-[#7ede56]">{day.high}°</span>
+                          <span className="text-sm font-semibold text-[#7ede56]">{day.high}Â°</span>
                         </div>
                       </div>
                     ))}
@@ -1473,3 +1357,6 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
+
+

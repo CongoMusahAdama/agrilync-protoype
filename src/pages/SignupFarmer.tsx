@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -127,7 +127,7 @@ const SignupFarmer = () => {
                         Back to Role Selection
                     </Button>
                     <div className="flex items-center gap-3">
-                        <Leaf className="h-10 w-10 text-orange-600" />
+                        <Leaf className="h-10 w-10 text-[#7ede56]" />
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900">Solo Farmer Registration</h1>
                             <p className="text-gray-600">Join AgriLync for AI advisory and weather forecast</p>
@@ -136,7 +136,7 @@ const SignupFarmer = () => {
                 </div>
 
                 <Card className="shadow-xl">
-                    <CardHeader className="bg-gradient-to-r from-orange-50 to-white">
+                    <CardHeader className="bg-gradient-to-r from-[#7ede56]/10 to-white">
                         <CardTitle className="text-2xl">Create Your Account</CardTitle>
                         <CardDescription>Complete the form below to get started</CardDescription>
                     </CardHeader>
@@ -344,7 +344,7 @@ const SignupFarmer = () => {
                                         </Button>
                                         <Button
                                             type="submit"
-                                            className="bg-orange-600 hover:bg-orange-700"
+                                            className="bg-[#7ede56] hover:bg-[#6ccb4b]"
                                             disabled={!formData.acceptTerms || !formData.acceptDataPolicy}
                                         >
                                             Create Account
@@ -363,3 +363,6 @@ const SignupFarmer = () => {
 };
 
 export default SignupFarmer;
+
+
+

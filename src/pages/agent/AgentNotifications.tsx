@@ -24,7 +24,7 @@ const AgentNotifications: React.FC = () => {
     const fetchNotifications = async () => {
       try {
         const res = await api.get('/notifications');
-        setNotifications(res.data);
+        setNotifications(Array.isArray(res.data) ? res.data : (res.data.data || []));
         setIsLoaded(true);
       } catch (err) {
         console.error('Error fetching notifications:', err);
@@ -62,10 +62,10 @@ const AgentNotifications: React.FC = () => {
   const alerts = notifications.filter(n => n.type === 'alert').length;
 
   const summaryCards = [
-    { title: 'Total Alerts', value: total, icon: Bell, type: 'all', color: 'bg-slate-600' },
-    { title: 'Unread', value: unread, icon: Bell, type: 'unread', color: 'bg-blue-600' },
-    { title: 'Action Items', value: actionRequired, icon: FileText, type: 'action', color: 'bg-orange-600' },
-    { title: 'System Alerts', value: alerts, icon: AlertTriangle, type: 'alert', color: 'bg-rose-600' },
+    { title: 'Total Alerts', label: 'ALL', value: total, icon: Bell, type: 'all', iconColor: 'text-gray-500', bgColor: 'bg-gray-500/10' },
+    { title: 'Unread', label: 'NEW', value: unread, icon: Bell, type: 'unread', iconColor: 'text-amber-500', bgColor: 'bg-amber-500/10' },
+    { title: 'Action Items', label: 'ACTION', value: actionRequired, icon: FileText, type: 'action', iconColor: 'text-[#065f46]', bgColor: 'bg-[#065f46]/10' },
+    { title: 'System Alerts', label: 'SYSTEM', value: alerts, icon: AlertTriangle, type: 'alert', iconColor: 'text-rose-500', bgColor: 'bg-rose-500/10' },
   ];
 
   const cardClass = darkMode ? 'bg-[#002f37] border-gray-600 border' : 'bg-white';
@@ -82,30 +82,34 @@ const AgentNotifications: React.FC = () => {
     >
       <div className="space-y-8">
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          {summaryCards.map((card, idx) => (
-            <Card
-              key={idx}
-              className={`${card.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-700 relative overflow-hidden ${filter === card.type ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent' : ''} ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-              style={{ transitionDelay: `${idx * 100}ms` }}
-              onClick={() => setFilter(card.type)}
-            >
-              {/* Background Decoration */}
-              <div className="absolute inset-0 opacity-10 pointer-events-none">
-                <card.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
-              </div>
-
-              <div className="p-3 sm:p-5 flex flex-col h-full relative z-10 text-left">
-                <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
-                  <card.icon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
-                  <p className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">{card.title}</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          {summaryCards.map((card, idx) => {
+            const isPrimary = card.title === 'Total Alerts';
+            return (
+              <Card
+                key={idx}
+                className={`rounded-xl p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden h-36 flex flex-col justify-between group border-none cursor-pointer ${filter === card.type ? 'ring-2 ring-offset-[#065f46] ring-[#065f46]' : ''} ${isPrimary ? 'bg-[#065f46]' : darkMode ? 'bg-[#0f3035]' : 'bg-white'}`}
+                onClick={() => setFilter(card.type)}
+              >
+                <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform pointer-events-none">
+                  <card.icon className={`h-24 w-24 ${isPrimary ? 'text-white' : card.iconColor} -rotate-12`} />
                 </div>
-                <div className="flex-1 flex items-center">
-                  <p className="text-2xl sm:text-4xl font-bold text-white">{card.value}</p>
+                <div className="flex items-center justify-between relative z-10">
+                  <div className={`p-2 rounded-lg ${isPrimary ? 'bg-white/10' : card.bgColor}`}>
+                    <card.icon className={`h-5 w-5 ${isPrimary ? 'text-white' : card.iconColor}`} />
+                  </div>
+                  <span className={`text-[10px] font-black ${isPrimary ? 'text-white/40' : 'text-gray-400'} uppercase tracking-widest`}>{card.label}</span>
                 </div>
-              </div>
-            </Card>
-          ))}
+                <div className="relative z-10">
+                  <p className={`text-[10px] font-black ${isPrimary ? 'text-white/60' : 'text-gray-500'} uppercase tracking-widest mb-1`}>{card.title}</p>
+                  <div className="flex items-baseline gap-2">
+                    <h3 className={`text-4xl font-black leading-none ${isPrimary ? 'text-white' : darkMode ? 'text-white' : 'text-gray-900'}`}>{card.value}</h3>
+                    <span className={`text-[10px] font-bold ${isPrimary ? 'text-white/80' : 'text-gray-500'}`}>{card.value === 1 ? 'Alert' : 'Alerts'}</span>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
         </div>
         <Card className={`transition-colors ${cardClass}`}>
           <CardHeader>
@@ -117,14 +121,14 @@ const AgentNotifications: React.FC = () => {
               {filteredNotifications.map((notification) => (
                 <li
                   key={notification._id || notification.id}
-                  className={`flex items-start gap-4 rounded-2xl border p-4 shadow-sm ${notificationItemClass} ${!notification.read ? 'border-l-4 border-l-emerald-500' : ''}`}
+                  className={`flex items-start gap-4 rounded-2xl border p-4 shadow-sm ${notificationItemClass} ${!notification.read ? 'border-l-4 border-l-[#065f46]' : ''}`}
                 >
                   <span
                     className={`mt-1 flex h-10 w-10 items-center justify-center rounded-xl ${notification.type === 'alert'
                       ? 'bg-rose-500/10 text-rose-600'
                       : notification.type === 'action'
-                        ? 'bg-amber-500/10 text-amber-600'
-                        : 'bg-emerald-500/10 text-emerald-600'
+                        ? 'bg-[#065f46]/20 text-[#065f46]'
+                        : 'bg-[#065f46]/10 text-[#065f46]'
                       }`}
                   >
                     {notification.type === 'alert' ? (
@@ -144,7 +148,7 @@ const AgentNotifications: React.FC = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className={darkMode ? 'text-emerald-300 hover:bg-[#0d3036] hover:text-emerald-200' : 'text-emerald-600 hover:text-emerald-700'}
+                    className={darkMode ? 'text-[#065f46] hover:bg-[#0d3036] hover:text-[#065f46]' : 'text-[#065f46] hover:text-[#065f46]/80'}
                     onClick={() => toggleReadStatus(notification._id || notification.id)}
                   >
                     {notification.read ? 'View' : 'Mark as Read'}
@@ -166,4 +170,5 @@ const AgentNotifications: React.FC = () => {
 };
 
 export default AgentNotifications;
+
 

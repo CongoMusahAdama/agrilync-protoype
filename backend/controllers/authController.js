@@ -7,7 +7,7 @@ const AuditLog = require('../models/AuditLog');
 // @route   POST api/auth/login
 // @desc    Authenticate agent & get token
 exports.login = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, region } = req.body;
 
     try {
         let agent = await Agent.findOne({ email });
@@ -28,6 +28,11 @@ exports.login = async (req, res) => {
         const sessionId = crypto.randomBytes(32).toString('hex');
         agent.isLoggedIn = true;
         agent.currentSessionId = sessionId;
+
+        // Update region if provided during login
+        if (region) {
+            agent.region = region;
+        }
 
         await agent.save();
 

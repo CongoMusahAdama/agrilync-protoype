@@ -54,16 +54,20 @@ import api from '@/utils/api';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import ViewDisputeModal from '@/components/agent/ViewDisputeModal';
+import { useAuth } from '@/contexts/AuthContext';
+import { GHANA_REGIONS, GHANA_COMMUNITIES } from '@/data/ghanaRegions';
 
 const DisputeManagement: React.FC = () => {
   const { darkMode } = useDarkMode();
+  const { agent } = useAuth();
   const queryClient = useQueryClient();
 
   // All useState hooks must be declared at the top, before any useQuery
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
-  const [regionFilter, setRegionFilter] = useState('all');
+  const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
+  const [selectedCommunity, setSelectedCommunity] = useState<string>('all');
   const [severityFilter, setSeverityFilter] = useState('all');
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showNewDisputeDialog, setShowNewDisputeDialog] = useState(false);
@@ -74,7 +78,7 @@ const DisputeManagement: React.FC = () => {
     investorName: '',
     type: '',
     severity: '',
-    region: '',
+    region: agent?.region || 'Ashanti Region',
     description: '',
     evidence: [] as File[]
   });
@@ -84,8 +88,7 @@ const DisputeManagement: React.FC = () => {
     queryFn: async () => {
       const response = await api.get('/dashboard/summary');
       return response.data.data;
-    },
-    // Uses global defaults from App.tsx
+    }
   });
 
   const disputes = summaryData?.disputes || [];
@@ -97,25 +100,22 @@ const DisputeManagement: React.FC = () => {
     (d.id && String(d.id) === selectedDisputeId)
   );
 
-  const { data: farmersList = [] } = useQuery({
+  const { data: farmersResult } = useQuery({
     queryKey: ['agentFarmers'],
     queryFn: async () => {
       const response = await api.get('/farmers');
       return response.data;
     },
-    // Uses global defaults from App.tsx
   });
 
-  // Calculate stats
-  // Calculate stats
+  const farmersList = Array.isArray(farmersResult) ? farmersResult : (farmersResult?.data || []);
+
   const totalDisputes = disputes.length;
   const pendingDisputes = disputes.filter((d: any) => d.status === 'Pending').length;
   const underReviewDisputes = disputes.filter((d: any) => d.status === 'Under Review').length;
   const resolvedDisputes = disputes.filter((d: any) => d.status === 'Resolved').length;
   const escalatedDisputes = disputes.filter((d: any) => d.status === 'Escalated').length;
 
-  // Filter disputes
-  // Filter disputes
   const filteredDisputes = disputes.filter((dispute: any) => {
     const matchesSearch =
       (dispute.id?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
@@ -125,16 +125,21 @@ const DisputeManagement: React.FC = () => {
 
     const matchesStatus = statusFilter === 'all' || dispute.status === statusFilter;
     const matchesType = typeFilter === 'all' || dispute.type === typeFilter;
-    const matchesRegion = regionFilter === 'all' || dispute.region === regionFilter;
+    
+    const effectiveRegion = agent?.region || "Ashanti Region";
+    const matchesRegion = !effectiveRegion || dispute.region === effectiveRegion;
+    const matchesDistrict = selectedDistrict === 'all' || dispute.district === selectedDistrict;
+    const matchesCommunity = selectedCommunity === 'all' || dispute.community === selectedCommunity;
+    
     const matchesSeverity = severityFilter === 'all' || dispute.severity === severityFilter;
 
-    return matchesSearch && matchesStatus && matchesType && matchesRegion && matchesSeverity;
+    return matchesSearch && matchesStatus && matchesType && matchesRegion && matchesDistrict && matchesCommunity && matchesSeverity;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Pending':
-        return darkMode ? 'bg-orange-900/40 text-orange-300 border-orange-700' : 'bg-orange-100 text-orange-800 border-orange-300';
+        return darkMode ? 'bg-[#065f46]/20 text-[#065f46] border-[#065f46]/50' : 'bg-[#065f46]/10 text-[#065f46] border-[#065f46]/30';
       case 'Under Review':
         return darkMode ? 'bg-blue-900/40 text-blue-300 border-blue-700' : 'bg-blue-100 text-blue-800 border-blue-300';
       case 'Resolved':
@@ -175,13 +180,13 @@ const DisputeManagement: React.FC = () => {
         title: 'Dispute Logged!',
         html: `
           <div style="text-align: center; padding: 10px 0;">
-            <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+            <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
               Dispute logged successfully
             </p>
           </div>
         `,
         confirmButtonText: 'OK',
-        confirmButtonColor: '#7ede56',
+        confirmButtonColor: '#065f46',
         timer: 2000,
         timerProgressBar: true
       });
@@ -193,7 +198,7 @@ const DisputeManagement: React.FC = () => {
         investorName: '',
         type: '',
         severity: '',
-        region: '',
+        region: agent?.region || '',
         description: '',
         evidence: []
       });
@@ -203,6 +208,12 @@ const DisputeManagement: React.FC = () => {
       toast.error(err.response?.data?.msg || 'Failed to log dispute');
     }
   });
+
+  useEffect(() => {
+    if (agent?.region) {
+      setNewDispute(prev => ({ ...prev, region: agent.region || '' }));
+    }
+  }, [agent?.region]);
 
   const isSubmitting = disputeMutation.isPending;
 
@@ -231,7 +242,7 @@ const DisputeManagement: React.FC = () => {
 
   const summaryCards = [
     { title: 'Total Disputes', value: totalDisputes, icon: AlertTriangle, status: 'all', color: 'bg-slate-600' },
-    { title: 'Pending', value: pendingDisputes, icon: Clock, status: 'Pending', color: 'bg-orange-600' },
+    { title: 'Pending', value: pendingDisputes, icon: Clock, status: 'Pending', color: 'bg-[#065f46]' },
     { title: 'Under Review', value: underReviewDisputes, icon: Search, status: 'Under Review', color: 'bg-blue-600' },
     { title: 'Resolved', value: resolvedDisputes, icon: CheckCircle, status: 'Resolved', color: 'bg-emerald-600' },
     { title: 'Escalated', value: escalatedDisputes, icon: TrendingUp, status: 'Escalated', color: 'bg-red-600' },
@@ -316,17 +327,29 @@ const DisputeManagement: React.FC = () => {
                 </SelectContent>
               </Select>
 
-              {/* Region Filter */}
-              <Select value={regionFilter} onValueChange={setRegionFilter}>
+              {/* District Filter */}
+              <Select value={selectedDistrict} onValueChange={(val) => { setSelectedDistrict(val); setSelectedCommunity('all'); }}>
                 <SelectTrigger className={darkMode ? 'bg-[#10363d] border-[#1b5b65] text-white' : ''}>
-                  <SelectValue placeholder="Region" />
+                  <SelectValue placeholder="District" />
                 </SelectTrigger>
                 <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
-                  <SelectItem value="all" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>All Regions</SelectItem>
-                  <SelectItem value="Ashanti" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Ashanti</SelectItem>
-                  <SelectItem value="Northern" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Northern</SelectItem>
-                  <SelectItem value="Eastern" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Eastern</SelectItem>
-                  <SelectItem value="Savannah" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Savannah</SelectItem>
+                  <SelectItem value="all" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>All Districts</SelectItem>
+                  {(agent?.region || "Ashanti Region") && GHANA_REGIONS[agent?.region || "Ashanti Region"]?.map(d => (
+                    <SelectItem key={d} value={d} className={darkMode ? 'text-white hover:bg-gray-800' : ''}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Community Filter */}
+              <Select value={selectedCommunity} onValueChange={setSelectedCommunity}>
+                <SelectTrigger className={darkMode ? 'bg-[#10363d] border-[#1b5b65] text-white' : ''}>
+                  <SelectValue placeholder="Community" />
+                </SelectTrigger>
+                <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
+                  <SelectItem value="all" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>All Communities</SelectItem>
+                  {selectedDistrict !== 'all' && GHANA_COMMUNITIES[selectedDistrict]?.map(c => (
+                    <SelectItem key={c} value={c} className={darkMode ? 'text-white hover:bg-gray-800' : ''}>{c}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -369,15 +392,15 @@ const DisputeManagement: React.FC = () => {
         <Card className={`transition-colors ${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}`}>
           <CardContent className="p-0">
             <Table>
-              <TableHeader>
-                <TableRow className="bg-[#1db954] border-[#1db954] hover:bg-[#1db954]">
-                  <TableHead className="text-white font-semibold">Dispute ID</TableHead>
-                  <TableHead className="text-white font-semibold">Parties Involved</TableHead>
-                  <TableHead className="text-white font-semibold">Type</TableHead>
-                  <TableHead className="text-white font-semibold">Severity</TableHead>
-                  <TableHead className="text-white font-semibold">Date Logged</TableHead>
-                  <TableHead className="text-white font-semibold">Status</TableHead>
-                  <TableHead className="text-right text-white font-semibold pr-6">Action</TableHead>
+              <TableHeader className="bg-[#065f46]">
+                <TableRow className="border-none hover:bg-transparent">
+                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Dispute ID</TableHead>
+                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Parties Involved</TableHead>
+                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Type</TableHead>
+                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Severity</TableHead>
+                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Date Logged</TableHead>
+                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Status</TableHead>
+                  <TableHead className="text-right text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -416,7 +439,7 @@ const DisputeManagement: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-[#1db954] hover:text-[#17a447] hover:bg-green-50 dark:hover:bg-green-900/20"
+                        className="text-[#065f46] hover:text-[#065f46]/80 hover:bg-green-50 dark:hover:bg-green-900/20"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleViewDetails(dispute);
@@ -531,15 +554,12 @@ const DisputeManagement: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <Label className={darkMode ? 'text-gray-200' : ''}>Region</Label>
-                  <Select value={newDispute.region} onValueChange={(val) => setNewDispute({ ...newDispute, region: val })}>
+                  <Select value={newDispute.region} onValueChange={(val) => setNewDispute({ ...newDispute, region: val })} disabled={true}>
                     <SelectTrigger className={`h-12 ${darkMode ? 'bg-[#10363d] border-[#1b5b65] text-white' : ''}`}>
-                      <SelectValue placeholder="Select region" />
+                      <SelectValue placeholder={agent?.region || "Select region"} />
                     </SelectTrigger>
                     <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
-                      <SelectItem value="Ashanti" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Ashanti</SelectItem>
-                      <SelectItem value="Northern" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Northern</SelectItem>
-                      <SelectItem value="Eastern" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Eastern</SelectItem>
-                      <SelectItem value="Savannah" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>Savannah</SelectItem>
+                      {agent?.region && <SelectItem value={agent.region} className={darkMode ? 'text-white hover:bg-gray-800' : ''}>{agent.region}</SelectItem>}
                     </SelectContent>
                   </Select>
                 </div>
@@ -592,7 +612,7 @@ const DisputeManagement: React.FC = () => {
                 Cancel
               </Button>
               <Button
-                className="bg-[#7ede56] hover:bg-[#6bc947] text-white"
+                className="bg-[#065f46] hover:bg-[#065f46]/90 text-white border-none"
                 onClick={handleSubmitDispute}
                 disabled={isSubmitting}
               >
@@ -614,3 +634,7 @@ const DisputeManagement: React.FC = () => {
 };
 
 export default DisputeManagement;
+
+
+
+

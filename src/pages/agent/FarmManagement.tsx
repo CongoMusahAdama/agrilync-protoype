@@ -17,6 +17,8 @@ import ViewFarmerModal from '@/components/agent/ViewFarmerModal';
 import UploadReportModal from '@/components/agent/UploadReportModal';
 import FarmJourneyModal from '@/components/agent/FarmJourneyModal';
 import VerificationQueueModal from '@/components/agent/VerificationQueueModal';
+import ViewMatchModal from '@/components/agent/ViewMatchModal';
+import ReviewMatchModal from '@/components/agent/ReviewMatchModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -62,17 +64,21 @@ import {
     Wrench,
     MoreHorizontal
 } from 'lucide-react';
+import { GHANA_REGIONS, GHANA_COMMUNITIES } from '@/data/ghanaRegions';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const MetricCardSkeleton = () => (
-    <Card className="bg-gray-800/50 border-gray-700 rounded-lg p-3 sm:p-6 shadow-lg animate-pulse">
-        <div className="flex flex-col h-full gap-4 text-left">
+    <Card className="bg-gray-800/50 border-gray-700 rounded-none p-3 sm:p-6 shadow-lg animate-pulse">
+        <div className="flex flex-col h-full gap-4">
             <div className="flex items-center gap-3">
-                <Skeleton className="h-8 w-8 rounded-lg bg-gray-700" />
+                <Skeleton className="h-8 w-8 rounded-none bg-gray-700" />
                 <Skeleton className="h-4 w-24 bg-gray-700" />
             </div>
             <div className="flex-1 flex items-center">
                 <Skeleton className="h-10 w-16 bg-gray-700" />
+            </div>
+            <div className="flex justify-end mt-4">
+                <Skeleton className="h-3 w-12 bg-gray-700" />
             </div>
         </div>
     </Card>
@@ -82,10 +88,11 @@ const FarmManagement: React.FC = () => {
     const { darkMode } = useDarkMode();
     const { agent } = useAuth();
     const location = useLocation();
-    
+
     // All useState hooks must be declared at the top, before any useQuery or conditional logic
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedRegion, setSelectedRegion] = useState<string>('all');
+    const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
+    const [selectedCommunity, setSelectedCommunity] = useState<string>('all');
     const [selectedFarmType, setSelectedFarmType] = useState<string>('all');
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -97,7 +104,7 @@ const FarmManagement: React.FC = () => {
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
     const [verificationQueueModalOpen, setVerificationQueueModalOpen] = useState(false);
     const [selectedTab, setSelectedTab] = useState('personal');
-    const [activeTab, setActiveTab] = useState<'farmers' | 'visits' | 'reports'>('farmers');
+    const [activeTab, setActiveTab] = useState<'farmers' | 'farms' | 'visits' | 'reports' | 'matches'>('farmers');
     const [fieldVisitModalOpen, setFieldVisitModalOpen] = useState(false);
     const [journeyModalOpen, setJourneyModalOpen] = useState(false);
     const [selectedVisits, setSelectedVisits] = useState<Set<string>>(new Set());
@@ -125,13 +132,22 @@ const FarmManagement: React.FC = () => {
     const [visitImages, setVisitImages] = useState<string[]>([]);
     const [selectedVisit, setSelectedVisit] = useState<any>(null);
     const [visitDetailModalOpen, setVisitDetailModalOpen] = useState(false);
+    const [selectedMatch, setSelectedMatch] = useState<any>(null);
+    const [viewMatchModalOpen, setViewMatchModalOpen] = useState(false);
+    const [reviewMatchModalOpen, setReviewMatchModalOpen] = useState(false);
 
-    // Initial Tab Selection from URL
+    // Initial Settings from URL
     useEffect(() => {
         const params = new URLSearchParams(location.search);
+
         const tabParam = params.get('tab');
-        if (tabParam && ['farmers', 'visits', 'reports'].includes(tabParam)) {
-            setActiveTab(tabParam as 'farmers' | 'visits' | 'reports');
+        if (tabParam && ['farmers', 'farms', 'visits', 'reports'].includes(tabParam)) {
+            setActiveTab(tabParam as 'farmers' | 'farms' | 'visits' | 'reports');
+        }
+
+        const searchParam = params.get('search');
+        if (searchParam) {
+            setSearchQuery(searchParam);
         }
     }, [location.search]);
 
@@ -179,9 +195,19 @@ const FarmManagement: React.FC = () => {
 
     const farmers = summaryData?.farmers || [];
     const farms = summaryData?.farms || [];
+    const matchesRaw = summaryData?.matches || [];
     const pendingFarmers = summaryData?.pendingQueue || [];
-    const visitLogs = visitLogsData || [];
-    const reports = reportsData || [];
+    const visitLogs = Array.isArray(visitLogsData) ? visitLogsData : (visitLogsData?.data || []);
+    const reports = Array.isArray(reportsData) ? reportsData : (reportsData?.data || []);
+
+    const matches = useMemo(() => {
+        const effectiveRegion = agent?.region || "Ashanti Region";
+        const regSearch = (effectiveRegion || '').toLowerCase().replace(' region', '').trim();
+        return matchesRaw.filter((m: any) => {
+            const mReg = (m.region || '').toLowerCase().replace(' region', '').trim();
+            return !regSearch || mReg === regSearch || mReg.includes(regSearch) || regSearch.includes(mReg);
+        });
+    }, [matchesRaw, agent?.region]);
 
     const loading = loadingSummary || loadingVisits || loadingReports;
     const isFetching = fetchingSummary || fetchingVisits || fetchingReports;
@@ -198,9 +224,9 @@ const FarmManagement: React.FC = () => {
         const verified = farmers.filter((f: any) => f.status === 'active').length;
         const pending = pendingFarmers.length; // From verification queue
         const activeCount = farms.length; // Count all created farms
-        const matched = farmers.filter((f: any) => f.investmentStatus === 'Matched').length;
+        const matched = matches.length;
         return { total, verified, pending, active: activeCount, matched };
-    }, [farmers, farms, pendingFarmers]);
+    }, [farmers, farms, matches, pendingFarmers]);
 
     const filteredFarmers = useMemo(() => {
         return farmers.map((f: any) => {
@@ -209,32 +235,78 @@ const FarmManagement: React.FC = () => {
             if (displayStatus === 'pending') displayStatus = 'Pending';
             return { ...f, displayStatus };
         }).filter((farmer: any) => {
+            const searchValue = searchQuery.toLowerCase();
             const matchesSearch =
-                farmer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (farmer.phone && farmer.phone.includes(searchQuery));
-            const matchesRegion = selectedRegion === 'all' || farmer.region === selectedRegion;
+                farmer.name?.toLowerCase().includes(searchValue) ||
+                (farmer.contact && farmer.contact.includes(searchQuery));
+            
+            const effectiveRegion = agent?.region || "Ashanti Region";
+            // Normalizing for flexible regional matching (allows "Ashanti" to match "Ashanti Region")
+            const regSearch = (effectiveRegion || '').toLowerCase().replace(' region', '').trim();
+            const fReg = (farmer.region || '').toLowerCase().replace(' region', '').trim();
+            const matchesRegion = !regSearch || fReg === regSearch || fReg.includes(regSearch) || regSearch.includes(fReg);
+
+            const matchesDistrict = selectedDistrict === 'all' || farmer.district === selectedDistrict;
+            const matchesCommunity = selectedCommunity === 'all' || farmer.community === selectedCommunity;
             const matchesFarmType = selectedFarmType === 'all' || farmer.farmType === selectedFarmType;
             const matchesCategory = selectedCategory === 'all' || true;
             const filterStatus = statusFilter || selectedStatus;
 
             const matchesStatus = filterStatus === 'all' || farmer.displayStatus === filterStatus;
-            return matchesSearch && matchesRegion && matchesFarmType && matchesCategory && matchesStatus;
+            return matchesSearch && matchesRegion && matchesDistrict && matchesCommunity && matchesFarmType && matchesCategory && matchesStatus;
         });
-    }, [farmers, searchQuery, selectedRegion, selectedFarmType, selectedCategory, selectedStatus, statusFilter]);
+    }, [farmers, searchQuery, selectedDistrict, selectedCommunity, selectedFarmType, selectedCategory, selectedStatus, statusFilter, agent?.region]);
+
+    const filteredFarms = useMemo(() => {
+        return farms.filter((farm: any) => {
+            const searchValue = searchQuery.toLowerCase();
+            const matchesSearch =
+                farm.name?.toLowerCase().includes(searchValue) ||
+                farm.farmer?.name?.toLowerCase().includes(searchValue);
+
+            const matchesDistrict = selectedDistrict === 'all' || farm.farmer?.district === selectedDistrict;
+            return matchesSearch && matchesDistrict;
+        });
+    }, [farms, searchQuery, selectedDistrict]);
+
+    const filteredMatches = useMemo(() => {
+        return matches.filter((match: any) => {
+            const searchValue = searchQuery.toLowerCase();
+            return (
+                match.investor?.toLowerCase().includes(searchValue) ||
+                match.farmer?.toLowerCase().includes(searchValue) ||
+                match.status?.toLowerCase().includes(searchValue)
+            );
+        });
+    }, [matches, searchQuery]);
 
     const resetFilters = () => {
         setSearchQuery('');
-        setSelectedRegion('all');
+        setSelectedDistrict('all');
+        setSelectedCommunity('all');
         setSelectedFarmType('all');
         setSelectedCategory('all');
         setSelectedStatus('all');
         setStatusFilter(null);
     };
 
-    const handleCardClick = (status: string | null) => {
+    const handleCardClick = (id: string, status: string | null) => {
+        if (id === 'active-farms') {
+            setActiveTab('farms');
+            setStatusFilter(null);
+            return;
+        }
+
+        if (id === 'matched') {
+            setActiveTab('matches');
+            setStatusFilter(null);
+            return;
+        }
+
         if (status === 'Pending') {
             setVerificationQueueModalOpen(true);
         } else {
+            setActiveTab('farmers');
             setStatusFilter(status);
             setSelectedStatus('all');
         }
@@ -247,7 +319,7 @@ const FarmManagement: React.FC = () => {
             case 'Pending':
                 return darkMode ? 'bg-yellow-500/20 text-yellow-300 border-0' : 'bg-yellow-100 text-yellow-700';
             case 'Matched':
-                return darkMode ? 'bg-purple-500/20 text-purple-300 border-0' : 'bg-purple-100 text-purple-700';
+                return darkMode ? 'bg-[#7ede56]/20 text-[#7ede56] border-0' : 'bg-[#7ede56]/10 text-[#7ede56]';
             case 'In Progress':
                 return darkMode ? 'bg-blue-500/20 text-blue-300 border-0' : 'bg-blue-100 text-blue-700';
             default:
@@ -273,6 +345,49 @@ const FarmManagement: React.FC = () => {
             // Fallback to available data if fetch fails
             setSelectedFarmer(farmer);
             setEditModalOpen(true);
+        }
+    };
+
+    const handleViewMatch = (match: any) => {
+        setSelectedMatch(match);
+        setViewMatchModalOpen(true);
+    };
+
+    const handleReviewMatch = (match: any) => {
+        setSelectedMatch(match);
+        setReviewMatchModalOpen(true);
+    };
+
+    const handleApproveMatch = async (matchId: string) => {
+        try {
+            await api.post(`/matches/${matchId}/approve`);
+            refetchSummary();
+            await Swal.fire({
+                icon: 'success',
+                title: 'Match Approved!',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
+                            Partnership agreement verified successfully
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#065f46',
+                timer: 2000,
+                timerProgressBar: true
+            });
+        } catch (error: any) {
+            toast.error('Failed to approve match');
+        }
+    };
+
+    const handleRejectMatch = async (matchId: string) => {
+        try {
+            await api.post(`/matches/${matchId}/reject`);
+            refetchSummary();
+        } catch (error) {
+            toast.error('Failed to reject match');
         }
     };
 
@@ -309,6 +424,10 @@ const FarmManagement: React.FC = () => {
                 purpose: '',
                 otherPurpose: '',
                 notes: '',
+                stage: '',
+                observations: '',
+                recommendations: '',
+                photos: [],
                 challenges: '',
                 status: 'Completed',
                 isEditing: false,
@@ -326,6 +445,10 @@ const FarmManagement: React.FC = () => {
                 purpose: '',
                 otherPurpose: '',
                 notes: '',
+                stage: '',
+                observations: '',
+                recommendations: '',
+                photos: [],
                 challenges: '',
                 status: 'Completed',
                 isEditing: false,
@@ -358,6 +481,10 @@ const FarmManagement: React.FC = () => {
             purpose: isOther ? 'Other' : (visit.purpose || ''),
             otherPurpose: isOther ? visit.purpose : '',
             notes: visit.notes,
+            stage: visit.stage || '',
+            observations: visit.observations || '',
+            recommendations: visit.recommendations || '',
+            photos: visit.photos || [],
             challenges: visit.challenges || '',
             status: visit.status || 'Completed',
             isEditing: true,
@@ -388,7 +515,7 @@ const FarmManagement: React.FC = () => {
         try {
             const doc = new jsPDF();
             doc.setFontSize(20);
-            doc.setTextColor(29, 185, 84); // AgriLync Green
+            doc.setTextColor(6, 95, 70); // AgriLync Green (#065f46)
             doc.text('Field Visit Logs - AgriLync', 14, 22);
 
             doc.setFontSize(11);
@@ -412,7 +539,7 @@ const FarmManagement: React.FC = () => {
                 body: tableRows,
                 startY: 50,
                 theme: 'grid',
-                headStyles: { fillColor: [29, 185, 84], halign: 'center' },
+                headStyles: { fillColor: [6, 95, 70], halign: 'center' },
                 bodyStyles: { halign: 'center' },
                 alternateRowStyles: { fillColor: [240, 240, 240] }
             });
@@ -423,13 +550,13 @@ const FarmManagement: React.FC = () => {
                 title: 'Export Successful!',
                 html: `
                     <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                        <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
                             PDF report (${dataToExport.length} records) exported successfully
                         </p>
                     </div>
                 `,
                 confirmButtonText: 'OK',
-                confirmButtonColor: '#7ede56',
+                confirmButtonColor: '#065f46',
                 timer: 2000,
                 timerProgressBar: true
             });
@@ -475,13 +602,13 @@ const FarmManagement: React.FC = () => {
                 title: 'Export Successful!',
                 html: `
                     <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                        <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
                             Excel spreadsheet (${dataToExport.length} records) exported successfully
                         </p>
                     </div>
                 `,
                 confirmButtonText: 'OK',
-                confirmButtonColor: '#7ede56',
+                confirmButtonColor: '#065f46',
                 timer: 2000,
                 timerProgressBar: true
             });
@@ -510,13 +637,13 @@ const FarmManagement: React.FC = () => {
                 title: 'Success!',
                 html: `
                     <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                        <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
                             ${visitForm.isEditing ? 'Field visit updated successfully!' : 'Field visit logged successfully!'}
                         </p>
                     </div>
                 `,
                 confirmButtonText: 'OK',
-                confirmButtonColor: '#7ede56',
+                confirmButtonColor: '#065f46',
                 timer: 2000,
                 timerProgressBar: true
             });
@@ -535,6 +662,10 @@ const FarmManagement: React.FC = () => {
                 purpose: '',
                 otherPurpose: '',
                 notes: '',
+                stage: '',
+                observations: '',
+                recommendations: '',
+                photos: [],
                 challenges: '',
                 status: 'Completed',
                 isEditing: false,
@@ -584,41 +715,44 @@ const FarmManagement: React.FC = () => {
     return (
         <AgentLayout
             activeSection="farm-management"
-            title="Farm Management"
+            title="Manage Farm"
         >
             <div className="space-y-8">
                 {/* Summary Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                     {[
-                        { label: 'Total Farmers', value: metrics.total, icon: Users, color: 'bg-emerald-600', status: null },
-                        { label: 'Completed', value: metrics.verified, icon: CheckCircle, color: 'bg-blue-600', status: 'Completed' },
-                        { label: 'Verification Queue', value: metrics.pending, icon: Clock, color: 'bg-orange-600', status: 'Pending' },
-                        { label: 'Active Farms', value: metrics.active, icon: TrendingUp, color: 'bg-indigo-600', status: 'In Progress' },
-                        { label: 'Matched', value: metrics.matched, icon: Coins, color: 'bg-purple-600', status: 'Matched' }
+                        { id: 'total-farmers', title: 'Total Farmers', value: metrics.total, icon: Users, color: 'bg-emerald-800', status: null, subtext: 'Lifetime' },
+                        { id: 'completed', title: 'Completed', value: metrics.verified, icon: CheckCircle, color: 'bg-blue-600', status: 'Completed', subtext: 'Verified' },
+                        { id: 'queue', title: 'Verification Queue', value: metrics.pending, icon: Clock, color: 'bg-emerald-600', status: 'Pending', subtext: 'In Progress' },
+                        { id: 'active-farms', title: 'Active Farms', value: metrics.active, icon: TrendingUp, color: 'bg-indigo-600', status: 'In Progress', subtext: 'On-going' },
+                        { id: 'matched', title: 'Matched', value: metrics.matched, icon: Coins, color: 'bg-emerald-600', status: 'Matched', subtext: 'Investor Matches' }
                     ].map((item, idx) => (
                         !isLoaded ? (
                             <MetricCardSkeleton key={`skeleton-${idx}`} />
                         ) : (
                             <Card
-                                key={item.label}
-                                className={`${item.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-200 relative overflow-hidden ${(statusFilter === item.status && item.status !== null) || (statusFilter === null && item.status === null) ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent' : ''} opacity-100 translate-y-0`}
-                                style={{ transitionDelay: `${idx * 50}ms` }}
-                                onClick={() => handleCardClick(item.status)}
+                                key={item.id}
+                                className={`${item.title === 'Total Farmers' ? item.color : 'bg-white'} rounded-none p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden h-36 flex flex-col justify-between group border-none cursor-pointer ${(statusFilter === item.status && item.status !== null) || (statusFilter === null && item.status === null && activeTab === 'farmers') || (item.id === 'active-farms' && activeTab === 'farms') || (item.id === 'matched' && activeTab === 'matches') ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}
+                                onClick={() => handleCardClick(item.id, item.status)}
                             >
-                                {/* Background Decoration */}
-                                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                                    <item.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
+                                <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
+                                    <item.icon className={`h-24 w-24 ${item.title === 'Total Farmers' ? 'text-white' : item.color.replace('bg-', 'text-')} -rotate-12`} />
                                 </div>
 
-                                <div className="p-3 sm:p-5 flex flex-col h-full relative z-10 text-left">
-                                    <div className="flex items-center gap-1.5 sm:gap-3 mb-2 sm:mb-4">
-                                        <item.icon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
-                                        <p className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">{item.label}</p>
+                                <div className="flex items-center justify-between">
+                                    <div className={`p-2 ${item.title === 'Total Farmers' ? 'bg-white/10' : item.color.replace('bg-', 'bg-').concat('/10')} rounded-lg`}>
+                                        <item.icon className={`h-5 w-5 ${item.title === 'Total Farmers' ? 'text-white' : item.color.replace('bg-', 'text-')}`} />
                                     </div>
-                                    <div className="flex-1 flex items-center">
-                                        <p className="text-2xl sm:text-4xl font-bold text-white">
+                                    <span className={`text-[10px] font-black ${item.title === 'Total Farmers' ? 'text-white/40' : 'text-gray-400'} uppercase tracking-widest`}>STATUS</span>
+                                </div>
+
+                                <div>
+                                    <p className={`text-[10px] font-black ${item.title === 'Total Farmers' ? 'text-white/60' : 'text-gray-500'} uppercase tracking-widest mb-1`}>{item.title}</p>
+                                    <div className="flex items-baseline gap-2">
+                                        <h3 className={`text-4xl font-black ${item.title === 'Total Farmers' ? 'text-white' : 'text-gray-900'} leading-none`}>
                                             <CountUp end={Number(item.value)} duration={1000} />
-                                        </p>
+                                        </h3>
+                                        <span className={`text-[10px] font-bold ${item.title === 'Total Farmers' ? 'text-white/80' : 'text-gray-500'}`}>{item.subtext}</span>
                                     </div>
                                 </div>
                             </Card>
@@ -628,12 +762,12 @@ const FarmManagement: React.FC = () => {
 
 
                 {/* Tabs for Farmers Directory and Field Visit Logs */}
-                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'farmers' | 'visits' | 'reports')} className="w-full">
+                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'farmers' | 'farms' | 'visits' | 'reports' | 'matches')} className="w-full">
                     <TabsList className={`flex w-full overflow-x-auto whitespace-nowrap scrollbar-hide bg-transparent p-0 h-auto gap-2 sm:gap-4 mb-4 sm:mb-8 border-b ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
                         <TabsTrigger
                             value="farmers"
                             className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'farmers'
-                                ? 'border-[#1db954] text-[#1db954] bg-[#1db954]/5'
+                                ? 'border-[#065f46] text-[#065f46] bg-[#065f46]/5'
                                 : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
@@ -641,9 +775,19 @@ const FarmManagement: React.FC = () => {
                             Farmers Directory ({filteredFarmers.length})
                         </TabsTrigger>
                         <TabsTrigger
+                            value="farms"
+                            className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'farms'
+                                ? 'border-[#065f46] text-[#065f46] bg-[#065f46]/5'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            <TrendingUp className="h-4 w-4 mr-2" />
+                            Active Farms ({farms.length})
+                        </TabsTrigger>
+                        <TabsTrigger
                             value="visits"
                             className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'visits'
-                                ? 'border-[#1db954] text-[#1db954] bg-[#1db954]/5'
+                                ? 'border-[#065f46] text-[#065f46] bg-[#065f46]/5'
                                 : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
@@ -653,12 +797,22 @@ const FarmManagement: React.FC = () => {
                         <TabsTrigger
                             value="reports"
                             className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'reports'
-                                ? 'border-[#1db954] text-[#1db954] bg-[#1db954]/5'
+                                ? 'border-[#065f46] text-[#065f46] bg-[#065f46]/5'
                                 : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             <FileText className="h-4 w-4 mr-2" />
                             Reports ({reports.length})
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="matches"
+                            className={`flex-shrink-0 px-4 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 rounded-none transition-all ${activeTab === 'matches'
+                                ? 'border-[#065f46] text-[#065f46] bg-[#065f46]/5'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            <Coins className="h-4 w-4 mr-2" />
+                            Investor Matches ({matches.length})
                         </TabsTrigger>
                     </TabsList>
 
@@ -669,7 +823,7 @@ const FarmManagement: React.FC = () => {
                             <div className="p-4 sm:p-6">
                                 <div className="flex flex-col xl:flex-row gap-4 xl:items-center justify-between">
                                     <div className="relative flex-1 group">
-                                        <Search className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${darkMode ? 'text-gray-500 group-focus-within:text-[#1db954]' : 'text-gray-400 group-focus-within:text-[#1db954]'}`} />
+                                        <Search className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${darkMode ? 'text-gray-500 group-focus-within:text-[#065f46]' : 'text-gray-400 group-focus-within:text-[#065f46]'}`} />
                                         <Input
                                             placeholder="Search by name, phone or Lync ID..."
                                             className={`pl-10 h-11 ${inputBaseClasses} ${darkMode ? 'bg-white/5 border-white/10 focus:ring-emerald-500/50' : 'bg-gray-50'}`}
@@ -678,13 +832,32 @@ const FarmManagement: React.FC = () => {
                                         />
                                     </div>
                                     <div className="flex flex-wrap items-center gap-3">
-                                        <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                                        <Select value={selectedDistrict} onValueChange={(val) => { setSelectedDistrict(val); setSelectedCommunity('all'); }}>
                                             <SelectTrigger className={`w-full sm:w-40 h-11 ${inputBaseClasses} ${darkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50'}`}>
-                                                <SelectValue placeholder="Region" />
+                                                <SelectValue placeholder="District" />
                                             </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All Regions</SelectItem>
-                                                {['Ashanti', 'Eastern', 'Northern', 'Western'].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                            <SelectContent className="z-[2000] rounded-xl border-none shadow-2xl">
+                                                <SelectItem value="all">All Districts</SelectItem>
+                                                {(() => {
+                                                    const agentRegionRaw = agent?.region || "Ashanti Region";
+                                                    const normalizedSearch = agentRegionRaw.toLowerCase().replace(' region', '').trim();
+                                                    const regionKey = Object.keys(GHANA_REGIONS).find(k => k.toLowerCase().replace(' region', '').trim() === normalizedSearch) || "Ashanti Region";
+                                                    return GHANA_REGIONS[regionKey]?.map(d => (
+                                                        <SelectItem key={d} value={d}>{d}</SelectItem>
+                                                    ));
+                                                })()}
+                                            </SelectContent>
+                                        </Select>
+
+                                        <Select value={selectedCommunity} onValueChange={setSelectedCommunity}>
+                                            <SelectTrigger className={`w-full sm:w-40 h-11 ${inputBaseClasses} ${darkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50'}`}>
+                                                <SelectValue placeholder="Community" />
+                                            </SelectTrigger>
+                                            <SelectContent className="z-[2000] rounded-xl border-none shadow-2xl">
+                                                <SelectItem value="all">All Communities</SelectItem>
+                                                {selectedDistrict !== 'all' && GHANA_COMMUNITIES[selectedDistrict]?.map(c => (
+                                                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                         <Select value={selectedFarmType} onValueChange={setSelectedFarmType}>
@@ -719,17 +892,18 @@ const FarmManagement: React.FC = () => {
                                             >
                                                 <X className="h-4 w-4" />
                                             </Button>
-                                            <Button onClick={() => setIsAddFarmerModalOpen(true)} className="h-11 flex-1 sm:flex-none px-6 bg-[#1db954] hover:bg-[#17a447] text-white shadow-lg shadow-emerald-500/20">
+                                            <Button onClick={() => setIsAddFarmerModalOpen(true)} className="h-11 flex-1 sm:flex-none px-6 bg-[#065f46] hover:bg-[#065f46]/90 text-white shadow-lg shadow-emerald-500/20 border-none">
                                                 <Plus className="h-4 w-4 mr-2" />Add Farmer
                                             </Button>
                                         </div>
                                     </div>
                                 </div>
-                                {(statusFilter || searchQuery || selectedStatus !== 'all' || selectedRegion !== 'all' || selectedFarmType !== 'all') && (
+                                {(statusFilter || searchQuery || selectedStatus !== 'all' || selectedDistrict !== 'all' || selectedCommunity !== 'all' || selectedFarmType !== 'all') && (
                                     <div className="mt-4 flex flex-wrap items-center gap-2">
                                         <span className={`text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Active Filters:</span>
                                         {statusFilter && <Badge className="bg-emerald-500/10 text-emerald-500 border-0 hover:bg-emerald-500/20">{statusFilter}</Badge>}
-                                        {selectedRegion !== 'all' && <Badge variant="outline" className="border-gray-500/30 text-gray-500">{selectedRegion}</Badge>}
+                                        {selectedDistrict !== 'all' && <Badge variant="outline" className="border-gray-500/30 text-gray-500">{selectedDistrict}</Badge>}
+                                        {selectedCommunity !== 'all' && <Badge variant="outline" className="border-gray-500/30 text-gray-500">{selectedCommunity}</Badge>}
                                         {selectedFarmType !== 'all' && <Badge variant="outline" className="border-gray-500/30 text-gray-500">{selectedFarmType}</Badge>}
                                     </div>
                                 )}
@@ -749,7 +923,7 @@ const FarmManagement: React.FC = () => {
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <div className={`p-1.5 rounded-md ${darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
+                                <div className={`p-1.5 rounded-md ${darkMode ? 'bg-[#7ede56]/20 text-[#7ede56]' : 'bg-[#7ede56]/10 text-[#7ede56]'}`}>
                                     <Edit className="w-3.5 h-3.5" />
                                 </div>
                                 <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Edit Details</span>
@@ -790,16 +964,16 @@ const FarmManagement: React.FC = () => {
 
                                 <div className="overflow-auto max-h-[65vh] relative">
                                     <Table>
-                                        <TableHeader className="sticky top-0 z-20 bg-emerald-600 dark:bg-emerald-700 shadow-md">
-                                            <TableRow className="border-0 hover:bg-transparent">
-                                                <TableHead className="w-12 text-center text-white font-bold uppercase tracking-wider h-12">#</TableHead>
-                                                <TableHead className="text-white font-bold uppercase tracking-wider h-12 whitespace-nowrap">Farmer Details</TableHead>
-                                                <TableHead className="text-white font-bold uppercase tracking-wider h-12 whitespace-nowrap">Phone Number</TableHead>
-                                                <TableHead className="text-white font-bold uppercase tracking-wider h-12 whitespace-nowrap">Location</TableHead>
-                                                <TableHead className="text-white font-bold uppercase tracking-wider h-12 whitespace-nowrap">Farm Info</TableHead>
-                                                <TableHead className="text-white font-bold uppercase tracking-wider h-12 whitespace-nowrap">Status</TableHead>
-                                                <TableHead className="text-white font-bold uppercase tracking-wider h-12 whitespace-nowrap">Last Visit</TableHead>
-                                                <TableHead className="text-right text-white font-bold uppercase tracking-wider h-12 pr-6 whitespace-nowrap">Actions</TableHead>
+                                        <TableHeader className="sticky top-0 z-20 bg-[#065f46] shadow-md">
+                                            <TableRow className="border-none hover:bg-transparent">
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">#</TableHead>
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Farmer Details</TableHead>
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Phone Number</TableHead>
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Location</TableHead>
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Farm Info</TableHead>
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Status</TableHead>
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Last Visit</TableHead>
+                                                <TableHead className="text-right text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Actions</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -970,7 +1144,7 @@ const FarmManagement: React.FC = () => {
                                     )}
                                     {selectedVisits.size > 0 ? `Excel (${selectedVisits.size})` : 'Excel All'}
                                 </Button>
-                                <Button onClick={() => handleLogVisit()} className="bg-[#1db954] hover:bg-[#17a447] text-white shadow-lg shadow-emerald-500/20 h-9 sm:h-10 px-3 sm:px-4 text-xs sm:text-sm">
+                                <Button onClick={() => handleLogVisit()} className="bg-[#065f46] hover:bg-[#065f46]/90 text-white shadow-lg shadow-emerald-500/20 h-9 sm:h-10 px-3 sm:px-4 text-xs sm:text-sm border-none">
                                     <Plus className="h-4 w-4 mr-1 sm:mr-2" />
                                     New Journal Entry
                                 </Button>
@@ -1156,7 +1330,7 @@ const FarmManagement: React.FC = () => {
                                             </div>
                                             <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>Journal is empty</h3>
                                             <p className="text-sm max-w-xs mx-auto opacity-70">No field visits have been recorded yet. Start by logging your first inspection.</p>
-                                            <Button onClick={() => handleLogVisit()} className="mt-6 bg-[#1db954]">
+                                            <Button onClick={() => handleLogVisit()} className="mt-6 bg-[#065f46] border-none">
                                                 Log First Visit
                                             </Button>
                                         </div>
@@ -1192,13 +1366,13 @@ const FarmManagement: React.FC = () => {
                             <CardContent className="p-0 sm:p-6 sm:pt-0">
                                 <div className="overflow-x-auto relative custom-scrollbar">
                                     <Table className="min-w-[800px] lg:min-w-full">
-                                        <TableHeader className={`sticky top-0 z-20 ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'} shadow-sm`}>
-                                            <TableRow className="border-0 hover:bg-transparent">
-                                                <TableHead className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} font-bold`}>Farmer</TableHead>
-                                                <TableHead className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} font-bold text-center`}>Type</TableHead>
-                                                <TableHead className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} font-bold`}>Date</TableHead>
-                                                <TableHead className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} font-bold`}>Notes Summary</TableHead>
-                                                <TableHead className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} font-bold text-right`}>Actions</TableHead>
+                                        <TableHeader className="sticky top-0 z-20 bg-[#065f46] shadow-md">
+                                            <TableRow className="border-none hover:bg-transparent">
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Farmer</TableHead>
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6 text-center">Type</TableHead>
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Date</TableHead>
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Notes Summary</TableHead>
+                                                <TableHead className="text-right text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Actions</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -1276,8 +1450,231 @@ const FarmManagement: React.FC = () => {
                             </CardContent>
                         </Card>
                     </TabsContent>
+
+                    {/* Farms Tab */}
+                    <TabsContent value="farms" className="space-y-4">
+                        <Card className={`${sectionCardClass} border-0 shadow-xl overflow-hidden`}>
+                            <div className="overflow-hidden">
+                                <div className="p-6 border-b border-white/5 flex items-center justify-between bg-indigo-500/5">
+                                    <div>
+                                        <h3 className={`text-lg font-bold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>Active Field Missions</h3>
+                                        <p className={`text-xs mt-1 font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            Monitoring {filteredFarms.length} ongoing agricultural operations
+                                        </p>
+                                    </div>
+                                    <Badge variant="outline" className={`${darkMode ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' : 'bg-indigo-50 border-indigo-100 text-indigo-700'} border px-3 py-1`}>
+                                        <TrendingUp className="w-3 h-3 mr-2" />
+                                        Operational Oversight
+                                    </Badge>
+                                </div>
+
+                                <div className="overflow-auto max-h-[65vh]">
+                                    <Table className={`border ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
+                                        <TableHeader className="sticky top-0 z-20 bg-[#065f46] shadow-md">
+                                            <TableRow className="border-none hover:bg-transparent">
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6 border-r border-white/10">Farm Information</TableHead>
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6 text-center border-r border-white/10">Health Status</TableHead>
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6 border-r border-white/10">Next Visit</TableHead>
+                                                <TableHead className="text-right text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Action</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {filteredFarms.length === 0 ? (
+                                                <TableRow>
+                                                    <TableCell colSpan={4} className="h-64 text-center">
+                                                        <div className="flex flex-col items-center justify-center space-y-3">
+                                                            <div className="h-16 w-16 bg-gray-50 dark:bg-white/5 rounded-full flex items-center justify-center mb-2">
+                                                                <Sprout className="h-8 w-8 text-gray-200" />
+                                                            </div>
+                                                            <p className="text-sm font-black text-gray-400 uppercase tracking-widest">No active farms discovered</p>
+                                                            <p className="text-[10px] text-gray-400">Registered farms with ongoing missions will appear here.</p>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ) : (
+                                                filteredFarms.map((farm: any) => (
+                                                    <TableRow key={farm._id} className={`${darkMode ? 'border-white/5 hover:bg-emerald-500/5' : 'hover:bg-gray-50'} transition-all duration-300 group ring-inset`}>
+                                                        <TableCell className={`py-4 px-6 border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="h-14 w-14 rounded-2xl bg-gray-100 dark:bg-gray-800 overflow-hidden shadow-lg border-2 border-white dark:border-white/10 group-hover:scale-110 transition-transform">
+                                                                    <img src={farm.farmer?.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${farm.name}`} alt={farm.name} className="w-full h-full object-cover" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className={`text-sm font-black tracking-tight ${darkMode ? 'text-gray-100' : 'text-[#002f37]'}`}>{farm.name}</p>
+                                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{farm.farmer?.name || 'Assigned Grower'}</p>
+                                                                </div>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className={`py-4 border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
+                                                            <div className="flex flex-col items-center gap-1.5 px-4 w-32 mx-auto">
+                                                                <div className="flex items-baseline gap-1">
+                                                                    <span className={`text-xs font-black ${darkMode ? 'text-[#7ede56]' : 'text-[#065f46]'}`}>{farm.health || 0}%</span>
+                                                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Health</span>
+                                                                </div>
+                                                                <div className="h-1 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                                                    <div className={`h-full ${darkMode ? 'bg-[#7ede56]' : 'bg-[#065f46]'}`} style={{ width: `${farm.health || 0}%` }}></div>
+                                                                </div>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className={`py-4 border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
+                                                            <div className="flex items-center gap-2">
+                                                                <Calendar className="w-3.5 h-3.5 text-[#065f46]" />
+                                                                <div className="flex flex-col">
+                                                                    <p className={`text-xs font-black ${darkMode ? 'text-gray-200' : 'text-[#002f37]'}`}>{farm.nextVisit || 'Awaiting Schedule'}</p>
+                                                                    <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Scheduled</p>
+                                                                </div>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="text-right py-4 px-6">
+                                                            <div className="flex justify-end gap-2">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className={`h-9 w-9 rounded-xl ${darkMode ? 'text-gray-400 hover:bg-white/5' : 'text-gray-400 hover:bg-gray-100'}`}
+                                                                    onClick={() => handleViewFarmer(farm.farmer)}
+                                                                >
+                                                                    <Users className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    className="bg-[#065f46] hover:bg-indigo-900 text-white h-9 text-[10px] font-black rounded-xl px-5 transition-all shadow-lg shadow-emerald-500/20 uppercase tracking-widest border-none"
+                                                                    onClick={() => handleLogVisit(farm.farmer)}
+                                                                >
+                                                                    Start Visit
+                                                                </Button>
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </div>
+                        </Card>
+                    </TabsContent>
+
+                    {/* Matches Tab */}
+                    <TabsContent value="matches" className="space-y-4">
+                        <Card className={`${sectionCardClass} border-0 shadow-xl overflow-hidden`}>
+                            <div className="overflow-hidden">
+                                <div className="p-6 border-b border-white/5 flex items-center justify-between bg-emerald-500/5">
+                                    <div>
+                                        <h3 className={`text-lg font-bold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>Partnership Opportunities</h3>
+                                        <p className={`text-xs mt-1 font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            Managing {filteredMatches.length} investor-grower relationships
+                                        </p>
+                                    </div>
+                                    <Badge variant="outline" className={`${darkMode ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border-emerald-100 text-emerald-700'} border px-3 py-1`}>
+                                        <div className="w-2 h-2 rounded-full bg-[#7ede56] mr-2 animate-pulse" />
+                                        Matching Engine Active
+                                    </Badge>
+                                </div>
+
+                                <div className="overflow-x-auto relative custom-scrollbar">
+                                    <Table className={`border ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
+                                        <TableHeader className="bg-[#065f46] shadow-md">
+                                            <TableRow className="border-none hover:bg-transparent">
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6 border-r border-white/10">Match Date</TableHead>
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6 border-r border-white/10">Investor</TableHead>
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6 border-r border-white/10">Grower</TableHead>
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 text-center border-r border-white/10">Value</TableHead>
+                                                <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6 border-r border-white/10">Status</TableHead>
+                                                <TableHead className="text-right text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {filteredMatches.length === 0 ? (
+                                                <TableRow>
+                                                    <TableCell colSpan={6} className="h-48 text-center">
+                                                        <div className="flex flex-col items-center justify-center text-gray-400 gap-2">
+                                                            <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+                                                                <Coins className="h-6 w-6 text-gray-300" />
+                                                            </div>
+                                                            <p className="font-bold text-sm uppercase tracking-widest">No matching activities found</p>
+                                                            <p className="text-xs">Try adjusting your search query</p>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ) : (
+                                                filteredMatches.map((match: any) => (
+                                                    <TableRow key={match.id || match._id} className={`${darkMode ? 'border-white/5 hover:bg-emerald-500/5' : 'hover:bg-gray-50'} border-b`}>
+                                                        <TableCell className={`py-4 px-6 font-medium text-[11px] border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>{match.matchDate}</TableCell>
+                                                        <TableCell className={`py-4 px-6 border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600">
+                                                                    <User className="h-4 w-4" />
+                                                                </div>
+                                                                <span className="font-bold text-[12px]">{match.investor}</span>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className={`py-4 px-6 border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                                                                    <Sprout className="h-4 w-4" />
+                                                                </div>
+                                                                <span className="font-bold text-[12px]">{match.farmer}</span>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className={`py-4 text-center border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
+                                                            <span className="font-black text-[13px] text-emerald-600">{match.value}</span>
+                                                        </TableCell>
+                                                        <TableCell className={`py-4 px-6 border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
+                                                            <Badge className={
+                                                                match.status === 'Under Review' ? (darkMode ? 'bg-orange-500/20 text-orange-300' : 'bg-orange-100 text-orange-700') :
+                                                                match.status === 'Pending Funding' ? (darkMode ? 'bg-yellow-500/20 text-yellow-300' : 'bg-yellow-100 text-yellow-700') :
+                                                                (darkMode ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-700')
+                                                            }>
+                                                                {match.status}
+                                                            </Badge>
+                                                        </TableCell>
+                                                        <TableCell className="text-right py-4 px-6">
+                                                            <div className="flex justify-end gap-2">
+                                                                {match.status === 'Under Review' ? (
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        onClick={() => handleReviewMatch(match)}
+                                                                        className="h-8 px-3 bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 text-[10px] font-black uppercase tracking-widest"
+                                                                    >
+                                                                        Review Match
+                                                                    </Button>
+                                                                ) : (
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        onClick={() => handleViewMatch(match)}
+                                                                        className="h-8 w-8 rounded-lg hover:bg-blue-500/10 hover:text-blue-600 transition-all shadow-sm"
+                                                                    >
+                                                                        <Eye className="h-4 w-4" />
+                                                                    </Button>
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </div>
+                        </Card>
+                    </TabsContent>
                 </Tabs >
             </div >
+            
+            <ViewMatchModal
+                open={viewMatchModalOpen}
+                onOpenChange={setViewMatchModalOpen}
+                match={selectedMatch}
+            />
+
+            <ReviewMatchModal
+                open={reviewMatchModalOpen}
+                onOpenChange={setReviewMatchModalOpen}
+                match={selectedMatch}
+                onApprove={handleApproveMatch}
+                onReject={handleRejectMatch}
+            />
 
             <AddFarmerModal open={isAddFarmerModalOpen} onOpenChange={setIsAddFarmerModalOpen} onSuccess={fetchData} />
             <ViewFarmerModal open={viewModalOpen} onOpenChange={setViewModalOpen} farmer={selectedFarmer} />
@@ -1288,7 +1685,7 @@ const FarmManagement: React.FC = () => {
             {/* Field Visit Modal - Premium Style */}
             <Dialog open={fieldVisitModalOpen} onOpenChange={setFieldVisitModalOpen}>
                 <DialogContent className={`max-w-2xl p-0 overflow-hidden border-0 ${darkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
-                    <div className="bg-emerald-600 p-6 text-white relative">
+                    <div className="bg-[#065f46] p-6 text-white relative">
                         <DialogHeader>
                             <DialogTitle className="text-2xl font-bold flex items-center gap-3">
                                 <ClipboardList className="h-6 w-6" />
@@ -1667,3 +2064,7 @@ const FarmManagement: React.FC = () => {
 };
 
 export default FarmManagement;
+
+
+
+

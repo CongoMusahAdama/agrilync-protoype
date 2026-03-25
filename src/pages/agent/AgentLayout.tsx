@@ -19,7 +19,17 @@ import {
   Sun,
   Users,
   Settings,
-  LogOut
+  LogOut,
+  Home,
+  GraduationCap,
+  Leaf,
+  Layout,
+  PlusCircle,
+  FileText,
+  ClipboardCheck,
+  Image as ImageIcon,
+  BarChart3,
+  Briefcase
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -31,14 +41,12 @@ type AgentNavItem = {
 };
 
 const agentNavItems: AgentNavItem[] = [
-  { id: 'profile-overview', label: 'Dashboard', icon: Activity, path: '/dashboard/agent' },
-  { id: 'farmers-management', label: 'Farmers Management', icon: Users, path: '/dashboard/agent/farmers-management' },
-  { id: 'farm-management', label: 'Farm Management', icon: Sprout, path: '/dashboard/agent/farm-management' },
-  { id: 'investor-farmer-matches', label: 'Investor-Farmer Matches', icon: Handshake, path: '/dashboard/agent/investor-farmer-matches' },
-  { id: 'dispute-management', label: 'Dispute Management', icon: AlertTriangle, path: '/dashboard/agent/dispute-management' },
-  { id: 'training-performance', label: 'Training & Performance', icon: Calendar, path: '/dashboard/agent/training-performance' },
-  { id: 'notifications', label: 'Notifications', icon: Bell, path: '/dashboard/agent/notifications-center' },
-  { id: 'profile', label: 'Profile & Settings', icon: Settings, path: '/dashboard/agent/profile' }
+  { id: 'dashboard', label: 'Home / Overview', icon: Home, path: '/dashboard/agent' },
+  { id: 'farm-management', label: 'Manage Your Farm', icon: Layout, path: '/dashboard/agent/farm-management' },
+  { id: 'media-gallery', label: 'Media Gallery', icon: ImageIcon, path: '/dashboard/agent/media' },
+  { id: 'tasks-alerts', label: 'Tasks', icon: Briefcase, path: '/dashboard/agent/tasks' },
+  { id: 'performance', label: 'My Performance', icon: BarChart3, path: '/dashboard/agent/performance' },
+  { id: 'settings', label: 'Settings & Support', icon: Settings, path: '/dashboard/agent/profile' }
 ];
 
 interface AgentLayoutProps {

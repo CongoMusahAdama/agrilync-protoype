@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -50,7 +50,7 @@ const Signup = () => {
       id: 'farmer',
       title: 'Solo Farmer',
       description: 'Direct access to tools & expertise',
-      icon: <Leaf className="h-6 w-6 text-orange-600" />,
+      icon: <Leaf className="h-6 w-6 text-[#7ede56]" />,
       color: 'bg-white border-gray-100 hover:border-[#7ede56] hover:bg-white shadow-xl'
     },
     {
@@ -700,7 +700,7 @@ const Signup = () => {
               <div className="relative w-full">
                 <Select onValueChange={(val) => {
                   toast({
-                    title: "🚧 Signup Under Development",
+                    title: "ðŸš§ Signup Under Development",
                     description: (
                       <div className="mt-2">
                         <p className="mb-3">Our registration system is currently being optimized. Join our WhatsApp community for updates!</p>
@@ -730,7 +730,7 @@ const Signup = () => {
                   <SelectContent className="rounded-2xl border-gray-100 shadow-xl p-2">
                     <SelectItem value="farmer" className="rounded-xl py-3 focus:bg-[#7ede56]/10 focus:text-[#002f37]">
                       <div className="flex items-center gap-3">
-                        <Leaf className="w-4 h-4 text-orange-500" />
+                        <Leaf className="w-4 h-4 text-[#7ede56]" />
                         <div>
                           <p className="font-bold">Solo Farmer</p>
                           <p className="text-xs text-gray-500">Direct access to tools & expertise</p>
@@ -763,7 +763,13 @@ const Signup = () => {
               <div className="mt-6 text-center">
                 <p className="text-gray-500">
                   Already have an account?{' '}
-                  <span onClick={() => navigate('/login')} className="text-[#002f37] font-bold cursor-pointer hover:underline">
+                  <span onClick={() => {
+                    toast({
+                      title: "🚧 Dashboard Under Construction",
+                      description: "Access to the dashboard is currently restricted. Please check back later. For inquiries, contact us at agrilync@gmail.com or +233 50 662 6068.",
+                      duration: 8000,
+                    });
+                  }} className="text-[#002f37] font-bold cursor-pointer hover:underline opacity-80">
                     Log in
                   </span>
                 </p>
@@ -793,9 +799,9 @@ const Signup = () => {
               </div>
 
               {/* Investor Risk Notice */}
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
-                <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-800 leading-relaxed">
+              <div className="bg-[#7ede56]/10 border border-[#7ede56]/30 rounded-xl p-4 flex gap-3">
+                <AlertCircle className="h-5 w-5 text-[#7ede56] flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-[#7ede56] leading-relaxed">
                   <strong>Investor Risk Notice:</strong> Agriculture involves natural and market risks. Returns are not guaranteed. AgriLync does not provide financial advice. Users are responsible for their participation decisions.
                 </p>
               </div>
@@ -812,3 +818,6 @@ const Signup = () => {
 };
 
 export default Signup;
+
+
+

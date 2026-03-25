@@ -112,7 +112,7 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
             showCancelButton: true,
             confirmButtonText: 'Yes, Resolve',
             cancelButtonText: 'Cancel',
-            confirmButtonColor: '#059669',
+            confirmButtonColor: '#065f46',
         }).then((result) => {
             if (result.isConfirmed) {
                 updateMutation.mutate({
@@ -135,7 +135,7 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
         switch (status) {
             case 'Pending': return 'bg-orange-100 text-orange-700';
             case 'Under Review': return 'bg-blue-100 text-blue-700';
-            case 'Resolved': return 'bg-emerald-100 text-emerald-700';
+            case 'Resolved': return 'bg-[#065f46]/10 text-[#065f46]';
             case 'Escalated': return 'bg-rose-100 text-rose-700';
             default: return 'bg-gray-100 text-gray-600';
         }
@@ -145,7 +145,7 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
         switch (severity) {
             case 'High': return 'text-rose-600';
             case 'Medium': return 'text-amber-600';
-            case 'Low': return 'text-emerald-600';
+            case 'Low': return 'text-[#065f46]';
             default: return 'text-gray-600';
         }
     };
@@ -188,7 +188,7 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center gap-2 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-all border-b-2 ${activeTab === tab.id
-                                ? 'border-emerald-600 text-emerald-600'
+                                ? 'border-[#065f46] text-[#065f46]'
                                 : 'border-transparent text-gray-400 hover:text-gray-600'
                                 }`}
                         >
@@ -232,7 +232,7 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
                             {dispute.notes && (
                                 <section>
                                     <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 ml-1">Resolution Notes</h3>
-                                    <div className={`p-6 rounded-2xl border leading-relaxed text-sm whitespace-pre-wrap ${darkMode ? 'bg-emerald-950/20 border-emerald-900/30 text-emerald-100' : 'bg-emerald-50 border-emerald-100 text-emerald-800'}`}>
+                                    <div className={`p-6 rounded-2xl border leading-relaxed text-sm whitespace-pre-wrap ${darkMode ? 'bg-[#065f46]/20 border-[#065f46]/30 text-[#065f46]' : 'bg-[#065f46]/5 border-[#065f46]/10 text-[#065f46]'}`}>
                                         {dispute.notes}
                                     </div>
                                 </section>
@@ -243,8 +243,8 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
                                 <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 ml-1">Evidence Files</h3>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {dispute.evidence?.map((file: string, i: number) => (
-                                        <div key={i} className={`group relative aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center p-4 transition-all ${darkMode ? 'border-gray-800 bg-gray-900/40 hover:border-emerald-500/50' : 'border-gray-100 bg-gray-50/50 hover:border-emerald-500/50'}`}>
-                                            <FileText className="h-8 w-8 text-gray-300 mb-2 group-hover:text-emerald-500 transition-colors" />
+                                        <div key={i} className={`group relative aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center p-4 transition-all ${darkMode ? 'border-gray-800 bg-gray-900/40 hover:border-[#065f46]/50' : 'border-gray-100 bg-gray-50/50 hover:border-[#065f46]/50'}`}>
+                                            <FileText className="h-8 w-8 text-gray-300 mb-2 group-hover:text-[#065f46] transition-colors" />
                                             <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 truncate w-full text-center px-2">{file}</span>
                                             <Button variant="ghost" size="icon" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => toast.info('Previewing evidence...')}>
                                                 <Eye className="h-4 w-4" />
@@ -272,7 +272,7 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
                             ].map((p, i) => (
                                 <div key={i} className={`p-4 sm:p-6 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100 shadow-sm'}`}>
                                     <div className="flex items-center gap-4 w-full sm:w-auto">
-                                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-emerald-100 flex-shrink-0 flex items-center justify-center text-emerald-600 font-bold">
+                                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-[#065f46]/10 flex-shrink-0 flex items-center justify-center text-[#065f46] font-bold">
                                             {p.name?.charAt(0) || '?'}
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -290,7 +290,7 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleContact(p.role, p.name)}
-                                        className="w-full sm:w-auto h-8 text-[10px] font-bold uppercase tracking-widest border-gray-200 dark:border-gray-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 hover:border-emerald-200"
+                                        className="w-full sm:w-auto h-8 text-[10px] font-bold uppercase tracking-widest border-gray-200 dark:border-gray-700 hover:bg-[#065f46]/10 dark:hover:bg-[#065f46]/20 hover:text-[#065f46] hover:border-[#065f46]/30"
                                     >
                                         Contact
                                     </Button>
@@ -306,12 +306,12 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
                                 <div className="relative before:absolute before:left-0 before:top-2 before:bottom-2 before:w-px before:bg-gray-100 dark:before:bg-gray-800">
                                     {[...dispute.timeline].reverse().map((event: any, idx: number) => (
                                         <div key={idx} className="relative pl-8 pb-10 last:pb-0 group">
-                                            <div className="absolute left-[-5px] top-1.5 h-2.5 w-2.5 rounded-full z-10 border-2 border-white dark:border-gray-950 bg-emerald-500 shadow-sm"></div>
+                                            <div className="absolute left-[-5px] top-1.5 h-2.5 w-2.5 rounded-full z-10 border-2 border-white dark:border-gray-950 bg-[#065f46] shadow-sm"></div>
                                             <div>
                                                 <div className="flex items-center gap-3 mb-1">
                                                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{event.date}</span>
                                                     <span className="h-px w-4 bg-gray-100 dark:bg-gray-800"></span>
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">{event.user}</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-[#065f46]">{event.user}</span>
                                                 </div>
                                                 <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{event.action}</p>
                                             </div>
@@ -342,7 +342,7 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
                             <Button
                                 onClick={handleAddNote}
                                 disabled={isUpdating}
-                                className="absolute right-1.5 top-1.5 h-9 bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase tracking-widest text-[9px] px-4 rounded-lg"
+                                className="absolute right-1.5 top-1.5 h-9 bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold uppercase tracking-widest text-[9px] px-4 rounded-lg border-none"
                             >
                                 {isUpdating && activeTab === 'summary' && note ? (
                                     <Loader2 className="h-3 w-3 animate-spin mr-1" />
@@ -364,7 +364,7 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
                         <Button
                             onClick={handleResolve}
                             disabled={isUpdating || dispute.status === 'Resolved'}
-                            className="flex-1 md:flex-none h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase tracking-widest text-[10px] px-8 shadow-lg shadow-emerald-500/20"
+                            className="flex-1 md:flex-none h-11 bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold uppercase tracking-widest text-[10px] px-8 shadow-lg shadow-emerald-500/20 border-none"
                         >
                             {isUpdating && dispute.status !== 'Resolved' && !note ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : null}
                             Resolve Dispute

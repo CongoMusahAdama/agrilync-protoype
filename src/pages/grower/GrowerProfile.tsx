@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -86,14 +86,19 @@ const GrowerProfile: React.FC = () => {
             {/* Logo/App Name */}
             <div className={`p-4 border-b flex-shrink-0 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
                 <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                        <img
-                            src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png"
-                            alt="AgriLync Logo"
-                            className="h-8 w-8"
-                        />
-                        {(!sidebarCollapsed || isMobile) && (
-                            <span className={`text-xl font-bold ${sidebarDarkMode ? 'text-[#f4ffee]' : 'text-[#002f37]'}`}>AgriLync</span>
+                    <div className="flex items-center">
+                        {(!sidebarCollapsed || isMobile) ? (
+                            <img
+                                src="/Frame 74.png"
+                                alt="AgriLync Logo"
+                                className="h-16 w-auto object-contain transform scale-125 sm:scale-150 origin-left"
+                            />
+                        ) : (
+                            <img
+                                src="/Frame 74.png"
+                                alt="AgriLync Logo"
+                                className="h-10 w-auto object-contain transform scale-150 origin-left ml-1"
+                            />
                         )}
                     </div>
                     {!isMobile && (
@@ -192,7 +197,7 @@ const GrowerProfile: React.FC = () => {
                                     </Button>
                                 )}
                                 <div>
-                                    <p className={`text-xs font-semibold uppercase tracking-wide ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>
+                                    <p className={`text-xs font-semibold uppercase tracking-wide ${darkMode ? 'text-[#7ede56]' : 'text-[#7ede56]'}`}>
                                         Grower Profile
                                     </p>
                                     <h1 className={`dashboard-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -336,7 +341,7 @@ const GrowerProfile: React.FC = () => {
                                     )}
 
                                     <div className="mt-6">
-                                        <Button className="bg-[#1db954] hover:bg-[#17a447] text-white w-full sm:w-auto">
+                                        <Button className="bg-[#7ede56] hover:bg-[#6bcb4b] text-[#002f37] w-full sm:w-auto font-black uppercase tracking-widest text-[10px]">
                                             Continue
                                         </Button>
                                     </div>
@@ -356,8 +361,8 @@ const GrowerProfile: React.FC = () => {
                                                     onClick={() => setActiveStep(step.id)}
                                                     className={`w-full text-left p-4 rounded-lg transition-all duration-200 ${isActive
                                                         ? darkMode
-                                                            ? 'bg-[#1db954]/20 border-2 border-[#1db954]'
-                                                            : 'bg-[#1db954]/10 border-2 border-[#1db954]'
+                                                            ? 'bg-[#7ede56]/20 border-2 border-[#7ede56]'
+                                                            : 'bg-[#7ede56]/10 border-2 border-[#7ede56]'
                                                         : darkMode
                                                             ? 'bg-[#0d3036] border-2 border-transparent hover:border-gray-700'
                                                             : 'bg-gray-50 border-2 border-transparent hover:border-gray-200'
@@ -365,7 +370,7 @@ const GrowerProfile: React.FC = () => {
                                                 >
                                                     <div className="flex items-center justify-between">
                                                         <span className={`text-sm font-semibold ${isActive
-                                                            ? 'text-[#1db954]'
+                                                            ? 'text-[#7ede56]'
                                                             : darkMode
                                                                 ? 'text-gray-300'
                                                                 : 'text-gray-700'
@@ -374,9 +379,9 @@ const GrowerProfile: React.FC = () => {
                                                         </span>
                                                         <div
                                                             className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${isActive
-                                                                ? 'bg-[#1db954] text-white'
+                                                                ? 'bg-[#7ede56] text-[#002f37]'
                                                                 : isCompleted
-                                                                    ? 'bg-[#1db954] text-white'
+                                                                    ? 'bg-[#7ede56] text-[#002f37]'
                                                                     : darkMode
                                                                         ? 'bg-gray-700 text-gray-400'
                                                                         : 'bg-gray-200 text-gray-500'
@@ -400,3 +405,7 @@ const GrowerProfile: React.FC = () => {
 };
 
 export default GrowerProfile;
+
+
+
+

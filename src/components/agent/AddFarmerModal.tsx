@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 import Swal from 'sweetalert2';
 import { createWorker } from 'tesseract.js';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
@@ -45,9 +46,20 @@ interface AddFarmerModalProps {
     isEditMode?: boolean;
 }
 
+const normalizeRegion = (regionString?: string) => {
+    if (!regionString) return 'Ashanti Region';
+    if (GHANA_REGIONS[regionString]) return regionString;
+    const capitalized = regionString.charAt(0).toUpperCase() + regionString.slice(1).toLowerCase();
+    const withSuffix = `${capitalized} Region`;
+    if (GHANA_REGIONS[withSuffix]) return withSuffix;
+    const matchedKey = Object.keys(GHANA_REGIONS).find(k => k.toLowerCase().includes(regionString.toLowerCase()));
+    return matchedKey || 'Ashanti Region';
+};
+
 const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenChange, onSuccess, farmer, isEditMode }) => {
+    const { agent } = useAuth();
     const [step, setStep] = useState(1);
-    const [isEditable, setIsEditable] = useState(!isEditMode);
+    const [isEditable, setIsEditable] = useState(true);
     const [formData, setFormData] = useState({
         name: '',
         contact: '',
@@ -57,7 +69,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         otherLanguage: '',
         email: '',
         password: '',
-        region: '',
+        region: normalizeRegion(agent?.region),
         district: '',
         community: '',
         farmType: '',
@@ -71,8 +83,13 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         preferredInvestmentType: '',
         estimatedCapitalNeed: '',
         hasPreviousInvestment: false,
-        investmentReadinessScore: 0
+        investmentReadinessScore: 0,
+        otherGender: '',
+        otherDistrict: '',
+        ghanaCardNumber: ''
     });
+
+    const [gpsLocation, setGpsLocation] = useState<{lat: number, lng: number} | null>(null);
 
     const [manualCommunity, setManualCommunity] = useState('');
     const [profilePicture, setProfilePicture] = useState<string>('');
@@ -87,6 +104,23 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
     const [farmLongitude, setFarmLongitude] = useState(0);
     const [measuredArea, setMeasuredArea] = useState(0);
 
+    // Auto-capture GPS when agent checks the certification checkbox
+    React.useEffect(() => {
+        if (certificationChecked && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setGpsLocation({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    });
+                },
+                () => {
+                    console.log('Location not granted');
+                }
+            );
+        }
+    }, [certificationChecked]);
+
     // Initialize form with farmer data if in edit mode
     React.useEffect(() => {
         if (open && farmer && isEditMode) {
@@ -100,7 +134,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                     otherLanguage: farmer.otherLanguage || '',
                     email: farmer.email || '',
                     password: '', // Don't show password
-                    region: farmer.region || '',
+                    region: normalizeRegion(farmer.region || agent?.region),
                     district: farmer.district || '',
                     community: farmer.community || '',
                     farmType: farmer.farmType || '',
@@ -114,7 +148,10 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                     preferredInvestmentType: farmer.preferredInvestmentType || '',
                     estimatedCapitalNeed: farmer.estimatedCapitalNeed?.toString() || '',
                     hasPreviousInvestment: farmer.hasPreviousInvestment || false,
-                    investmentReadinessScore: farmer.investmentReadinessScore || 0
+                    investmentReadinessScore: farmer.investmentReadinessScore || 0,
+                    otherGender: farmer.otherGender || '',
+                    otherDistrict: farmer.otherDistrict || '',
+                    ghanaCardNumber: farmer.ghanaCardNumber || ''
                 });
 
                 if (farmer.community && !GHANA_COMMUNITIES[farmer.district]?.includes(farmer.community)) {
@@ -137,14 +174,16 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                 console.error('Error initializing edit mode:', error);
                 toast.error('Error loading farmer data. Please try again.');
             }
-        } else if (open && !isEditMode) {
-            // Reset for new onboarding
+        } else if ((open || !trigger) && !isEditMode) {
+            // Reset for new onboarding when opened via controlled prop OR if mounted without a trigger (legacy)
+            // Note: If using trigger, we rely on the initial state or manual reset if needed
             setFormData({
                 name: '', contact: '', gender: '', dob: '', language: '', otherLanguage: '', email: '',
-                password: '', region: '', district: '', community: '', farmType: '', farmSize: '',
+                password: '', region: normalizeRegion(agent?.region), district: '', community: '', farmType: '', farmSize: '',
                 yearsOfExperience: '', landOwnershipStatus: '', cropsGrown: '', livestockType: '', fieldNotes: '',
                 investmentInterest: 'no', preferredInvestmentType: '', estimatedCapitalNeed: '',
-                hasPreviousInvestment: false, investmentReadinessScore: 0
+                hasPreviousInvestment: false, investmentReadinessScore: 0, otherGender: '', otherDistrict: '',
+                ghanaCardNumber: ''
             });
             setManualCommunity('');
             setProfilePicture('');
@@ -157,7 +196,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             setIdVerificationChecked(false);
             setCertificationChecked(false);
         }
-    }, [open, farmer, isEditMode]);
+    }, [open, farmer, isEditMode, agent, trigger]);
 
     // Keyboard navigation
     React.useEffect(() => {
@@ -198,13 +237,15 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             // Parse Ghana Card data (basic pattern matching)
             const nameMatch = text.match(/(?:Name|NAME)\s*:?\s*([A-Z\s]+)/i);
             const dobMatch = text.match(/(?:Date of Birth|DOB|Birth)\s*:?\s*(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})/i);
+            const idNumberMatch = text.match(/(?:GHA-\d{9}-\d)/);
 
             const extractedData = {
                 name: nameMatch ? nameMatch[1].trim() : undefined,
-                dob: dobMatch ? dobMatch[1].trim() : undefined
+                dob: dobMatch ? dobMatch[1].trim() : undefined,
+                idNumber: idNumberMatch ? idNumberMatch[0] : undefined
             };
 
-            setOcrData(extractedData);
+            setOcrData(extractedData as any);
 
             // Compare with form data - strict validation
             const mismatches: string[] = [];
@@ -250,12 +291,18 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                 }
             }
 
+            if (extractedData.idNumber && formData.ghanaCardNumber) {
+                if (extractedData.idNumber !== formData.ghanaCardNumber) {
+                    mismatches.push('ID number');
+                }
+            }
+
             if (mismatches.length > 0) {
                 setOcrMismatch(mismatches);
                 setIdVerificationChecked(false); // Uncheck if mismatch detected
                 
                 // Show sweet alert for mismatch
-                const mismatchFields = mismatches.map(field => field.charAt(0).toUpperCase() + field.slice(1)).join(' and ');
+                const mismatchFields = mismatches.map(field => field.charAt(0).toUpperCase() + field.slice(1)).join(', ');
                 Swal.fire({
                     icon: 'error',
                     title: 'Ghana Card Validation Failed',
@@ -268,10 +315,11 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                 <p style="margin: 0; color: #991b1b; font-weight: 600;">
                                     Mismatch detected in: <span style="color: #dc2626;">${mismatchFields}</span>
                                 </p>
+                                ${extractedData.idNumber ? `<p style="margin: 10px 0 0 0; font-size: 13px; color: #991b1b;">Card Number: ${extractedData.idNumber}</p>` : ''}
                             </div>
                             <p style="margin-top: 15px; color: #4b5563; font-size: 14px;">
                                 Please ensure the information on the Ghana Card matches exactly with what you entered in the form. 
-                                Verify both the card details and the form data before proceeding.
+                                Verify the name, DOB, and ID number carefully before proceeding.
                             </p>
                         </div>
                     `,
@@ -291,13 +339,13 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                     title: 'ID Card Verified!',
                     html: `
                         <div style="text-align: center; padding: 10px 0;">
-                            <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                            <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
                                 ✅ ID Card information matches form data!
                             </p>
                         </div>
                     `,
                     confirmButtonText: 'OK',
-                    confirmButtonColor: '#7ede56',
+                    confirmButtonColor: '#065f46',
                     timer: 2000,
                     timerProgressBar: true
                 });
@@ -414,17 +462,18 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                 title: 'Success!',
                 html: `
                     <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                        <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
                             ${isEditMode ? 'Farmer profile updated successfully!' : 'Farmer onboarded successfully!'}
                         </p>
                     </div>
                 `,
                 confirmButtonText: 'Continue',
-                confirmButtonColor: '#7ede56',
+                confirmButtonColor: '#065f46',
                 timer: 2000,
                 timerProgressBar: true
             });
             queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
+            queryClient.invalidateQueries({ queryKey: ['agentFarmers'] });
             queryClient.invalidateQueries({ queryKey: ['farmers'] });
             onSuccess?.();
             onOpenChange?.(false);
@@ -434,7 +483,8 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                 password: '', region: '', district: '', community: '', farmType: '', farmSize: '',
                 yearsOfExperience: '', landOwnershipStatus: '', cropsGrown: '', livestockType: '', fieldNotes: '',
                 investmentInterest: 'no', preferredInvestmentType: '', estimatedCapitalNeed: '',
-                hasPreviousInvestment: false, investmentReadinessScore: 0
+                hasPreviousInvestment: false, investmentReadinessScore: 0, otherGender: '', otherDistrict: '',
+                ghanaCardNumber: ''
             });
             setManualCommunity('');
             setIdCardFront('');
@@ -572,12 +622,15 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         const requiredFields: Record<string, any> = {
             'Full Name': formData.name,
             'Phone Number': formData.contact,
-            'Gender': formData.gender,
+            'Gender': formData.gender === 'other' ? formData.otherGender : formData.gender,
             'Date of Birth': formData.dob,
+            'Ghana Card Number': formData.ghanaCardNumber,
             'Region': formData.region,
-            'District': formData.district,
+            'District': formData.district === 'other' ? formData.otherDistrict : formData.district,
             'Community': formData.community === 'Other (Specify)' ? manualCommunity : formData.community,
-            'Farm Type': formData.farmType
+            'Farm Type': formData.farmType,
+            'Experience Portfolio': formData.yearsOfExperience,
+            'Land Stewardship': formData.landOwnershipStatus
         };
 
         // Password is auto-generated, no longer required from agent
@@ -588,6 +641,13 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
 
         if (missingFields.length > 0) {
             toast.error(`Missing required fields: ${missingFields.join(', ')}`);
+            return;
+        }
+
+        // Validate Ghana Card Number format: GHA-XXXXXXXXX-X
+        const ghanaCardRegex = /^GHA-\d{9}-\d$/;
+        if (!ghanaCardRegex.test(formData.ghanaCardNumber)) {
+            toast.error('Invalid Ghana Card format. Expected: GHA-XXXXXXXXX-X');
             return;
         }
 
@@ -613,11 +673,20 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         
         const payload = {
             ...formData,
+            gender: formData.gender === 'other' ? formData.otherGender : formData.gender,
+            district: formData.district === 'other' ? formData.otherDistrict : formData.district,
             password: !isEditMode ? tempPassword : undefined, // Only send password for new farmers, not on edit
             community: finalCommunity,
             farmSize: Number(formData.farmSize),
+            yearsOfExperience: Number(formData.yearsOfExperience),
+            landOwnershipStatus: formData.landOwnershipStatus,
+            cropsGrown: formData.cropsGrown,
+            livestockType: formData.livestockType,
             estimatedCapitalNeed: formData.estimatedCapitalNeed ? Number(formData.estimatedCapitalNeed) : 0,
             investmentReadinessScore: Number(formData.investmentReadinessScore),
+            ghanaCardNumber: formData.ghanaCardNumber,
+            verificationConfirmed: certificationChecked,
+            gpsLocation,
             profilePicture,
             idCardFront,
             idCardBack,
@@ -635,129 +704,190 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-            <DialogContent className="max-w-4xl w-[95vw] sm:w-full h-[90vh] sm:h-auto sm:max-h-[85vh] flex flex-col p-0 gap-0 bg-white dark:bg-[#002f37] border-none overflow-hidden rounded-xl sm:rounded-2xl shadow-2xl z-[150]">
-                {/* Header with Progress Bar */}
-                <div className="relative pt-4 px-4 pb-2 sm:pt-6 sm:px-6 border-b dark:border-gray-800 shrink-0">
-                    <DialogHeader>
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 shrink-0">
-                                <Plus className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 dark:text-emerald-400" />
+            <DialogContent className="max-w-6xl w-[95vw] sm:w-full h-[80vh] flex flex-col p-0 gap-0 bg-white dark:bg-[#002f37] border-none overflow-hidden rounded-[2.5rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.35)] z-[150]">
+                {/* Solid Header with Subtle Pattern */}
+                <div className="relative overflow-hidden shrink-0 bg-[#065f46]">
+                    <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.4) 1px, transparent 0)', backgroundSize: '16px 16px' }} />
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+                    
+                    <div className="relative pt-6 px-8 pb-4">
+                        <DialogHeader>
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="p-3 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shrink-0">
+                                    <Plus className="h-6 w-6 text-white" />
+                                </div>
+                                <div className="text-left">
+                                    <DialogTitle className="text-2xl font-black text-white tracking-tight">
+                                        {isEditMode ? 'Update Grower' : 'Grower Onboarding'}
+                                    </DialogTitle>
+                                    <DialogDescription className="text-sm text-white/70">
+                                        {isEditMode ? 'Refining operational data for registered farmers.' : 'Capturing new agricultural talent for the AgriLync Nexus network.'}
+                                    </DialogDescription>
+                                </div>
                             </div>
-                            <div>
-                                <DialogTitle className="text-lg sm:text-xl font-bold dark:text-white text-left">
-                                    {isEditMode ? 'Edit Grower Profile' : 'Grower Onboarding'}
-                                </DialogTitle>
-                                <DialogDescription className="text-xs text-gray-500 dark:text-gray-400 text-left">
-                                    {isEditMode ? 'Update information for an existing farmer.' : 'Directly register a new farmer into the system.'}
-                                </DialogDescription>
-                            </div>
-                        </div>
-                    </DialogHeader>
+                        </DialogHeader>
 
-                    {/* Progress Indicator */}
-                    <div className="flex items-center gap-2 mb-2">
-                        {[1, 2, 3, 4].map((s) => (
-                            <div
-                                key={s}
-                                className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${step >= s ? 'bg-emerald-500' : 'bg-gray-100 dark:bg-gray-800'
-                                    }`}
-                            />
-                        ))}
+                        {/* Premium Stepper */}
+                        <div className="flex items-center justify-between mb-2 relative">
+                            {[
+                                { id: 1, label: 'Identify', icon: User },
+                                { id: 2, label: 'Operation', icon: Sprout },
+                                { id: 3, label: 'Capital', icon: Coins },
+                                { id: 4, label: 'Validate', icon: FileText }
+                            ].flatMap((s, idx) => {
+                                const elements = [
+                                    <div key={`step-${s.id}`} className="flex flex-col items-center gap-2 relative z-10">
+                                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-500 border-2 ${
+                                            step >= s.id 
+                                                ? 'bg-white text-[#065f46] border-white shadow-lg' 
+                                                : 'bg-white/10 text-white/40 border-white/20'
+                                        }`}>
+                                            <s.icon className={`h-5 w-5 ${step === s.id ? 'animate-pulse' : ''}`} />
+                                        </div>
+                                        <span className={`text-[10px] font-black uppercase tracking-widest transition-colors duration-300 ${
+                                            step >= s.id ? 'text-white' : 'text-white/30'
+                                        }`}>
+                                            {s.label}
+                                        </span>
+                                    </div>
+                                ];
+
+                                if (idx < 3) {
+                                    elements.push(
+                                        <div key={`sep-${s.id}`} className="flex-1 h-[2px] mb-6 mx-2 bg-white/10 relative">
+                                            <div 
+                                                className="absolute inset-0 bg-white transition-all duration-700 ease-in-out" 
+                                                style={{ width: step > s.id ? '100%' : '0%' }}
+                                            />
+                                        </div>
+                                    );
+                                }
+
+                                return elements;
+                            })}
+                        </div>
                     </div>
                 </div>
 
-                <ScrollArea className="flex-1 px-6 py-6 overflow-y-auto">
+                <ScrollArea className="flex-1 px-10 py-10 overflow-y-auto bg-gray-50/50 dark:bg-transparent">
                     {/* Step 1: Personal Information */}
                     {step === 1 && (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-                            <div className="flex items-center gap-2 mb-4 text-emerald-600 font-bold uppercase tracking-wider text-xs">
-                                <UserCheck className="h-4 w-4" />
-                                Personal Details
+                        <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-700">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-2 w-8 bg-[#065f46] rounded-full" />
+                                    <h3 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">Identity & Bio</h3>
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Section 1 of 4</span>
                             </div>
 
-                            {/* Profile Picture Upload */}
-                            <div className="flex flex-col items-center justify-center mb-6">
-                                <div className="relative group">
-                                    <div className={`w-28 h-28 rounded-2xl border-2 border-dashed flex items-center justify-center overflow-hidden transition-all ${profilePicture ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 bg-gray-50 hover:border-emerald-400'}`}>
-                                        {profilePicture ? (
-                                            <img src={profilePicture} alt="Farmer Profile" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center text-gray-400">
-                                                <Camera className="w-8 h-8 mb-1" />
-                                                <span className="text-[10px] font-medium">Add Photo</span>
-                                            </div>
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                                {/* Profile Picture Column */}
+                                <div className="lg:col-span-4 flex flex-col items-center">
+                                    <div className="relative group">
+                                        <div className={`w-40 h-40 rounded-[2.5rem] border-2 border-dashed flex items-center justify-center overflow-hidden transition-all duration-300 ${profilePicture ? 'border-[#065f46] bg-[#065f46]/10 shadow-2xl shadow-[#065f46]/10' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:border-[#065f46]/40'}`}>
+                                            {profilePicture ? (
+                                                <img src={profilePicture} alt="Farmer Profile" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center text-gray-400 group-hover:text-emerald-500 transition-colors">
+                                                    <Camera className="w-10 h-10 mb-2 opacity-20 group-hover:opacity-100 transition-opacity" />
+                                                    <span className="text-[10px] font-black uppercase tracking-tighter">Capture Bio</span>
+                                                </div>
+                                            )}
+                                            <label className="absolute inset-0 cursor-pointer opacity-0 group-hover:opacity-100 bg-emerald-600/40 backdrop-blur-sm flex items-center justify-center transition-all duration-300">
+                                                <div className="bg-white p-2 rounded-full shadow-lg">
+                                                    <Plus className="w-5 h-5 text-emerald-600" />
+                                                </div>
+                                                <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleFileChange(e, 'profile')} disabled={!isEditable} />
+                                            </label>
+                                        </div>
+                                        {profilePicture && isEditable && (
+                                            <button
+                                                onClick={() => setProfilePicture('')}
+                                                className="absolute -top-2 -right-2 p-2 bg-red-500 text-white rounded-2xl shadow-xl hover:bg-red-600 transition-all hover:scale-110"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
                                         )}
-                                        <label className="absolute inset-0 cursor-pointer opacity-0 group-hover:opacity-100 bg-black/20 flex items-center justify-center transition-opacity">
-                                            <Camera className="w-6 h-6 text-white" />
-                                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, 'profile')} disabled={!isEditable} />
-                                        </label>
                                     </div>
-                                    {profilePicture && isEditable && (
-                                        <button
-                                            onClick={() => setProfilePicture('')}
-                                            className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-colors"
-                                        >
-                                            <X className="w-3 h-3" />
-                                        </button>
-                                    )}
-                                </div>
-                                <p className="text-[10px] text-gray-400 mt-2">Farmer Profile Picture (Optional)</p>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Full Name *</Label>
-                                    <Input
-                                        placeholder="Enter grower's full name"
-                                        className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
-                                        value={formData.name}
-                                        onChange={(e) => handleInputChange('name', e.target.value)}
-                                        disabled={!isEditable}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Phone Number *</Label>
-                                    <Input
-                                        placeholder="+233 XX XXX XXXX"
-                                        className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
-                                        value={formData.contact}
-                                        onChange={(e) => handleInputChange('contact', e.target.value)}
-                                        disabled={!isEditable}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Gender *</Label>
-                                    <Select value={formData.gender} onValueChange={(val) => handleInputChange('gender', val)} disabled={!isEditable}>
-                                        <SelectTrigger className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10">
-                                            <SelectValue placeholder="Select gender" />
-                                        </SelectTrigger>
-                                        <SelectContent className="z-[2000]">
-                                            <SelectItem value="male">Male</SelectItem>
-                                            <SelectItem value="female">Female</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Date of Birth *</Label>
-                                    <Input
-                                        type="date"
-                                        className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
-                                        value={formData.dob}
-                                        onChange={(e) => handleInputChange('dob', e.target.value)}
-                                        disabled={!isEditable}
-                                    />
+                                    <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-4 uppercase tracking-widest text-center">Biometric Profile</p>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Email Address (Optional)</Label>
-                                    <Input
-                                        type="email"
-                                        placeholder="example@gmail.com"
-                                        className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
-                                        value={formData.email}
-                                        onChange={(e) => handleInputChange('email', e.target.value)}
-                                        disabled={!isEditable}
-                                    />
+                                {/* Form Fields Column */}
+                                <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-8 bg-white dark:bg-white/5 p-10 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-white/5">
+                                    <div className="space-y-2 col-span-2">
+                                        <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Full Name *</Label>
+                                        <Input
+                                            placeholder="Enter grower's legal name"
+                                            className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl hover:bg-gray-100 transition-colors focus:ring-2 focus:ring-emerald-500"
+                                            value={formData.name}
+                                            onChange={(e) => handleInputChange('name', e.target.value)}
+                                            disabled={!isEditable}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Contact Phone *</Label>
+                                        <Input
+                                            placeholder="+233 XX XXX XXXX"
+                                            className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500"
+                                            value={formData.contact}
+                                            onChange={(e) => handleInputChange('contact', e.target.value)}
+                                            disabled={!isEditable}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Gender *</Label>
+                                        <Select value={formData.gender} onValueChange={(val) => handleInputChange('gender', val)} disabled={!isEditable}>
+                                            <SelectTrigger className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500">
+                                                <SelectValue placeholder="Identify Gender" />
+                                            </SelectTrigger>
+                                            <SelectContent className="z-[2000] rounded-xl border-none shadow-2xl">
+                                                <SelectItem value="male">Male</SelectItem>
+                                                <SelectItem value="female">Female</SelectItem>
+                                                <SelectItem value="other">Other (Specify)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        {formData.gender === 'other' && (
+                                            <Input
+                                                placeholder="Specify gender"
+                                                className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500 mt-2"
+                                                value={formData.otherGender}
+                                                onChange={(e) => handleInputChange('otherGender', e.target.value)}
+                                                disabled={!isEditable}
+                                            />
+                                        )}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Ghana Card No. *</Label>
+                                        <Input
+                                            placeholder="GHA-XXXXXXXXX-X"
+                                            className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500"
+                                            value={formData.ghanaCardNumber}
+                                            onChange={(e) => handleInputChange('ghanaCardNumber', e.target.value.toUpperCase())}
+                                            disabled={!isEditable}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Birth Date *</Label>
+                                        <Input
+                                            type="date"
+                                            className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500"
+                                            value={formData.dob}
+                                            onChange={(e) => handleInputChange('dob', e.target.value)}
+                                            disabled={!isEditable}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Email (Optional)</Label>
+                                        <Input
+                                            type="email"
+                                            placeholder="grower@domain.com"
+                                            className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500"
+                                            value={formData.email}
+                                            onChange={(e) => handleInputChange('email', e.target.value)}
+                                            disabled={!isEditable}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -765,19 +895,27 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
 
                     {/* Step 2: Farm Information */}
                     {step === 2 && (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-                            <div className="flex items-center gap-2 mb-4 text-emerald-600 font-bold uppercase tracking-wider text-xs">
-                                <MapPin className="h-4 w-4" />
-                                Farm & Location Info
+                        <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-700">
+                             <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-2 w-8 bg-[#065f46] rounded-full" />
+                                    <h3 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">Agricultural Operation</h3>
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Section 2 of 4</span>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white dark:bg-white/5 p-10 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-white/5">
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Region *</Label>
-                                    <Select value={formData.region} onValueChange={(val) => handleInputChange('region', val)} disabled={!isEditable}>
-                                        <SelectTrigger className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10">
-                                            <SelectValue placeholder="Select region" />
+                                    <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Region Area *</Label>
+                                    <Select 
+                                        value={formData.region} 
+                                        onValueChange={(val) => handleInputChange('region', val)} 
+                                        disabled={true}
+                                    >
+                                        <SelectTrigger className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500 disabled:opacity-100 cursor-not-allowed">
+                                            <SelectValue placeholder={formData.region || "Operational Region"} />
                                         </SelectTrigger>
-                                        <SelectContent className="z-[2000]">
+                                        <SelectContent className="z-[2000] rounded-xl border-none shadow-2xl">
                                             {Object.keys(GHANA_REGIONS).map(region => (
                                                 <SelectItem key={region} value={region}>{region}</SelectItem>
                                             ))}
@@ -785,267 +923,285 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">District *</Label>
+                                    <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">District Jurisdiction *</Label>
                                     <Select
                                         value={formData.district}
                                         onValueChange={(val) => handleInputChange('district', val)}
                                         disabled={!formData.region || !isEditable}
                                     >
-                                        <SelectTrigger className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 disabled:opacity-50">
-                                            <SelectValue placeholder={formData.region ? "Select district" : "Select region first"} />
+                                        <SelectTrigger className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500 disabled:opacity-50">
+                                            <SelectValue placeholder={formData.region ? "Identify District" : "Pending Region..."} />
                                         </SelectTrigger>
-                                        <SelectContent className="z-[2000]">
+                                        <SelectContent className="z-[2000] rounded-xl border-none shadow-2xl">
                                             {formData.region && GHANA_REGIONS[formData.region]?.map(district => (
                                                 <SelectItem key={district} value={district}>{district}</SelectItem>
                                             ))}
+                                            <SelectItem value="other">Other (Specify)</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                    {formData.district === 'other' && (
+                                        <Input
+                                            placeholder="Specify district"
+                                            className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500 mt-2"
+                                            value={formData.otherDistrict || ''}
+                                            onChange={(e) => handleInputChange('otherDistrict', e.target.value)}
+                                            disabled={!isEditable}
+                                        />
+                                    )}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Community *</Label>
+                                    <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Community Hub *</Label>
                                     <Select
                                         value={formData.community}
                                         onValueChange={(val) => handleInputChange('community', val)}
                                         disabled={!formData.district || !isEditable}
                                     >
-                                        <SelectTrigger className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 disabled:opacity-50">
-                                            <SelectValue placeholder={formData.district ? "Select community" : "Select district first"} />
+                                        <SelectTrigger className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500 disabled:opacity-50">
+                                            <SelectValue placeholder={formData.district ? "Select Local Hub" : "Pending District..."} />
                                         </SelectTrigger>
-                                        <SelectContent className="z-[2000]">
+                                        <SelectContent className="z-[2000] rounded-xl border-none shadow-2xl">
                                             {formData.district && GHANA_COMMUNITIES[formData.district]?.map(community => (
                                                 <SelectItem key={community} value={community}>{community}</SelectItem>
                                             ))}
-                                            {/* Fallback for districts not in the list yet, though we added them */}
-                                            {formData.district && !GHANA_COMMUNITIES[formData.district] && (
-                                                <SelectItem value="Other (Specify)">Other (Specify)</SelectItem>
-                                            )}
+                                            <SelectItem value="Other (Specify)">Other (Specify)</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                </div>
-                                {formData.community === 'Other (Specify)' && (
-                                    <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                                        <Label className="text-xs font-bold uppercase text-gray-500">Specify Community Name *</Label>
+                                    {formData.community === 'Other (Specify)' && (
                                         <Input
-                                            placeholder="Enter community name"
-                                            className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
+                                            placeholder="Specify community hub"
+                                            className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500 mt-2"
                                             value={manualCommunity}
                                             onChange={(e) => setManualCommunity(e.target.value)}
                                             disabled={!isEditable}
                                         />
-                                    </div>
-                                )}
+                                    )}
+                                </div>
+
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Preferred Language</Label>
+                                    <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Preferred Language</Label>
                                     <Select
                                         value={formData.language}
                                         onValueChange={(val) => handleInputChange('language', val)}
                                         disabled={!formData.region || !isEditable}
                                     >
-                                        <SelectTrigger className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 disabled:opacity-50">
-                                            <SelectValue placeholder={formData.region ? "Select language" : "Select region first"} />
+                                        <SelectTrigger className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500 disabled:opacity-50">
+                                            <SelectValue placeholder={formData.region ? "Primary Dialect" : "Pending Region..."} />
                                         </SelectTrigger>
-                                        <SelectContent className="z-[2000]">
+                                        <SelectContent className="z-[2000] rounded-xl border-none shadow-2xl">
                                             {formData.region && GHANA_LANGUAGES[formData.region]?.map(lang => (
                                                 <SelectItem key={lang} value={lang}>{lang}</SelectItem>
                                             ))}
+                                            {(!formData.region || !GHANA_LANGUAGES[formData.region]?.includes('Dagbani')) &&
+                                                <SelectItem value="Dagbani">Dagbani</SelectItem>
+                                            }
+                                            {(!formData.region || !GHANA_LANGUAGES[formData.region]?.includes('Ewe')) &&
+                                                <SelectItem value="Ewe">Ewe</SelectItem>
+                                            }
                                         </SelectContent>
                                     </Select>
                                 </div>
+
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Other Languages</Label>
-                                    <Input
-                                        placeholder="E.g. French, Hausa"
-                                        className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
-                                        value={formData.otherLanguage}
-                                        onChange={(e) => handleInputChange('otherLanguage', e.target.value)}
-                                        disabled={!isEditable}
-                                    />
+                                    <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Agricultural Engine *</Label>
+                                    <Select value={formData.farmType} onValueChange={(val) => handleInputChange('farmType', val)} disabled={!isEditable}>
+                                        <SelectTrigger className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500">
+                                            <SelectValue placeholder="System Type" />
+                                        </SelectTrigger>
+                                        <SelectContent className="z-[2000] rounded-xl border-none shadow-2xl">
+                                            <SelectItem value="crop">Crop Cycle Management</SelectItem>
+                                            <SelectItem value="livestock">Livestock Architecture</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-bold uppercase text-gray-500">Farm Type *</Label>
-                                        <Select value={formData.farmType} onValueChange={(val) => handleInputChange('farmType', val)} disabled={!isEditable}>
-                                            <SelectTrigger className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10">
-                                                <SelectValue placeholder="Select farm type" />
-                                            </SelectTrigger>
-                                            <SelectContent className="z-[2000]">
-                                                <SelectItem value="crop">Crop Farming</SelectItem>
-                                                <SelectItem value="livestock">Livestock Farming</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    {formData.farmType === 'crop' && (
-                                        <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                                            <Label className="text-xs font-bold uppercase text-gray-500">Major Crops Grown *</Label>
-                                            <Input
-                                                placeholder="E.g., Maize, Cocoa, Cassava"
-                                                className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
-                                                value={formData.cropsGrown}
-                                                onChange={(e) => handleInputChange('cropsGrown', e.target.value)}
-                                                disabled={!isEditable}
-                                            />
-                                        </div>
-                                    )}
-                                    {formData.farmType === 'livestock' && (
-                                        <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                                            <Label className="text-xs font-bold uppercase text-gray-500">Livestock Types *</Label>
-                                            <Input
-                                                placeholder="E.g., Poultry, Cattle, Goats"
-                                                className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
-                                                value={formData.livestockType}
-                                                onChange={(e) => handleInputChange('livestockType', e.target.value)}
-                                                disabled={!isEditable}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
+
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Years of Experience</Label>
+                                    <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Operational Scale (Acres) *</Label>
                                     <Input
                                         type="number"
-                                        placeholder="E.g., 5"
-                                        className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
+                                        placeholder="E.g., 25"
+                                        className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500"
+                                        value={formData.farmSize}
+                                        onChange={(e) => handleInputChange('farmSize', e.target.value)}
+                                        disabled={formData.farmType === 'livestock' || !isEditable}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Experience Portfolio (Years) *</Label>
+                                    <Input
+                                        type="number"
+                                        placeholder="E.g., 10"
+                                        className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500"
                                         value={formData.yearsOfExperience}
                                         onChange={(e) => handleInputChange('yearsOfExperience', e.target.value)}
                                         disabled={!isEditable}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Land Ownership Status *</Label>
-                                    <Select value={formData.landOwnershipStatus} onValueChange={(val) => handleInputChange('landOwnershipStatus', val)} disabled={!isEditable}>
-                                        <SelectTrigger className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10">
-                                            <SelectValue placeholder="Select ownership status" />
+                                    <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Land Stewardship Status *</Label>
+                                    <Select 
+                                        value={formData.landOwnershipStatus} 
+                                        onValueChange={(val) => handleInputChange('landOwnershipStatus', val)} 
+                                        disabled={!isEditable}
+                                    >
+                                        <SelectTrigger className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500">
+                                            <SelectValue placeholder="Ownership Tier" />
                                         </SelectTrigger>
-                                        <SelectContent className="z-[2000]">
-                                            <SelectItem value="owned">Own Land</SelectItem>
-                                            <SelectItem value="leased">Leased Land</SelectItem>
-                                            <SelectItem value="shared">Shared / Family Land</SelectItem>
+                                        <SelectContent className="z-[2000] rounded-xl border-none shadow-2xl">
+                                            <SelectItem value="owned">Legal Ownership</SelectItem>
+                                            <SelectItem value="leased">Leasehold Agreement</SelectItem>
+                                            <SelectItem value="rented">Rental Arrangement</SelectItem>
+                                            <SelectItem value="communal">Communal/Stool Land</SelectItem>
+                                            <SelectItem value="other">Other Status</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Farm Size ({formData.farmType === 'livestock' ? 'N/A' : 'Acres'}) *</Label>
-                                    <Input
-                                        type="number"
-                                        placeholder={formData.farmType === 'livestock' ? "Not applicable for livestock" : "e.g. 5"}
-                                        className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 disabled:opacity-50"
-                                        value={formData.farmSize}
-                                        onChange={(e) => handleInputChange('farmSize', e.target.value)}
-                                        disabled={formData.farmType === 'livestock' || !isEditable}
-                                    />
-                                </div>
+                                {formData.farmType === 'crop' && (
+                                    <div className="space-y-2 col-span-1 md:col-span-2">
+                                        <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Primary Crop Cultivation *</Label>
+                                        <Input
+                                            placeholder="E.g., Cocoa, Maize, Cashew"
+                                            className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500"
+                                            value={formData.cropsGrown}
+                                            onChange={(e) => handleInputChange('cropsGrown', e.target.value)}
+                                            disabled={!isEditable}
+                                        />
+                                    </div>
+                                )}
+                                {formData.farmType === 'livestock' && (
+                                    <div className="space-y-2 col-span-1 md:col-span-2">
+                                        <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Livestock Portfolio *</Label>
+                                        <Input
+                                            placeholder="E.g., Poultry, Cattle, Piggery"
+                                            className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500"
+                                            value={formData.livestockType}
+                                            onChange={(e) => handleInputChange('livestockType', e.target.value)}
+                                            disabled={!isEditable}
+                                        />
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="space-y-2">
-                                <Label className="text-xs font-bold uppercase text-gray-500">Interactive Location Mapping</Label>
-                                <FarmMap
-                                    latitude={farmLatitude}
-                                    longitude={farmLongitude}
-                                    onLocationChange={(lat, lng) => {
-                                        if (isEditable) {
-                                            setFarmLatitude(lat);
-                                            setFarmLongitude(lng);
-                                        }
-                                    }}
-                                    onAreaChange={(area) => {
-                                        if (isEditable) {
-                                            setMeasuredArea(area);
-                                            if (formData.farmType === 'crop') {
-                                                setFormData({ ...formData, farmSize: area.toFixed(2) });
+                            <div className="bg-white dark:bg-white/5 p-8 rounded-[2rem] shadow-sm border border-gray-100 dark:border-white/5 space-y-4">
+                                <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Geospatial Mapping</Label>
+                                <div className="rounded-[1.5rem] overflow-hidden border border-gray-100 dark:border-white/5 shadow-inner">
+                                    <FarmMap
+                                        latitude={farmLatitude}
+                                        longitude={farmLongitude}
+                                        onLocationChange={(lat, lng) => {
+                                            if (isEditable) {
+                                                setFarmLatitude(lat);
+                                                setFarmLongitude(lng);
                                             }
-                                        }
-                                    }}
-                                    farmSize={measuredArea}
-                                />
+                                        }}
+                                        onAreaChange={(area) => {
+                                            if (isEditable) {
+                                                setMeasuredArea(area);
+                                                if (formData.farmType === 'crop') {
+                                                    setFormData({ ...formData, farmSize: area.toFixed(2) });
+                                                }
+                                            }
+                                        }}
+                                        farmSize={measuredArea}
+                                    />
+                                </div>
+                                <p className="text-[10px] font-medium text-gray-400 italic">Satellite-verified acreage will override manual entry for crop farms.</p>
                             </div>
                         </div>
                     )}
 
                     {/* Step 3: Investment & Financials */}
                     {step === 3 && (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-                            <div className="flex items-center gap-2 mb-4 text-emerald-600 font-bold uppercase tracking-wider text-xs">
-                                <Coins className="h-4 w-4" />
-                                Investment & Financials
+                        <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-700">
+                             <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-2 w-8 bg-[#065f46] rounded-full" />
+                                    <h3 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">Economic Strategy</h3>
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Section 3 of 4</span>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white dark:bg-white/5 p-10 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-white/5">
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Investment Interest *</Label>
+                                    <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Investment Appetite *</Label>
                                     <Select value={formData.investmentInterest} onValueChange={(val) => handleInputChange('investmentInterest', val)} disabled={!isEditable}>
-                                        <SelectTrigger className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10">
-                                            <SelectValue placeholder="Select interest level" />
+                                        <SelectTrigger className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500">
+                                            <SelectValue placeholder="Commitment Level" />
                                         </SelectTrigger>
-                                        <SelectContent className="z-[2000]">
-                                            <SelectItem value="yes">Yes, very interested</SelectItem>
-                                            <SelectItem value="maybe">Maybe / Needs more info</SelectItem>
-                                            <SelectItem value="no">No, not at this time</SelectItem>
+                                        <SelectContent className="z-[2000] rounded-xl border-none shadow-2xl">
+                                            <SelectItem value="yes">Yes, Optimized Growth</SelectItem>
+                                            <SelectItem value="maybe">Review Opportunities</SelectItem>
+                                            <SelectItem value="no">Self-Sustaining Mode</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Preferred Investment Type</Label>
+                                    <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Growth Vehicle</Label>
                                     <Select
                                         value={formData.preferredInvestmentType}
                                         onValueChange={(val) => handleInputChange('preferredInvestmentType', val)}
                                         disabled={formData.investmentInterest === 'no' || !isEditable}
                                     >
-                                        <SelectTrigger className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 disabled:opacity-50">
-                                            <SelectValue placeholder="Select type" />
+                                        <SelectTrigger className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500 disabled:opacity-50">
+                                            <SelectValue placeholder="Resource Type" />
                                         </SelectTrigger>
-                                        <SelectContent className="z-[2000]">
-                                            <SelectItem value="inputs">Farm Inputs (Seeds, Fertilizer)</SelectItem>
-                                            <SelectItem value="cash">Direct Cash Injection</SelectItem>
-                                            <SelectItem value="equipment">Farm Equipment / Machinery</SelectItem>
-                                            <SelectItem value="partnership">Joint Venture Partnership</SelectItem>
+                                        <SelectContent className="z-[2000] rounded-xl border-none shadow-2xl">
+                                            <SelectItem value="inputs">Technical Inputs</SelectItem>
+                                            <SelectItem value="cash">Capital Liquidity</SelectItem>
+                                            <SelectItem value="equipment">Infrastructure/Tools</SelectItem>
+                                            <SelectItem value="partnership">Strategic Equity</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Estimated Capital Need (GHS)</Label>
+                                    <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Injected Capital Target (GHS)</Label>
                                     <Input
                                         type="number"
-                                        placeholder="E.g., 5000"
-                                        className="h-11 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 disabled:opacity-50"
+                                        placeholder="E.g., 25,000"
+                                        className="h-12 bg-gray-50 dark:bg-white/5 border-none text-base font-bold rounded-xl focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
                                         value={formData.estimatedCapitalNeed}
                                         onChange={(e) => handleInputChange('estimatedCapitalNeed', e.target.value)}
                                         disabled={formData.investmentInterest === 'no' || !isEditable}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase text-gray-500">Investment Readiness Score (0-100)</Label>
-                                    <div className="flex items-center gap-4 h-11 px-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-md">
+                                    <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Market Readiness index ({formData.investmentReadinessScore}%)</Label>
+                                    <div className="flex items-center gap-6 h-12 px-5 bg-gray-50 dark:bg-white/5 rounded-xl">
                                         <Input
                                             type="range"
                                             min="0"
                                             max="100"
                                             step="5"
-                                            className="flex-1"
+                                            className="flex-1 accent-emerald-500"
                                             value={formData.investmentReadinessScore}
                                             onChange={(e) => handleInputChange('investmentReadinessScore', parseInt(e.target.value))}
                                             disabled={!isEditable}
                                         />
-                                        <span className="text-sm font-bold w-12 text-center text-emerald-600">
-                                            {formData.investmentReadinessScore}%
+                                        <span className="text-base font-bold text-emerald-600 w-10 text-right">
+                                            {formData.investmentReadinessScore}
                                         </span>
                                     </div>
                                 </div>
-                                <div className="col-span-1 md:col-span-2 space-y-3">
-                                    <div className={`flex items-start gap-4 p-4 rounded-xl border transition-all ${formData.hasPreviousInvestment ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/20' : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10'}`}>
-                                        <Checkbox
-                                            id="hasPreviousInvestment"
-                                            className="mt-1"
-                                            checked={formData.hasPreviousInvestment}
-                                            onCheckedChange={(checked) => handleInputChange('hasPreviousInvestment', checked as boolean)}
-                                            disabled={!isEditable}
-                                        />
-                                        <div className="space-y-1">
-                                            <Label htmlFor="hasPreviousInvestment" className="text-sm font-bold cursor-pointer dark:text-gray-200">
-                                                Previous Investment History
+                                
+                                <div className="col-span-1 md:col-span-2 mt-4 p-6 bg-[#065f46]/5 rounded-[1.5rem] border border-[#065f46]/10 flex items-start gap-4">
+                                    <div className="h-12 w-12 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-600/20">
+                                        <Coins className="h-6 w-6 text-white" />
+                                    </div>
+                                    <div className="flex-1 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <Label htmlFor="hasPreviousInvestment" className="text-sm font-black text-gray-900 dark:text-emerald-400 uppercase tracking-tight cursor-pointer">
+                                                Elite Credit History
                                             </Label>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                Check if this farmer has previously received or successfully repaid any agricultural investment or loan.
-                                            </p>
+                                            <Checkbox
+                                                id="hasPreviousInvestment"
+                                                checked={formData.hasPreviousInvestment}
+                                                onCheckedChange={(checked) => handleInputChange('hasPreviousInvestment', checked as boolean)}
+                                                disabled={!isEditable}
+                                            />
                                         </div>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed font-medium">
+                                            Confirm whether this operator has a documented history of capital repayment or successful agricultural partnerships.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -1054,106 +1210,99 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
 
                     {/* Step 4: Documents & Final Review */}
                     {step === 4 && (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-                            <div className="flex items-center gap-2 mb-4 text-emerald-600 font-bold uppercase tracking-wider text-xs">
-                                <FileText className="h-4 w-4" />
-                                Documents & Final Review
+                        <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-700">
+                             <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-2 w-8 bg-[#065f46] rounded-full" />
+                                    <h3 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">Final Validation</h3>
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Section 4 of 4</span>
                             </div>
 
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-bold uppercase text-gray-500">Ghana Card (Front) *</Label>
-                                        <label className={`block p-4 border-2 border-dashed ${idCardFront ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 hover:border-emerald-400 hover:bg-emerald-50/50 dark:hover:bg-emerald-500/5'} rounded-2xl cursor-pointer transition-all`}>
-                                            <div className="flex flex-col items-center justify-center text-center min-h-[140px]">
-                                                {idCardFront ? (
-                                                    <div className="relative w-full h-32 rounded-lg overflow-hidden">
-                                                        <img src={idCardFront} alt="Front Preview" className="w-full h-full object-cover" />
-                                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                                            <CheckCircle2 className="h-8 w-8 text-white" />
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <>
-                                                        <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                                                        <span className="text-xs font-medium text-gray-500">Click to Upload Front Side</span>
-                                                        <span className="text-[10px] text-gray-400 mt-1">PNG, JPG up to 10MB</span>
-                                                    </>
-                                                )}
-                                            </div>
-                                            <Input
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={(e) => handleFileChange(e, 'front')}
-                                                disabled={!isEditable}
-                                            />
-                                        </label>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-bold uppercase text-gray-500">Ghana Card (Back) *</Label>
-                                        <label className={`block p-4 border-2 border-dashed ${idCardBack ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 hover:border-emerald-400 hover:bg-emerald-50/50 dark:hover:bg-emerald-500/5'} rounded-2xl cursor-pointer transition-all`}>
-                                            <div className="flex flex-col items-center justify-center text-center min-h-[140px]">
-                                                {idCardBack ? (
-                                                    <div className="relative w-full h-32 rounded-lg overflow-hidden">
-                                                        <img src={idCardBack} alt="Back Preview" className="w-full h-full object-cover" />
-                                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                                            <CheckCircle2 className="h-8 w-8 text-white" />
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <>
-                                                        <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                                                        <span className="text-xs font-medium text-gray-500">Click to Upload Back Side</span>
-                                                        <span className="text-[10px] text-gray-400 mt-1">PNG, JPG up to 10MB</span>
-                                                    </>
-                                                )}
-                                            </div>
-                                            <Input
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={(e) => handleFileChange(e, 'back')}
-                                                disabled={!isEditable}
-                                            />
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Textarea
-                                        placeholder="Enter any additional notes about the farm visit..."
-                                        className="min-h-[100px] bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
-                                        value={formData.fieldNotes}
-                                        onChange={(e) => handleInputChange('fieldNotes', e.target.value)}
-                                        disabled={!isEditable}
-                                    />
-                                </div>
-
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-3">
-                                    <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-500/10 rounded-xl border border-blue-100 dark:border-blue-500/20">
+                                    <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Ghana Card (Front) *</Label>
+                                    <label className={`block group p-1 border-2 border-dashed ${idCardFront ? 'border-[#065f46]' : 'border-gray-200 dark:border-white/10 hover:border-[#065f46]'} rounded-[2.5rem] cursor-pointer transition-all duration-300`}>
+                                        <div className={`flex flex-col items-center justify-center text-center min-h-[240px] rounded-[2.2rem] transition-colors ${idCardFront ? 'bg-[#065f46]/5' : 'bg-gray-50 dark:bg-white/5 group-hover:bg-[#065f46]/5'}`}>
+                                            {idCardFront ? (
+                                                <div className="relative w-full h-full p-4 overflow-hidden">
+                                                    <img src={idCardFront} alt="Front Preview" className="w-full h-32 object-cover rounded-2xl shadow-lg border border-white/20" />
+                                                    <div className="mt-4 flex items-center justify-center gap-2 text-emerald-600 font-black text-[10px] uppercase">
+                                                        <CheckCircle2 className="h-4 w-4" /> Digital Record Captured
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center">
+                                                    <div className="p-4 bg-white dark:bg-white/10 rounded-2xl shadow-sm mb-4 group-hover:scale-110 transition-transform">
+                                                        <Upload className="h-8 w-8 text-emerald-600" />
+                                                    </div>
+                                                    <span className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tighter">Capture Front Side</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <Input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleFileChange(e, 'front')} disabled={!isEditable} />
+                                    </label>
+                                </div>
+                                <div className="space-y-3">
+                                    <Label className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-200 tracking-widest">Ghana Card (Back) *</Label>
+                                    <label className={`block group p-1 border-2 border-dashed ${idCardBack ? 'border-[#065f46]' : 'border-gray-200 dark:border-white/10 hover:border-[#065f46]'} rounded-[2.5rem] cursor-pointer transition-all duration-300`}>
+                                        <div className={`flex flex-col items-center justify-center text-center min-h-[240px] rounded-[2.2rem] transition-colors ${idCardBack ? 'bg-[#065f46]/5' : 'bg-gray-50 dark:bg-white/5 group-hover:bg-[#065f46]/5'}`}>
+                                            {idCardBack ? (
+                                                <div className="relative w-full h-full p-4 overflow-hidden">
+                                                    <img src={idCardBack} alt="Back Preview" className="w-full h-32 object-cover rounded-2xl shadow-lg border border-white/20" />
+                                                    <div className="mt-4 flex items-center justify-center gap-2 text-emerald-600 font-black text-[10px] uppercase">
+                                                        <CheckCircle2 className="h-4 w-4" /> Digital Record Captured
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center">
+                                                    <div className="p-4 bg-white dark:bg-white/10 rounded-2xl shadow-sm mb-4 group-hover:scale-110 transition-transform">
+                                                        <Upload className="h-8 w-8 text-emerald-600" />
+                                                    </div>
+                                                    <span className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tighter">Capture Back Side</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <Input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleFileChange(e, 'back')} disabled={!isEditable} />
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <Textarea
+                                    placeholder="Operational field notes or specific grower observations..."
+                                    className="min-h-[140px] bg-white dark:bg-white/5 border-gray-100 dark:border-white/10 rounded-[1.5rem] shadow-sm p-6 text-sm resize-none focus:ring-2 focus:ring-emerald-500"
+                                    value={formData.fieldNotes}
+                                    onChange={(e) => handleInputChange('fieldNotes', e.target.value)}
+                                    disabled={!isEditable}
+                                />
+
+                                <div className="space-y-4">
+                                    <div className="flex items-start gap-5 p-6 bg-white dark:bg-white/5 rounded-[1.5rem] border border-gray-100 dark:border-white/5 shadow-sm group hover:border-emerald-500/30 transition-colors">
                                         <Checkbox
                                             id="idVerification"
-                                            className="mt-1"
+                                            className="mt-1 h-5 w-5 rounded-md border-gray-300"
                                             checked={idVerificationChecked}
                                             onCheckedChange={(checked) => setIdVerificationChecked(checked as boolean)}
                                             disabled={!isEditable}
                                         />
-                                        <Label htmlFor="idVerification" className="text-xs text-blue-900 dark:text-blue-100 leading-relaxed cursor-pointer">
-                                            <span className="font-bold">ID Verification:</span> I confirm that the personal information (name, date of birth) on the Ghana Card matches the details provided in this form.
-                                        </Label>
+                                        <div className="space-y-1">
+                                            <Label htmlFor="idVerification" className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight cursor-pointer">ID Fidelity Confirmation</Label>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">I verify that the biometric data and identity credentials on the Ghana Card exactly match the physical subject.</p>
+                                        </div>
                                     </div>
-                                    <div className="flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20">
+                                    <div className="flex items-start gap-5 p-6 bg-emerald-600/5 dark:bg-emerald-500/10 rounded-[1.5rem] border border-emerald-600/10 shadow-sm group hover:border-emerald-500/30 transition-colors">
                                         <Checkbox
                                             id="certification"
-                                            className="mt-1"
+                                            className="mt-1 h-5 w-5 rounded-md border-emerald-600"
                                             checked={certificationChecked}
                                             onCheckedChange={(checked) => setCertificationChecked(checked as boolean)}
                                             disabled={!isEditable}
                                         />
-                                        <Label htmlFor="certification" className="text-xs text-emerald-900 dark:text-emerald-100 leading-relaxed cursor-pointer">
-                                            <span className="font-bold">Field Certification:</span> I certify that I have verified the location and identity of this grower according to AgriLync's field protocols. All provided data is accurate to the best of my knowledge.
-                                        </Label>
+                                        <div className="space-y-1">
+                                            <Label htmlFor="certification" className="text-sm font-black text-emerald-800 dark:text-emerald-400 uppercase tracking-tight cursor-pointer">Protocol Certification</Label>
+                                            <p className="text-xs text-emerald-700/70 dark:text-emerald-400/70 font-medium">As a certified field agent, I attest that the operation has been physically inspected and complies with AgriLync standards.</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1161,57 +1310,57 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                     )}
                 </ScrollArea>
 
-                <DialogFooter className="p-6 border-t dark:border-gray-800 bg-gray-50 dark:bg-[#0b2528] flex items-center justify-between">
+                <DialogFooter className="p-10 border-t dark:border-gray-800 bg-gray-50/50 dark:bg-[#0b2528] flex items-center justify-between shrink-0">
                     <Button
                         variant="ghost"
                         onClick={step === 1 ? () => onOpenChange?.(false) : prevStep}
-                        className="text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                        className="text-gray-500 hover:text-gray-900 dark:hover:text-white font-black uppercase tracking-widest text-[10px]"
                         disabled={isSubmitting}
                     >
                         {step === 1 ? <X className="h-4 w-4 mr-2" /> : <ChevronLeft className="h-4 w-4 mr-2" />}
-                        {step === 1 ? 'Cancel' : 'Previous'}
+                        {step === 1 ? 'Discard' : 'Go Back'}
                     </Button>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-4">
                         {isEditMode && !isEditable && (
                             <Button
                                 onClick={() => setIsEditable(true)}
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-bold h-11 px-8 rounded-xl shadow-lg shadow-blue-600/20"
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white font-black h-12 px-10 rounded-2xl shadow-2xl shadow-indigo-600/20 uppercase tracking-widest text-[11px]"
                             >
                                 <Edit className="h-4 w-4 mr-2" />
-                                Enable Editing
+                                Edit Entry
                             </Button>
                         )}
                         {step < 4 ? (
                             <Button
                                 onClick={nextStep}
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 px-8 rounded-xl shadow-lg shadow-emerald-600/20"
+                                className="bg-[#065f46] hover:bg-[#065f46]/90 text-white font-black h-12 px-10 rounded-2xl shadow-[0_20px_40px_-15px_rgba(5,150,105,0.4)] uppercase tracking-widest text-[11px] group border-none"
                             >
-                                {isEditMode ? 'Continue' : 'Continue'}
-                                <ChevronRight className="h-4 w-4 ml-2" />
+                                Next Strategy
+                                <ChevronRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                             </Button>
                         ) : (
                             <Button
                                 onClick={handleSubmit}
                                 disabled={isSubmitting || !isEditable}
-                                className={`bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 px-8 rounded-xl shadow-lg shadow-emerald-600/20 ${isEditable && !isSubmitting ? 'animate-pulse' : ''} disabled:opacity-50`}
+                                className={`bg-[#065f46] hover:bg-[#065f46]/90 text-white font-black h-12 px-10 rounded-2xl shadow-[0_20px_40px_-15px_rgba(5,150,105,0.4)] uppercase tracking-widest text-[11px] ${isEditable && !isSubmitting ? 'animate-pulse' : ''} disabled:opacity-50 border-none`}
                             >
                                 {isSubmitting ? (
                                     <>
                                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                        Processing...
+                                        ARCHIVING...
                                     </>
                                 ) : (
                                     <>
                                         {isEditMode ? (
                                             <>
                                                 <Save className="h-4 w-4 mr-2" />
-                                                Save Changes
+                                                Sync Update
                                             </>
                                         ) : (
                                             <>
                                                 <CheckCircle2 className="h-4 w-4 mr-2" />
-                                                Complete Registration
+                                                Deploy Profile
                                             </>
                                         )}
                                     </>
@@ -1226,3 +1375,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
 };
 
 export default AddFarmerModal;
+
+
+
+

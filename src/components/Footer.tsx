@@ -31,19 +31,18 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-6 gap-8">
           {/* Logo and Brand */}
           <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
+            <div className="flex items-center mb-6">
               <img
-                src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png"
-                alt="AgriLync Logo"
-                className="h-8 w-8"
+                src="/Frame 74.png"
+                alt="AgriLync Nexus Logo"
+                className="h-24 md:h-32 w-auto object-contain transform scale-110 md:scale-125 origin-left"
               />
-              <span className="font-bold text-xl">AgriLync</span>
             </div>
             <p className="text-gray-400 text-sm mb-4 max-w-md">
-              Transforming African agriculture through AI and digital technologies. Empowering farmers with tools for sustainable growth and higher yields.
+              Agrilync Nexus is a finance-first, training-led AgriFinTech platform transforming African agriculture through transparent finance, AI advisory, and local agent networks.
             </p>
             <p className="text-gray-500 text-[10px] leading-relaxed mb-6 border-t border-gray-800 pt-4">
-              AgriLync is a technology-enabled agricultural platform that connects farmers, agricultural experts, and independent investors. We do not operate as a fund manager, financial institution, or farm operator. AgriLync does not custody user funds or guarantee investment returns. The platform acts only as a technology facilitator.
+              Agrilync Nexus is a technology-enabled agricultural platform that connects farmers, agricultural experts, and independent investors. We do not operate as a fund manager, financial institution, or farm operator. Agrilync Nexus does not custody user funds or guarantee investment returns.
             </p>
             <div className="flex space-x-4">
               <a href="https://www.facebook.com/share/16SkoNJAsW/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 transition-colors">
@@ -67,15 +66,20 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4 text-green-400" />
-                <a href="mailto:agrilync@email.com" className="text-gray-400 hover:text-green-400 text-xs transition-colors">
+                <a href="mailto:agrilync@gmail.com" className="text-gray-400 hover:text-green-400 text-xs transition-colors">
                   agrilync@gmail.com
                 </a>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4 text-green-400" />
-                <a href="tel:+233506626068" className="text-gray-400 hover:text-green-400 text-xs transition-colors">
-                  +233 50 662 6068
-                </a>
+                <div className="flex flex-col">
+                  <a href="tel:+233506626068" className="text-gray-400 hover:text-green-400 text-xs transition-colors">
+                    +233 506 626 068
+                  </a>
+                  <a href="tel:+233247552111" className="text-gray-400 hover:text-green-400 text-xs transition-colors">
+                    +233 247 552 111
+                  </a>
+                </div>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-4 w-4 text-green-400" />
@@ -163,7 +167,7 @@ const Footer = () => {
 
         {/* Bottom Section */}
         <div className="border-t border-gray-800 mt-8 pt-6 flex flex-col md:flex-row items-center justify-between">
-          <p className="text-gray-500 text-[10px] mb-2 md:mb-0">© 2024 AgriLync. All rights reserved.</p>
+          <p className="text-gray-500 text-[10px] mb-2 md:mb-0">© 2026 Agrilync Nexus. All rights reserved.</p>
           <div className="flex items-center space-x-2">
             <MessageCircle className="h-4 w-4 text-green-400" />
             <a href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 text-[10px] transition-colors">
