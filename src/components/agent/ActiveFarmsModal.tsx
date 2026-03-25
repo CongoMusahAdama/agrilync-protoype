@@ -50,7 +50,7 @@ const ActiveFarmsModal: React.FC<ActiveFarmsModalProps> = ({
     const getStatusStyle = (status: string) => {
         switch (status?.toLowerCase()) {
             case 'verified':
-                return 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300';
+                return 'bg-[#065f46]/10 text-[#065f46]';
             case 'pending':
                 return 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300';
             default:
@@ -63,8 +63,8 @@ const ActiveFarmsModal: React.FC<ActiveFarmsModalProps> = ({
             <DialogContent className={`max-w-4xl max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-gray-100' : 'bg-white'}`}>
                 <DialogHeader>
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-emerald-500/10 rounded-lg">
-                            <Sprout className="h-6 w-6 text-emerald-500" />
+                        <div className="p-2 bg-[#065f46]/10 rounded-lg">
+                            <Sprout className="h-6 w-6 text-[#065f46]" />
                         </div>
                         <div>
                             <DialogTitle className="text-2xl font-bold">Active Farms Repository</DialogTitle>
@@ -105,14 +105,14 @@ const ActiveFarmsModal: React.FC<ActiveFarmsModalProps> = ({
                                         }`}
                                 >
                                     {/* Card Header / Status Strip */}
-                                    <div className={`absolute top-0 left-0 right-0 h-1.5 ${farm.status === 'Verified' ? 'bg-emerald-500' :
+                                    <div className={`absolute top-0 left-0 right-0 h-1.5 ${farm.status === 'Verified' ? 'bg-[#065f46]' :
                                             farm.status === 'Pending' ? 'bg-amber-500' : 'bg-blue-500'
                                         }`} />
 
                                     <div className="p-5 pt-6">
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="flex items-center gap-3.5">
-                                                <div className={`h-12 w-12 rounded-xl flex items-center justify-center shadow-inner ${darkMode ? 'bg-[#124b53] text-emerald-400' : 'bg-emerald-50 text-emerald-600'
+                                                <div className={`h-12 w-12 rounded-xl flex items-center justify-center shadow-inner ${darkMode ? 'bg-[#065f46]/20 text-[#065f46]' : 'bg-[#065f46]/10 text-[#065f46]'
                                                     }`}>
                                                     <User className="h-6 w-6" />
                                                 </div>
@@ -135,7 +135,7 @@ const ActiveFarmsModal: React.FC<ActiveFarmsModalProps> = ({
                                             <div className="space-y-1">
                                                 <span className="text-[10px] uppercase tracking-wider font-bold opacity-50 block">Main Crop</span>
                                                 <div className="flex items-center gap-2 font-semibold text-sm">
-                                                    <Sprout className="h-3.5 w-3.5 text-emerald-500" />
+                                                    <Sprout className="h-3.5 w-3.5 text-[#065f46]" />
                                                     {farm.crop}
                                                 </div>
                                             </div>
@@ -153,7 +153,7 @@ const ActiveFarmsModal: React.FC<ActiveFarmsModalProps> = ({
                                                 onTrackJourney(farm.farmer);
                                                 onOpenChange(false);
                                             }}
-                                            className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all"
+                                            className="w-full h-12 rounded-xl bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold shadow-lg shadow-[#065f46]/20 active:scale-[0.98] transition-all border-none"
                                         >
                                             <Activity className="h-5 w-5 mr-2" />
                                             Track Farm Journey
@@ -167,13 +167,13 @@ const ActiveFarmsModal: React.FC<ActiveFarmsModalProps> = ({
                     {/* Desktop Table View */}
                     <div className={`hidden sm:block rounded-xl border ${darkMode ? 'border-[#124b53]' : 'border-gray-200'} overflow-hidden`}>
                         <Table>
-                            <TableHeader className={darkMode ? 'bg-[#124b53]/30' : 'bg-gray-50'}>
-                                <TableRow className={darkMode ? 'border-[#124b53] hover:bg-transparent' : 'hover:bg-transparent'}>
-                                    <TableHead className={darkMode ? 'text-gray-300' : ''}>Farmer</TableHead>
-                                    <TableHead className={darkMode ? 'text-gray-300' : ''}>Farm Details</TableHead>
-                                    <TableHead className={darkMode ? 'text-gray-300' : ''}>Location</TableHead>
-                                    <TableHead className={darkMode ? 'text-gray-300' : ''}>Status</TableHead>
-                                    <TableHead className={`text-right ${darkMode ? 'text-gray-300' : ''}`}>Actions</TableHead>
+                            <TableHeader className="bg-[#065f46] shadow-sm">
+                                <TableRow className="border-none hover:bg-transparent">
+                                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Farmer</TableHead>
+                                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Farm Details</TableHead>
+                                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Location</TableHead>
+                                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Status</TableHead>
+                                    <TableHead className="text-right text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -188,8 +188,8 @@ const ActiveFarmsModal: React.FC<ActiveFarmsModalProps> = ({
                                         <TableRow key={farm._id} className={darkMode ? 'border-[#124b53] hover:bg-[#124b53]/20' : 'hover:bg-gray-50'}>
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                                                        <User className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                                                    <div className="h-8 w-8 rounded-full bg-[#065f46]/10 flex items-center justify-center">
+                                                        <User className="h-4 w-4 text-[#065f46]" />
                                                     </div>
                                                     <span className="font-medium">{farm.farmer?.name || 'Unknown Farmer'}</span>
                                                 </div>
@@ -219,7 +219,7 @@ const ActiveFarmsModal: React.FC<ActiveFarmsModalProps> = ({
                                                         onTrackJourney(farm.farmer);
                                                         onOpenChange(false);
                                                     }}
-                                                    className={`gap-2 ${darkMode ? 'border-[#1b5b65] hover:bg-[#1b5b65]/30' : 'hover:bg-emerald-50 hover:text-emerald-600'}`}
+                                                    className={`gap-2 border-[#065f46] text-[#065f46] hover:bg-[#065f46]/5`}
                                                 >
                                                     <Activity className="h-4 w-4" />
                                                     Track Journey

@@ -8,7 +8,7 @@ import { Button } from '../components/ui/button'; // Added Button import
 import CountUp from '../components/CountUp';
 
 // Brand colors
-const BRAND_MAGENTA = '#921573';
+const BRAND_MAGENTA = '#7ede56';
 const BRAND_GREEN = '#7ede56';
 const BRAND_TEAL = '#002F37';
 const BRAND_WHITE = '#FFFFFF';
@@ -151,16 +151,19 @@ const About = () => {
               <h2 ref={whoWeAreRef} className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (whoWeAreVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
                 What We Do
               </h2>
-              <div className="w-16 h-0.5 bg-purple-600 mb-4 sm:mb-6"></div>
+              <div className="w-16 h-0.5 bg-[#7ede56] mb-4 sm:mb-6"></div>
             </div>
 
             {/* Right Column - Content */}
             <div className="space-y-6 animate-fade-in-left transition-all duration-700 ease-in-out">
               <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-4">
-                AgriLync is a revolutionary agricultural technology platform that connects farmers, investors, and agricultural experts in a seamless ecosystem. We bridge the gap between traditional farming practices and modern agricultural innovation, empowering farmers with the resources and knowledge they need to thrive in today's competitive agricultural landscape.
+                Agrilync Nexus is a Ghana-based AgriFinTech and advisory platform that connects smallholder farmers with farm investors and partner organizations through a structured, transparent finance-first model supported by training, AI-powered advisory, and an agent network.
               </p>
-              <p className="text-gray-500 text-xs italic mb-4 p-4 border-l-4 border-purple-200 bg-purple-50">
-                "AgriLync is a technology-enabled agricultural platform that connects farmers, agricultural experts, and independent investors. We do not operate as a fund manager, financial institution, or farm operator. AgriLync does not custody user funds or guarantee investment returns. The platform acts only as a technology facilitator."
+              <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-4">
+                We operate a B2B2C model, working with partner organizations and investor entities who in turn serve and fund smallholder farmers. Our first rollout targets 500 pilot smallholder farmers across seven regions of Ghana.
+              </p>
+              <p className="text-gray-500 text-xs italic mb-4 p-4 border-l-4 border-[#7ede56]/20 bg-[#7ede56]/10">
+                "Agrilync Nexus is a technology-enabled agricultural platform that connects farmers, agricultural experts, and independent investors. We do not operate as a fund manager, financial institution, or farm operator. Agrilync Nexus does not custody user funds or guarantee investment returns."
               </p>
 
               {/* Impact Figures */}
@@ -218,10 +221,10 @@ const About = () => {
                 Vision
               </h3>
               <p className="text-white text-sm sm:text-base leading-relaxed mb-6">
-                To revolutionize African agriculture through innovative technology solutions, creating sustainable farming ecosystems that empower farmers and drive economic growth across the continent.
+                To become Africa’s leading smallholder farm investment and training platform, trusted by farmers, partners, and investors for transparent, data-driven agricultural finance.
               </p>
               <a href="#" className="inline-flex items-center text-white hover:underline transition-colors duration-300">
-                Our Solutions →
+                Our Solutions ?
               </a>
             </div>
 
@@ -234,10 +237,10 @@ const About = () => {
                 Mission
               </h3>
               <p className="text-gray-700 text-sm sm:text-base leading-relaxed mb-6">
-                To connect farmers with investors, markets, and intelligent farming solutions through our AI-powered platform, ensuring sustainable agricultural practices and shared prosperity for all stakeholders.
+                To unlock capital and knowledge for smallholder farmers by connecting them to investors and partners through a transparent, agent-supported, AI-driven platform.
               </p>
               <a href="#" className="inline-flex items-center hover:underline transition-colors duration-300" style={{ color: BRAND_TEAL }}>
-                Discover More →
+                Discover More ?
               </a>
             </div>
           </div>
@@ -255,61 +258,61 @@ const About = () => {
             <h2 ref={valuesRef} className={"text-xl sm:text-2xl md:text-3xl font-bold mb-2 transition-all duration-700 ease-in-out " + (valuesVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: 'white' }}>
               Core Values
             </h2>
-            <div className="w-16 h-0.5 bg-purple-400 mb-3 mx-auto"></div>
+            <div className="w-16 h-0.5 bg-[#7ede56]/40 mb-3 mx-auto"></div>
           </div>
 
           <div className="flex flex-wrap justify-center gap-8 sm:gap-12 md:gap-16">
-            {/* Inclusivity */}
-            <div ref={value1Ref} className={"transition-all duration-700 ease-in-out transform " + (value1Visible ? " animate-fade-in-up opacity-100" : " opacity-0")}>
+            {/* Trust */}
+            <div ref={value5Ref} className={"transition-all duration-700 ease-in-out transform " + (value5Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '0ms' }}>
               <div className="flex flex-col items-center text-center">
-                <Heart className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
-                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Inclusivity</h3>
+                <Shield className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Trust</h3>
                 <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
-                  Accessible to all farmers
+                  Verified farmers, transparent reporting, and clear agreements.
                 </p>
               </div>
             </div>
 
-            {/* Collaboration */}
-            <div ref={value2Ref} className={"transition-all duration-700 ease-in-out transform " + (value2Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '100ms' }}>
+            {/* Inclusion */}
+            <div ref={value1Ref} className={"transition-all duration-700 ease-in-out transform " + (value1Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '100ms' }}>
               <div className="flex flex-col items-center text-center">
-                <Handshake className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
-                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Collaboration</h3>
+                <Heart className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Inclusion</h3>
                 <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
-                  Working together
+                  Serving smallholder farmers, including those without smartphones, through agents.
+                </p>
+              </div>
+            </div>
+
+            {/* Impact */}
+            <div ref={value4Ref} className={"transition-all duration-700 ease-in-out transform " + (value4Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '200ms' }}>
+              <div className="flex flex-col items-center text-center">
+                <TrendingUp className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Impact</h3>
+                <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
+                  Improving farmer incomes and de-risking agricultural investment.
                 </p>
               </div>
             </div>
 
             {/* Innovation */}
-            <div ref={value3Ref} className={"transition-all duration-700 ease-in-out transform " + (value3Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '200ms' }}>
+            <div ref={value3Ref} className={"transition-all duration-700 ease-in-out transform " + (value3Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '300ms' }}>
               <div className="flex flex-col items-center text-center">
                 <Lightbulb className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
                 <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Innovation</h3>
                 <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
-                  Cutting-edge solutions
+                  Using AI, digital tools, and creative finance structures.
                 </p>
               </div>
             </div>
 
-            {/* Empowerment */}
-            <div ref={value4Ref} className={"transition-all duration-700 ease-in-out transform " + (value4Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '300ms' }}>
+            {/* Growth */}
+            <div ref={value2Ref} className={"transition-all duration-700 ease-in-out transform " + (value2Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '400ms' }}>
               <div className="flex flex-col items-center text-center">
-                <TrendingUp className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
-                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Empowerment</h3>
+                <Target className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Growth</h3>
                 <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
-                  Tools to succeed
-                </p>
-              </div>
-            </div>
-
-            {/* Transparency */}
-            <div ref={value5Ref} className={"transition-all duration-700 ease-in-out transform " + (value5Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '400ms' }}>
-              <div className="flex flex-col items-center text-center">
-                <Shield className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
-                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Transparency</h3>
-                <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
-                  Open communication
+                  Helping farmers and partners grow sustainably together.
                 </p>
               </div>
             </div>
@@ -330,33 +333,33 @@ const About = () => {
               <h2 ref={whoWeServeRef} className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (whoWeServeVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
                 Who We Serve
               </h2>
-              <div className="w-16 h-0.5 bg-purple-600 mb-4 sm:mb-6"></div>
+              <div className="w-16 h-0.5 bg-[#7ede56] mb-4 sm:mb-6"></div>
             </div>
 
             {/* Right Column - Stakeholders */}
             <div className="space-y-6 animate-fade-in-left transition-all duration-700 ease-in-out">
-              {/* Solo Farmers */}
+              {/* Lync Growers */}
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
                   <Users className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Solo Farmers</h3>
+                  <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Lync Growers</h3>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    Farmers who join to seek consultation, book appointments, and interact with our AI agent Akuafo Adanfo, which supports three local languages: Twi, Ewe, and Dagomba, with English as the default language.
+                    Verified smallholder farmers in Ghana (initially 500 pilot farmers) who are matched with investors and partners for shared-profit agricultural projects.
                   </p>
                 </div>
               </div>
 
-              {/* Lync Growers */}
+              {/* Individual Farmers */}
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
-                  <TrendingUp className="w-6 h-6 text-white" />
+                  <Users className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Lync Growers</h3>
+                  <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Individual Farmers</h3>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    Registered farmers with proven track records across regions under our Lync Growers Association. They are matched with investors.
+                    Farmers who interact with our AI advisory agent or book expert consultations for smart crop and livestock advice, without investor matching.
                   </p>
                 </div>
               </div>
@@ -369,7 +372,20 @@ const About = () => {
                 <div>
                   <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Lync Investors</h3>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    Investors who connect with farmers for opportunities, providing capital, tools, or equipment for agricultural projects.
+                    Impact investors and financial institutions looking to deploy capital into structured, verified smallholder agricultural projects with transparent data.
+                  </p>
+                </div>
+              </div>
+
+              {/* Agricultural & Development Partners */}
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
+                  <Building2 className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Agricultural & Development Partners</h3>
+                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
+                    NGOs, cooperatives, and producer groups that need a structured finance and training platform to support the farmers they work with.
                   </p>
                 </div>
               </div>
@@ -382,7 +398,7 @@ const About = () => {
                 <div>
                   <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Lync Agents</h3>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    Extension agents assigned to monitor activities on/off the farm, ensuring accountability for both farmers and investors.
+                    Local youth and extension-type workers who onboard Lync Growers, collect baseline data, and monitor farm progress to ensure accountability.
                   </p>
                 </div>
               </div>
@@ -402,7 +418,7 @@ const About = () => {
             <h2 ref={howWeDoItRef} className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (howWeDoItVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: 'white' }}>
               how we do it
             </h2>
-            <div className="w-16 h-0.5 bg-purple-400 mb-4 sm:mb-6 mx-auto"></div>
+            <div className="w-16 h-0.5 bg-[#7ede56]/40 mb-4 sm:mb-6 mx-auto"></div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
@@ -419,7 +435,7 @@ const About = () => {
 
             {/* Step 2: Monitor */}
             <div className="text-center group">
-              <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-white group-hover:text-purple-400 transition-colors duration-300 mb-6" style={{ fontFamily: 'Arial, sans-serif' }}>
+              <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-white group-hover:text-[#7ede56] transition-colors duration-300 mb-6" style={{ fontFamily: 'Arial, sans-serif' }}>
                 02
               </div>
               <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">Monitor</h3>
@@ -435,7 +451,7 @@ const About = () => {
               </div>
               <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">Strategic Support</h3>
               <p className="text-gray-300 leading-relaxed text-sm sm:text-base">
-                AgriLync provides agricultural guidance and education for farmers and investors. We support project planning and best practices without offering regulated financial advice.
+                AgriLync Nexus provides agricultural guidance and education for farmers and investors. We support project planning and best practices without offering regulated financial advice.
               </p>
             </div>
           </div>
@@ -454,9 +470,9 @@ const About = () => {
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 text-[#002f37]">
                 Field Monitoring & Transparency
               </h2>
-              <div className="w-16 h-0.5 bg-purple-600 mb-6"></div>
+              <div className="w-16 h-0.5 bg-[#7ede56] mb-6"></div>
               <p className="text-gray-700 text-lg leading-relaxed mb-6">
-                AgriLync uses independent field verification agents to monitor farm project progress and improve transparency between farmers and investors.
+                AgriLync Nexus uses independent field verification agents to monitor farm project progress and improve transparency between farmers and investors.
               </p>
               <p className="text-gray-600 leading-relaxed mb-8">
                 These agents collect data, photos, and progress updates. They do not manage farm operations, handle funds, or make agricultural decisions. This ensures that all stakeholders have access to accurate, real-time information about the project's status.
@@ -496,7 +512,7 @@ const About = () => {
       <section className="py-10 sm:py-16 md:py-20" style={{ backgroundColor: BRAND_TEAL }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-white">Trust & Compliance</h2>
-          <div className="w-16 h-0.5 bg-purple-400 mb-12 mx-auto"></div>
+          <div className="w-16 h-0.5 bg-[#7ede56]/40 mb-12 mx-auto"></div>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {[
               { title: "Registered Business Entity", desc: "Fully compliant with local regulations." },
@@ -528,7 +544,7 @@ const About = () => {
               <h2 className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (whyChooseUsVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
                 why<br />Choose us
               </h2>
-              <div className="w-16 h-0.5 bg-purple-600 mb-4 sm:mb-6"></div>
+              <div className="w-16 h-0.5 bg-[#7ede56] mb-4 sm:mb-6"></div>
             </div>
 
             {/* Right Column - Reasons */}
@@ -599,61 +615,88 @@ const About = () => {
 
 
 
-      {/* Mobile App Development Section */}
-      <section ref={mobileAppRef} className={"py-10 sm:py-16 md:py-20 bg-white transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0")}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10 sm:mb-14 md:mb-16">
-            <h2 className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
-              Mobile App Development
-            </h2>
-            <div className="w-16 h-0.5 bg-purple-600 mb-4 sm:mb-6 mx-auto"></div>
-            <h3 className={"text-lg sm:text-xl md:text-2xl font-semibold mb-6 text-gray-600 transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0")}>
-              Bringing AgriLync to Your Pocket
-            </h3>
-            <p className={"text-gray-700 leading-relaxed text-sm sm:text-base max-w-4xl mx-auto transition-all duration-700 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0")}>
-              Our mobile app is currently under development, designed to bring our AI-powered agricultural solutions directly to farmers' smartphones. This represents the next step in our mission to transform African agriculture through accessible, mobile-first technology.
-            </p>
-          </div>
+      {/* Enhanced Mobile App Development Section */}
+      <section ref={mobileAppRef} className={"py-16 sm:py-24 relative overflow-hidden transition-all duration-1000 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0")} style={{ backgroundColor: BRAND_TEAL }}>
+        {/* Decorative Background Elements */}
+        <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-96 h-96 bg-[#7ede56] rounded-full mix-blend-multiply filter blur-[128px] opacity-20 hidden md:block" />
+        <div className="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-96 h-96 bg-white rounded-full mix-blend-overlay filter blur-[128px] opacity-10 hidden md:block" />
 
-          {/* Mobile App Mockups */}
-          <div className="relative max-w-5xl mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 items-center">
-              {/* Menu Screen (Left) */}
-              <div className="order-2 md:order-1 transform transition-all duration-500 hover:scale-105 hover:-rotate-2">
-                <div className="rounded-[2rem] overflow-hidden border-8 border-gray-900 shadow-2xl">
-                  <img
-                    src="/lovable-uploads/app-menu.png"
-                    alt="AgriLync Mobile Menu"
-                    className="w-full h-auto"
-                  />
-                </div>
-                <p className="text-center mt-4 text-gray-500 text-sm font-medium">Navigation Drawer</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+
+            {/* Left Content Area */}
+            <div className="text-left space-y-6 lg:space-y-8">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm">
+                <Smartphone className="w-4 h-4 text-[#7ede56]" />
+                <span className="text-white text-xs font-bold tracking-wider uppercase">Coming Soon</span>
               </div>
 
-              {/* Dashboard Screen (Center/Main) */}
-              <div className="order-1 md:order-2 transform transition-all duration-500 hover:scale-110 z-10">
-                <div className="rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] bg-white">
-                  <img
-                    src="/lovable-uploads/app-dashboard.png"
-                    alt="AgriLync Mobile Dashboard"
-                    className="w-full h-auto"
-                  />
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight font-sora">
+                AgriLync Nexus in <span className="text-[#7ede56]">Your Pocket.</span>
+              </h2>
+
+              <p className="text-gray-300 text-base sm:text-lg leading-relaxed max-w-xl">
+                Our mobile app is currently under development, crafted to bring AI-powered agricultural solutions straight to farmers' smartphones. Experience the future of African agriculture through accessible, mobile-first technology.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <Rocket className="w-5 h-5 text-[#7ede56]" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-bold mb-1">Instant Access</h4>
+                    <p className="text-gray-400 text-sm">Farm insights and AI consultation on the go.</p>
+                  </div>
                 </div>
-                <p className="text-center mt-4 text-[#002f37] font-bold">Field Dashboard</p>
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-[#7ede56]" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-bold mb-1">Offline Support</h4>
+                    <p className="text-gray-400 text-sm">Critical features work in low-connectivity areas.</p>
+                  </div>
+                </div>
               </div>
 
-              {/* Directory Screen (Right) */}
-              <div className="order-3 md:order-3 transform transition-all duration-500 hover:scale-105 hover:rotate-2">
-                <div className="rounded-[2rem] overflow-hidden border-8 border-gray-900 shadow-2xl">
-                  <img
-                    src="/lovable-uploads/app-grower-directory.png"
-                    alt="AgriLync Grower Directory"
-                    className="w-full h-auto"
-                  />
+              <div className="flex flex-wrap gap-4 pt-6">
+                <div className="px-6 py-3 rounded-xl bg-white/5 border border-white/20 flex items-center gap-3 backdrop-blur-sm shadow-xl">
+                  <Globe className="w-6 h-6 text-gray-300" />
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Available Soon on</span>
+                    <span className="text-white font-bold text-sm">App Store</span>
+                  </div>
                 </div>
-                <p className="text-center mt-4 text-gray-500 text-sm font-medium">Grower Directory</p>
+                <div className="px-6 py-3 rounded-xl bg-white/5 border border-white/20 flex items-center gap-3 backdrop-blur-sm shadow-xl">
+                  <svg className="w-6 h-6 text-gray-300" viewBox="0 0 24 24" fill="currentColor"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.5,12.92 20.16,13.19L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" /></svg>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Available Soon on</span>
+                    <span className="text-white font-bold text-sm">Google Play</span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Right Display Area - 3D Mockup Arrangement */}
+            <div className="relative h-[400px] sm:h-[500px] lg:h-[600px] w-full mt-12 lg:mt-0 flex justify-center items-center perspective-[2000px]">
+
+              {/* Back Left Mockup */}
+              <div className="absolute left-[5%] md:left-[10%] transform -rotate-y-12 -rotate-12 translate-z-[-100px] scale-[0.85] md:scale-95 opacity-60 hover:opacity-100 hover:scale-100 hover:z-30 transition-all duration-500 rounded-[2.5rem] border-[6px] border-gray-800 shadow-2xl overflow-hidden w-[180px] sm:w-[220px] md:w-[260px] bg-black">
+                <img src="/lovable-uploads/app-menu.png" alt="App Menu" className="w-full h-auto object-cover" />
+              </div>
+
+              {/* Front Center Mockup */}
+              <div className="absolute z-20 transform hover:-translate-y-4 hover:scale-105 transition-all duration-500 rounded-[2.5rem] border-[8px] border-gray-900 shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden w-[220px] sm:w-[260px] md:w-[300px] bg-white ring-4 ring-[#7ede56]/30">
+                <img src="/lovable-uploads/app-dashboard.png" alt="App Dashboard" className="w-full h-auto object-cover" />
+              </div>
+
+              {/* Back Right Mockup */}
+              <div className="absolute right-[5%] md:right-[10%] transform rotate-y-12 rotate-12 translate-z-[-100px] scale-[0.85] md:scale-95 opacity-60 hover:opacity-100 hover:scale-100 hover:z-30 transition-all duration-500 rounded-[2.5rem] border-[6px] border-gray-800 shadow-2xl overflow-hidden w-[180px] sm:w-[220px] md:w-[260px] bg-black">
+                <img src="/lovable-uploads/app-grower-directory.png" alt="Grower Directory" className="w-full h-auto object-cover" />
+              </div>
+            </div>
+
           </div>
         </div>
       </section>

@@ -31,13 +31,13 @@ const ChangePassword = () => {
                 title: 'Password Updated!',
                 html: `
                     <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                        <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
                             Password updated successfully!
                         </p>
                     </div>
                 `,
                 confirmButtonText: 'Continue',
-                confirmButtonColor: '#7ede56',
+                confirmButtonColor: '#065f46',
                 timer: 2000,
                 timerProgressBar: true
             });
@@ -104,3 +104,6 @@ const ChangePassword = () => {
 };
 
 export default ChangePassword;
+
+
+

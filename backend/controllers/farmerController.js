@@ -2,7 +2,8 @@ const Farmer = require('../models/Farmer');
 const Agent = require('../models/Agent');
 const Notification = require('../models/Notification');
 const Activity = require('../models/Activity');
-const { uploadBase64ToS3 } = require('../utils/s3');
+const { uploadBase64ToCloudinary } = require('../utils/cloudinary');
+const dashboardService = require('../services/dashboardService');
 
 // @route   GET api/farmers
 // @desc    Get all farmers for current agent (with pagination)
@@ -69,10 +70,10 @@ exports.registerFarmerPublic = async (req, res) => {
             profilePicture, idCardFront, idCardBack
         } = req.body;
 
-        // Upload images to S3 if present
-        const s3ProfilePicture = await uploadBase64ToS3(req.body.profilePicture, 'farmers/profiles');
-        const s3IdCardFront = await uploadBase64ToS3(req.body.idCardFront, 'farmers/ids');
-        const s3IdCardBack = await uploadBase64ToS3(req.body.idCardBack, 'farmers/ids');
+        // Upload images to Cloudinary if present
+        const s3ProfilePicture = await uploadBase64ToCloudinary(req.body.profilePicture, 'farmers/profiles');
+        const s3IdCardFront = await uploadBase64ToCloudinary(req.body.idCardFront, 'farmers/ids');
+        const s3IdCardBack = await uploadBase64ToCloudinary(req.body.idCardBack, 'farmers/ids');
 
         const newFarmer = new Farmer({
             name,
@@ -136,13 +137,54 @@ exports.addFarmer = async (req, res) => {
             dob, language, otherLanguage, email, farmSize, yearsOfExperience,
             landOwnershipStatus, cropsGrown, livestockType, profilePicture,
             idCardFront, idCardBack, fieldNotes, investmentInterest,
-            preferredInvestmentType, estimatedCapitalNeed, hasPreviousInvestment
+            preferredInvestmentType, estimatedCapitalNeed, hasPreviousInvestment,
+            ghanaCardNumber, verificationConfirmed, gpsLocation
         } = req.body;
 
-        // Upload images to S3 if present
-        const s3ProfilePicture = await uploadBase64ToS3(profilePicture, 'farmers/profiles');
-        const s3IdCardFront = await uploadBase64ToS3(idCardFront, 'farmers/ids');
-        const s3IdCardBack = await uploadBase64ToS3(idCardBack, 'farmers/ids');
+        if (ghanaCardNumber) {
+            const regex = /^GHA-\d{9}-\d$/;
+            if (!regex.test(ghanaCardNumber)) {
+                return res.status(400).json({ msg: 'Invalid Ghana Card number format' });
+            }
+        }
+
+        if (dob) {
+            const dobDate = new Date(dob);
+            if (isNaN(dobDate.getTime()) || dobDate > new Date()) {
+                return res.status(400).json({ msg: 'Invalid Date of Birth' });
+            }
+        }
+
+        let generatedHash = '';
+        if (idCardFront) {
+            const crypto = require('crypto');
+            generatedHash = crypto.createHash('md5').update(idCardFront).digest('hex');
+        }
+
+        const flags = [];
+
+        if (ghanaCardNumber) {
+            const existingGha = await Farmer.findOne({ ghanaCardNumber });
+            if (existingGha) {
+                if (!existingGha.flags.includes('Duplicate Ghana Card Attempted')) {
+                    existingGha.flags.push('Duplicate Ghana Card Attempted');
+                    await existingGha.save();
+                }
+                return res.status(400).json({ msg: 'Ghana Card already exists in the system' });
+            }
+        }
+
+        if (generatedHash) {
+            const existingImg = await Farmer.findOne({ imageHash: generatedHash });
+            if (existingImg) {
+                flags.push('Reused Image Hash Detected');
+            }
+        }
+
+        // Upload images to Cloudinary if present
+        const s3ProfilePicture = await uploadBase64ToCloudinary(profilePicture, 'farmers/profiles');
+        const s3IdCardFront = await uploadBase64ToCloudinary(idCardFront, 'farmers/ids');
+        const s3IdCardBack = await uploadBase64ToCloudinary(idCardBack, 'farmers/ids');
 
         const newFarmer = new Farmer({
             name, region, district, community, farmType, contact, gender,
@@ -151,6 +193,11 @@ exports.addFarmer = async (req, res) => {
             profilePicture: s3ProfilePicture,
             idCardFront: s3IdCardFront,
             idCardBack: s3IdCardBack,
+            ghanaCardNumber,
+            verificationConfirmed,
+            gpsLocation,
+            imageHash: generatedHash,
+            flags,
             fieldNotes, investmentInterest,
             preferredInvestmentType, estimatedCapitalNeed, hasPreviousInvestment,
             agent: req.agent.id,
@@ -159,6 +206,9 @@ exports.addFarmer = async (req, res) => {
         });
 
         const farmer = await newFarmer.save();
+        
+        // Invalidate dashboard cache for this agent
+        dashboardService.invalidateCache(req.agent.id);
 
         // Log Activity
         await Activity.create({
@@ -167,6 +217,9 @@ exports.addFarmer = async (req, res) => {
             title: `Onboarded ${farmer.name}`,
             description: `New farmer added in ${farmer.community || 'their community'}`
         });
+
+        // Invalidate dashboard cache for this agent
+        dashboardService.invalidateCache(req.agent.id);
 
         res.status(201).json(farmer);
     } catch (err) {
@@ -228,7 +281,7 @@ exports.updateFarmer = async (req, res) => {
             'landOwnershipStatus', 'cropsGrown', 'livestockType', 'profilePicture',
             'idCardFront', 'idCardBack', 'fieldNotes', 'investmentInterest', 'status',
             'preferredInvestmentType', 'estimatedCapitalNeed', 'hasPreviousInvestment',
-            'currentStage', 'stageDetails'
+            'currentStage', 'stageDetails', 'ghanaCardNumber', 'verificationConfirmed', 'gpsLocation'
         ];
 
         // Update fields if provided and allowed
@@ -240,7 +293,7 @@ exports.updateFarmer = async (req, res) => {
                     updateData[key].startsWith('data:')) {
 
                     const folder = key === 'profilePicture' ? 'farmers/profiles' : 'farmers/ids';
-                    farmer[key] = await uploadBase64ToS3(updateData[key], folder);
+                    farmer[key] = await uploadBase64ToCloudinary(updateData[key], folder);
                 } else {
                     farmer[key] = typeof updateData[key] === 'string' ? updateData[key].trim() : updateData[key];
                 }
@@ -271,5 +324,46 @@ exports.updateFarmer = async (req, res) => {
         }
         console.error('updateFarmer error:', err.message);
         res.status(500).json({ msg: 'Server error' });
+    }
+};
+
+// @route   GET api/farmers/flagged
+// @desc    Get all flagged farmers (admin view)
+exports.getFlaggedFarmers = async (req, res) => {
+    try {
+        const farmers = await Farmer.find({ 'flags.0': { $exists: true } })
+            .select('-password -idCardFront -idCardBack')
+            .populate('agent', 'name email region')
+            .sort({ createdAt: -1 })
+            .lean();
+
+        res.json({ success: true, total: farmers.length, data: farmers });
+    } catch (err) {
+        console.error('getFlaggedFarmers error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+// @route   PUT api/farmers/:id/resolve-flag
+// @desc    Resolve (clear) a specific flag from a farmer record
+exports.resolveFlag = async (req, res) => {
+    try {
+        const { flag } = req.body;
+        const farmer = await Farmer.findById(req.params.id);
+        if (!farmer) {
+            return res.status(404).json({ success: false, message: 'Farmer not found' });
+        }
+
+        if (flag) {
+            farmer.flags = farmer.flags.filter(f => f !== flag);
+        } else {
+            farmer.flags = []; // Clear all flags if none specified
+        }
+
+        await farmer.save();
+        res.json({ success: true, message: 'Flag resolved', flags: farmer.flags });
+    } catch (err) {
+        console.error('resolveFlag error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };

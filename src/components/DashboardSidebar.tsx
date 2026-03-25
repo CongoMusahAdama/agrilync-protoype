@@ -4,25 +4,24 @@ import {
     Home,
     MapPin,
     BarChart3,
-    Users,
-    Calendar,
     Bell,
     Settings,
     ChevronLeft,
     ChevronRight,
-    Sun,
-    Moon,
-    ArrowRight,
-    Leaf,
     Sprout,
     Handshake,
     AlertTriangle,
     Briefcase,
+    Activity,
+    Image as ImageIcon,
+    Layout,
+    LogOut,
+    Users,
+    ShieldAlert,
     GraduationCap,
-    Activity
+    Scale
 } from 'lucide-react';
 import SidebarProfileCard from './SidebarProfileCard';
-import { useDarkMode } from '@/contexts/DarkModeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     AlertDialog,
@@ -35,6 +34,17 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+interface NavItem {
+    id: string;
+    label: string;
+    icon: React.ElementType;
+}
+
+interface NavSection {
+    section: string;
+    items: NavItem[];
+}
 
 interface DashboardSidebarProps {
     userType: string;
@@ -54,9 +64,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     onNavigate
 }) => {
     const navigate = useNavigate();
-    const { darkMode, toggleDarkMode } = useDarkMode();
     const { logout } = useAuth();
-    const sidebarDarkMode = !darkMode;
 
     const handleNavigation = (item: string) => {
         if (onNavigate) {
@@ -69,9 +77,10 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                 'investor-matches': userType === 'agent' ? '/dashboard/agent/investor-farmer-matches' : `/dashboard/${userType}/investor-matches`,
                 'training-sessions': userType === 'agent' ? '/dashboard/agent/training-performance' : `/dashboard/${userType}/training-sessions`,
                 'farm-management': userType === 'agent' ? '/dashboard/agent/farm-management' : `/dashboard/${userType}/farm-management`,
+                'tasks-alerts': '/dashboard/agent/tasks',
                 'notifications': userType === 'agent' ? '/dashboard/agent/notifications-center' : `/dashboard/${userType}/notifications`,
                 'farmers-management': '/dashboard/agent/farmers-management',
-                'dispute-management': '/dashboard/agent/dispute-management',
+                'media-gallery': '/dashboard/agent/media',
                 'regional-performance': '/dashboard/super-admin/regions',
                 'agent-accountability': '/dashboard/super-admin/agents',
                 'farm-oversight': '/dashboard/super-admin/oversight',
@@ -79,143 +88,206 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                 'escalations': '/dashboard/super-admin/escalations',
                 'reports-analytics': '/dashboard/super-admin/analytics',
                 'system-logs': '/dashboard/super-admin/logs',
+                'performance': userType === 'agent' ? '/dashboard/agent/performance' : `/dashboard/${userType}/performance`,
             };
-            if (routes[item]) {
-                navigate(routes[item]);
-            }
+            if (routes[item]) navigate(routes[item]);
         }
     };
 
-    const navItems = userType === 'agent'
-        ? [
-            { id: 'dashboard', label: 'Dashboard', icon: Home },
-            { id: 'farm-management', label: 'Field Operations', icon: Sprout },
-            { id: 'investor-matches', label: 'Partnership Manager', icon: Handshake },
-            { id: 'dispute-management', label: 'Resolution Center', icon: AlertTriangle },
-            { id: 'training-sessions', label: 'Training & Performance', icon: GraduationCap },
-            { id: 'notifications', label: 'Alert Center', icon: Bell },
-            { id: 'settings', label: 'Profile & Settings', icon: Settings },
-        ]
-        : userType === 'super-admin'
-            ? [
+    const agentNavSections: NavSection[] = [
+        {
+            section: 'Overview',
+            items: [
+                { id: 'dashboard', label: 'Home / Overview', icon: Home },
+            ]
+        },
+        {
+            section: 'Farm Operations',
+            items: [
+                { id: 'farm-management', label: 'Manage Your Farm', icon: Layout },
+                { id: 'farmers-management', label: 'Farmers Management', icon: Users },
+                { id: 'media-gallery', label: 'Media Gallery', icon: ImageIcon },
+            ]
+        },
+        {
+            section: 'Engagement',
+            items: [
+                { id: 'tasks-alerts', label: 'Tasks', icon: Briefcase },
+                { id: 'notifications', label: 'Notifications', icon: Bell },
+            ]
+        },
+        {
+            section: 'Performance',
+            items: [
+                { id: 'performance', label: 'My Performance', icon: BarChart3 },
+                { id: 'training-sessions', label: 'Training', icon: GraduationCap },
+            ]
+        },
+        {
+            section: 'Account',
+            items: [
+                { id: 'settings', label: 'Settings & Support', icon: Settings },
+            ]
+        },
+    ];
+
+    const superAdminNavSections: NavSection[] = [
+        {
+            section: 'Overview',
+            items: [
                 { id: 'dashboard', label: 'Overview', icon: Home },
+            ]
+        },
+        {
+            section: 'Operations',
+            items: [
                 { id: 'regional-performance', label: 'Regional Performance', icon: MapPin },
                 { id: 'agent-accountability', label: 'Agent Accountability', icon: Briefcase },
                 { id: 'farm-oversight', label: 'Farm & Farmer Oversight', icon: Sprout },
+            ]
+        },
+        {
+            section: 'Partnerships & Alerts',
+            items: [
                 { id: 'partnerships-summary', label: 'Partnerships Summary', icon: Handshake },
                 { id: 'escalations', label: 'Escalations & Alerts', icon: AlertTriangle },
+            ]
+        },
+        {
+            section: 'Analytics',
+            items: [
                 { id: 'reports-analytics', label: 'Reports & Analytics', icon: BarChart3 },
                 { id: 'system-logs', label: 'System Logs & Audit', icon: Activity },
+            ]
+        },
+        {
+            section: 'Account',
+            items: [
                 { id: 'settings', label: 'Settings & Roles', icon: Settings },
             ]
-            : [
-                { id: 'dashboard', label: 'Dashboard', icon: Home },
-                { id: 'farm-management', label: 'Farm Management', icon: Leaf },
-                { id: 'farm-analytics', label: 'Farm Analytics', icon: BarChart3 },
-                { id: 'investor-matches', label: 'Investor Matches', icon: Users },
-                { id: 'training-sessions', label: 'Training Sessions', icon: Calendar },
-                { id: 'notifications', label: 'Notifications', icon: Bell },
-                { id: 'settings', label: 'Profile & Settings', icon: Settings },
-            ];
+        },
+    ];
+
+    const navSections: NavSection[] = userType === 'agent'
+        ? agentNavSections
+        : userType === 'super-admin'
+            ? superAdminNavSections
+            : agentNavSections;
 
     return (
-        <div className="flex flex-col h-full overflow-hidden">
-            {/* Logo/App Name */}
-            <div className={`${isMobile ? 'p-3' : 'p-4'} border-b flex-shrink-0 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
-                <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                        <img
-                            src="/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png"
-                            alt="AgriLync Logo"
-                            className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`}
-                        />
-                        {(!sidebarCollapsed || isMobile) && (
-                            <span className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold ${sidebarDarkMode ? 'text-[#f4ffee]' : 'text-[#002f37]'}`}>AgriLync</span>
-                        )}
-                    </div>
-                    {!isMobile && userType !== 'grower' && (
-                        <button
-                            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                            className={`p-2 rounded-lg ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'} transition-colors`}
-                            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                        >
-                            {sidebarCollapsed ? (
-                                <ChevronRight className="h-5 w-5" />
-                            ) : (
-                                <ChevronLeft className="h-5 w-5" />
-                            )}
-                        </button>
+        <div className="flex flex-col h-full overflow-hidden shadow-2xl relative" style={{ backgroundColor: '#002f37' }}>
+            
+            {/* Collapse Toggle Button - Enhanced Premium Style */}
+            {!isMobile && (
+                <button
+                    onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                    className="absolute -right-4 top-14 z-50 h-8 w-8 rounded-full bg-white border border-emerald-500/10 shadow-[0_8px_30px_rgb(0,0,0,0.2)] flex items-center justify-center text-[#002f37] hover:bg-[#7ede56] hover:text-[#002f37] hover:scale-125 transition-all duration-300 ring-4 ring-transparent hover:ring-[#7ede56]/20 group active:scale-95"
+                >
+                    {sidebarCollapsed ? (
+                        <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                    ) : (
+                        <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
                     )}
-                </div>
-            </div>
+                </button>
+            )}
 
+            {/* Top spacing placeholder */}
+            <div className="pt-10 pb-2"></div>
+            {/* Agent Profile Card */}
             <SidebarProfileCard
-                sidebarCollapsed={sidebarCollapsed && !isMobile}
+                sidebarCollapsed={sidebarCollapsed}
                 isMobile={isMobile}
-                darkMode={darkMode}
+                darkMode={false}
                 userType={userType}
             />
 
-            {/* Navigation */}
-            <nav className={`flex-1 ${isMobile ? 'p-3 space-y-1.5' : 'p-4 space-y-2'} overflow-y-auto custom-scrollbar`}>
-                {navItems.map((item) => {
-                    const isActive = activeSidebarItem === item.id;
-                    return (
-                        <div
-                            key={item.id}
-                            className={`flex items-center gap-2 ${isMobile ? 'p-2.5' : 'p-3'} rounded-xl cursor-pointer ${isMobile ? 'text-xs' : 'text-sm'} transition-all duration-300 ${isActive
-                                ? 'bg-[#7ede56] text-[#002f37] border-l-4 border-[#002f37] shadow-lg scale-[1.02]'
-                                : sidebarDarkMode
-                                    ? 'text-[#f4ffee] hover:bg-white/10 border-l-4 border-transparent hover:translate-x-1'
-                                    : 'text-[#002f37] hover:bg-gray-100 border-l-4 border-transparent hover:translate-x-1'
-                                }`}
-                            onClick={() => handleNavigation(item.id)}
-                            title={sidebarCollapsed && !isMobile ? item.label : undefined}
-                        >
-                            <item.icon className={`${isMobile ? 'h-4 w-4' : 'h-4 w-4'} shrink-0 ${isActive ? 'animate-pulse' : ''}`} />
+            {/* Navigation Sections */}
+            <nav className="flex-1 px-3 overflow-y-auto custom-scrollbar pb-2">
+                {navSections.map((section, sectionIdx) => (
+                    <div key={section.section} className={sectionIdx > 0 ? 'mt-1' : ''}>
+                        {/* Section Label */}
+                        {(!sidebarCollapsed || isMobile) && (
+                            <div className={`px-2 ${sectionIdx === 0 ? 'pt-3' : 'pt-4'} pb-1.5`}>
+                                <p className="text-[9px] font-bold text-white/25 uppercase tracking-[0.22em]">
+                                    {section.section}
+                                </p>
+                            </div>
+                        )}
+                        {sidebarCollapsed && !isMobile && sectionIdx > 0 && (
+                            <div className="mx-3 my-2 border-t border-white/10" />
+                        )}
+                        {/* Items */}
+                        <div className="space-y-0.5">
+                            {section.items.map((item) => {
+                                const isActive = activeSidebarItem === item.id;
+                                return (
+                                    <div
+                                        key={item.id}
+                                        className={`flex items-center gap-3.5 px-4 py-[11px] rounded-xl cursor-pointer transition-all duration-200 group relative ${isActive
+                                            ? 'bg-white text-[#065f46] shadow-lg shadow-black/25'
+                                            : 'text-white/65 hover:text-white hover:bg-white/[0.08]'
+                                        }`}
+                                        onClick={() => handleNavigation(item.id)}
+                                    >
+                                        {/* Active left bar */}
+                                        {isActive && (
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#7ede56] rounded-r-full" />
+                                        )}
+
+                                        <item.icon
+                                            className={`h-[18px] w-[18px] shrink-0 transition-all duration-200 ${isActive ? 'text-[#065f46]' : 'text-white/50 group-hover:text-white'}`}
+                                        />
+
+                                        {(!sidebarCollapsed || isMobile) && (
+                                            <span
+                                                className={`text-[13.5px] font-medium tracking-[-0.01em] truncate transition-all ${isActive ? 'font-semibold' : ''}`}
+                                                style={{ fontFamily: 'Inter, sans-serif' }}
+                                            >
+                                                {item.label}
+                                            </span>
+                                        )}
+
+                                        {/* Collapsed active dot */}
+                                        {isActive && sidebarCollapsed && !isMobile && (
+                                            <div className="absolute right-2 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-[#7ede56]" />
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ))}
+            </nav>
+
+            {/* Footer: Sign Out */}
+            <div className="p-4 border-t border-white/10">
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <div className={`flex items-center gap-3.5 px-4 py-3 rounded-xl cursor-pointer text-white/40 hover:text-white hover:bg-red-500/10 transition-all group`}>
+                            <LogOut className="h-[18px] w-[18px] shrink-0 group-hover:translate-x-0.5 transition-transform text-white/40 group-hover:text-red-400" />
                             {(!sidebarCollapsed || isMobile) && (
-                                <span className={`${isMobile ? 'text-xs font-medium' : 'font-medium'}`}>
-                                    {item.label}
+                                <span className="text-[13.5px] font-medium group-hover:text-red-400 transition-colors" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                    Sign Out
                                 </span>
                             )}
                         </div>
-                    );
-                })}
-            </nav>
-
-            <div className={`mt-auto p-4 border-t space-y-2 ${sidebarDarkMode ? 'border-gray-800' : 'border-gray-200'} ${sidebarDarkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
-                <div
-                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
-                    onClick={toggleDarkMode}
-                    title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                >
-                    {darkMode ? <Sun className="h-4 w-4 shrink-0 text-yellow-500" /> : <Moon className="h-4 w-4 shrink-0 text-gray-400" />}
-                    {(!sidebarCollapsed || isMobile) && <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
-                </div>
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <div
-                            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-sm ${sidebarDarkMode ? 'text-[#f4ffee] hover:bg-white/10' : 'text-[#002f37] hover:bg-gray-100'}`}
-                        >
-                            <ArrowRight className="h-4 w-4 shrink-0" />
-                            {(!sidebarCollapsed || isMobile) && <span className="font-medium">Log Out</span>}
-                        </div>
                     </AlertDialogTrigger>
-                    <AlertDialogContent className={darkMode ? 'bg-[#0b2528] border-gray-800' : 'bg-white'}>
+                    <AlertDialogContent className="bg-white rounded-3xl border-none shadow-2xl p-8 max-w-sm">
                         <AlertDialogHeader>
-                            <AlertDialogTitle className={darkMode ? 'text-white' : 'text-gray-900'}>Sign Out</AlertDialogTitle>
-                            <AlertDialogDescription className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
-                                Are you sure you want to sign out of your account?
+                            <AlertDialogTitle className="text-[20px] font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                Sign Out?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription className="text-[14px] text-gray-500 mt-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                You'll be logged out of your current session. Any unsaved changes may be lost.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel className={darkMode ? 'bg-transparent text-gray-300 hover:bg-white/10 border-gray-700' : ''}>Cancel</AlertDialogCancel>
+                        <AlertDialogFooter className="mt-6 gap-3">
+                            <AlertDialogCancel className="flex-1 rounded-xl border border-gray-200 font-semibold text-sm text-gray-700">
+                                Cancel
+                            </AlertDialogCancel>
                             <AlertDialogAction
-                                onClick={() => {
-                                    logout();
-                                    navigate('/');
-                                }}
-                                className="bg-red-600 hover:bg-red-700 text-white border-none"
+                                onClick={() => { logout(); navigate('/'); }}
+                                className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold text-sm rounded-xl"
                             >
                                 Sign Out
                             </AlertDialogAction>

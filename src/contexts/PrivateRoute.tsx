@@ -9,10 +9,7 @@ const PrivateRoute = () => {
     const location = useLocation();
     const isDev = isLocalhost();
 
-    // On localhost, allow access without authentication for testing
-    if (isDev && !token) {
-        return <Outlet />;
-    }
+    // Auth is required for all environments including localhost
 
     if (loading && !token) {
         return <Preloader />;

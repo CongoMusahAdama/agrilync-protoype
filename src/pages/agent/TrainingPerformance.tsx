@@ -60,11 +60,13 @@ import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
+import { useAuth } from '@/contexts/AuthContext';
 import ScheduleVisitModal from '@/components/agent/ScheduleVisitModal';
 import Preloader from '@/components/ui/Preloader';
 
 export const TrainingPerformanceContent = () => {
   const { darkMode } = useDarkMode();
+  const { agent } = useAuth();
   const [trainingFilter, setTrainingFilter] = useState('all');
 
   // All useState hooks must be declared before any conditional returns
@@ -84,7 +86,11 @@ export const TrainingPerformanceContent = () => {
     // Uses global defaults from App.tsx
   });
 
-  const availableTrainings = summaryData?.trainings || [];
+  const availableTrainingsRaw = summaryData?.trainings || [];
+  const availableTrainings = availableTrainingsRaw.filter((t: any) => {
+    const effectiveRegion = agent?.region || "Ashanti Region";
+    return !effectiveRegion || t.region === effectiveRegion;
+  });
   const myTrainings = summaryData?.myTrainings || [];
   const activities = summaryData?.activities || [];
   const stats = summaryData?.stats || {};
@@ -94,12 +100,17 @@ export const TrainingPerformanceContent = () => {
     queryKey: ['scheduledVisits'],
     queryFn: async () => {
       const response = await api.get('/scheduled-visits');
-      return response.data.data || [];
+      const resData = response.data;
+      return Array.isArray(resData) ? resData : (resData?.data || []);
     },
     // Uses global defaults from App.tsx
   });
 
-  const scheduledVisits = scheduledVisitsData || [];
+  const scheduledVisitsRaw = scheduledVisitsData || [];
+  const scheduledVisits = scheduledVisitsRaw.filter((v: any) => {
+    const effectiveRegion = agent?.region || "Ashanti Region";
+    return !effectiveRegion || v.region === effectiveRegion;
+  });
 
   const loading = loadingSummary || loadingVisits;
   const isFetching = fetchingSummary || fetchingVisits;
@@ -114,13 +125,13 @@ export const TrainingPerformanceContent = () => {
         title: 'Success!',
         html: `
           <div style="text-align: center; padding: 10px 0;">
-            <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+            <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
               Consultation ${action}d successfully
             </p>
           </div>
         `,
         confirmButtonText: 'OK',
-        confirmButtonColor: '#7ede56',
+        confirmButtonColor: '#065f46',
         timer: 2000,
         timerProgressBar: true
       });
@@ -164,13 +175,13 @@ export const TrainingPerformanceContent = () => {
           title: 'SMS Sent!',
           html: `
             <div style="text-align: center; padding: 10px 0;">
-              <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+              <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
                 ${response.data.message || 'SMS sent successfully'}
               </p>
             </div>
           `,
           confirmButtonText: 'OK',
-          confirmButtonColor: '#7ede56',
+          confirmButtonColor: '#065f46',
           timer: 2000,
           timerProgressBar: true
         });
@@ -202,13 +213,13 @@ export const TrainingPerformanceContent = () => {
           title: 'Call Logged!',
           html: `
             <div style="text-align: center; padding: 10px 0;">
-              <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+              <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
                 ${response.data.message || 'Phone call logged successfully'}
               </p>
             </div>
           `,
           confirmButtonText: 'OK',
-          confirmButtonColor: '#7ede56',
+          confirmButtonColor: '#065f46',
           timer: 2000,
           timerProgressBar: true
         });
@@ -235,10 +246,8 @@ export const TrainingPerformanceContent = () => {
 
   const summaryCards = [
     { title: 'Available', value: availableTrainings.length.toString(), icon: GraduationCap, color: 'bg-blue-600' },
-    { title: 'Upcoming', value: myTrainings.filter((t: any) => t.status === 'Registered').length.toString(), icon: Calendar, color: 'bg-orange-600' },
+    { title: 'Upcoming', value: myTrainings.filter((t: any) => t.status === 'Registered').length.toString(), icon: Calendar, color: 'bg-[#065f46]' },
     { title: 'Consultations', value: consultationRequests.length.toString(), icon: Handshake, color: 'bg-teal-600' },
-    { title: 'Score', value: `${stats?.performanceScore || 0}%`, icon: TrendingUp, color: 'bg-purple-600' },
-    { title: 'Reports', value: (stats?.reportsThisMonth || 0).toString(), icon: FileText, color: 'bg-indigo-600' },
   ];
 
   const MetricCardSkeleton = () => (
@@ -258,7 +267,7 @@ export const TrainingPerformanceContent = () => {
   return (
     <div className="space-y-8">
       {/* 1. Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
         {summaryCards.map((card: any, idx: number) => {
           const isLoading =
             (card.title === 'Available' && loadingAvailable) ||
@@ -304,7 +313,7 @@ export const TrainingPerformanceContent = () => {
               <h2 className={`section-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>Scheduled Visits</h2>
               <Button
                 onClick={() => setScheduleModalOpen(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold border-none"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Schedule Visit
@@ -313,14 +322,14 @@ export const TrainingPerformanceContent = () => {
             <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} overflow-hidden`}>
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader className={darkMode ? 'bg-[#0b3d32]' : 'bg-[#10b981]'}>
-                    <TableRow className={darkMode ? 'border-[#124b53] hover:bg-transparent' : 'border-emerald-500 hover:bg-transparent'}>
-                      <TableHead className="text-white btn-text h-10">Type</TableHead>
-                      <TableHead className="text-white btn-text h-10">Farmers/Community</TableHead>
-                      <TableHead className="text-white btn-text h-10">Date & Time</TableHead>
-                      <TableHead className="text-white btn-text h-10">Purpose</TableHead>
-                      <TableHead className="text-white btn-text h-10">Status</TableHead>
-                      <TableHead className="text-right text-white btn-text h-10">Actions</TableHead>
+                  <TableHeader className="bg-[#065f46]">
+                    <TableRow className="border-none hover:bg-transparent">
+                      <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Type</TableHead>
+                      <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Farmers/Community</TableHead>
+                      <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Date & Time</TableHead>
+                      <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Purpose</TableHead>
+                      <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Status</TableHead>
+                      <TableHead className="text-right text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -340,8 +349,8 @@ export const TrainingPerformanceContent = () => {
                           <TableRow key={visit._id || visit.id} className={darkMode ? 'border-gray-800 hover:bg-gray-800/20' : 'border-gray-50 hover:bg-gray-50'}>
                             <TableCell>
                               <Badge className={`text-[10px] uppercase ${visit.visitType === 'farm-visit' ? 'bg-blue-500/10 text-blue-500' :
-                                  visit.visitType === 'community-visit' ? 'bg-purple-500/10 text-purple-500' :
-                                    'bg-orange-500/10 text-orange-500'
+                                visit.visitType === 'community-visit' ? 'bg-[#065f46]/10 text-[#065f46]' :
+                                  'bg-[#065f46]/10 text-[#065f46]'
                                 }`}>
                                 {visit.visitType === 'farm-visit' ? 'Farm' :
                                   visit.visitType === 'community-visit' ? 'Community' : 'Meeting'}
@@ -382,9 +391,9 @@ export const TrainingPerformanceContent = () => {
                             </TableCell>
                             <TableCell>
                               <Badge className={`text-[10px] ${visit.status === 'scheduled' && isUpcoming ? 'bg-yellow-500/10 text-yellow-500' :
-                                  visit.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' :
-                                    visit.status === 'cancelled' ? 'bg-red-500/10 text-red-500' :
-                                      'bg-gray-500/10 text-gray-500'
+                                visit.status === 'completed' ? 'bg-[#065f46]/10 text-[#065f46]' :
+                                  visit.status === 'cancelled' ? 'bg-red-500/10 text-red-500' :
+                                    'bg-gray-500/10 text-gray-500'
                                 }`}>
                                 {visit.status}
                               </Badge>
@@ -413,7 +422,7 @@ export const TrainingPerformanceContent = () => {
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      className="h-7 text-[10px] border-green-500 text-green-500 hover:bg-green-500/10"
+                                      className="h-7 text-[10px] border-[#065f46] text-[#065f46] hover:bg-[#065f46]/10"
                                       onClick={() => handleLogPhoneCall(visit._id || visit.id)}
                                       disabled={selectedVisitForCall === (visit._id || visit.id)}
                                       title="Log phone call"
@@ -449,14 +458,14 @@ export const TrainingPerformanceContent = () => {
             <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} overflow-hidden`}>
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader className={darkMode ? 'bg-[#0b3d32]' : 'bg-[#10b981]'}>
-                    <TableRow className={darkMode ? 'border-[#124b53] hover:bg-transparent' : 'border-emerald-500 hover:bg-transparent'}>
-                      <TableHead className="text-white btn-text h-10">Farmer</TableHead>
-                      <TableHead className="text-white btn-text h-10">Purpose & location</TableHead>
-                      <TableHead className="text-white btn-text h-10">Date & Time</TableHead>
-                      <TableHead className="text-white btn-text h-10">Mode</TableHead>
-                      <TableHead className="text-white btn-text h-10">Status</TableHead>
-                      <TableHead className="text-right text-white btn-text h-10">Actions</TableHead>
+                  <TableHeader className="bg-[#065f46]">
+                    <TableRow className="border-none hover:bg-transparent">
+                      <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Farmer</TableHead>
+                      <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Purpose & location</TableHead>
+                      <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Date & Time</TableHead>
+                      <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Mode</TableHead>
+                      <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Status</TableHead>
+                      <TableHead className="text-right text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -485,7 +494,7 @@ export const TrainingPerformanceContent = () => {
                         <TableCell>
                           <div className="flex items-center gap-1.5">
                             {req.mode === 'Virtual' ? (
-                              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${darkMode ? 'bg-purple-900/30 text-purple-400 border border-purple-800/50' : 'bg-purple-50 text-purple-700 border border-purple-200'}`}>
+                              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${darkMode ? 'bg-[#065f46]/30 text-[#065f46] border border-[#065f46]/50' : 'bg-[#065f46]/10 text-[#065f46] border border-[#065f46]/20'}`}>
                                 <Activity className="h-3 w-3" />
                                 {req.mode}
                               </div>
@@ -498,9 +507,9 @@ export const TrainingPerformanceContent = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={`text-[10px] ${req.status === 'Confirmed' ? 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20' :
+                          <Badge className={`text-[10px] ${req.status === 'Confirmed' ? 'bg-[#065f46]/10 text-[#065f46] hover:bg-[#065f46]/20' :
                             req.status === 'Declined' ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20' :
-                              req.status === 'Reschedule Requested' ? 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20' :
+                              req.status === 'Reschedule Requested' ? 'bg-[#065f46]/10 text-[#065f46] hover:bg-[#065f46]/20' :
                                 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20'
                             }`}>
                             {req.status}
@@ -511,7 +520,7 @@ export const TrainingPerformanceContent = () => {
                             <div className="flex justify-end gap-2">
                               <Button
                                 size="sm"
-                                className="h-7 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px]"
+                                className="h-7 bg-[#065f46] hover:bg-[#065f46]/90 text-white text-[10px] font-bold border-none"
                                 onClick={() => handleConsultationAction(req.id, 'accept')}
                                 disabled={isProcessingConsultation === req.id}
                               >
@@ -565,7 +574,7 @@ export const TrainingPerformanceContent = () => {
                       <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-wider">
                         {training.category}
                       </Badge>
-                      <span className={`text-[10px] font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-600 uppercase tracking-widest'}`}>
+                      <span className={`text-[10px] font-bold text-[#065f46] uppercase tracking-widest`}>
                         {training.mode}
                       </span>
                     </div>
@@ -584,7 +593,7 @@ export const TrainingPerformanceContent = () => {
                       </p>
                     </div>
                     <Button
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase tracking-wider text-xs h-10"
+                      className="w-full bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold uppercase tracking-wider text-xs h-10 border-none"
                       onClick={async () => {
                         setIsRegistering(training._id);
                         await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
@@ -593,7 +602,7 @@ export const TrainingPerformanceContent = () => {
                           title: 'Registered!',
                           html: `
                             <div style="text-align: center; padding: 10px 0;">
-                              <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                              <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
                                 Registered for <strong>${training.title}</strong>
                               </p>
                             </div>
@@ -632,14 +641,14 @@ export const TrainingPerformanceContent = () => {
             <h2 className={`section-title mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>My Training Schedule</h2>
             <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} overflow-hidden shadow-sm`}>
               <Table>
-                <TableHeader>
-                  <TableRow className={darkMode ? 'bg-emerald-900/40 border-gray-800' : 'bg-emerald-600 border-emerald-500'}>
-                    <TableHead className={`btn-text uppercase h-10 tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Training Title</TableHead>
-                    <TableHead className={`btn-text uppercase h-10 tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Date</TableHead>
-                    <TableHead className={`btn-text uppercase h-10 tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Mode</TableHead>
-                    <TableHead className={`btn-text uppercase h-10 tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Status</TableHead>
-                    <TableHead className={`btn-text uppercase h-10 tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Cert.</TableHead>
-                    <TableHead className={`text-right btn-text h-10 uppercase tracking-widest ${darkMode ? 'text-emerald-400' : 'text-white'}`}>Action</TableHead>
+                <TableHeader className="bg-[#065f46]">
+                  <TableRow className="border-none hover:bg-transparent">
+                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Training Title</TableHead>
+                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Date</TableHead>
+                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Mode</TableHead>
+                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Status</TableHead>
+                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Cert.</TableHead>
+                    <th className="text-right text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Action</th>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -649,9 +658,9 @@ export const TrainingPerformanceContent = () => {
                       <TableCell className={`sm:text-sm text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{reg.training?.date || 'N/A'}</TableCell>
                       <TableCell className={`sm:text-sm text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{reg.training?.mode || 'N/A'}</TableCell>
                       <TableCell>
-                        <Badge className={`text-[9px] uppercase font-black px-2 py-0.5 rounded-sm shadow-none ${reg.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
+                        <Badge className={`text-[9px] uppercase font-black px-2 py-0.5 rounded-sm shadow-none ${reg.status === 'Completed' ? 'bg-[#7ede56]/10 text-[#7ede56]' :
                           reg.status === 'Registered' ? 'bg-blue-100 text-blue-700' :
-                            reg.status === 'Ongoing' ? 'bg-orange-100 text-orange-700' :
+                            reg.status === 'Ongoing' ? 'bg-[#7ede56]/10 text-[#7ede56]' :
                               'bg-gray-200 text-gray-600'
                           }`}>
                           {reg.status}
@@ -665,7 +674,7 @@ export const TrainingPerformanceContent = () => {
                         ) : '—'}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" className="h-8 px-2 text-[10px] font-bold uppercase tracking-wider hover:bg-emerald-50 text-emerald-600">
+                        <Button variant="ghost" size="sm" className="h-8 px-2 text-[10px] font-bold uppercase tracking-wider hover:bg-[#065f46]/10 text-[#065f46]">
                           View
                         </Button>
                       </TableCell>
@@ -683,60 +692,7 @@ export const TrainingPerformanceContent = () => {
             </Card>
           </section>
 
-          {/* 4. Performance Metrics & Analytics */}
-          <section className="space-y-6">
-            <h2 className={`section-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>Performance Metrics & Analytics</h2>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {[
-                { label: 'Farmers Onboarded', value: stats?.farmersOnboarded || 0, icon: UserCheck, color: 'text-emerald-500' },
-                { label: 'Field Visits', value: stats?.activeFarms || 0, icon: Sprout, color: 'text-emerald-500' },
-                { label: 'Reports Submitted', value: stats?.reportsThisMonth || 0, icon: FileText, color: 'text-blue-500' },
-                { label: 'Investment Matches', value: stats?.investorMatches || 0, icon: Handshake, color: 'text-amber-500' },
-                { label: 'Disputes Resolved', value: stats?.pendingDisputes || 0, icon: AlertTriangle, color: 'text-rose-500' },
-                { label: 'Performance Score', value: `${stats?.performanceScore || 0}%`, icon: GraduationCap, color: 'text-purple-500' },
-              ].map((m, idx) => (
-                <div key={idx} className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-gray-50 border-gray-100 shadow-sm'}`}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <m.icon className={`h-4 w-4 ${m.color}`} />
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{m.label}</span>
-                  </div>
-                  <p className={`text-2xl big-metric ${darkMode ? 'text-white' : 'text-gray-900'}`}>{m.value}</p>
-                </div>
-              ))}
-            </div>
-
-            <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} p-6 shadow-sm`}>
-              <div className="flex flex-col md:flex-row justify-between mb-8 gap-4">
-                <div>
-                  <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Activity Trends</h3>
-                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Monthly overview of extension delivery</p>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                    <span className="text-[10px] font-bold uppercase text-gray-400">Onboarding</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-500" />
-                    <span className="text-[10px] font-bold uppercase text-gray-400">Reports</span>
-                  </div>
-                </div>
-              </div>
-              <div className="h-[250px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stats?.monthlyActivity || []}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'} />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} dy={10} stroke="#9ca3af" />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} stroke="#9ca3af" />
-                    <Tooltip contentStyle={darkMode ? { backgroundColor: '#111827', border: '1px solid #1f2937' } : {}} cursor={{ fill: darkMode ? '#ffffff05' : '#00000005' }} />
-                    <Bar dataKey="onboarding" fill="#10b981" radius={[2, 2, 0, 0]} barSize={20} />
-                    <Bar dataKey="reports" fill="#3b82f6" radius={[2, 2, 0, 0]} barSize={20} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
-          </section>
         </div>
 
         {/* Right Column (1/3 width) */}
@@ -750,9 +706,9 @@ export const TrainingPerformanceContent = () => {
                 {activities.map((item: any, idx: number) => (
                   <div key={item._id || idx} className="relative pl-8 group">
                     <div className={`absolute left-0 top-1.5 w-5 h-5 rounded-full z-10 flex items-center justify-center border-2 ${darkMode ? 'bg-gray-950 border-gray-800' : 'bg-white border-gray-50'}`}>
-                      {item.type === 'training' ? <CheckCircle className={`h-2 w-2 text-emerald-500`} /> :
+                      {item.type === 'training' ? <CheckCircle className={`h-2 w-2 text-[#065f46]`} /> :
                         item.type === 'report' ? <FileText className={`h-2 w-2 text-blue-500`} /> :
-                          <TrendingUp className={`h-2 w-2 text-amber-500`} />}
+                          <TrendingUp className={`h-2 w-2 text-[#065f46]`} />}
                     </div>
                     <div className="transition-all">
                       <p className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
@@ -775,15 +731,15 @@ export const TrainingPerformanceContent = () => {
           </section>
 
           {/* Help/Support Section */}
-          <Card className="bg-gradient-to-br from-emerald-600 to-emerald-800 text-white border-none p-6 shadow-lg relative overflow-hidden group">
+          <Card className="bg-gradient-to-br from-[#002f37] to-[#011a1e] text-white border-2 border-[#065f46]/20 p-6 shadow-lg relative overflow-hidden group">
             <div className="absolute -right-8 -bottom-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
-              <School className="h-48 w-48 text-white" />
+              <School className="h-48 w-48 text-[#065f46]" />
             </div>
             <div className="relative z-10">
               <h3 className="text-lg font-bold mb-2">Need Technical Help?</h3>
               <p className="text-white/80 text-sm mb-6 leading-relaxed">Connect with our support team or your regional supervisor for immediate assistance.</p>
               <div className="space-y-3">
-                <Button className="w-full bg-white text-emerald-800 hover:bg-emerald-50 font-bold uppercase tracking-wider text-xs h-10 border-none">
+                <Button className="w-full bg-[#065f46] text-white hover:bg-[#065f46]/90 font-bold uppercase tracking-wider text-xs h-10 border-none">
                   Contact Supervisor
                 </Button>
                 <Button variant="link" className="w-full text-white text-xs font-bold uppercase tracking-widest p-0 underline-offset-4 decoration-white/30">
@@ -811,7 +767,7 @@ const TrainingPerformance = () => {
   return (
     <AgentLayout
       activeSection="training-performance"
-      title="Training & Performance"
+      title="Training"
     >
       <TrainingPerformanceContent />
     </AgentLayout>

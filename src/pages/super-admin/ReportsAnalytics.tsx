@@ -70,7 +70,7 @@ const ReportsAnalytics = () => {
             </div>
 
             {/* Premium Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
                 {analyticsMetrics.map((m, idx) => (
                     <Card
                         key={idx}
@@ -155,7 +155,7 @@ const ReportsAnalytics = () => {
                         <CardContent className="p-6 space-y-3">
                             {[
                                 { name: 'Growth Forecast Matrix', icon: TrendingUp, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                                { name: 'Asset Allocation Flow', icon: PieChart, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                                { name: 'Asset Allocation Flow', icon: PieChart, color: 'text-[#7ede56]', bg: 'bg-[#7ede56]/10' },
                                 { name: 'Satellite Yield Drift', icon: Globe, color: 'text-amber-500', bg: 'bg-amber-500/10' },
                             ].map((preset, i) => (
                                 <div key={i} className={`flex items-center justify-between p-4 rounded-2xl ${darkMode ? 'bg-gray-800/40' : 'bg-gray-50'} border border-transparent hover:border-[#7ede56]/30 cursor-pointer group transition-all`}>
@@ -197,3 +197,7 @@ const ReportsAnalytics = () => {
 };
 
 export default ReportsAnalytics;
+
+
+
+

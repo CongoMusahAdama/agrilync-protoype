@@ -29,6 +29,9 @@ import AgentInvestorMatches from "./pages/agent/InvestorFarmerMatches";
 import AgentDisputeManagement from "./pages/agent/DisputeManagement";
 import AgentTrainingPerformance from "./pages/agent/TrainingPerformance";
 import AgentNotificationsCenter from "./pages/agent/AgentNotifications";
+import AgentMediaDashboard from "./pages/agent/MediaDashboard";
+import AgentTasksDashboard from "./pages/agent/TasksDashboard";
+import AgentPerformance from "./pages/agent/AgentPerformance";
 import ChangePassword from "./pages/agent/ChangePassword";
 import PrivateRoute from "./contexts/PrivateRoute";
 import FarmAnalytics from "./pages/FarmAnalytics";
@@ -51,6 +54,7 @@ import PartnershipsSummary from "@/pages/super-admin/PartnershipsSummary";
 import ReportsAnalytics from "@/pages/super-admin/ReportsAnalytics";
 import SettingsRoles from "@/pages/super-admin/SettingsRoles";
 import DashboardRedirect from "./pages/DashboardRedirect";
+import CookieConsent from "./components/CookieConsent";
 
 // Configure QueryClient with optimized caching defaults
 const queryClient = new QueryClient({
@@ -78,6 +82,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <CookieConsent />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/who-we-are" element={<About />} />
@@ -105,6 +110,9 @@ const App = () => (
                 <Route path="/dashboard/agent/dispute-management" element={<AgentDisputeManagement />} />
                 <Route path="/dashboard/agent/training-performance" element={<AgentTrainingPerformance />} />
                 <Route path="/dashboard/agent/notifications-center" element={<AgentNotificationsCenter />} />
+                <Route path="/dashboard/agent/tasks" element={<AgentTasksDashboard />} />
+                <Route path="/dashboard/agent/media" element={<AgentMediaDashboard />} />
+                <Route path="/dashboard/agent/performance" element={<AgentPerformance />} />
                 <Route path="/dashboard/grower/profile" element={<GrowerProfile />} />
                 <Route path="/dashboard/farmer/profile" element={<GrowerProfile />} />
                 <Route path="/dashboard/:userType" element={<Dashboard />} />

@@ -27,7 +27,7 @@ const ViewVisitDetailsModal: React.FC<ViewVisitDetailsModalProps> = ({ open, onO
     const handleExportPDF = () => {
         const doc = new jsPDF();
         doc.setFontSize(20);
-        doc.setTextColor(29, 185, 84); // AgriLync Green
+        doc.setTextColor(6, 95, 70); // AgriLync Green (#065f46)
         doc.text('Visit Summary - AgriLync', 14, 22);
 
         doc.setFontSize(12);
@@ -83,7 +83,7 @@ const ViewVisitDetailsModal: React.FC<ViewVisitDetailsModalProps> = ({ open, onO
             <DialogContent className={`max-w-md ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : 'bg-white'}`}>
                 <DialogHeader>
                     <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="h-6 w-6 text-[#1db954]" />
+                        <Calendar className="h-6 w-6 text-[#065f46]" />
                         <DialogTitle className="text-xl">Visit Details</DialogTitle>
                     </div>
                     <DialogDescription className={darkMode ? 'text-gray-300' : 'text-gray-500'}>
@@ -179,11 +179,11 @@ const ViewVisitDetailsModal: React.FC<ViewVisitDetailsModalProps> = ({ open, onO
                         <Download className="h-4 w-4 mr-2" />
                         PDF
                     </Button>
-                    <Button onClick={handleExportExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white flex-1">
+                    <Button onClick={handleExportExcel} className="bg-[#065f46] hover:bg-[#065f46]/90 text-white flex-1 border-none">
                         <FileSpreadsheet className="h-4 w-4 mr-2" />
                         Excel
                     </Button>
-                    <Button onClick={() => onOpenChange(false)} className="bg-[#1db954] hover:bg-[#17a447] text-white flex-1">
+                    <Button onClick={() => onOpenChange(false)} className="bg-[#065f46] hover:bg-[#065f46]/90 text-white flex-1 border-none">
                         Close
                     </Button>
                 </DialogFooter>
@@ -193,3 +193,4 @@ const ViewVisitDetailsModal: React.FC<ViewVisitDetailsModalProps> = ({ open, onO
 };
 
 export default ViewVisitDetailsModal;
+

@@ -9,7 +9,8 @@ const {
     getSystemLogs,
     getFarmsOversight,
     getPartnershipsSummary,
-    getUsersList
+    getUsersList,
+    getAllFarmers
 } = require('../controllers/superAdminController');
 const auth = require('../middleware/auth');
 
@@ -38,5 +39,7 @@ router.get('/audit-logs', getSystemLogs);
 router.get('/logs', getSystemLogs); // Added alias for frontend
 router.get('/farms', getFarmsOversight);
 router.get('/partnerships', getPartnershipsSummary);
+router.get('/farmers', getAllFarmers); // New route for farmers
 
 module.exports = router;
+

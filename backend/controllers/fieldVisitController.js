@@ -6,6 +6,10 @@ const Activity = require('../models/Activity');
 // @desc    Get all field visits for current agent
 exports.getFieldVisits = async (req, res) => {
     try {
+        // Guard: mock users have non-ObjectId IDs — skip DB query
+        if (req.agent.isMock) {
+            return res.json([]);
+        }
         const visits = await FieldVisit.find({ agent: req.agent.id })
             .populate('farmer', 'name contact region district community lyncId')
             .sort({ date: -1, time: -1 });
@@ -15,6 +19,7 @@ exports.getFieldVisits = async (req, res) => {
         res.status(500).send('Server error');
     }
 };
+
 
 // @route   POST api/field-visits
 // @desc    Log a new field visit

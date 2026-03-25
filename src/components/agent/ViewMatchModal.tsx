@@ -24,14 +24,14 @@ const ViewMatchModal: React.FC<ViewMatchModalProps> = ({ open, onOpenChange, mat
     if (!match) return null;
 
     const statusColors: Record<string, string> = {
-        Active: 'bg-emerald-500/10 text-emerald-600',
+        Active: 'bg-[#065f46]/10 text-[#065f46]',
         'Pending Funding': 'bg-amber-500/10 text-amber-600',
         'Under Review': 'bg-orange-500/10 text-orange-600',
         Completed: 'bg-blue-500/10 text-blue-600',
     };
 
     const darkStatusColors: Record<string, string> = {
-        Active: 'bg-emerald-500/20 text-emerald-300',
+        Active: 'bg-[#065f46]/20 text-[#065f46]',
         'Pending Funding': 'bg-amber-500/20 text-amber-300',
         'Under Review': 'bg-orange-500/20 text-orange-300',
         Completed: 'bg-blue-500/20 text-blue-300',
@@ -58,19 +58,19 @@ const ViewMatchModal: React.FC<ViewMatchModalProps> = ({ open, onOpenChange, mat
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className={`p-4 rounded-lg border ${darkMode ? 'bg-[#0b2528] border-[#124b53]' : 'bg-gray-50 border-gray-200'}`}>
                             <div className="flex items-center gap-2 mb-3">
-                                <User className={`h-5 w-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                                <User className={`h-5 w-5 ${darkMode ? 'text-[#065f46]' : 'text-[#065f46]'}`} />
                                 <h3 className="font-semibold text-lg">Investor</h3>
                             </div>
                             <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Name</p>
                             <p className="font-medium text-base mb-2">{match.investor}</p>
-                            <Button variant="link" className={`h-auto p-0 ${darkMode ? 'text-emerald-300' : 'text-emerald-600'}`}>
+                            <Button variant="link" className={`h-auto p-0 ${darkMode ? 'text-[#065f46]' : 'text-[#065f46]'}`}>
                                 View Profile
                             </Button>
                         </div>
 
                         <div className={`p-4 rounded-lg border ${darkMode ? 'bg-[#0b2528] border-[#124b53]' : 'bg-gray-50 border-gray-200'}`}>
                             <div className="flex items-center gap-2 mb-3">
-                                <Sprout className={`h-5 w-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                                <Sprout className={`h-5 w-5 ${darkMode ? 'text-[#065f46]' : 'text-[#065f46]'}`} />
                                 <h3 className="font-semibold text-lg">Farmer</h3>
                             </div>
                             <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Name</p>
@@ -82,7 +82,7 @@ const ViewMatchModal: React.FC<ViewMatchModalProps> = ({ open, onOpenChange, mat
 
                     <div className={`p-4 rounded-lg border ${darkMode ? 'bg-[#0b2528] border-[#124b53]' : 'bg-gray-50 border-gray-200'}`}>
                         <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                            <FileText className={`h-5 w-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                            <FileText className={`h-5 w-5 ${darkMode ? 'text-[#065f46]' : 'text-[#065f46]'}`} />
                             Investment Terms
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -122,7 +122,7 @@ const ViewMatchModal: React.FC<ViewMatchModalProps> = ({ open, onOpenChange, mat
                     <Button variant="outline" onClick={() => onOpenChange(false)} className={darkMode ? 'border-gray-600 hover:bg-gray-800 text-white' : ''}>
                         Close
                     </Button>
-                    <Button className="bg-[#1db954] hover:bg-[#17a447] text-white">
+                    <Button className="bg-[#065f46] hover:bg-[#065f46]/90 text-white border-none">
                         Manage Investment
                     </Button>
                 </DialogFooter>
@@ -132,3 +132,4 @@ const ViewMatchModal: React.FC<ViewMatchModalProps> = ({ open, onOpenChange, mat
 };
 
 export default ViewMatchModal;
+

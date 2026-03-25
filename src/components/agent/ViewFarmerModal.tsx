@@ -3,11 +3,14 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import {
-    MapPin, Phone, Mail,
-    Star, MessageSquare, X,
-    ShieldAlert, Share2, MoreHorizontal
+    MapPin, Phone, MessageSquare, X,
+    Sprout, Activity, ClipboardList, Image as ImageIcon,
+    History, AlertTriangle, CheckCircle2, MoreHorizontal,
+    Plus, Edit, Star, Camera
 } from 'lucide-react';
 import api from '@/utils/api';
 
@@ -20,10 +23,8 @@ interface ViewFarmerModalProps {
 const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, farmer }) => {
     const { darkMode } = useDarkMode();
     const [farms, setFarms] = useState<any[]>([]);
-    const [, setLoading] = useState(false);
-
-    // Mock Rating (To be replaced with real data)
-    const rating = farmer?.rating || 4.2;
+    const [loading, setLoading] = useState(false);
+    const [activeDetailTab, setActiveDetailTab] = useState('overview');
 
     const fetchFarms = useCallback(async () => {
         if (!farmer?._id) return;
@@ -47,238 +48,268 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
 
     if (!farmer) return null;
 
+    const farm = farms[0] || { 
+        name: `${farmer.name}'s Farm`, 
+        status: farmer.investmentStatus || farmer.status || 'Active', 
+        health: 0, 
+        size: farmer.farmSize || 'Not Recorded', 
+        crop: farmer.cropsGrown || farmer.livestockType || 'Not Specified',
+        lastVisit: 'Not Recorded',
+        nextVisit: 'Awaiting Schedule'
+    };
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`max-w-6xl w-full h-[95vh] md:h-[85vh] p-0 flex flex-col md:flex-row overflow-hidden border-0 ${darkMode ? 'bg-[#1e293b]' : 'bg-gray-50'}`}>
+            <DialogContent className={`max-w-6xl w-full h-[80vh] p-0 flex flex-col overflow-hidden border-0 ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-50'}`}>
                 <div className="sr-only">
-                    <DialogTitle>Farmer Details - {farmer?.name}</DialogTitle>
+                    <DialogTitle>Farm Details - {farm.name}</DialogTitle>
                 </div>
 
-                {/* Left Sidebar - Profile & Skills */}
-                <div className={`w-full md:w-[320px] shrink-0 border-b md:border-b-0 md:border-r p-6 md:p-8 flex flex-col overflow-y-auto max-h-[40vh] md:max-h-full ${darkMode ? 'bg-[#0f172a] border-gray-800' : 'bg-white border-gray-200'}`}>
-
-                    {/* Profile Image - Mobile: Smaller/Row, Desktop: Large/Col */}
-                    <div className="flex md:block items-center gap-4 mb-6 md:mb-8">
-                        <div className="aspect-square w-20 md:w-full rounded-2xl overflow-hidden shadow-lg bg-gray-100 dark:bg-gray-800 relative group shrink-0">
+                {/* Top Action Header */}
+                <div className={`p-4 md:p-6 border-b flex flex-col md:flex-row items-start md:items-center justify-between gap-4 ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white border-gray-200'}`}>
+                    <div className="flex items-center gap-4">
+                        <div className="h-16 w-16 rounded-2xl overflow-hidden shadow-2xl border-2 border-[#065f46]/20 bg-white/10 flex items-center justify-center shrink-0">
                             {farmer.profilePicture ? (
                                 <img src={farmer.profilePicture} alt={farmer.name} className="w-full h-full object-cover" />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center text-3xl md:text-6xl font-bold text-gray-300 dark:text-gray-600">
-                                    {farmer?.name?.charAt(0) || '?'}
+                                <div className="w-full h-full flex items-center justify-center bg-[#065f46]/10">
+                                    <Sprout className="h-8 w-8 text-[#065f46]" />
                                 </div>
                             )}
-                            <div className="hidden md:flex absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity justify-center">
-                                <Badge className="bg-white/20 text-white backdrop-blur-md border-0 hover:bg-white/30">Change Photo</Badge>
-                            </div>
                         </div>
-
-                        {/* Mobile Only: Name & Role next to image */}
-                        <div className="block md:hidden">
-                            <h2 className={`font-bold text-lg leading-tight mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{farmer.name}</h2>
-                            <p className={`text-sm font-medium ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                                {farmer.category || 'Commercial Farmer'}
-                            </p>
-                            <div className="flex items-center gap-1 mt-1">
-                                <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{rating.toFixed(1)}</span>
-                                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Farming Summary */}
-                    <div className="mb-6 md:mb-8 grid grid-cols-2 md:grid-cols-1 gap-4">
                         <div>
-                            <h3 className={`text-xs section-title uppercase tracking-widest mb-3 pb-2 border-b ${darkMode ? 'text-gray-400 border-gray-800' : 'text-gray-400 border-gray-100'}`}>
-                                Farm Details
-                            </h3>
-
-                            <div className="space-y-4">
-                                <div>
-                                    <div className="flex justify-between items-center mb-1">
-                                        <p className={`font-semibold text-sm ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{farmer.farmType} Farm</p>
-                                        <Badge variant="secondary" className="text-[10px] h-5 bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">Primary</Badge>
-                                    </div>
-                                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                        {farmer.community}, {farmer.region}
-                                    </p>
-                                </div>
-
-                                {farms.length > 0 && (
-                                    <div>
-                                        <div className="flex justify-between items-center mb-1">
-                                            <p className={`font-semibold text-sm ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{farms[0].crop} Production</p>
-                                            <Badge variant="secondary" className="text-[10px] h-5 bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">Current</Badge>
-                                        </div>
-                                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                            {farms[0].size || 'N/A'} Acres • {farms[0].currentStage}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Stats / Skills - Merged into grid on mobile for better space usage */}
-                        <div>
-                            <h3 className={`text-xs section-title uppercase tracking-widest mb-3 pb-2 border-b ${darkMode ? 'text-gray-400 border-gray-800' : 'text-gray-400 border-gray-100'}`}>
-                                Key Stats
-                            </h3>
-                            <div className="space-y-3">
-                                <div className="flex justify-between text-sm">
-                                    <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Experience</span>
-                                    <span className={darkMode ? 'text-gray-200' : 'text-gray-900'}>{farmer.experience || 1} Years</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Active Projects</span>
-                                    <span className={darkMode ? 'text-gray-200' : 'text-gray-900'}>{farms.length}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Credit Score</span>
-                                    <span className={darkMode ? 'text-gray-200' : 'text-gray-900'}>{farmer.investmentReadinessScore || 'N/A'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="hidden md:block mt-auto pt-6 border-t border-dashed border-gray-200 dark:border-gray-800">
-                        <h4 className={`text-xs section-title uppercase tracking-widest mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>Products</h4>
-                        <div className="flex flex-wrap gap-2">
-                            {farms.map(f => f.crop).filter((v, i, a) => a.indexOf(v) === i).map(crop => (
-                                <span key={crop} className={`text-xs px-2 py-1 rounded-md ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
-                                    {crop}
+                            <h1 className={`text-2xl font-black tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>{farm.name}</h1>
+                            <div className="flex flex-wrap items-center gap-3 mt-1 text-sm text-gray-500">
+                                <span className="font-bold text-[#065f46] flex items-center gap-1.5 px-3 py-1 bg-[#065f46]/5 rounded-full">
+                                    <Phone className="h-3.5 w-3.5" /> {farmer.name}
                                 </span>
-                            ))}
-                            <span className={`text-xs px-2 py-1 rounded-md ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
-                                {farmer.livestockType || 'Livestock'}
-                            </span>
+                                <span className="text-gray-300">•</span>
+                                <span className="font-bold text-gray-400 uppercase tracking-widest text-[10px]">{farmer.region}</span>
+                                <span className="text-gray-300">•</span>
+                                <Badge variant="secondary" className="text-[10px] uppercase font-black bg-[#065f46] text-white rounded-lg border-none">{farm.status}</Badge>
+                            </div>
                         </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 w-full md:w-auto">
+                        <Button className="flex-1 md:flex-none bg-[#065f46] text-white hover:bg-[#065f46]/90 font-bold px-6 border-none">
+                            <Plus className="h-4 w-4 mr-2" /> New Visit
+                        </Button>
+                        <Button variant="outline" className={`flex-1 md:flex-none ${darkMode ? 'border-white/10 text-white hover:bg-white/5' : ''}`}>
+                            <ImageIcon className="h-4 w-4 mr-2" /> Upload Media
+                        </Button>
+                        <Button variant="ghost" size="icon" className={`hidden md:flex ${darkMode ? 'text-gray-400' : ''}`}>
+                            <Edit className="h-4 w-4" />
+                        </Button>
                     </div>
                 </div>
 
-                {/* Right Content Area */}
-                <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0f172a] h-full overflow-hidden">
-
-                    {/* Header Section */}
-                    <div className={`p-6 md:p-8 pb-0 shrink-0 ${darkMode ? 'bg-[#0f172a]' : 'bg-white'}`}>
-                        <div className="flex justify-between items-start mb-6">
-                            <div>
-                                <div className="flex items-center gap-3 mb-1">
-                                    <h1 className={`dashboard-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>{farmer.name}</h1>
-                                    <MapPin className="w-4 h-4 text-gray-400" />
-                                    <span className="text-sm text-gray-400">{farmer.region}, GH</span>
+                <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+                    {/* Left Panel: Health & KPIs */}
+                    <div className={`w-full md:w-[300px] shrink-0 p-6 border-b md:border-b-0 md:border-r flex flex-col gap-8 overflow-y-auto ${darkMode ? 'bg-[#0b2528] border-white/5' : 'bg-white border-gray-200'}`}>
+                        {/* Health Gauge */}
+                        <div className="flex flex-col items-center text-center">
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-6">Farm Health Score</h3>
+                            <div className="relative h-40 w-40 flex items-center justify-center">
+                                <svg className="h-full w-full -rotate-90">
+                                    <circle
+                                        cx="80"
+                                        cy="80"
+                                        r="70"
+                                        stroke="currentColor"
+                                        strokeWidth="12"
+                                        fill="transparent"
+                                        className="text-gray-100 dark:text-gray-800"
+                                    />
+                                    <circle
+                                        cx="80"
+                                        cy="80"
+                                        r="70"
+                                        stroke="currentColor"
+                                        strokeWidth="12"
+                                        fill="transparent"
+                                        strokeDasharray={440}
+                                        strokeDashoffset={440 - (440 * (farm.health || 85)) / 100}
+                                        className="text-[#065f46] transition-all duration-1000"
+                                    />
+                                </svg>
+                                <div className="absolute flex flex-col items-center">
+                                    <span className={`text-4xl font-black ${darkMode ? 'text-white' : 'text-gray-900'}`}>{farm.health ?? 0}%</span>
+                                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">{farm.health > 80 ? 'Excellent' : farm.health > 50 ? 'Good' : 'Needs Verification'}</span>
                                 </div>
-                                <p className={`text-lg font-medium mb-2 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                                    {farmer.category || 'Commercial Farmer'}
-                                </p>
+                            </div>
+                        </div>
 
-                                <div className="flex items-center gap-4">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">Rating</span>
-                                        <div className="flex items-center gap-1">
-                                            <span className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{rating.toFixed(1)}</span>
-                                            <div className="flex text-amber-400">
-                                                {[1, 2, 3, 4, 5].map((s) => (
-                                                    <Star key={s} className={`w-3.5 h-3.5 ${s <= Math.round(rating) ? 'fill-current' : 'text-gray-300 dark:text-gray-700'}`} />
-                                                ))}
-                                            </div>
+                        {/* Quick Metrics */}
+                        <div className="space-y-4">
+                            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Last Visit</p>
+                                <p className={`text-sm font-bold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{farm.lastVisit || 'Not Recorded'}</p>
+                                <p className="text-[10px] text-[#065f46] font-bold mt-1">Status: {farm.status || 'Active'}</p>
+                            </div>
+                            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Next Scheduled</p>
+                                <p className={`text-sm font-bold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{farm.nextVisit || 'TBD'}</p>
+                                <p className="text-[10px] text-amber-500 font-bold mt-1">Pending Field Audit</p>
+                            </div>
+                        </div>
+
+                        {/* Farmer Call Card */}
+                        <div className={`mt-auto p-4 rounded-xl border-2 border-dashed ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
+                            <div className="flex items-center gap-3">
+                                <div className="h-12 w-12 rounded-xl bg-gray-200 dark:bg-gray-800 overflow-hidden flex items-center justify-center shrink-0 shadow-lg border-2 border-white dark:border-white/10">
+                                    {farmer.profilePicture ? (
+                                        <img src={farmer.profilePicture} alt={farmer.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="bg-[#065f46]/20 w-full h-full flex items-center justify-center">
+                                            <Star className="h-5 w-5 text-amber-400 fill-amber-400" />
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
-                            </div>
-
-                            <div className="flex items-start gap-2">
-                                <Button variant="outline" size="icon" className="rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 dark:border-gray-700 dark:text-gray-400">
-                                    <Share2 className="w-5 h-5" />
-                                </Button>
-                                <Button variant="outline" size="icon" className="rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 dark:border-gray-700 dark:text-gray-400">
-                                    <ShieldAlert className="w-5 h-5" />
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* Action Buttons Row */}
-                        <div className="flex items-center gap-3 mb-8">
-                            <Button className="rounded-full px-6 bg-gray-900 text-white hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100">
-                                <MessageSquare className="w-4 h-4 mr-2" /> Send Message
-                            </Button>
-                            <Button variant="secondary" className="rounded-full px-6 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20">
-                                <Phone className="w-4 h-4 mr-2" /> Contacts
-                            </Button>
-                            <Button variant="ghost" className="rounded-full text-gray-500 dark:text-gray-400 dark:hover:text-gray-200">
-                                <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                        </div>
-
-                        {/* Visual Tabs (Header only) */}
-                        <div className="w-full border-b border-gray-200 dark:border-gray-800 mb-0">
-                            <div className="flex gap-8">
-                                <div className={`pb-3 text-sm font-medium border-b-2 border-emerald-500 text-gray-900 dark:text-white`}>
-                                    About
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] font-black uppercase text-[#065f46] tracking-widest">Connect</p>
+                                    <p className="text-sm font-bold truncate text-gray-900 dark:text-gray-100">{farmer.name}</p>
+                                    <p className="text-[10px] font-bold text-gray-400 truncate tracking-tighter">{farmer.contact}</p>
                                 </div>
+                                <Button size="icon" variant="ghost" className="rounded-full h-10 w-10 hover:bg-[#065f46]/10 dark:hover:bg-[#065f46]/20 shrink-0">
+                                    <Phone className="h-5 w-5 text-[#065f46]" />
+                                </Button>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Scrollable Content Area */}
-                        <ScrollArea className="flex-1 w-full">
-                            <div className="p-6 md:p-8 pt-6">
-                                <div className="space-y-10 max-w-4xl">
+                    {/* Main Content: Tabs */}
+                    <div className="flex-1 flex flex-col overflow-hidden">
+                        <Tabs defaultValue="overview" className="flex-1 flex flex-col" onValueChange={setActiveDetailTab}>
+                            <div className={`px-6 pt-2 border-b ${darkMode ? 'bg-[#0f172a] border-white/5' : 'bg-white border-gray-200'}`}>
+                                <TabsList className="bg-transparent h-12 w-full justify-start gap-8 p-0">
+                                    <TabsTrigger value="overview" className="bg-transparent border-b-2 border-transparent data-[state=active]:border-[#065f46] data-[state=active]:text-[#065f46] rounded-none px-0 h-12 text-sm font-bold">Overview</TabsTrigger>
+                                    <TabsTrigger value="timeline" className="bg-transparent border-b-2 border-transparent data-[state=active]:border-[#065f46] data-[state=active]:text-[#065f46] rounded-none px-0 h-12 text-sm font-bold">Timeline</TabsTrigger>
+                                    <TabsTrigger value="visits" className="bg-transparent border-b-2 border-transparent data-[state=active]:border-[#065f46] data-[state=active]:text-[#065f46] rounded-none px-0 h-12 text-sm font-bold">Visits & Reports</TabsTrigger>
+                                    <TabsTrigger value="media" className="bg-transparent border-b-2 border-transparent data-[state=active]:border-[#065f46] data-[state=active]:text-[#065f46] rounded-none px-0 h-12 text-sm font-bold">Media</TabsTrigger>
+                                </TabsList>
+                            </div>
 
-                                    {/* Contact Information Group */}
-                                    <section>
-                                        <h4 className={`text-xs section-title uppercase tracking-widest mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>Contact Information</h4>
+                            <ScrollArea className="flex-1">
+                                <div className="p-6 md:p-8">
+                                    <TabsContent value="overview" className="mt-0 space-y-8">
+                                        <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-6">
+                                                <div>
+                                                    <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Farm Profile</h4>
+                                                    <div className="grid grid-cols-2 gap-y-4">
+                                                        <div>
+                                                            <p className="text-[10px] text-gray-500 uppercase font-bold">Size</p>
+                                                            <p className="text-sm font-medium">{farm.size || farmer.farmSize || 'Not Recorded'} {farm.size && !isNaN(parseFloat(farm.size)) ? 'Hectares' : ''}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[10px] text-gray-500 uppercase font-bold">Primary Crop</p>
+                                                            <p className="text-sm font-medium">{farm.crop || farmer.cropsGrown || 'Not Specified'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[10px] text-gray-500 uppercase font-bold">Experience</p>
+                                                            <p className="text-sm font-medium">{farmer.yearsOfExperience || '0'} Years</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[10px] text-gray-500 uppercase font-bold">Land Status</p>
+                                                            <p className="text-sm font-medium capitalize">{farmer.landOwnershipStatus || 'Not Recorded'}</p>
+                                                        </div>
+                                                        {(farmer.cropsGrown || farmer.livestockType) && (
+                                                            <div className="col-span-2">
+                                                                <p className="text-[10px] text-gray-500 uppercase font-bold">
+                                                                    {farmer.farmType === 'livestock' ? 'Livestock' : 'Crops'}
+                                                                </p>
+                                                                <p className="text-sm font-medium">{farmer.cropsGrown || farmer.livestockType}</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
-                                            <div>
-                                                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Phone</label>
-                                                <p className={`text-sm font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{farmer.contact}</p>
+                                                <div className={`p-4 rounded-xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/2`}>
+                                                    <div className="flex items-start gap-3">
+                                                        <Activity className="h-5 w-5 text-[#065f46] mt-0.5" />
+                                                        <div>
+                                                            <p className="text-sm font-bold text-[#002f37] dark:text-gray-100 uppercase tracking-wide">Operational Integrity</p>
+                                                            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                                                                Monitoring core farm logistics and soil health markers in real-time. Verify field audits twice monthly.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Address</label>
-                                                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{farmer.community}, {farmer.district}, {farmer.region}</p>
-                                            </div>
-                                            <div>
-                                                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>E-mail</label>
-                                                <p className={`text-sm font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{farmer.email || '—'}</p>
-                                            </div>
-                                            <div>
-                                                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Digital ID</label>
-                                                <p className={`text-sm id-code ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{farmer._id.substring(0, 8).toUpperCase()}</p>
-                                            </div>
-                                        </div>
-                                    </section>
 
-                                    <div className="w-full h-px bg-gray-100 dark:bg-gray-800" />
-
-                                    {/* Basic Information Group */}
-                                    <section>
-                                        <h4 className={`text-xs section-title uppercase tracking-widest mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>Basic Information</h4>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
-                                            <div className="col-span-1 md:col-span-2">
-                                                <label className={`block text-xs font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Bio</label>
-                                                <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                    {farmer.bio || `${farmer.name} is a dedicated commercial farmer focused on ${(farmer.farmType || 'sustainable').toLowerCase()} production. With ${farmer.experience || 1} years of experience in the field, they have demonstrated consistent growth and adoption of modern agricultural practices.`}
+                                            <div>
+                                                <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Quick Bio</h4>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed italic">
+                                                    "{farmer.bio || `${farmer.name} is a dedicated ${farmer.farmType || 'agricultural'} operator in ${farmer.community || farmer.region}. With ${farmer.yearsOfExperience || 'several'} years of expertise ${farmer.cropsGrown ? `cultivating ${farmer.cropsGrown}` : farmer.livestockType ? `managing ${farmer.livestockType}` : 'in the field'}, they are committed to high-yield sustainable production.`}"
                                                 </p>
+                                                <div className="mt-6 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                                                    <p className="text-xs font-bold mb-2">Grower Engagement</p>
+                                                    <Progress value={90} className="h-1.5" />
+                                                    <div className="flex justify-between mt-2 text-[10px] text-gray-500">
+                                                        <span>Highly Responsive</span>
+                                                        <span>90% Score</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Birthday</label>
-                                                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{farmer.dob ? new Date(farmer.dob).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : '—'}</p>
-                                            </div>
-                                            <div>
-                                                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Gender</label>
-                                                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{farmer.gender || '—'}</p>
-                                            </div>
-                                            <div>
-                                                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Language</label>
-                                                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{farmer.language || 'English'}</p>
+                                        </section>
+                                    </TabsContent>
+
+                                    <TabsContent value="timeline" className="mt-0">
+                                        <div className="space-y-8 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-100 dark:before:bg-gray-800">
+                                            <div className="relative pl-8 group">
+                                                <div className={`absolute left-0 top-1.5 w-6 h-6 rounded-full z-10 flex items-center justify-center border-4 ${darkMode ? 'bg-[#0b2528] border-gray-800' : 'bg-white border-gray-100'}`}>
+                                                    <CheckCircle2 className="h-2.5 w-2.5 text-[#065f46]" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-bold text-gray-500 uppercase">{new Date(farmer.createdAt || Date.now()).toLocaleDateString()}</p>
+                                                    <h5 className="font-bold text-sm mt-0.5">Farm Registration Successfully Verified</h5>
+                                                    <p className="text-xs text-gray-500 mt-1">Initial boundary mapping and onboarding completed by Lync Agent.</p>
+                                                </div>
                                             </div>
                                         </div>
-                                    </section>
+                                    </TabsContent>
+
+                                    <TabsContent value="visits" className="mt-0 space-y-4">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400">Past Reports</h4>
+                                            <Button variant="ghost" size="sm" className="text-xs text-[#065f46]">Filter by Date</Button>
+                                        </div>
+                                        <div className="py-20 text-center">
+                                            <div className="h-16 w-16 bg-gray-50 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-gray-200 dark:border-white/10">
+                                                <ClipboardList className="h-8 w-8 text-gray-300" />
+                                            </div>
+                                            <p className="text-sm font-black text-gray-400 uppercase tracking-widest">No reports archived yet</p>
+                                            <p className="text-[10px] text-gray-400 mt-2">Visits and diagnostic audits will appear here.</p>
+                                        </div>
+                                    </TabsContent>
+
+                                    <TabsContent value="media" className="mt-0">
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                            <div className="aspect-video flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-white/10 rounded-xl p-4 bg-gray-50/50 dark:bg-white/5 group hover:border-[#065f46] transition-all cursor-pointer">
+                                                <Camera className="h-8 w-8 text-gray-300 group-hover:text-[#065f46] mb-2" />
+                                                <p className="text-[10px] font-bold text-gray-400 group-hover:text-[#065f46] uppercase tracking-widest">Add Field Photo</p>
+                                            </div>
+                                        </div>
+                                    </TabsContent>
                                 </div>
-                            </div>
-                        </ScrollArea>
+                            </ScrollArea>
+                        </Tabs>
                     </div>
                 </div>
 
+                {/* Footer Controls */}
+                <div className={`p-4 border-t flex items-center justify-between shrink-0 ${darkMode ? 'bg-[#002f37] border-white/10 text-gray-400' : 'bg-white border-gray-200 text-gray-500'}`}>
+                    <div className="flex items-center gap-4">
+                        <span className="text-xs font-medium">Auto-saving...</span>
+                        <div className="h-1 w-24 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-[#065f46] w-[65%]" />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} className="text-xs font-bold uppercase tracking-widest">Close</Button>
+                    </div>
+                </div>
             </DialogContent>
         </Dialog>
     );

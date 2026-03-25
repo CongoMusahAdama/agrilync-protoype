@@ -8,10 +8,12 @@ const { Training, AgentTraining } = require('../models/Training');
 const Dispute = require('../models/Dispute');
 const Report = require('../models/Report');
 const redis = require('../utils/redis');
+const performanceService = require('./performanceService');
+const { CACHE_TTL } = require('../config/constants');
 
 // Fallback in-memory cache for when Redis is unavailable
 const memoryCache = new Map();
-const CACHE_TTL_SEC = 300; // 5 minutes in seconds for Redis
+const CACHE_TTL_SEC = CACHE_TTL.DASHBOARD; // Unified 5 minutes
 const CACHE_TTL_MS = CACHE_TTL_SEC * 1000;
 
 // Cleanup for in-memory fallback
@@ -62,14 +64,14 @@ exports.getDashboardSummary = async (agent) => {
             // Aggressively exclude large fields like stageDetails, fieldNotes, and base64 images
             Farmer.find({ agent: agentId })
                 .sort({ createdAt: -1 })
-                .limit(20)
-                .select('name status region district community farmType contact')
+                .limit(200)
+                .select('name status region district community farmType contact profilePicture ghanaCardNumber')
                 .lean(),
             Farm.find({ agent: agentId })
                 .sort({ createdAt: -1 })
-                .limit(20)
+                .limit(200)
                 .select('name farmer location crop status nextVisit lastVisit createdAt')
-                .populate('farmer', 'name region community farmType')
+                .populate('farmer', 'name region community farmType profilePicture ghanaCardNumber')
                 .lean(),
             Notification.find({ agent: agentId }).sort({ createdAt: -1 }).limit(20).lean(),
             // Limit matches to recent 20 to prevent loading all matches
@@ -91,7 +93,7 @@ exports.getDashboardSummary = async (agent) => {
             Farmer.find({ status: 'pending', region })
                 .sort({ createdAt: -1 })
                 .limit(10)
-                .select('name status region date')
+                .select('name status region date profilePicture ghanaCardNumber')
                 .lean(),
             Training.find().sort({ date: 1 }).limit(5).select('title date location status').lean(),
             AgentTraining.find({ agent: agentId })

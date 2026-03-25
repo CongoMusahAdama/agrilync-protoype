@@ -3,6 +3,7 @@ import AgentLayout from './AgentLayout';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Card,
   CardContent,
@@ -30,13 +31,14 @@ import { Badge } from '@/components/ui/badge';
 import { FileText, CheckCircle2, Eye, Calendar, Activity } from 'lucide-react';
 
 const statusStyles: Record<string, string> = {
-  verified: 'bg-emerald-500/10 text-emerald-600',
-  scheduled: 'bg-amber-500/10 text-amber-600',
+  verified: 'bg-[#065f46]/10 text-[#065f46]',
+  scheduled: 'bg-[#065f46]/10 text-[#065f46]',
   'needs-attention': 'bg-rose-500/10 text-rose-600'
 };
 
 const FarmMonitoring: React.FC = () => {
   const { darkMode } = useDarkMode();
+  const { agent } = useAuth();
   const [farms, setFarms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [farmStatusFilter, setFarmStatusFilter] = useState<'all' | 'verified' | 'scheduled' | 'needs-attention'>('all');
@@ -45,7 +47,7 @@ const FarmMonitoring: React.FC = () => {
     const fetchFarms = async () => {
       try {
         const res = await api.get('/farms');
-        setFarms(res.data);
+        setFarms(Array.isArray(res.data) ? res.data : (res.data.data || []));
       } catch (err) {
         console.error('Error fetching farms:', err);
         toast.error('Failed to load farms');
@@ -59,10 +61,12 @@ const FarmMonitoring: React.FC = () => {
 
   const filteredFarms = useMemo(() => {
     return farms.filter((farm) => {
-      if (farmStatusFilter === 'all') return true;
-      return farm.status === farmStatusFilter;
+      const effectiveRegion = agent?.region || "Ashanti Region";
+      const matchesRegion = !effectiveRegion || farm.region === effectiveRegion;
+      const matchesStatus = farmStatusFilter === 'all' || farm.status === farmStatusFilter;
+      return matchesRegion && matchesStatus;
     });
-  }, [farms, farmStatusFilter]);
+  }, [farms, farmStatusFilter, agent?.region]);
 
   const cardClass = darkMode ? 'bg-[#002f37] border-gray-600 border' : 'bg-white';
   const titleClass = darkMode ? 'text-white' : 'text-gray-900';
@@ -70,7 +74,7 @@ const FarmMonitoring: React.FC = () => {
   const selectTriggerClass = darkMode ? 'bg-[#002f37] border-gray-600 text-white' : '';
   const selectContentClass = darkMode ? 'bg-[#002f37] border-gray-600' : '';
   const selectItemClass = darkMode ? 'text-white hover:bg-gray-800' : '';
-  const tableHeaderClass = 'bg-[#1db954] text-white border-[#1db954]';
+  const tableHeaderClass = 'bg-[#065f46] text-white border-[#065f46]';
   const tableRowClass = darkMode ? 'border-b border-gray-700 hover:bg-[#0d3036]' : '';
   const tableCellClass = darkMode ? 'text-gray-100' : 'text-gray-900';
 
@@ -151,16 +155,16 @@ const FarmMonitoring: React.FC = () => {
           {/* Desktop Table View */}
           <div className="hidden sm:block overflow-x-auto">
             <Table>
-              <TableHeader>
-                <TableRow className={tableHeaderClass}>
-                  <TableHead className="text-white">Farm ID</TableHead>
-                  <TableHead className="text-white">Farmer</TableHead>
-                  <TableHead className="text-white">Crop</TableHead>
-                  <TableHead className="text-white">Status</TableHead>
-                  <TableHead className="text-white">Last Visit</TableHead>
-                  <TableHead className="text-white">Next Visit</TableHead>
-                  <TableHead className="text-white">Report</TableHead>
-                  <TableHead className="text-right text-white">Actions</TableHead>
+              <TableHeader className="bg-[#065f46]">
+                <TableRow className="border-none hover:bg-transparent">
+                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Farm ID</TableHead>
+                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Farmer</TableHead>
+                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Crop</TableHead>
+                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Status</TableHead>
+                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Last Visit</TableHead>
+                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Next Visit</TableHead>
+                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Report</TableHead>
+                  <TableHead className="text-right text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -203,4 +207,5 @@ const FarmMonitoring: React.FC = () => {
 };
 
 export default FarmMonitoring;
+
 

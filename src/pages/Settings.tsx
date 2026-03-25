@@ -40,6 +40,8 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import FarmMap from '@/components/FarmMap';
+import api from '@/utils/api';
+import { toast } from 'sonner';
 
 // Region to Districts/Communities mapping
 const regionDistricts: Record<string, string[]> = {
@@ -344,6 +346,32 @@ const Settings = () => {
   const [longitude, setLongitude] = useState<number>(0);
   const [farmSize, setFarmSize] = useState<number>(0);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [fullName, setFullName] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [gender, setGender] = useState<string>('');
+  const [dob, setDob] = useState<string>('');
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get('/agents/profile'); // Assuming fallback /agents/profile since this is mostly agent or general user profile
+        if (res.data) {
+          setFullName(res.data.name || '');
+          setEmail(res.data.email || '');
+          setPhone(res.data.contact || '');
+          setGender(res.data.gender || '');
+          if (res.data.dob) {
+            setDob(new Date(res.data.dob).toISOString().split('T')[0]);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load profile details", error);
+      }
+    };
+    fetchProfile();
+  }, []);
+
   const [activeProfileSection, setActiveProfileSection] = useState<string>('personal');
   const [completedSections, setCompletedSections] = useState<string[]>([]);
   const { darkMode, toggleDarkMode } = useDarkMode();
@@ -359,7 +387,7 @@ const Settings = () => {
         { id: 'personal', label: 'Personal Details', icon: UserCheck, color: '#7ede56' }, // Green
         { id: 'identification', label: 'Valid Identification', icon: CreditCard, color: '#ffa500' }, // Orange
         { id: 'location', label: 'Farm Location', icon: MapPin, color: '#ff6347' }, // Red/Coral
-        { id: 'farm', label: 'Farm Details', icon: Leaf, color: '#921573' }, // Deep Magenta
+        { id: 'farm', label: 'Farm Details', icon: Leaf, color: '#7ede56' }, // Deep Magenta
         { id: 'investment', label: 'Investment & Support', icon: Wallet, color: '#ffa500' }, // Orange
         { id: 'additional', label: 'Additional Information', icon: Info, color: '#7ede56' }, // Green
       ];
@@ -403,7 +431,23 @@ const Settings = () => {
               <Button
                 type="button"
                 size="sm"
-                onClick={() => setIsEditing(false)}
+                onClick={async () => {
+                  if (!isEditing) return;
+                  try {
+                    await api.put('/agents/profile', {
+                      name: fullName,
+                      contact: phone,
+                      email,
+                      gender,
+                      dob
+                    });
+                    toast.success('Profile updated successfully!');
+                    setIsEditing(false);
+                  } catch (error) {
+                    console.error('Update failed', error);
+                    toast.error('Failed to update profile');
+                  }
+                }}
                 disabled={!isEditing}
                 className={`flex-1 sm:flex-none h-10 px-6 font-bold ${isEditing
                   ? 'bg-[#7ede56] hover:bg-[#6bc947] text-[#002f37] shadow-lg shadow-[#7ede56]/20'
@@ -504,6 +548,9 @@ const Settings = () => {
                         <Input
                           id="fullName"
                           placeholder="Your complete name"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          disabled={!isEditing}
                           className={`h-12 text-base rounded-xl transition-all duration-300 ${darkMode ? 'bg-[#003c47]/50 border-gray-700 text-white placeholder:text-gray-600 focus:border-[#7ede56] focus:ring-[#7ede56]/20' : 'bg-white border-gray-200 focus:border-[#7ede56] focus:ring-[#7ede56]/20'}`}
                         />
                       </div>
@@ -515,6 +562,9 @@ const Settings = () => {
                           id="phone"
                           type="tel"
                           placeholder="+233 XX XXX XXXX"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          disabled={!isEditing}
                           className={`h-12 text-base rounded-xl transition-all duration-300 ${darkMode ? 'bg-[#003c47]/50 border-gray-700 text-white placeholder:text-gray-600 focus:border-[#7ede56] focus:ring-[#7ede56]/20' : 'bg-white border-gray-200 focus:border-[#7ede56] focus:ring-[#7ede56]/20'}`}
                         />
                       </div>
@@ -526,6 +576,9 @@ const Settings = () => {
                           id="email"
                           type="email"
                           placeholder="farmer@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          disabled={!isEditing}
                           className={`h-12 text-base rounded-xl transition-all duration-300 ${darkMode ? 'bg-[#003c47]/50 border-gray-700 text-white placeholder:text-gray-600 focus:border-[#7ede56] focus:ring-[#7ede56]/20' : 'bg-white border-gray-200 focus:border-[#7ede56] focus:ring-[#7ede56]/20'}`}
                         />
                       </div>
@@ -533,7 +586,7 @@ const Settings = () => {
                         <Label htmlFor="gender" className={`text-xs font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                           Gender <span className="text-red-500">*</span>
                         </Label>
-                        <Select>
+                        <Select value={gender} onValueChange={setGender} disabled={!isEditing}>
                           <SelectTrigger className={`h-12 text-base rounded-xl transition-all duration-300 ${darkMode ? 'bg-[#003c47]/50 border-gray-700 text-white focus:border-[#7ede56]' : 'bg-white border-gray-200 focus:border-[#7ede56]'}`}>
                             <SelectValue placeholder="Select gender" />
                           </SelectTrigger>
@@ -551,6 +604,9 @@ const Settings = () => {
                         <Input
                           id="dob"
                           type="date"
+                          value={dob}
+                          onChange={(e) => setDob(e.target.value)}
+                          disabled={!isEditing}
                           className={`h-12 text-base rounded-xl transition-all duration-300 ${darkMode ? 'bg-[#003c47]/50 border-gray-700 text-white placeholder:text-gray-600 focus:border-[#7ede56] focus:ring-[#7ede56]/20' : 'bg-white border-gray-200 focus:border-[#7ede56] focus:ring-[#7ede56]/20'}`}
                         />
                       </div>
@@ -725,7 +781,7 @@ const Settings = () => {
                 {activeProfileSection === 'farm' && (
                   <div className="space-y-6">
                     <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                      <Leaf className="h-5 w-5" style={{ color: '#921573' }} />
+                      <Leaf className="h-5 w-5" style={{ color: '#7ede56' }} />
                       Farm Details
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1350,3 +1406,7 @@ const Settings = () => {
 };
 
 export default Settings;
+
+
+
+
