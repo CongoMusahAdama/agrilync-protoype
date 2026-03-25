@@ -1,18 +1,19 @@
 import React, { useState, useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useDarkMode } from '@/contexts/DarkModeContext';
-import { Upload, File, X, Calendar, FileText, Image as ImageIcon, Video, Paperclip } from 'lucide-react';
+import {
+    X, Camera, ClipboardList, Sparkles,
+    CheckCircle2, ChevronRight, ChevronLeft,
+    Download
+} from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
-import Swal from 'sweetalert2';
 import { useAuth } from '@/contexts/AuthContext';
-import { exportToPDF, exportToWord } from '@/utils/reportExport';
-import { CheckCircle2, Download } from 'lucide-react';
+import { exportToPDF } from '@/utils/reportExport';
 
 interface UploadReportModalProps {
     open: boolean;
@@ -24,95 +25,68 @@ interface UploadReportModalProps {
 const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChange, farmer, onUpload }) => {
     const { darkMode } = useDarkMode();
     const { agent } = useAuth();
+    const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
-    const [reportType, setReportType] = useState('');
-    const [visitDate, setVisitDate] = useState(new Date().toISOString().split('T')[0]);
-    const [notes, setNotes] = useState('');
-    const [media, setMedia] = useState<Array<{ type: 'image' | 'video' | 'document'; url: string; name: string }>>([]);
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [lastReport, setLastReport] = useState<any>(null);
+
+    // Form State
+    const [visitData, setVisitData] = useState({
+        type: 'Routine Inspection',
+        cropStage: 'Vegetative',
+        healthScore: '85',
+        notes: '',
+        media: [] as any[]
+    });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const files = Array.from(e.target.files);
-
             files.forEach(file => {
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                    const base64String = reader.result as string;
-                    let type: 'image' | 'video' | 'document' = 'document';
-
-                    if (file.type.startsWith('image')) type = 'image';
-                    else if (file.type.startsWith('video')) type = 'video';
-
-                    setMedia(prev => [...prev, { type, url: base64String, name: file.name }]);
+                    setVisitData(prev => ({
+                        ...prev,
+                        media: [...prev.media, {
+                            type: file.type.startsWith('image') ? 'image' : 'document',
+                            url: reader.result as string,
+                            name: file.name
+                        }]
+                    }));
                 };
                 reader.readAsDataURL(file);
             });
         }
     };
 
-    const removeMedia = (index: number) => {
-        setMedia(prev => prev.filter((_, i) => i !== index));
-    };
-
     const handleSubmit = async () => {
-        if (!reportType || !visitDate || !notes) return;
-
         setLoading(true);
         try {
-            const reportData = {
+            const payload = {
                 farmerId: farmer?._id || farmer?.id,
-                type: reportType,
-                date: visitDate,
-                notes,
-                media
+                ...visitData,
+                agentName: agent?.name
             };
-
-            const response = await api.post('/reports', reportData);
-
-            await Swal.fire({
-                icon: 'success',
-                title: 'Report Uploaded!',
-                html: `
-                    <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
-                            Report uploaded successfully for <strong>${farmer?.name}</strong>!
-                        </p>
-                    </div>
-                `,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#7ede56',
-                timer: 2000,
-                timerProgressBar: true
-            });
-
-            setLastReport({
-                ...reportData,
-                farmerName: farmer?.name,
-                agentName: agent?.name || 'AgriLync Agent'
-            });
-            setShowSuccess(true);
-
-            if (onUpload) onUpload(response.data);
+            const res = await api.post('/reports', payload);
+            toast.success('Visit report submitted successfully!');
+            setStep(4); // Success step
+            if (onUpload) onUpload(res.data);
         } catch (error) {
-            console.error('Failed to upload report:', error);
-            toast.error('Failed to upload report. Please try again.');
+            toast.error('Submission failed. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleCancel = () => {
-        setReportType('');
-        setVisitDate(new Date().toISOString().split('T')[0]);
-        setNotes('');
-        setMedia([]);
-        setLoading(false);
-        setShowSuccess(false);
-        setLastReport(null);
+    const resetForm = () => {
+        setStep(1);
+        setVisitData({
+            type: 'Routine Inspection',
+            cropStage: 'Vegetative',
+            healthScore: '85',
+            notes: '',
+            media: []
+        });
         onOpenChange(false);
     };
 
@@ -120,179 +94,213 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`max-w-3xl w-full p-0 overflow-hidden flex flex-col sm:flex-row ${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}`}>
+            <DialogContent className={`max-w-4xl w-[95vw] p-0 overflow-hidden flex flex-col h-[75vh] border-none shrink-0 ${darkMode ? 'bg-[#002f37]' : 'bg-white'} rounded-[2rem] shadow-2xl`}>
 
-                {/* Content */}
-                {!showSuccess ? (
-                    <>
-                        {/* Left Column: Form Fields */}
-                        <div className="flex-1 p-6 space-y-4">
-                            <DialogHeader>
-                                <DialogTitle className={`text-xl font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                    <div className={`p-2 rounded-lg ${darkMode ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-600'}`}>
-                                        <FileText className="h-5 w-5" />
-                                    </div>
-                                    Upload Report
-                                </DialogTitle>
-                                <DialogDescription className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
-                                    Submit a field report for <strong>{farmer.name}</strong>
-                                </DialogDescription>
-                            </DialogHeader>
+                {/* Custom Multi-step Header */}
+                <div className={`px-8 py-6 border-b flex items-center justify-between shrink-0 ${darkMode ? 'bg-[#0b2528]/50 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                    <div className="flex items-center gap-4">
+                        <div className={`p-3 rounded-2xl ${darkMode ? 'bg-[#065f46]/20' : 'bg-[#065f46]/10'}`}>
+                            {step === 1 ? <ClipboardList className="h-6 w-6 text-[#065f46]" /> :
+                                step === 2 ? <Camera className="h-6 w-6 text-[#065f46]" /> :
+                                    <Sparkles className="h-6 w-6 text-[#065f46]" />}
+                        </div>
+                        <div>
+                            <h2 className="text-base font-black uppercase tracking-widest text-[#002f37] dark:text-white">Field Visit Report</h2>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Grower Strategy Step {step} of 3</p>
+                        </div>
+                    </div>
+                    {step < 4 && (
+                        <div className="flex items-center gap-3">
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className={`h-2 w-12 rounded-full transition-all duration-500 ${step >= i ? 'bg-[#065f46] shadow-[0_0_15px_rgba(6,95,70,0.5)]' : 'bg-gray-200 dark:bg-gray-800'}`} />
+                            ))}
+                        </div>
+                    )}
+                </div>
 
-                            <div className="space-y-4 mt-2">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="reportType" className={darkMode ? 'text-gray-300' : ''}>Type</Label>
-                                        <Select value={reportType} onValueChange={setReportType}>
-                                            <SelectTrigger className={darkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
-                                                <SelectValue placeholder="Select Type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="field-visit">Field Visit</SelectItem>
-                                                <SelectItem value="harvest">Harvest</SelectItem>
-                                                <SelectItem value="planting">Planting</SelectItem>
-                                                <SelectItem value="inspection">Inspection</SelectItem>
-                                                <SelectItem value="issue">Issue</SelectItem>
-                                                <SelectItem value="other">Other</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="visitDate" className={darkMode ? 'text-gray-300' : ''}>Date</Label>
-                                        <Input
-                                            id="visitDate"
-                                            type="date"
-                                            value={visitDate}
-                                            onChange={(e) => setVisitDate(e.target.value)}
-                                            className={darkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}
-                                        />
-                                    </div>
-                                </div>
+                <div className="flex-1 overflow-y-auto px-8 py-8 bg-gray-50/30 dark:bg-transparent">
+                    {/* Step 1: Observations */}
+                    {step === 1 && (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <div>
+                                <DialogTitle className={`text-2xl font-black mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Field Insights</DialogTitle>
+                                <DialogDescription className={`font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Capture critical operational data for this grower profile.</DialogDescription>
+                            </div>
 
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <Label htmlFor="notes" className={darkMode ? 'text-gray-300' : ''}>Observations / Notes</Label>
-                                    <Textarea
-                                        id="notes"
-                                        value={notes}
-                                        onChange={(e) => setNotes(e.target.value)}
-                                        placeholder="Enter detailed observations..."
-                                        className={`min-h-[120px] resize-none ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}`}
-                                    />
+                                    <Label className="text-[11px] font-bold uppercase text-gray-400 tracking-widest">Engagement Type</Label>
+                                    <Select value={visitData.type} onValueChange={(v) => setVisitData(p => ({ ...p, type: v }))}>
+                                        <SelectTrigger className={`h-12 border-none rounded-xl text-base font-bold ${darkMode ? 'bg-white/5 text-white' : 'bg-white shadow-sm'}`}>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl border-none shadow-2xl">
+                                            <SelectItem value="Routine Inspection">Routine Inspection</SelectItem>
+                                            <SelectItem value="Pest Alert">Pest Alert</SelectItem>
+                                            <SelectItem value="Harvest Prep">Harvest Prep</SelectItem>
+                                            <SelectItem value="Soil Test">Soil Test</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[11px] font-bold uppercase text-gray-400 tracking-widest">Growth Cycle Stage</Label>
+                                    <Select value={visitData.cropStage} onValueChange={(v) => setVisitData(p => ({ ...p, cropStage: v }))}>
+                                        <SelectTrigger className={`h-12 border-none rounded-xl text-base font-bold ${darkMode ? 'bg-white/5 text-white' : 'bg-white shadow-sm'}`}>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl border-none shadow-2xl">
+                                            <SelectItem value="Pre-planting">Pre-planting</SelectItem>
+                                            <SelectItem value="Vegetative">Vegetative</SelectItem>
+                                            <SelectItem value="Flowering">Flowering</SelectItem>
+                                            <SelectItem value="Harvest">Harvest</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[11px] font-bold uppercase text-gray-400 tracking-widest">Health Assessment (%)</Label>
+                                    <div className="flex items-center gap-4">
+                                        <input 
+                                            type="range" 
+                                            min="0" 
+                                            max="100" 
+                                            value={visitData.healthScore} 
+                                            onChange={(e) => setVisitData(p => ({ ...p, healthScore: e.target.value }))}
+                                            className="flex-1 accent-[#065f46] h-1.5 rounded-lg appearance-none bg-gray-200 dark:bg-gray-800"
+                                        />
+                                        <span className={`text-xl font-black min-w-[3rem] text-center ${darkMode ? 'text-[#065f46]' : 'text-[#065f46]'}`}>{visitData.healthScore}%</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Right Column: Media Upload */}
-                        <div className={`w-full sm:w-[300px] p-6 border-l ${darkMode ? 'border-gray-700 bg-gray-900/50' : 'border-gray-100 bg-gray-50/50'} flex flex-col`}>
-                            <div className="mb-4">
-                                <Label className={darkMode ? 'text-gray-300' : ''}>Attachments</Label>
-                                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Photos, videos, or docs</p>
+                            <div className="space-y-2">
+                                <Label className="text-[11px] font-bold uppercase text-gray-400 tracking-widest">Detailed Field Notes</Label>
+                                <Textarea
+                                    placeholder="Log professional field observations, anomalies, or success metrics..."
+                                    className={`min-h-[160px] border-none rounded-xl text-base font-bold resize-none ${darkMode ? 'bg-white/5 text-white placeholder:text-gray-600' : 'bg-white shadow-sm'}`}
+                                    value={visitData.notes}
+                                    onChange={(e) => setVisitData(p => ({ ...p, notes: e.target.value }))}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 2: Media */}
+                    {step === 2 && (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <div>
+                                <DialogTitle className={`text-2xl font-black mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Visual Evidence</DialogTitle>
+                                <DialogDescription className={`font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Upload high-fidelity imagery for Ag-Vision AI processing.</DialogDescription>
                             </div>
 
                             <div
                                 onClick={() => fileInputRef.current?.click()}
-                                className={`
-                                    flex-1 border-2 border-dashed rounded-lg flex flex-col items-center justify-center p-4 cursor-pointer transition-colors mb-4
-                                    ${darkMode
-                                        ? 'border-gray-600 hover:border-purple-500 hover:bg-gray-800'
-                                        : 'border-gray-200 hover:border-purple-400 hover:bg-white'}
-                                `}
+                                className={`aspect-video rounded-3xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-300 ${darkMode ? 'border-white/10 hover:border-[#065f46] hover:bg-white/5' : 'border-gray-200 hover:border-[#065f46] hover:bg-[#065f46]/5'}`}
                             >
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    onChange={handleFileSelect}
-                                    multiple
-                                    accept="image/*,video/*,.pdf,.doc,.docx"
-                                    className="hidden"
-                                />
-                                <Paperclip className={`h-8 w-8 mb-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-                                <p className={`text-xs font-medium text-center ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                    Click to attach files
-                                </p>
+                                <input type="file" ref={fileInputRef} onChange={handleFileSelect} multiple accept="image/*" className="hidden" />
+                                <div className="p-4 rounded-full bg-[#065f46]/10 mb-4">
+                                    <Camera className="h-10 w-10 text-[#065f46]" />
+                                </div>
+                                <p className={`text-lg font-black ${darkMode ? 'text-white' : 'text-[#002f37]'}`}>Sync Visual Data</p>
+                                <p className="text-sm font-medium text-gray-500 mt-1">Tap to access gallery or camera</p>
                             </div>
 
-                            {/* File List */}
-                            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 max-h-[150px] mb-4">
-                                {media.map((item, index) => (
-                                    <div key={index} className={`flex items-center gap-2 p-2 rounded-md ${darkMode ? 'bg-gray-800' : 'bg-white shadow-sm'}`}>
-                                        <div className="h-8 w-8 shrink-0 rounded bg-gray-200 overflow-hidden flex items-center justify-center">
-                                            {item.type === 'image' ? (
-                                                <img src={item.url} alt="Preview" className="h-full w-full object-cover" />
-                                            ) : item.type === 'video' ? (
-                                                <Video className="h-4 w-4 text-gray-500" />
-                                            ) : (
-                                                <File className="h-4 w-4 text-gray-500" />
-                                            )}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                {visitData.media.map((item, idx) => (
+                                    <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-[#065f46] transition-all group shadow-md">
+                                        <img src={item.url} className="w-full h-full object-cover" alt="Preview" />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setVisitData(p => ({ ...p, media: p.media.filter((_, i) => i !== idx) }));
+                                                }}
+                                                className="p-2 bg-rose-500 rounded-xl text-white shadow-lg transform scale-75 group-hover:scale-100 transition-transform"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </button>
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className={`text-[10px] font-medium truncate ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{item.name}</p>
-                                        </div>
-                                        <button
-                                            onClick={() => removeMedia(index)}
-                                            className={`p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}
-                                        >
-                                            <X className="h-3 w-3" />
-                                        </button>
                                     </div>
                                 ))}
-                                {media.length === 0 && (
-                                    <p className={`text-[10px] text-center italic mt-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>No files attached</p>
-                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 3: AI Preview */}
+                    {step === 3 && (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <div className={`p-8 rounded-[2rem] border-none shadow-xl ${darkMode ? 'bg-[#065f46]/20' : 'bg-[#065f46]/5'}`}>
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="p-2 rounded-lg bg-[#065f46]/20">
+                                        <Sparkles className="h-6 w-6 text-[#065f46]" />
+                                    </div>
+                                    <h3 className="font-black uppercase tracking-widest text-[#065f46] text-sm">Advanced Ag-Vision Advisory</h3>
+                                </div>
+                                <div className="space-y-6">
+                                    <div className="flex justify-between items-center pb-6 border-b border-[#065f46]/20">
+                                        <span className="text-xs font-bold uppercase text-gray-500 tracking-wider">Computed Health Score</span>
+                                        <span className="text-4xl font-black text-[#065f46] drop-shadow-sm">{visitData.healthScore}%</span>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <p className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Synthesis & Strategy</p>
+                                        <p className={`text-base font-bold leading-relaxed ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                            {visitData.notes ? (
+                                                <>Based on the field observations of {farmer?.name}'s farm, the crop is currently in the <span className="text-[#065f46] font-black">{visitData.cropStage}</span> stage. {visitData.notes.length > 50 ? visitData.notes : `The assessment indicates a health score of ${visitData.healthScore}%, suggesting ${parseInt(visitData.healthScore) > 80 ? 'optimal growth' : 'a need for closer monitoring'}. ${visitData.notes}`}</>
+                                            ) : (
+                                                "Analysis summary will be generated once your field notes and visual data are processed."
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                                <Button variant="ghost" size="sm" onClick={handleCancel} className={darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500'}>
-                                    Cancel
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    onClick={handleSubmit}
-                                    disabled={loading || !reportType || !visitDate || !notes}
-                                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                                >
-                                    {loading ? 'Uploading...' : 'Submit'}
-                                </Button>
-                            </div>
-                        </div>
-                    </>
-                ) : (
-                    <div className="flex-1 p-12 flex flex-col items-center justify-center text-center space-y-6">
-                        <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-2">
-                            <CheckCircle2 className="h-10 w-10 text-emerald-500" />
-                        </div>
-                        <div>
-                            <h3 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Report Submitted!</h3>
-                            <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                The report for <strong>{farmer.name}</strong> has been successfully saved.
-                                <br />You can now download a copy for your records.
+                            <p className="text-[10px] text-center text-gray-500 font-bold uppercase tracking-widest opacity-60">
+                                This strategic advisory is synthesized using localized agronomic models.
                             </p>
                         </div>
+                    )}
 
-                        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm pt-4">
-                            <Button
-                                onClick={() => exportToPDF(lastReport)}
-                                className="flex-1 bg-red-600 hover:bg-red-700 text-white gap-2 h-12"
-                            >
-                                <Download className="h-4 w-4" /> Download PDF
-                            </Button>
-                            <Button
-                                onClick={() => exportToWord(lastReport)}
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white gap-2 h-12"
-                            >
-                                <Download className="h-4 w-4" /> Download Word
+                    {/* Success Step */}
+                    {step === 4 && (
+                        <div className="flex flex-col items-center justify-center text-center py-12 space-y-8 animate-in zoom-in-95 duration-500">
+                            <div className="h-24 w-24 rounded-3xl bg-[#065f46] flex items-center justify-center shadow-[0_20px_40px_-10px_rgba(6,95,70,0.5)] rotate-12">
+                                <CheckCircle2 className="h-12 w-12 text-white -rotate-12" />
+                            </div>
+                            <div>
+                                <h3 className={`text-3xl font-black ${darkMode ? 'text-white' : 'text-[#002f37]'}`}>Insight Captured!</h3>
+                                <p className={`text-base font-medium mt-3 max-w-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>The field report has been securely synced to the AgriLync core database.</p>
+                            </div>
+                            <Button className="w-full max-w-xs h-14 bg-transparent text-[#065f46] border-2 border-[#065f46] font-black rounded-2xl hover:bg-[#065f46]/5 uppercase tracking-widest text-xs border-none" onClick={() => exportToPDF({
+                                ...visitData,
+                                farmerName: farmer.name,
+                                date: new Date().toLocaleDateString()
+                            })}>
+                                <Download className="h-5 w-5 mr-3" /> Export Strategic PDF
                             </Button>
                         </div>
+                    )}
+                </div>
 
-                        <Button
-                            variant="outline"
-                            onClick={handleCancel}
-                            className={`mt-4 ${darkMode ? 'border-gray-700 text-gray-400' : 'text-gray-500'}`}
-                        >
-                            Done & Close
+                {/* Footer Controls */}
+                <div className={`p-8 border-t flex items-center justify-between shrink-0 ${darkMode ? 'bg-[#0b2528]/50 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                    {step < 4 ? (
+                        <>
+                            <Button variant="ghost" className={`font-black text-[10px] uppercase tracking-widest h-12 px-6 rounded-xl transition-all ${darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500'}`} onClick={() => step > 1 ? setStep(s => s - 1) : onOpenChange(false)}>
+                                {step === 1 ? 'Discard' : <><ChevronLeft className="h-4 w-4 mr-2" /> Previous Step</>}
+                            </Button>
+                            <Button
+                                className="bg-[#065f46] text-white h-12 px-10 rounded-xl hover:bg-[#065f46]/90 font-black uppercase tracking-widest text-[11px] shadow-lg shadow-[#065f46]/20 border-none"
+                                disabled={loading || (step === 1 && !visitData.notes)}
+                                onClick={() => step === 3 ? handleSubmit() : setStep(s => s + 1)}
+                            >
+                                {step === 3 ? (loading ? 'Syncing...' : 'Finalize & Post') : <>Continue <ChevronRight className="h-4 w-4 ml-2" /></>}
+                            </Button>
+                        </>
+                    ) : (
+                        <Button className="w-full bg-[#065f46] text-white hover:bg-[#065f46]/90 font-black h-14 rounded-2xl uppercase tracking-widest text-xs shadow-xl border-none" onClick={resetForm}>
+                            Return to Command Center
                         </Button>
-                    </div>
-                )}
+                    )}
+                </div>
             </DialogContent>
         </Dialog>
     );

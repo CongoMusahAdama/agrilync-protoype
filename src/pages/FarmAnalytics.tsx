@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Button } from '@/components/ui/button';
@@ -116,7 +116,7 @@ const FarmAnalytics = () => {
     { name: 'Cocoa', value: 35, color: '#7ede56' },
     { name: 'Maize', value: 25, color: '#ffa500' },
     { name: 'Poultry', value: 20, color: '#ff6347' },
-    { name: 'Vegetables', value: 15, color: '#921573' },
+    { name: 'Vegetables', value: 15, color: '#7ede56' },
     { name: 'Other', value: 5, color: '#002f37' },
   ];
 
@@ -169,7 +169,7 @@ const FarmAnalytics = () => {
   const chartStyles = {
     performance: {
       color: darkMode ? '#7ede56' : '#002f37',
-      areaFill: darkMode ? 'rgba(126, 222, 86, 0.2)' : 'rgba(0, 47, 55, 0.2)',
+      areaFill: darkMode ? 'rgba(146, 21, 115, 0.2)' : 'rgba(0, 47, 55, 0.2)',
       stroke: darkMode ? '#7ede56' : '#002f37',
     },
     satisfaction: {
@@ -181,7 +181,7 @@ const FarmAnalytics = () => {
       color: darkMode ? '#ffa500' : '#ffa500',
     },
     comparison: {
-      color: darkMode ? '#921573' : '#921573',
+      color: darkMode ? '#7ede56' : '#7ede56',
     },
     ratings: {
       color: darkMode ? '#7ede56' : '#7ede56',
@@ -621,3 +621,8 @@ const FarmAnalytics = () => {
 };
 
 export default FarmAnalytics;
+
+
+
+
+

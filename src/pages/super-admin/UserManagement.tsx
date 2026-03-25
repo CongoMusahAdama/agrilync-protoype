@@ -190,7 +190,7 @@ const UserManagement = () => {
             </div>
 
             {/* Premium Metric Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-5">
                 {categories.map((m, idx) => (
                     <Card
                         key={idx}
@@ -266,7 +266,7 @@ const UserManagement = () => {
                                     </td>
                                     <td className="px-6 py-5">
                                         <div className="flex flex-col gap-1">
-                                            <Badge variant="outline" className={`w-fit text-[9px] font-black uppercase tracking-widest border-2 ${user.role === 'supervisor' ? 'border-[#4c1d95]/30 text-[#4c1d95] dark:text-purple-400' : 'border-[#0369a1]/30 text-[#0369a1] dark:text-sky-400'} rounded-lg px-2 py-0.5`}>
+                                            <Badge variant="outline" className={`w-fit text-[9px] font-black uppercase tracking-widest border-2 ${user.role === 'supervisor' ? 'border-[#4c1d95]/30 text-[#4c1d95] dark:text-[#7ede56]' : 'border-[#0369a1]/30 text-[#0369a1] dark:text-sky-400'} rounded-lg px-2 py-0.5`}>
                                                 {user.role}
                                             </Badge>
                                             <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.1em]">ID: <span className="text-[#7ede56]">{user.agentId || 'SYNCING'}</span></span>
@@ -330,3 +330,7 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
+
+
+
+

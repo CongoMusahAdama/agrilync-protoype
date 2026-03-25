@@ -1,31 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
 import { useDarkMode } from '@/contexts/DarkModeContext';
-import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     Calendar,
-    Clock,
     MapPin,
-    Users,
-    MessageSquare,
-    Phone,
     Send,
     Loader2,
-    CheckCircle2,
     X,
-    Search
+    Clock,
+    Camera,
 } from 'lucide-react';
 
 interface ScheduleVisitModalProps {
@@ -38,374 +30,320 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
     const { darkMode } = useDarkMode();
     const { agent } = useAuth();
     const queryClient = useQueryClient();
-    const [visitType, setVisitType] = useState<'farm-visit' | 'community-visit' | 'farmer-meeting'>('farm-visit');
-    const [selectedFarmers, setSelectedFarmers] = useState<string[]>([]);
-    const [selectAll, setSelectAll] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [scheduledDate, setScheduledDate] = useState('');
-    const [scheduledTime, setScheduledTime] = useState('');
-    const [purpose, setPurpose] = useState('');
-    const [location, setLocation] = useState('');
-    const [notes, setNotes] = useState('');
-    const [community, setCommunity] = useState('');
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const [formData, setFormData] = useState({
+        farmerId: '',
+        visitType: '',
+        visitDate: '',
+        visitTime: '',
+        hoursSpent: '',
+        purpose: '',
+        visitStatus: 'Scheduled',
+        notes: '',
+        challenges: '',
+    });
+    const [photos, setPhotos] = useState<string[]>([]);
 
     // Fetch farmers
     const { data: summaryData } = useQuery({
         queryKey: ['agentDashboardSummary'],
         queryFn: async () => {
-            const response = await api.get('/dashboard/summary');
-            return response.data.data;
+            const res = await api.get('/dashboard/summary');
+            return res.data.data;
         },
         staleTime: 5 * 60 * 1000,
-        refetchOnWindowFocus: false
+        refetchOnWindowFocus: false,
+        enabled: open,
     });
 
-    const farmers = summaryData?.farmers || [];
+    const farmersRaw = summaryData?.farmers || [];
+    const effectiveRegion = agent?.region || "Ashanti Region";
+    const farmers = farmersRaw.filter((f: any) => !effectiveRegion || f.region === effectiveRegion);
+    const selectedFarmer = farmers.find((f: any) => (f._id || f.id) === formData.farmerId);
 
-    // Create scheduled visit mutation
+    useEffect(() => {
+        if (open) {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            setFormData(prev => ({
+                ...prev,
+                visitDate: tomorrow.toISOString().split('T')[0],
+                visitTime: '09:00',
+            }));
+        }
+    }, [open]);
+
     const createVisitMutation = useMutation({
         mutationFn: async (data: any) => {
-            const response = await api.post('/scheduled-visits', data);
-            return response.data;
+            const res = await api.post('/scheduled-visits', data);
+            return res.data;
         },
         onSuccess: async () => {
             await Swal.fire({
                 icon: 'success',
                 title: 'Visit Scheduled!',
-                html: `
-                    <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
-                            Visit scheduled successfully!
-                        </p>
-                    </div>
-                `,
+                text: 'The field visit has been synced to the AgriLync system.',
                 confirmButtonText: 'OK',
-                confirmButtonColor: '#7ede56',
+                confirmButtonColor: '#065f46',
                 timer: 2000,
-                timerProgressBar: true
+                timerProgressBar: true,
             });
             queryClient.invalidateQueries({ queryKey: ['scheduledVisits'] });
+            queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
             handleClose();
             onSuccess?.();
         },
         onError: (error: any) => {
             toast.error(error.response?.data?.message || 'Failed to schedule visit');
-        }
-    });
-
-    // Send SMS mutation
-    const sendSMSMutation = useMutation({
-        mutationFn: async ({ visitId, customMessage }: { visitId: string; customMessage?: string }) => {
-            const response = await api.post(`/scheduled-visits/${visitId}/send-sms`, { customMessage });
-            return response.data;
         },
-        onSuccess: async (data) => {
-            await Swal.fire({
-                icon: 'success',
-                title: 'SMS Sent!',
-                html: `
-                    <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
-                            SMS sent to <strong>${data.data?.phoneNumbers?.length || 0} farmer(s)</strong>
-                        </p>
-                    </div>
-                `,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#7ede56',
-                timer: 2000,
-                timerProgressBar: true
-            });
-            queryClient.invalidateQueries({ queryKey: ['scheduledVisits'] });
-        },
-        onError: (error: any) => {
-            toast.error(error.response?.data?.message || 'Failed to send SMS');
-        }
     });
-
-    useEffect(() => {
-        if (open) {
-            // Set default date to tomorrow
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            setScheduledDate(tomorrow.toISOString().split('T')[0]);
-            setScheduledTime('09:00');
-        }
-    }, [open]);
 
     const handleClose = () => {
-        setVisitType('farm-visit');
-        setSelectedFarmers([]);
-        setSelectAll(false);
-        setSearchTerm('');
-        setScheduledDate('');
-        setScheduledTime('');
-        setPurpose('');
-        setLocation('');
-        setNotes('');
-        setCommunity('');
+        setFormData({
+            farmerId: '',
+            visitType: '',
+            visitDate: '',
+            visitTime: '',
+            hoursSpent: '',
+            purpose: '',
+            visitStatus: 'Scheduled',
+            notes: '',
+            challenges: '',
+        });
+        setPhotos([]);
         onOpenChange(false);
     };
 
-    const handleSelectAll = () => {
-        if (selectAll) {
-            setSelectedFarmers([]);
-        } else {
-            const filteredFarmers = filteredFarmersList.map((f: any) => f._id || f.id);
-            setSelectedFarmers(filteredFarmers);
-        }
-        setSelectAll(!selectAll);
-    };
-
-    const handleFarmerToggle = (farmerId: string) => {
-        if (selectedFarmers.includes(farmerId)) {
-            setSelectedFarmers(selectedFarmers.filter(id => id !== farmerId));
-            setSelectAll(false);
-        } else {
-            setSelectedFarmers([...selectedFarmers, farmerId]);
+    const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            Array.from(e.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onloadend = () => setPhotos(prev => [...prev, reader.result as string]);
+                reader.readAsDataURL(file);
+            });
         }
     };
-
-    const filteredFarmersList = farmers.filter((farmer: any) =>
-        farmer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        farmer.contact?.includes(searchTerm) ||
-        farmer.community?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
     const handleSubmit = () => {
-        if (!scheduledDate || !scheduledTime || !purpose) {
-            toast.error('Please fill in all required fields');
-            return;
-        }
+        if (!formData.farmerId) { toast.error('Please select a grower'); return; }
+        if (!formData.visitDate || !formData.visitTime) { toast.error('Please set the visit date and time'); return; }
+        if (!formData.purpose) { toast.error('Please select the visit purpose'); return; }
 
-        if (visitType !== 'community-visit' && selectedFarmers.length === 0) {
-            toast.error('Please select at least one farmer');
-            return;
-        }
-
-        if (visitType === 'community-visit' && !community) {
-            toast.error('Please enter community name');
-            return;
-        }
-
-        const visitData = {
-            visitType,
-            farmerIds: visitType !== 'community-visit' ? selectedFarmers : [],
-            community: visitType === 'community-visit' ? community : undefined,
-            scheduledDate: new Date(scheduledDate).toISOString(),
-            scheduledTime,
-            purpose,
-            location: location || undefined,
-            notes: notes || undefined
-        };
-
-        createVisitMutation.mutate(visitData);
+        createVisitMutation.mutate({
+            farmerIds: [formData.farmerId],
+            visitType: formData.visitType || 'farm-visit',
+            scheduledDate: new Date(formData.visitDate).toISOString(),
+            scheduledTime: formData.visitTime,
+            purpose: formData.purpose,
+            notes: formData.notes || undefined,
+        });
     };
+
+    const inputCls = `h-12 w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 px-4 text-sm font-semibold text-gray-800 dark:text-white outline-none focus:border-[#065f46] focus:ring-1 focus:ring-[#065f46] placeholder:text-gray-400 transition-all`;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`max-w-3xl max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}`}>
-                <DialogHeader>
-                    <DialogTitle className={`text-xl font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        <div className={`p-2 rounded-lg ${darkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-600'}`}>
-                            <Calendar className="h-5 w-5" />
-                        </div>
-                        Schedule Visit
-                    </DialogTitle>
-                    <DialogDescription className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
-                        Schedule a farm visit, community visit, or farmer meeting
-                    </DialogDescription>
-                </DialogHeader>
+            <DialogContent className="max-w-4xl w-[95vw] p-0 overflow-hidden flex flex-col h-[75vh] border-none bg-white dark:bg-[#002f37] rounded-2xl shadow-2xl">
 
-                <div className="space-y-6 mt-4">
-                    {/* Visit Type */}
-                    <div className="space-y-2">
-                        <Label className={darkMode ? 'text-gray-300' : ''}>Visit Type *</Label>
-                        <Select value={visitType} onValueChange={(value: any) => setVisitType(value)}>
-                            <SelectTrigger className={darkMode ? 'bg-[#01343c] border-gray-600' : ''}>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="farm-visit">Farm Visit</SelectItem>
-                                <SelectItem value="community-visit">Community Visit</SelectItem>
-                                <SelectItem value="farmer-meeting">Farmer Meeting</SelectItem>
-                            </SelectContent>
-                        </Select>
+                {/* Header — dark green, same as Log Field Visit */}
+                <div className="relative bg-[#065f46] px-7 py-5 flex items-start justify-between shrink-0 overflow-hidden">
+                    <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.6) 1px, transparent 0)', backgroundSize: '18px 18px' }} />
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-1">
+                            <div className="p-2 rounded-xl bg-white/20">
+                                <Calendar className="h-5 w-5 text-white" />
+                            </div>
+                            <h2 className="text-lg font-black text-white tracking-tight">Schedule Visit</h2>
+                        </div>
+                        <p className="text-white/60 text-[11px] font-semibold pl-1">Record your planned field deployment for grower oversight</p>
+                    </div>
+                    <button onClick={handleClose} className="relative z-10 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all mt-0.5">
+                        <X className="h-4 w-4" />
+                    </button>
+                </div>
+
+                {/* Scrollable body */}
+                <div className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
+
+                    {/* Grower Name & Lync ID inline */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Grower Name *</Label>
+                            <Select value={formData.farmerId} onValueChange={v => setFormData(p => ({ ...p, farmerId: v }))}>
+                                <SelectTrigger className="h-12 rounded-xl border-2 border-[#065f46]/40 bg-white dark:bg-white/5 text-sm font-semibold text-gray-800 dark:text-white focus:border-[#065f46]">
+                                    <SelectValue placeholder="Select a registered farmer" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-none shadow-2xl z-[2000]">
+                                    {farmers.length === 0
+                                        ? <SelectItem value="_none" disabled>No farmers available</SelectItem>
+                                        : farmers.map((f: any) => (
+                                            <SelectItem key={f._id || f.id} value={f._id || f.id}>{f.name}</SelectItem>
+                                        ))
+                                    }
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Lync ID Identification</Label>
+                            <input
+                                readOnly
+                                value={selectedFarmer ? (selectedFarmer._id || selectedFarmer.id) : ''}
+                                placeholder="Select a registered grower..."
+                                className={`${inputCls} cursor-default text-gray-400 bg-gray-50 dark:bg-white/[0.03]`}
+                            />
+                        </div>
                     </div>
 
-                    {/* Farmer Selection (if not community visit) */}
-                    {visitType !== 'community-visit' && (
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                                <Label className={darkMode ? 'text-gray-300' : ''}>
-                                    Select Farmers * ({selectedFarmers.length} selected)
-                                </Label>
-                                <div className="flex items-center gap-2">
-                                    <Checkbox
-                                        checked={selectAll}
-                                        onCheckedChange={handleSelectAll}
-                                        id="select-all"
-                                    />
-                                    <Label htmlFor="select-all" className="text-sm cursor-pointer">
-                                        Select All
-                                    </Label>
-                                </div>
-                            </div>
-
-                            {/* Search */}
+                    {/* Visit Date | Time | Hours */}
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-1.5">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Visit Date *</Label>
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                <Input
-                                    placeholder="Search farmers by name, phone, or community..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className={`pl-10 ${darkMode ? 'bg-[#01343c] border-gray-600' : ''}`}
+                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                                <input
+                                    type="date"
+                                    className={`${inputCls} pl-9`}
+                                    min={new Date().toISOString().split('T')[0]}
+                                    value={formData.visitDate}
+                                    onChange={e => setFormData(p => ({ ...p, visitDate: e.target.value }))}
                                 />
                             </div>
-
-                            {/* Farmer List */}
-                            <ScrollArea className="h-48 border rounded-md p-2">
-                                <div className="space-y-2">
-                                    {filteredFarmersList.length === 0 ? (
-                                        <p className={`text-sm text-center py-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                            No farmers found
-                                        </p>
-                                    ) : (
-                                        filteredFarmersList.map((farmer: any) => {
-                                            const farmerId = farmer._id || farmer.id;
-                                            const isSelected = selectedFarmers.includes(farmerId);
-                                            return (
-                                                <div
-                                                    key={farmerId}
-                                                    onClick={() => handleFarmerToggle(farmerId)}
-                                                    className={`flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors ${
-                                                        isSelected
-                                                            ? darkMode
-                                                                ? 'bg-emerald-500/20 border border-emerald-500/50'
-                                                                : 'bg-emerald-50 border border-emerald-200'
-                                                            : darkMode
-                                                                ? 'hover:bg-[#01343c] border border-transparent'
-                                                                : 'hover:bg-gray-50 border border-transparent'
-                                                    }`}
-                                                >
-                                                    <Checkbox
-                                                        checked={isSelected}
-                                                        onCheckedChange={() => handleFarmerToggle(farmerId)}
-                                                    />
-                                                    <div className="flex-1">
-                                                        <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                                            {farmer.name}
-                                                        </p>
-                                                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                            {farmer.contact} • {farmer.community || farmer.district}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })
-                                    )}
-                                </div>
-                            </ScrollArea>
                         </div>
-                    )}
-
-                    {/* Community Input (if community visit) */}
-                    {visitType === 'community-visit' && (
-                        <div className="space-y-2">
-                            <Label className={darkMode ? 'text-gray-300' : ''}>Community Name *</Label>
-                            <Input
-                                placeholder="Enter community name"
-                                value={community}
-                                onChange={(e) => setCommunity(e.target.value)}
-                                className={darkMode ? 'bg-[#01343c] border-gray-600' : ''}
-                            />
+                        <div className="space-y-1.5">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Time *</Label>
+                            <div className="relative">
+                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                                <input
+                                    type="time"
+                                    className={`${inputCls} pl-9`}
+                                    value={formData.visitTime}
+                                    onChange={e => setFormData(p => ({ ...p, visitTime: e.target.value }))}
+                                />
+                            </div>
                         </div>
-                    )}
+                        <div className="space-y-1.5">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Hours Spent *</Label>
+                            <div className="relative">
+                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                                <input
+                                    type="number"
+                                    min="0.5" max="12" step="0.5"
+                                    placeholder="1"
+                                    className={`${inputCls} pl-9`}
+                                    value={formData.hoursSpent}
+                                    onChange={e => setFormData(p => ({ ...p, hoursSpent: e.target.value }))}
+                                />
+                            </div>
+                        </div>
+                    </div>
 
-                    {/* Date and Time */}
+                    {/* Purpose | Visit Status */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label className={darkMode ? 'text-gray-300' : ''}>Date *</Label>
-                            <Input
-                                type="date"
-                                value={scheduledDate}
-                                onChange={(e) => setScheduledDate(e.target.value)}
-                                min={new Date().toISOString().split('T')[0]}
-                                className={darkMode ? 'bg-[#01343c] border-gray-600' : ''}
-                            />
+                        <div className="space-y-1.5">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Primary Inspection Purpose *</Label>
+                            <Select value={formData.purpose} onValueChange={v => setFormData(p => ({ ...p, purpose: v }))}>
+                                <SelectTrigger className="h-12 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-semibold text-gray-800 dark:text-white">
+                                    <SelectValue placeholder="Select purpose of this visit" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-none shadow-2xl z-[2000]">
+                                    <SelectItem value="Routine Inspection">Routine Inspection</SelectItem>
+                                    <SelectItem value="Crop Assessment">Crop Assessment</SelectItem>
+                                    <SelectItem value="Pest & Disease Check">Pest & Disease Check</SelectItem>
+                                    <SelectItem value="Soil Testing">Soil Testing</SelectItem>
+                                    <SelectItem value="Harvest Readiness">Harvest Readiness</SelectItem>
+                                    <SelectItem value="Investment Follow-up">Investment Follow-up</SelectItem>
+                                    <SelectItem value="Training Delivery">Training Delivery</SelectItem>
+                                    <SelectItem value="Community Outreach">Community Outreach</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <div className="space-y-2">
-                            <Label className={darkMode ? 'text-gray-300' : ''}>Time *</Label>
-                            <Input
-                                type="time"
-                                value={scheduledTime}
-                                onChange={(e) => setScheduledTime(e.target.value)}
-                                className={darkMode ? 'bg-[#01343c] border-gray-600' : ''}
-                            />
+                        <div className="space-y-1.5">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Visit Status *</Label>
+                            <Select value={formData.visitStatus} onValueChange={v => setFormData(p => ({ ...p, visitStatus: v }))}>
+                                <SelectTrigger className="h-12 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-semibold text-gray-800 dark:text-white">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-none shadow-2xl z-[2000]">
+                                    <SelectItem value="Scheduled">Scheduled</SelectItem>
+                                    <SelectItem value="Completed">Completed</SelectItem>
+                                    <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
 
-                    {/* Purpose */}
-                    <div className="space-y-2">
-                        <Label className={darkMode ? 'text-gray-300' : ''}>Purpose *</Label>
+                    {/* Observation Details */}
+                    <div className="space-y-1.5">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Observation Details & Recommendations *</Label>
                         <Textarea
-                            placeholder="e.g., Crop inspection, Training session, Follow-up visit..."
-                            value={purpose}
-                            onChange={(e) => setPurpose(e.target.value)}
-                            rows={3}
-                            className={darkMode ? 'bg-[#01343c] border-gray-600' : ''}
+                            placeholder="Log your observations, any issues identified, and recommended actions for the farmer..."
+                            className="min-h-[110px] rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-semibold text-gray-800 dark:text-white resize-none placeholder:text-gray-400 focus:border-emerald-500"
+                            value={formData.notes}
+                            onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))}
                         />
                     </div>
 
-                    {/* Location */}
-                    <div className="space-y-2">
-                        <Label className={darkMode ? 'text-gray-300' : ''}>Location (Optional)</Label>
-                        <Input
-                            placeholder="Enter location or address"
-                            value={location}
-                            onChange={(e) => setLocation(e.target.value)}
-                            className={darkMode ? 'bg-[#01343c] border-gray-600' : ''}
+                    {/* Challenges */}
+                    <div className="space-y-1.5">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Challenges Encountered (Optional)</Label>
+                        <Textarea
+                            placeholder="Document any difficulties reaching the location, weather conditions, or other challenges during the visit..."
+                            className="min-h-[90px] rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-semibold text-gray-800 dark:text-white resize-none placeholder:text-gray-400 focus:border-emerald-500"
+                            value={formData.challenges}
+                            onChange={e => setFormData(p => ({ ...p, challenges: e.target.value }))}
                         />
                     </div>
 
-                    {/* Notes */}
+                    {/* Visit Photos */}
                     <div className="space-y-2">
-                        <Label className={darkMode ? 'text-gray-300' : ''}>Additional Notes (Optional)</Label>
-                        <Textarea
-                            placeholder="Any additional information..."
-                            value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
-                            rows={2}
-                            className={darkMode ? 'bg-[#01343c] border-gray-600' : ''}
-                        />
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Visit Photos (Optional)</Label>
+                        <div className="flex flex-wrap gap-3">
+                            {photos.map((src, i) => (
+                                <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 group">
+                                    <img src={src} alt="Visit photo" className="w-full h-full object-cover" />
+                                    <button
+                                        onClick={() => setPhotos(pp => pp.filter((_, idx) => idx !== i))}
+                                        className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            ))}
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-300 dark:border-white/10 flex flex-col items-center justify-center gap-1.5 hover:border-[#065f46] hover:bg-[#065f46]/5 dark:hover:bg-[#065f46]/5 transition-all group"
+                            >
+                                <Camera className="h-5 w-5 text-gray-400 group-hover:text-[#065f46] transition-colors" />
+                                <span className="text-[9px] font-bold text-gray-400 group-hover:text-[#065f46]">Add Photo</span>
+                            </button>
+                            <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoSelect} />
+                        </div>
                     </div>
                 </div>
 
-                <DialogFooter className="mt-6">
+                {/* Footer */}
+                <div className="px-7 py-5 border-t border-gray-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-gray-50 dark:bg-[#0b2528]/60">
                     <Button
-                        variant="outline"
+                        variant="ghost"
                         onClick={handleClose}
-                        className={darkMode ? 'border-gray-600' : ''}
+                        className="text-gray-500 hover:text-gray-800 dark:hover:text-white font-bold text-[11px] uppercase tracking-widest h-11 px-5 rounded-xl"
                     >
-                        Cancel
+                        <X className="h-3.5 w-3.5 mr-2" /> Cancel
                     </Button>
                     <Button
                         onClick={handleSubmit}
                         disabled={createVisitMutation.isPending}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                        className="bg-[#065f46] hover:bg-[#065f46]/90 text-white h-11 px-8 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-[#065f46]/20 border-none"
                     >
-                        {createVisitMutation.isPending ? (
-                            <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Scheduling...
-                            </>
-                        ) : (
-                            <>
-                                <Calendar className="h-4 w-4 mr-2" />
-                                Schedule Visit
-                            </>
-                        )}
+                        {createVisitMutation.isPending
+                            ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Scheduling...</>
+                            : <><Send className="h-4 w-4 mr-2" />Save & Schedule</>
+                        }
                     </Button>
-                </DialogFooter>
+                </div>
             </DialogContent>
         </Dialog>
     );

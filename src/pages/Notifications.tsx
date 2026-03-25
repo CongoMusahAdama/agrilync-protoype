@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Button } from '@/components/ui/button';
@@ -133,7 +133,7 @@ const Notifications = () => {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'success': return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'warning': return <AlertCircle className="h-4 w-4 text-yellow-600" />;
+      case 'warning': return <AlertCircle className="h-4 w-4 text-[#7ede56]" />;
       case 'error': return <AlertCircle className="h-4 w-4 text-red-600" />;
       default: return <Info className="h-4 w-4 text-blue-600" />;
     }
@@ -143,14 +143,14 @@ const Notifications = () => {
     if (darkMode) {
       switch (priority) {
         case 'high': return 'bg-red-900/30 text-red-300';
-        case 'medium': return 'bg-yellow-900/30 text-yellow-300';
+        case 'medium': return 'bg-[#7ede56]/20 text-[#7ede56]';
         case 'low': return 'bg-gray-800 text-gray-300';
         default: return 'bg-gray-800 text-gray-300';
       }
     } else {
       switch (priority) {
         case 'high': return 'bg-red-100 text-red-800';
-        case 'medium': return 'bg-yellow-100 text-yellow-800';
+        case 'medium': return 'bg-[#7ede56]/20 text-[#7ede56]';
         case 'low': return 'bg-gray-100 text-gray-800';
         default: return 'bg-gray-100 text-gray-800';
       }
@@ -226,8 +226,8 @@ const Notifications = () => {
             </CardContent>
           </Card>
 
-          {/* Unread - Red */}
-          <Card className="hover:shadow-md transition-shadow bg-[#ff6347] border-none shadow-lg">
+          {/* Unread - Light Green */}
+          <Card className="hover:shadow-md transition-shadow bg-[#7ede56] border-none shadow-lg">
             <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
               <div className="flex flex-col gap-0.5 sm:gap-1">
                 <span className="text-[10px] sm:text-xs font-medium text-white/90 uppercase tracking-wider">Unread</span>
@@ -239,8 +239,8 @@ const Notifications = () => {
             </CardContent>
           </Card>
 
-          {/* High Priority - Orange */}
-          <Card className="hover:shadow-md transition-shadow bg-[#ffa500] border-none shadow-lg">
+          {/* High Priority - Light Green */}
+          <Card className="hover:shadow-md transition-shadow bg-[#7ede56] border-none shadow-lg">
             <CardContent className="p-3 sm:p-4 flex flex-row items-center justify-between space-y-0">
               <div className="flex flex-col gap-0.5 sm:gap-1">
                 <span className="text-[10px] sm:text-xs font-medium text-white/90 uppercase tracking-wider">Priority</span>
@@ -354,3 +354,7 @@ const Notifications = () => {
 };
 
 export default Notifications;
+
+
+
+

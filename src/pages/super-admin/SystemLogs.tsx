@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
     Activity,
@@ -58,7 +58,7 @@ const SystemLogs = () => {
         switch (status.toLowerCase()) {
             case 'success':
             case 'authorized':
-                return 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20';
+                return 'text-[#7ede56] bg-[#7ede56]/10 border-[#7ede56]/20';
             case 'blocked':
                 return 'text-rose-500 bg-rose-500/10 border-rose-500/20 animate-pulse';
             case 'pending review':
@@ -224,3 +224,7 @@ const SystemLogs = () => {
 };
 
 export default SystemLogs;
+
+
+
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Button } from '@/components/ui/button';
@@ -449,7 +449,7 @@ const InvestorMatches = () => {
 
       <div className="w-full p-3 sm:p-4 md:p-6">
         {/* Investor Risk Notice */}
-        <div className={`mb-6 p-4 rounded-xl border flex gap-3 ${darkMode ? 'bg-amber-900/20 border-amber-800 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
+        <div className={`mb-6 p-4 rounded-xl border flex gap-3 ${darkMode ? 'bg-[#7ede56]/10 border-[#7ede56]/30 text-[#7ede56]' : 'bg-[#7ede56]/10 border-[#7ede56]/30 text-[#7ede56]'}`}>
           <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
           <p className="text-xs sm:text-sm leading-relaxed">
             <strong>Investor Risk Notice:</strong> Agriculture involves natural and market risks. Returns are not guaranteed. AgriLync does not provide financial advice. Users are responsible for their participation decisions.
@@ -744,8 +744,8 @@ const InvestorMatches = () => {
                 </div>
               </Card>
 
-              {/* Expected Returns - Orange */}
-              <Card className="bg-[#ffa500] rounded-lg p-4 sm:p-6 shadow-md relative overflow-hidden">
+              {/* Expected Returns - Light Green */}
+              <Card className="bg-[#7ede56] rounded-lg p-4 sm:p-6 shadow-md relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10 pointer-events-none">
                   <Leaf className="absolute -top-2 -right-2 h-12 w-12 sm:h-16 sm:w-16 text-white rotate-12" />
                   <Leaf className="absolute -bottom-2 -left-2 h-10 w-10 sm:h-12 sm:w-12 text-white -rotate-12" />
@@ -761,8 +761,8 @@ const InvestorMatches = () => {
                 </div>
               </Card>
 
-              {/* Active Investments - Coral */}
-              <Card className="col-span-2 md:col-span-1 bg-[#ff6347] rounded-lg p-4 sm:p-6 shadow-md relative overflow-hidden">
+              {/* Active Investments - Light Green */}
+              <Card className="col-span-2 md:col-span-1 bg-[#7ede56] rounded-lg p-4 sm:p-6 shadow-md relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10 pointer-events-none">
                   <Leaf className="absolute -top-2 -right-2 h-12 w-12 sm:h-16 sm:w-16 text-white rotate-12" />
                 </div>
@@ -1528,9 +1528,9 @@ const InvestorMatches = () => {
                         </div>
                         <div className="flex items-center gap-4 text-[10px]">
                           <div className="flex items-center gap-1">
-                            <Activity className={`h-3 w-3 ${performanceRatio > 1 ? 'text-green-500' : 'text-orange-500'}`} />
+                            <Activity className={`h-3 w-3 ${performanceRatio > 1 ? 'text-green-500' : 'text-red-500'}`} />
                             <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Performance Index:</span>
-                            <span className={`font-bold ${performanceRatio > 1 ? 'text-green-500' : 'text-orange-500'}`}>{(performanceRatio).toFixed(2)}</span>
+                            <span className={`font-bold ${performanceRatio > 1 ? 'text-green-500' : 'text-red-500'}`}>{(performanceRatio).toFixed(2)}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3 text-blue-500" />
@@ -1700,7 +1700,7 @@ const InvestorMatches = () => {
                   { name: 'Due Diligence', description: 'Verification & vetting', icon: FileCheck, color: 'yellow' },
                   { name: 'Funding', description: 'Investment secured', icon: DollarSign, color: 'green' },
                   { name: 'Growth', description: 'Execution & scaling', icon: TrendingUp, color: 'blue' },
-                  { name: 'Exit', description: 'Returns & completion', icon: CheckCircle, color: 'magenta' }
+                  { name: 'Exit', description: 'Returns & completion', icon: CheckCircle, color: 'green' }
                 ];
 
                 // Determine current stage based on investment status
@@ -1878,3 +1878,7 @@ const InvestorMatches = () => {
 };
 
 export default InvestorMatches;
+
+
+
+

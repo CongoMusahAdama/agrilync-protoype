@@ -60,7 +60,7 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
             <DialogContent className={`max-w-2xl ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : 'bg-white'}`}>
                 <DialogHeader>
                     <div className="flex items-center gap-2 mb-2">
-                        <ShieldCheck className="h-6 w-6 text-emerald-500" />
+                        <ShieldCheck className="h-6 w-6 text-[#065f46]" />
                         <DialogTitle className="text-xl">Review Investment Match</DialogTitle>
                     </div>
                     <DialogDescription className={darkMode ? 'text-gray-300' : 'text-gray-500'}>
@@ -83,7 +83,7 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
                             </div>
                             <div>
                                 <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Value</p>
-                                <p className="font-medium text-base text-emerald-500">{match.value}</p>
+                                <p className="font-medium text-base text-[#065f46]">{match.value}</p>
                             </div>
                             <div>
                                 <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Date</p>
@@ -102,14 +102,14 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
                             {/* Farmer Signature */}
                             <div className={`p-3 flex items-center justify-between border-b ${darkMode ? 'bg-[#0b2528] border-[#124b53]' : 'bg-white border-gray-100'}`}>
                                 <div className="flex items-center gap-3">
-                                    <User className={`h-5 w-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                                    <User className={`h-5 w-5 ${darkMode ? 'text-[#065f46]' : 'text-[#065f46]'}`} />
                                     <div>
                                         <p className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>Farmer Signature</p>
                                         <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Signed by {match.farmer}</p>
                                     </div>
                                 </div>
                                 {match.documents?.farmerSignature ? (
-                                    <Badge className="bg-emerald-500/10 text-emerald-600 flex items-center gap-1">
+                                    <Badge className="bg-[#065f46]/10 text-[#065f46] flex items-center gap-1">
                                         <CheckCircle className="h-3 w-3" /> Signed
                                     </Badge>
                                 ) : (
@@ -129,7 +129,7 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
                                     </div>
                                 </div>
                                 {match.documents?.investorSignature ? (
-                                    <Badge className="bg-emerald-500/10 text-emerald-600 flex items-center gap-1">
+                                    <Badge className="bg-[#065f46]/10 text-[#065f46] flex items-center gap-1">
                                         <CheckCircle className="h-3 w-3" /> Signed
                                     </Badge>
                                 ) : (
@@ -140,12 +140,12 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
                             </div>
 
                             {/* Agent Approval (Current Step) */}
-                            <div className={`p-3 flex items-center justify-between ${darkMode ? 'bg-[#0b3a42]' : 'bg-emerald-50'}`}>
+                            <div className={`p-3 flex items-center justify-between ${darkMode ? 'bg-[#065f46]/20' : 'bg-[#065f46]/5'}`}>
                                 <div className="flex items-center gap-3">
-                                    <ShieldCheck className={`h-5 w-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`} />
+                                    <ShieldCheck className={`h-5 w-5 ${darkMode ? 'text-[#065f46]' : 'text-[#065f46]'}`} />
                                     <div>
-                                        <p className={`font-medium ${darkMode ? 'text-emerald-300' : 'text-emerald-900'}`}>Agent Approval</p>
-                                        <p className={`text-xs ${darkMode ? 'text-emerald-400/70' : 'text-emerald-700/70'}`}>Awaiting your verification</p>
+                                        <p className={`font-medium ${darkMode ? 'text-[#065f46]' : 'text-[#065f46]'}`}>Agent Approval</p>
+                                        <p className={`text-xs ${darkMode ? 'text-[#065f46]/70' : 'text-[#065f46]/70'}`}>Awaiting your verification</p>
                                     </div>
                                 </div>
                                 <Badge className="bg-yellow-500/20 text-yellow-600 flex items-center gap-1 border-yellow-200">
@@ -170,7 +170,7 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
                     </div>
 
                     {!isFullySigned && (
-                        <div className={`p-3 rounded-lg flex items-center gap-3 ${darkMode ? 'bg-orange-500/10 text-orange-200' : 'bg-orange-50 text-orange-800'}`}>
+                        <div className={`p-3 rounded-lg flex items-center gap-3 ${darkMode ? 'bg-[#065f46]/10 text-[#065f46]' : 'bg-[#065f46]/10 text-[#065f46]'}`}>
                             <AlertCircle className="h-5 w-5 flex-shrink-0" />
                             <p className="text-sm">Cannot approve yet. Both parties must sign the agreement first.</p>
                         </div>
@@ -197,7 +197,7 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
                         <Button
                             onClick={handleApprove}
                             disabled={!isFullySigned}
-                            className="bg-[#1db954] hover:bg-[#17a447] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-[#065f46] hover:bg-[#065f46]/90 text-white disabled:opacity-50 disabled:cursor-not-allowed border-none"
                         >
                             Approve & Verify
                         </Button>
@@ -209,3 +209,4 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
 };
 
 export default ReviewMatchModal;
+

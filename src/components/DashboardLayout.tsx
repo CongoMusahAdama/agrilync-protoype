@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, Bell, Sun, Moon, Home, MapPin, BarChart3, Settings, Plus, Users, Calendar, Leaf, Bot, AlertTriangle } from 'lucide-react';
+import { Menu, Bell, Sun, Moon, Home, MapPin, BarChart3, Settings, Plus, Users, Calendar, Leaf, Bot, AlertTriangle, Search } from 'lucide-react';
 import DashboardSidebar from './DashboardSidebar';
 import Preloader from './ui/Preloader';
 import AddFarmerModal from './agent/AddFarmerModal';
 import { Badge } from './ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 import api from '@/utils/api';
 import {
     DropdownMenu,
@@ -59,6 +60,25 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const [notifications, setNotifications] = useState<any[]>([]);
     const location = useLocation();
     const [prevPath, setPrevPath] = useState(location.pathname);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!searchQuery.trim()) return;
+
+        // Check if we're on the farm management page already
+        if (location.pathname.includes('/farm-management')) {
+            navigate(`${location.pathname}?search=${encodeURIComponent(searchQuery)}`);
+            toast.success(`Filtering farms for: ${searchQuery}`);
+        } else {
+            // Navigate to farms page and pass the search query in URL
+            toast.loading('Searching...', { duration: 500 });
+            setTimeout(() => {
+                navigate(`/dashboard/${userType}/farm-management?search=${encodeURIComponent(searchQuery)}`);
+                toast.success(`Showing results for: ${searchQuery}`);
+            }, 500);
+        }
+    };
 
     // Check if any queries are fetching to show preloader
     const isFetching = queryClient.isFetching() > 0;
@@ -95,7 +115,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const activeNotifications = userType === 'agent' ? notifications : agentNotifications;
 
     return (
-        <div className={`h-screen overflow-hidden font-manrope ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
+        <div className={`h-screen overflow-hidden font-inter ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
             {/* Full-page preloader only on initial app boot if needed, otherwise rely on skeletons */}
             {/* Preloader removed to improve perceived performance */}
             <div className="flex h-full">
@@ -122,9 +142,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                         'investor-matches': userType === 'agent' ? '/dashboard/agent/investor-farmer-matches' : `/dashboard/${userType}/investor-matches`,
                                         'training-sessions': userType === 'agent' ? '/dashboard/agent/training-performance' : `/dashboard/${userType}/training-sessions`,
                                         'farm-management': userType === 'agent' ? '/dashboard/agent/farm-management' : `/dashboard/${userType}/farm-management`,
+                                        'tasks-alerts': '/dashboard/agent/tasks',
                                         'notifications': userType === 'agent' ? '/dashboard/agent/notifications-center' : `/dashboard/${userType}/notifications`,
                                         'farmers-management': '/dashboard/agent/farmers-management',
-                                        'dispute-management': '/dashboard/agent/dispute-management',
+                                        'media-gallery': '/dashboard/agent/media',
+                                        'performance': userType === 'agent' ? '/dashboard/agent/performance' : `/dashboard/${userType}/performance`,
                                         // Super Admin Routes
                                         'regional-performance': '/dashboard/super-admin/regions',
                                         'agent-accountability': '/dashboard/super-admin/agents',
@@ -145,7 +167,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
                 {/* Desktop Sidebar */}
                 {!isMobile && (
-                    <div className={`${userType === 'grower' ? 'w-64' : (sidebarCollapsed ? 'w-16' : 'w-64')} ${darkMode ? 'bg-white' : 'bg-[#002f37]'} flex-shrink-0 transition-all duration-300 border-r ${darkMode ? 'border-gray-200' : 'border-gray-800'}`}>
+                    <div className={`${userType === 'grower' ? 'w-64' : (sidebarCollapsed ? 'w-16' : 'w-72')} bg-[#065f46] flex-shrink-0 transition-all duration-300 shadow-xl`}>
                         <DashboardSidebar
                             userType={userType || ''}
                             sidebarCollapsed={sidebarCollapsed}
@@ -156,112 +178,97 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 )}
 
                 {/* Main Content Area */}
-                <div className={`flex-1 flex flex-col overflow-hidden transition-colors ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
+                <div className={`flex-1 flex flex-col overflow-hidden transition-colors bg-[#f8fafc]`}>
                     {/* Top Header */}
-                    <header className={`${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white border-gray-200'} border-b px-4 py-3 sm:px-6 sm:py-4 transition-colors sticky top-0 z-20`}>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
+                    <header className="bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 md:px-8 py-0 sticky top-0 z-20 shadow-sm">
+                        <div className="flex items-center justify-between h-[68px]">
+
+                            {/* Left: Mobile menu + Search */}
+                            <div className="flex items-center gap-4 flex-1 min-w-0">
                                 {isMobile && (
-                                    <Button variant="ghost" size="icon" onClick={() => setMobileSidebarOpen(true)} className="md:hidden -ml-2">
-                                        <Menu className={`h-6 w-6 ${darkMode ? 'text-white' : 'text-gray-900'}`} />
+                                    <Button variant="ghost" size="icon" onClick={() => setMobileSidebarOpen(true)} className="md:hidden -ml-2 shrink-0">
+                                        <Menu className="h-5 w-5 text-gray-600" />
                                     </Button>
                                 )}
-                                <div>
-                                    <h1 className={`dashboard-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>{currentTitle}</h1>
-                                    {effectiveSubtitle && <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{effectiveSubtitle}</p>}
-                                </div>
+                                {/* Premium Search Bar */}
+                                <form onSubmit={handleSearch} className="hidden md:flex relative max-w-sm w-full group">
+                                    <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                                        <Search className="h-4 w-4 text-gray-400 group-focus-within:text-[#065f46] transition-colors duration-200" />
+                                    </div>
+                                    <input
+                                        type="search"
+                                        placeholder="Search farmer, farm, ID…"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full bg-[#f1f5f9] border border-transparent rounded-full py-2.5 pl-11 pr-[90px] text-[14px] text-gray-700 font-inter font-medium focus:bg-white focus:border-[#065f46]/30 focus:ring-4 focus:ring-[#065f46]/8 transition-all outline-none placeholder:text-gray-400 placeholder:font-normal"
+                                    />
+                                    <button
+                                        type="submit"
+                                        className="absolute inset-y-1.5 right-1.5 px-5 bg-[#065f46] hover:bg-[#065f46]/90 text-white text-xs font-semibold rounded-full transition-all flex items-center gap-1 shadow-sm"
+                                        style={{ opacity: searchQuery ? 1 : 0, pointerEvents: searchQuery ? 'auto' : 'none' }}
+                                    >
+                                        Search
+                                    </button>
+                                </form>
                             </div>
 
-                            <div className="flex items-center gap-2 sm:gap-4">
+                            {/* Right: Actions + Profile */}
+                            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                                 {headerActions}
+
+                                {/* Notification Bell */}
                                 <Button
                                     variant="ghost"
-                                    size="sm"
-                                    className={`flex items-center gap-2 rounded-full p-2 ${darkMode ? 'text-gray-300 hover:bg-gray-800 hover:text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-                                    onClick={toggleDarkMode}
+                                    size="icon"
+                                    className="relative h-10 w-10 rounded-full text-gray-500 hover:text-[#065f46] hover:bg-[#065f46]/8 transition-all"
                                 >
-                                    {darkMode ? <Sun className="h-5 w-5 text-yellow-400" /> : <Moon className="h-5 w-5 text-gray-600" />}
-                                    <span className="hidden sm:inline ml-1 font-medium">{darkMode ? 'Light' : 'Dark'}</span>
+                                    <Bell className="h-[18px] w-[18px]" />
+                                    {activeNotifications.filter(n => !n.read).length > 0 && (
+                                        <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#7ede56] border-2 border-white shadow-sm"></span>
+                                    )}
+                                </Button>
+                                 {/* Settings */}
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-10 w-10 rounded-full text-gray-500 hover:text-[#065f46] hover:bg-[#065f46]/8 transition-all"
+                                    onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/profile' : `/dashboard/${userType}/settings`)}
+                                >
+                                    <Settings className="h-[18px] w-[18px]" />
                                 </Button>
 
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className={`relative flex items-center gap-2 ${darkMode ? 'bg-transparent border-gray-600 text-white hover:bg-gray-800' : ''}`}
-                                        >
-                                            <Bell className="h-4 w-4" />
-                                            {activeNotifications.filter(n => !n.read).length > 0 && (
-                                                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-rose-600 text-[10px] font-black text-white flex items-center justify-center border-2 border-white dark:border-[#002f37]">
-                                                    {activeNotifications.filter(n => !n.read).length}
-                                                </span>
-                                            )}
-                                            <span className="hidden sm:inline font-medium">Notifications</span>
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-80 p-0 border-none shadow-2xl" align="end">
-                                        <div className={`p-4 border-b ${darkMode ? 'bg-gray-950 border-gray-800' : 'bg-gray-50 border-gray-100'}`}>
-                                            <div className="flex items-center justify-between">
-                                                <h3 className={`font-black uppercase tracking-widest text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Latest Updates</h3>
-                                                <Badge variant="outline" className="text-[9px] font-bold border-none bg-emerald-100 text-emerald-700">
-                                                    {activeNotifications.filter(n => !n.read).length} New
-                                                </Badge>
-                                            </div>
-                                        </div>
-                                        <div className={`max-h-[350px] overflow-y-auto ${darkMode ? 'bg-gray-950' : 'bg-white'}`}>
-                                            {activeNotifications.slice(0, 5).map((notif) => (
-                                                <DropdownMenuItem
-                                                    key={notif._id || notif.id}
-                                                    className={`p-4 cursor-pointer focus:bg-emerald-50 dark:focus:bg-emerald-900/20 border-b last:border-none ${darkMode ? 'border-gray-800' : 'border-gray-50'}`}
-                                                    onClick={() => navigate(`/dashboard/${userType}/notifications-center`)}
-                                                >
-                                                    <div className="flex gap-3 w-full">
-                                                        <div className={`h-8 w-8 rounded-full flex-shrink-0 flex items-center justify-center ${notif.type === 'alert' ? 'bg-rose-100 text-rose-600' :
-                                                            notif.type === 'training' ? 'bg-purple-100 text-purple-600' :
-                                                                'bg-blue-100 text-blue-600'
-                                                            }`}>
-                                                            <Bell className="h-4 w-4" />
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className={`text-xs font-bold leading-tight mb-1 truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>{notif.title}</p>
-                                                            <p className="text-[10px] text-gray-400 font-medium">{notif.time}</p>
-                                                        </div>
-                                                        {!notif.read && <div className="h-2 w-2 rounded-full bg-emerald-500 mt-1"></div>}
-                                                    </div>
-                                                </DropdownMenuItem>
-                                            ))}
-                                        </div>
-                                        <div className={`p-3 border-t text-center ${darkMode ? 'bg-gray-950 border-gray-800' : 'bg-gray-50 border-gray-100'}`}>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="w-full text-[10px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-100"
-                                                onClick={() => navigate(`/dashboard/${userType}/notifications-center`)}
-                                            >
-                                                View All Notifications
-                                            </Button>
-                                        </div>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                {/* Divider */}
+                                <div className="hidden sm:block w-px h-8 bg-gray-100 mx-2" />
 
+                                {/* User Profile */}
                                 <div
-                                    className={`flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'}`}
-                                    onClick={() => navigate(`/dashboard/${userType}/settings`)}
+                                    className="flex items-center gap-3 cursor-pointer group"
+                                    onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/profile' : `/dashboard/${userType}/settings`)}
                                 >
-                                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-[#7ede56]">
-                                        <AvatarFallback className="bg-[#002f37] text-white text-xs sm:text-sm font-semibold hover:bg-emerald-800 transition-colors">
-                                            {agent?.name ? agent.name.split(' ').map(n => n[0]).join('') : 'AD'}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div className="hidden sm:flex flex-col items-start min-w-0">
-                                        <span className={`text-sm font-semibold truncate max-w-[120px] ${darkMode ? 'text-white' : 'text-gray-900'}`}>{agent?.name || 'Loading...'}</span>
-                                        <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                            {(userType || 'user').split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                    {/* Text info */}
+                                    <div className="hidden sm:flex flex-col items-end">
+
+                                        <span className="text-[14px] font-semibold text-gray-900 group-hover:text-[#065f46] transition-colors leading-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                            {agent?.name ? agent.name : <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />}
                                         </span>
+                                        <span className="text-[11px] font-bold text-[#065f46] uppercase tracking-wider leading-tight">
+                                            {agent?.role === 'super_admin' ? 'Super Admin' : agent?.role === 'supervisor' ? 'Supervisor' : 'Field Agent'}
+                                        </span>
+                                    </div>
+
+                                    {/* Avatar with gradient ring */}
+                                    <div className="relative">
+                                        <div className="absolute -inset-0.5 rounded-full bg-gradient-to-br from-[#065f46] to-[#7ede56] opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                                        <Avatar className="relative h-10 w-10 border-2 border-white shadow-sm">
+                                            <AvatarImage src={agent?.avatar} />
+                                            <AvatarFallback className="bg-[#065f46] text-white text-sm font-bold" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                                {agent?.name ? agent.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : ''}
+                                            </AvatarFallback>
+                                        </Avatar>
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </header>
 
@@ -413,3 +420,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 };
 
 export default DashboardLayout;
+
+
+
+

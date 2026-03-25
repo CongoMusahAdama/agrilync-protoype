@@ -36,7 +36,8 @@ exports.getDashboardStats = async (req, res) => {
             totalLogs,
             reportsCount,
             todayLogins,
-            sessionLogs
+            sessionLogs,
+            uniqueInvestors
         ] = await withTimeout(Promise.all([
             Agent.distinct('region'),
             Agent.countDocuments({ role: 'supervisor' }),
@@ -53,7 +54,8 @@ exports.getDashboardStats = async (req, res) => {
                 createdAt: { $gte: today }
             })
                 .sort({ createdAt: 1 })
-                .limit(1000) // Safety limit to avoid slow response on large logs
+                .limit(1000), // Safety limit to avoid slow response on large logs
+            Match.distinct('investor') // Get unique investors
         ]));
 
         // Calculate average session duration for today (optimized for limited log set)
@@ -92,6 +94,7 @@ exports.getDashboardStats = async (req, res) => {
             totalFarms: totalFarms,
             totalFarmers: totalFarmers,
             activePartnerships: activePartnerships,
+            totalInvestors: uniqueInvestors.length,
             criticalAlerts: criticalAlerts,
             totalLogs: totalLogs,
             reportsCount: reportsCount,
@@ -307,3 +310,42 @@ exports.getUsersList = async (req, res) => {
         res.json([]);
     }
 };
+
+// @route   GET api/super-admin/farmers
+// @desc    Get all farmers with contact and investor information
+exports.getAllFarmers = async (req, res) => {
+    try {
+        const farmers = await withTimeout(
+            Farmer.find()
+                .select('name email contact region farmSize cropsGrown status investmentInterest investmentStatus')
+                .populate('agent', 'name')
+                .sort({ createdAt: -1 })
+                .lean()
+        );
+
+        if (farmers.length === 0) throw new Error('Empty');
+
+        // Transform data to match frontend expectations
+        const transformedFarmers = farmers.map((farmer, index) => ({
+            id: farmer._id,
+            name: farmer.name,
+            email: farmer.email || `${farmer.name.toLowerCase().replace(/\s+/g, '.')}@agrilync.com`,
+            phone: farmer.contact || '+233 24 000 0000',
+            region: farmer.region,
+            farmName: `${farmer.name}'s Farm`,
+            crop: farmer.cropsGrown || 'Mixed Crops',
+            acreage: farmer.farmSize || 0,
+            status: farmer.status === 'active' ? 'Active' : farmer.status === 'inactive' ? 'Inactive' : 'Pending',
+            hasInvestor: farmer.investmentStatus === 'Matched' || farmer.investmentStatus === 'Active',
+            investorName: farmer.investmentStatus === 'Matched' || farmer.investmentStatus === 'Active' ? 'Investment Partner' : null,
+            matchDate: farmer.investmentStatus === 'Matched' || farmer.investmentStatus === 'Active' ? new Date(farmer.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : null,
+            agentName: farmer.agent?.name || 'Unassigned'
+        }));
+
+        res.json(transformedFarmers);
+    } catch (err) {
+        console.error('Error in getAllFarmers:', err);
+        res.json([]);
+    }
+};
+

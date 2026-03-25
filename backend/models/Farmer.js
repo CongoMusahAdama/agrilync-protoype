@@ -58,6 +58,14 @@ const farmerSchema = new mongoose.Schema({
     livestockType: { type: String },
     idCardFront: { type: String },
     idCardBack: { type: String },
+    ghanaCardNumber: { type: String, unique: true, sparse: true },
+    verificationConfirmed: { type: Boolean, default: false },
+    gpsLocation: {
+        lat: { type: Number },
+        lng: { type: Number }
+    },
+    imageHash: { type: String },
+    flags: [{ type: String }],
     fieldNotes: { type: String },
     investmentInterest: {
         type: String,

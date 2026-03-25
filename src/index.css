@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700;1,800&family=Montserrat:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500&family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -43,7 +43,76 @@
     --deep-teal: 190 100% 11%;
     --light-green: 95 60% 64%;
     --purple: 280 51% 27%;
+
+    /* Performance Redesign Colors */
+    --teal: #002f37;
+    --green: #177209;
+    --lgreen: #7ede56;
+    --magenta-hex: #921573;
+    --mint: #f4ffee;
+    --amber: #d97706;
+    --red: #dc2626;
+    --gray100: #f3f4f6;
   }
+}
+
+/* Redesign Component Classes */
+.kpi-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid var(--gray100);
+  padding: 18px 20px;
+  box-shadow: 0 2px 12px rgba(0, 47, 55, 0.08);
+  transition: all 0.3s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 47, 55, 0.12);
+}
+
+.page-performance {
+  font-family: 'Nunito Sans', 'Inter', sans-serif;
+}
+
+.grid-21 {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .grid-21 {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--teal);
+  opacity: 0.6;
+}
+
+.donut-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+}
+
+.donut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.kpi-trend-bar {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @layer base {
@@ -53,7 +122,42 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', 'Poppins', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', 'Helvetica', 'Arial', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: clamp(48px, 8vw, 72px);
+    line-height: 1.1;
+  }
+
+  h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: clamp(32px, 5vw, 48px);
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: clamp(22px, 3vw, 28px);
+    line-height: 1.3;
+  }
+
+  p {
+    font-family: 'Inter', 'Helvetica', 'Arial', sans-serif;
+    font-size: clamp(16px, 2vw, 18px);
+    font-weight: 400;
+  }
+
+  button {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
   }
 
   .hero-gradient {
@@ -390,6 +494,10 @@
   font-family: 'Playfair Display', serif;
 }
 
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
 .font-outfit {
   font-family: 'Outfit', sans-serif;
 }
@@ -664,57 +772,62 @@
   }
 }
 
-.animate-fade-in-up {
-  animation: slideInUp 0.8s ease-out forwards;
-}
-
-/* Shine Text Animation */
-@keyframes shineText {
+@keyframes bookFlip {
   0% {
-    background-position: -200% center;
+    transform: perspective(2000px) rotateY(0deg);
+    opacity: 1;
   }
-
-  100% {
-    background-position: 200% center;
-  }
-}
-
-.animate-pulse-text {
-  background: linear-gradient(90deg,
-      #374151 0%,
-      #6b7280 50%,
-      #374151 100%);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shineText 3s linear infinite;
-  font-weight: 900;
-}
-
-/* Hero Glow Animation for "Smarter Access" */
-@keyframes heroGlow {
-  0% {
-    color: #7ede56;
-    text-shadow: 0 0 10px rgba(126, 222, 86, 0.2);
-  }
-
   50% {
-    color: #a3f482;
-    text-shadow: 0 0 20px rgba(126, 222, 86, 0.6);
-    transform: scale(1.02);
+    transform: perspective(2000px) rotateY(-90deg);
+    opacity: 0.5;
   }
-
   100% {
-    color: #7ede56;
-    text-shadow: 0 0 10px rgba(126, 222, 86, 0.2);
+    transform: perspective(2000px) rotateY(-180deg);
+    opacity: 0;
   }
 }
 
-.animate-hero-glow {
-  display: inline-block;
-  animation: heroGlow 3s ease-in-out infinite;
+@keyframes pageRotate {
+  0% {
+    transform: perspective(2000px) rotateY(90deg);
+    opacity: 0;
+  }
+  100% {
+    transform: perspective(2000px) rotateY(0deg);
+    opacity: 1;
+  }
 }
+
+.animate-book-flip {
+  animation: bookFlip 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-page-rotate {
+  animation: pageRotate 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slowZoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
+}
+
+.hover-slow-zoom:hover img {
+  animation: slowZoom 8s ease-in-out infinite alternate;
+}
+
+.perspective-3000 {
+  perspective: 3000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+
 
 /* Hide scrollbar but keep functionality */
 .scrollbar-hide {

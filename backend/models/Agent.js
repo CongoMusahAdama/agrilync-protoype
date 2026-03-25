@@ -11,6 +11,8 @@ const agentSchema = new mongoose.Schema({
     region: { type: String, required: true },
     districts: [String],
     contact: { type: String },
+    gender: { type: String, enum: ['male', 'female', 'other'], default: 'other' },
+    dob: { type: Date },
     hasChangedPassword: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
     verificationStatus: {
@@ -41,7 +43,19 @@ const agentSchema = new mongoose.Schema({
         trainingsAttended: { type: Number, default: 0 }
     },
     isLoggedIn: { type: Boolean, default: false },
-    currentSessionId: { type: String, default: null }
+    currentSessionId: { type: String, default: null },
+    notificationPreferences: {
+        email: { type: Boolean, default: true },
+        sms: { type: Boolean, default: true },
+        push: { type: Boolean, default: true },
+        marketing: { type: Boolean, default: false }
+    },
+    appPreferences: {
+        language: { type: String, default: 'English' },
+        theme: { type: String, default: 'light' },
+        highContrast: { type: Boolean, default: false },
+        compactView: { type: Boolean, default: false }
+    }
 }, { timestamps: true });
 
 // Hash password before saving

@@ -26,8 +26,6 @@ interface FarmJourneyModalProps {
 const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange, farmer }) => {
     const { darkMode } = useDarkMode();
 
-    if (!farmer) return null;
-
     // Data State
     const [farm, setFarm] = useState<any>(null);
     const [loading, setLoading] = useState(false);
@@ -67,6 +65,21 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
     const [addingFarm, setAddingFarm] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleCloseActivityDialog = () => {
+        setNewActivity({ 
+            date: new Date().toISOString().split('T')[0], 
+            activity: '', 
+            description: '', 
+            resources: '', 
+            additionalField1: '',
+            additionalField2: '',
+            media: [] 
+        });
+        setShowActivityDialog(false);
+    };
+
+
 
     // Determine farm type from farmer's farmType field
     const farmType = farmer?.farmType?.toLowerCase() || 'crop';
@@ -259,7 +272,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
 
         // Find districts for the region (handle both "Ashanti" and "Ashanti Region" naming)
         const regionKey = Object.keys(GHANA_REGIONS).find(
-            key => key.toLowerCase().includes(farmer.region.toLowerCase())
+            key => key.toLowerCase().includes(farmer?.region?.toLowerCase() || '')
         );
 
         if (!regionKey) return ["Other (Specify)"];
@@ -320,13 +333,13 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                 title: 'Stage Updated!',
                 html: `
                     <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                        <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
                             Farm stage updated to <strong>${newStage.charAt(0).toUpperCase() + newStage.slice(1)}</strong>
                         </p>
                     </div>
                 `,
                 confirmButtonText: 'OK',
-                confirmButtonColor: '#7ede56',
+                confirmButtonColor: '#065f46',
                 timer: 2000,
                 timerProgressBar: true
             });
@@ -336,18 +349,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
         }
     };
 
-    const handleCloseActivityDialog = () => {
-        setNewActivity({ 
-            date: new Date().toISOString().split('T')[0], 
-            activity: '', 
-            description: '', 
-            resources: '', 
-            additionalField1: '',
-            additionalField2: '',
-            media: [] 
-        });
-        setShowActivityDialog(false);
-    };
+
 
     const handleSaveActivity = async () => {
         if (!newActivity.date || !newActivity.activity || !farm) return;
@@ -368,6 +370,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
             if (newActivity.additionalField1) {
                 activity.additionalField1 = newActivity.additionalField1;
             }
+            
             if (newActivity.additionalField2) {
                 activity.additionalField2 = newActivity.additionalField2;
             }
@@ -392,13 +395,13 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                 title: 'Activity Logged!',
                 html: `
                     <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                        <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
                             Activity logged successfully!
                         </p>
                     </div>
                 `,
                 confirmButtonText: 'OK',
-                confirmButtonColor: '#7ede56',
+                confirmButtonColor: '#065f46',
                 timer: 2000,
                 timerProgressBar: true
             });
@@ -448,13 +451,13 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                 title: 'Farm Registered!',
                 html: `
                     <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #059669; margin: 15px 0;">
+                        <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
                             Farm registered successfully! You can now track the journey.
                         </p>
                     </div>
                 `,
                 confirmButtonText: 'Start Tracking',
-                confirmButtonColor: '#7ede56',
+                confirmButtonColor: '#065f46',
                 timer: 2500,
                 timerProgressBar: true
             });
@@ -509,23 +512,23 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
     const getStageColor = (stage: string) => {
         if (isLivestock) {
             switch (stage) {
-                case 'planning': return { bg: '#7ede56', textOnLight: '#0f5132', textOnDark: '#ffffff' };
+                case 'planning': return { bg: '#065f46', textOnLight: '#ffffff', textOnDark: '#ffffff' };
                 case 'acquisition': return { bg: '#3b82f6', textOnLight: '#1e40af', textOnDark: '#ffffff' };
                 case 'rearing': return { bg: '#8b5cf6', textOnLight: '#5b21b6', textOnDark: '#ffffff' };
                 case 'health': return { bg: '#ef4444', textOnLight: '#991b1b', textOnDark: '#ffffff' };
                 case 'production': return { bg: '#10b981', textOnLight: '#065f46', textOnDark: '#ffffff' };
                 case 'marketing': return { bg: '#f59e0b', textOnLight: '#92400e', textOnDark: '#ffffff' };
-                case 'maintenance': return { bg: '#5fd646', textOnLight: '#0f5132', textOnDark: '#ffffff' };
+                case 'maintenance': return { bg: '#065f46', textOnLight: '#ffffff', textOnDark: '#ffffff' };
                 case 'other': return { bg: '#ffb547', textOnLight: '#8a4a00', textOnDark: '#ffffff' };
                 default: return { bg: '#6b7280', textOnLight: '#374151', textOnDark: '#ffffff' };
             }
         } else {
             switch (stage) {
-                case 'planning': return { bg: '#7ede56', textOnLight: '#0f5132', textOnDark: '#ffffff' };
+                case 'planning': return { bg: '#065f46', textOnLight: '#ffffff', textOnDark: '#ffffff' };
                 case 'planting': return { bg: '#ffa500', textOnLight: '#8a4a00', textOnDark: '#ffffff' };
                 case 'growing': return { bg: '#ff6347', textOnLight: '#7c1f0a', textOnDark: '#ffffff' };
-                case 'harvesting': return { bg: '#921573', textOnLight: '#5e0e4a', textOnDark: '#ffffff' };
-                case 'maintenance': return { bg: '#5fd646', textOnLight: '#0f5132', textOnDark: '#ffffff' };
+                case 'harvesting': return { bg: '#065f46', textOnLight: '#ffffff', textOnDark: '#ffffff' };
+                case 'maintenance': return { bg: '#065f46', textOnLight: '#ffffff', textOnDark: '#ffffff' };
                 case 'other': return { bg: '#ffb547', textOnLight: '#8a4a00', textOnDark: '#ffffff' };
                 default: return { bg: '#6b7280', textOnLight: '#374151', textOnDark: '#ffffff' };
             }
@@ -539,7 +542,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent className={`max-w-6xl w-full h-[60vh] flex items-center justify-center ${darkMode ? 'bg-[#002f37] border-white/10 text-white' : 'bg-white'}`}>
                     <div className="flex flex-col items-center gap-4">
-                        <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
+                        <div className="w-12 h-12 border-4 border-[#065f46]/20 border-t-[#065f46] rounded-full animate-spin" />
                         <p className={darkMode ? 'text-gray-200' : 'text-gray-500'}>Loading farm details...</p>
                     </div>
                 </DialogContent>
@@ -552,22 +555,22 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
             <DialogContent className={`max-w-6xl w-[95vw] sm:w-full max-h-[95vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white'}`}>
                 <DialogHeader className="mb-4">
                     <DialogTitle className={`flex items-center gap-3 text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        <div className={`p-2 rounded-lg ${darkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-600'}`}>
+                        <div className={`p-2 rounded-lg ${darkMode ? 'bg-[#065f46]/20 text-[#065f46]' : 'bg-[#065f46]/10 text-[#065f46]'}`}>
                             <Leaf className="h-6 w-6" />
                         </div>
                         Farm Journey Tracker
                     </DialogTitle>
                     <DialogDescription className={`text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                        Manage and track the agricultural lifecycle for <span className="font-semibold text-emerald-500">{farmer?.name}</span>
+                        Manage and track the agricultural lifecycle for <span className="font-semibold text-[#065f46]">{farmer?.name}</span>
                     </DialogDescription>
                 </DialogHeader>
 
                 {!farm ? (
                     <div className="py-12 max-w-2xl mx-auto w-full">
                         <Card className={`${darkMode ? 'bg-[#003d47] border-white/10' : 'bg-gray-50 border-gray-200'} shadow-2xl overflow-hidden`}>
-                            <div className={`h-2 bg-emerald-500`} />
+                            <div className={`h-2 bg-[#065f46]`} />
                             <CardHeader className="text-center pb-2">
-                                <div className={`p-4 rounded-full mx-auto mb-4 w-fit ${darkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-600'}`}>
+                                <div className={`p-4 rounded-full mx-auto mb-4 w-fit ${darkMode ? 'bg-[#065f46]/20 text-[#065f46]' : 'bg-[#065f46]/10 text-[#065f46]'}`}>
                                     <Sprout className="w-10 h-10" />
                                 </div>
                                 <CardTitle className={`text-3xl font-bold ${darkMode ? 'text-white' : ''}`}>Register a Farm</CardTitle>
@@ -600,7 +603,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                 </SelectTrigger>
                                                 <SelectContent className={darkMode ? 'bg-[#002f37] border-white/20 text-white' : ''}>
                                                     {availableCommunities.map((comm) => (
-                                                        <SelectItem key={comm} value={comm} className={darkMode ? 'focus:bg-emerald-500/20 focus:text-white' : ''}>
+                                                        <SelectItem key={comm} value={comm} className={darkMode ? 'focus:bg-[#065f46]/20 focus:text-white' : ''}>
                                                             {comm}
                                                         </SelectItem>
                                                     ))}
@@ -622,7 +625,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                     <Button
                                         type="submit"
                                         disabled={addingFarm}
-                                        className="w-full bg-[#7ede56] hover:bg-[#6bc947] text-white h-14 text-xl font-bold mt-4 shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.01]"
+                                        className="w-full bg-[#065f46] hover:bg-[#065f46]/90 text-white h-14 text-xl font-bold mt-4 shadow-lg shadow-[#065f46]/20 transition-all hover:scale-[1.01] border-none"
                                     >
                                         {addingFarm ? (
                                             <>
@@ -646,8 +649,8 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div>
                                         <CardTitle className={`flex items-center gap-2 text-xl sm:text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                            <Leaf className="h-6 w-6 text-[#7ede56]" />
-                                            Farm: <span className="text-[#7ede56]">{farm.name}</span>
+                                            <Leaf className="h-6 w-6 text-[#065f46]" />
+                                            Farm: <span className="text-[#065f46]">{farm.name}</span>
                                         </CardTitle>
                                         <CardDescription className={`mt-2 text-base ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                             Agricultural cycle tracking in <span className="font-semibold">{farm.location}</span>
@@ -657,7 +660,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                         <div className="flex flex-col gap-1">
                                             <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Update Current Stage</span>
                                             <Select value={currentStage} onValueChange={(val) => handleUpdateStage(val)}>
-                                                <SelectTrigger className={`h-12 w-full sm:w-56 border-2 border-[#7ede56] ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white'}`}>
+                                                <SelectTrigger className={`h-12 w-full sm:w-56 border-2 border-[#065f46] ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white'}`}>
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent className={darkMode ? 'bg-[#002f37] border-white/20 text-white' : ''}>
@@ -685,7 +688,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                     {/* Connection Line */}
                                     <div className={`absolute top-6 sm:top-7 left-8 right-8 h-1.5 rounded-full ${darkMode ? 'bg-white/10' : 'bg-gray-100'}`}>
                                         <div
-                                            className="h-full bg-gradient-to-r from-[#7ede56] to-[#6bc947] rounded-full transition-all duration-700 ease-in-out"
+                                            className="h-full bg-gradient-to-r from-[#065f46] to-[#044a37] rounded-full transition-all duration-700 ease-in-out"
                                             style={{
                                                 width: `${((stages.indexOf(currentStage) + 0.5) / stages.length) * 100}%`
                                             }}
@@ -731,9 +734,9 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                             return (
                                                 <div key={stage} className="flex flex-col items-center flex-1">
                                                     <div className={`relative z-10 w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-500 scale-100 hover:scale-110 cursor-pointer ${isCompleted
-                                                        ? 'bg-[#7ede56] shadow-xl shadow-emerald-500/30'
+                                                        ? 'bg-[#065f46] shadow-xl shadow-[#065f46]/30'
                                                         : isCurrent
-                                                            ? 'bg-[#7ede56] ring-4 ring-emerald-500/20 shadow-xl shadow-emerald-500/40'
+                                                            ? 'bg-[#065f46] ring-4 ring-[#065f46]/20 shadow-xl shadow-[#065f46]/40'
                                                             : darkMode ? 'bg-gray-800 border-2 border-white/10' : 'bg-white border-2 border-gray-200'
                                                         }`}>
                                                         {isUpcoming ? (
@@ -744,7 +747,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                     </div>
 
                                                     <div className="mt-4 text-center">
-                                                        <p className={`text-sm sm:text-base font-bold transition-colors ${isCurrent ? 'text-[#7ede56] scale-105' : isCompleted ? (darkMode ? 'text-white' : 'text-gray-800') : (darkMode ? 'text-gray-500' : 'text-gray-400')
+                                                        <p className={`text-sm sm:text-base font-bold transition-colors ${isCurrent ? 'text-[#065f46] scale-105' : isCompleted ? (darkMode ? 'text-white' : 'text-gray-800') : (darkMode ? 'text-gray-500' : 'text-gray-400')
                                                             }`}>
                                                             {stage === 'acquisition' ? 'Acquisition' :
                                                              stage === 'rearing' ? 'Rearing' :
@@ -754,7 +757,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                              stage.charAt(0).toUpperCase() + stage.slice(1)}
                                                         </p>
                                                         {isCurrent && (
-                                                            <Badge className="bg-[#7ede56] text-white font-bold mt-1 animate-pulse">Active</Badge>
+                                                            <Badge className="bg-[#065f46] text-white font-bold mt-1 animate-pulse">Active</Badge>
                                                         )}
                                                     </div>
                                                 </div>
@@ -771,17 +774,17 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <CardTitle className={`flex items-center gap-2 text-xl sm:text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                                <Activity className={`h-6 w-6 sm:h-7 sm:w-7 ${darkMode ? 'text-[#7ede56]' : 'text-emerald-600'}`} />
+                                                <Activity className={`h-6 w-6 sm:h-7 sm:w-7 text-[#065f46]`} />
                                                 Activity Log
                                             </CardTitle>
                                             <CardDescription className={`text-sm sm:text-base mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                                Tracking <span className="font-bold text-emerald-500 uppercase">{activeStageTab}</span> phase
+                                                Tracking <span className="font-bold text-[#065f46] uppercase">{activeStageTab}</span> phase
                                             </CardDescription>
                                         </div>
                                         <Button
                                             onClick={openActivityDialog}
                                             size="sm"
-                                            className="sm:hidden bg-[#7ede56] hover:bg-[#6bc947] text-white font-bold h-10 px-4 rounded-lg shadow-lg shadow-emerald-500/20"
+                                            className="sm:hidden bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold h-10 px-4 rounded-lg shadow-lg shadow-emerald-500/20 border-none"
                                         >
                                             <Plus className="h-5 w-5" />
                                         </Button>
@@ -789,7 +792,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
 
                                     <Button
                                         onClick={openActivityDialog}
-                                        className="hidden sm:flex self-end bg-[#7ede56] hover:bg-[#6bc947] text-white font-bold px-8 h-12 rounded-xl shadow-lg shadow-emerald-500/20"
+                                        className="hidden sm:flex self-end bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold px-8 h-12 rounded-xl shadow-lg shadow-[#065f46]/20 border-none"
                                     >
                                         <Plus className="h-5 w-5 mr-2" />
                                         Log New Activity
@@ -808,7 +811,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                 className={`
                                                 relative px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-bold whitespace-nowrap transition-all rounded-t-xl
                                                 ${isActive
-                                                        ? `bg-[#7ede56]/10 text-[#7ede56] border-b-4 border-[#7ede56]`
+                                                        ? `bg-[#065f46]/10 text-[#065f46] border-b-4 border-[#065f46]`
                                                         : `text-gray-400 hover:text-gray-600 dark:hover:text-white border-b-4 border-transparent`
                                                     }
                                             `}
@@ -821,7 +824,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                      stage === 'marketing' ? 'Marketing' :
                                                      stage.charAt(0).toUpperCase() + stage.slice(1)}
                                                     {isCurrentStage && (
-                                                        <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-emerald-500 animate-ping"></div>
+                                                        <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-[#065f46] animate-ping"></div>
                                                     )}
                                                 </span>
                                             </button>
@@ -832,19 +835,19 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
 
                             <CardContent className="pt-6 sm:pt-8 min-h-[400px] px-4 sm:px-6">
                                 <div className="space-y-6">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4 border-white/5">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-4 border-b pb-4 border-white/5">
                                         <div className="flex items-center justify-between w-full sm:w-auto gap-4">
                                             <h3 className={`text-xl sm:text-2xl font-extrabold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                                                 {activeStageTab.charAt(0).toUpperCase() + activeStageTab.slice(1)} Feed
                                             </h3>
                                             {currentStage === activeStageTab ? (
-                                                <Badge className="bg-[#7ede56] text-white px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-sm font-bold uppercase tracking-wider">In Progress</Badge>
+                                                <Badge className="bg-[#065f46] text-white px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-sm font-bold uppercase tracking-wider">In Progress</Badge>
                                             ) : (
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => handleUpdateStage(activeStageTab)}
-                                                    className={`h-8 px-3 text-xs sm:text-sm font-bold border-2 ${darkMode ? 'border-[#7ede56] text-[#7ede56] hover:bg-[#7ede56]/10' : 'border-[#7ede56] text-[#0b8a62] hover:bg-[#7ede56]/10'}`}
+                                                    className={`h-8 px-3 text-xs sm:text-sm font-bold border-2 border-[#065f46] text-[#065f46] hover:bg-[#065f46]/10`}
                                                 >
                                                     Set Current
                                                 </Button>
@@ -888,7 +891,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                                     </p>
                                                                 )}
                                                                 {activity.resources && (
-                                                                    <div className={`flex items-start gap-2 p-3 rounded-xl ${darkMode ? 'bg-black/20 text-emerald-400' : 'bg-emerald-50 text-emerald-700'}`}>
+                                                                    <div className={`flex items-start gap-2 p-3 rounded-xl ${darkMode ? 'bg-black/20 text-[#065f46]' : 'bg-[#065f46]/10 text-[#065f46]'}`}>
                                                                         <Wrench className="h-4 w-4 sm:h-5 sm:w-5 mt-0.5 shrink-0" />
                                                                         <p className="text-xs sm:text-sm">
                                                                             <span className="font-bold uppercase text-[10px] block opacity-70">Resources</span>
@@ -905,7 +908,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                                             {item.type === 'image' ? (
                                                                                 <img src={item.url} alt={item.name} className="w-full h-full object-cover transition-transform group-hover:scale-125" />
                                                                             ) : (
-                                                                                <div className="w-full h-full flex items-center justify-center bg-gray-900 group-hover:bg-emerald-900 transition-colors">
+                                                                                <div className="w-full h-full flex items-center justify-center bg-gray-900 group-hover:bg-[#065f46]/20 transition-colors">
                                                                                     <Video className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
                                                                                 </div>
                                                                             )}
@@ -923,12 +926,12 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                             <Activity className={`h-16 w-16 sm:h-20 sm:w-20 mx-auto mb-4 sm:mb-6 opacity-10 ${darkMode ? 'text-white' : 'text-gray-900'}`} />
                                             <h4 className={`text-xl sm:text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>No activity footprint found</h4>
                                             <p className={`text-base sm:text-lg max-w-md mx-auto mb-6 sm:mb-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                Every cycle starts with a single log. Start tracking the <span className="text-emerald-500 font-bold">{activeStageTab}</span> stage progress now.
+                                                Every cycle starts with a single log. Start tracking the <span className="text-[#065f46] font-bold">{activeStageTab}</span> stage progress now.
                                             </p>
                                             <Button
                                                 variant="outline"
                                                 onClick={openActivityDialog}
-                                                className={`h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg font-bold rounded-2xl border-2 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all ${darkMode ? 'border-white/20 text-white' : 'border-emerald-500 text-emerald-600'}`}
+                                                className={`h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg font-bold rounded-2xl border-2 border-[#065f46] text-[#065f46] hover:bg-[#065f46] hover:text-white transition-all`}
                                             >
                                                 Log First Activity
                                             </Button>
@@ -944,7 +947,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                 <div className="flex-1 p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 overflow-y-auto max-h-[85vh]">
                                     <DialogHeader className="mb-2 sm:mb-4">
                                         <DialogTitle className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tighter">Log Stage Activity</DialogTitle>
-                                        <DialogDescription className={`text-sm sm:text-base lg:text-lg font-medium ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                                        <DialogDescription className={`text-sm sm:text-base lg:text-lg font-medium text-[#065f46]`}>
                                             Recording history for the <span className="uppercase font-bold">{activeStageTab}</span> phase
                                         </DialogDescription>
                                     </DialogHeader>
@@ -959,7 +962,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                     type="date"
                                                     value={newActivity.date}
                                                     onChange={(e) => setNewActivity({ ...newActivity, date: e.target.value })}
-                                                    className={`h-10 sm:h-12 text-sm sm:text-base lg:text-lg font-medium border-2 ${darkMode ? 'bg-black/20 border-white/10 focus:border-emerald-500' : 'bg-gray-50 border-gray-100'}`}
+                                                    className={`h-10 sm:h-12 text-sm sm:text-base lg:text-lg font-medium border-2 ${darkMode ? 'bg-black/20 border-white/10 focus:border-[#065f46]' : 'bg-gray-50 border-gray-100'}`}
                                                 />
                                             </div>
                                             <div className="space-y-2">
@@ -969,7 +972,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                     placeholder={stageConfig.activityPlaceholder}
                                                     value={newActivity.activity}
                                                     onChange={(e) => setNewActivity({ ...newActivity, activity: e.target.value })}
-                                                    className={`h-10 sm:h-12 text-sm sm:text-base lg:text-lg border-2 ${darkMode ? 'bg-black/20 border-white/10 focus:border-emerald-500 placeholder:text-gray-600' : 'bg-gray-50 border-gray-100'}`}
+                                                    className={`h-10 sm:h-12 text-sm sm:text-base lg:text-lg border-2 ${darkMode ? 'bg-black/20 border-white/10 focus:border-[#065f46] placeholder:text-gray-600' : 'bg-gray-50 border-gray-100'}`}
                                                 />
                                             </div>
                                         </div>
@@ -985,7 +988,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                             placeholder={field.placeholder}
                                                             value={(newActivity[field.key as keyof typeof newActivity] as string) || ''}
                                                             onChange={(e) => setNewActivity({ ...newActivity, [field.key]: e.target.value })}
-                                                            className={`h-10 sm:h-12 text-sm sm:text-base lg:text-lg border-2 ${darkMode ? 'bg-black/20 border-white/10 focus:border-emerald-500 placeholder:text-gray-600' : 'bg-gray-50 border-gray-100'}`}
+                                                            className={`h-10 sm:h-12 text-sm sm:text-base lg:text-lg border-2 ${darkMode ? 'bg-black/20 border-white/10 focus:border-[#065f46] placeholder:text-gray-600' : 'bg-gray-50 border-gray-100'}`}
                                                         />
                                                     </div>
                                                 ))}
@@ -1000,7 +1003,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                 placeholder={stageConfig.descriptionPlaceholder}
                                                 value={newActivity.description}
                                                 onChange={(e) => setNewActivity({ ...newActivity, description: e.target.value })}
-                                                className={`min-h-[100px] sm:min-h-[120px] text-sm sm:text-base lg:text-lg border-2 leading-relaxed ${darkMode ? 'bg-black/20 border-white/10 focus:border-emerald-500 placeholder:text-gray-600' : 'bg-gray-50 border-gray-100'}`}
+                                                className={`min-h-[100px] sm:min-h-[120px] text-sm sm:text-base lg:text-lg border-2 leading-relaxed ${darkMode ? 'bg-black/20 border-white/10 focus:border-[#065f46] placeholder:text-gray-600' : 'bg-gray-50 border-gray-100'}`}
                                             />
                                         </div>
 
@@ -1012,7 +1015,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                 placeholder={stageConfig.resourcesPlaceholder}
                                                 value={newActivity.resources}
                                                 onChange={(e) => setNewActivity({ ...newActivity, resources: e.target.value })}
-                                                className={`h-10 sm:h-12 text-sm sm:text-base lg:text-lg border-2 ${darkMode ? 'bg-black/20 border-white/10 focus:border-emerald-500 placeholder:text-gray-600' : 'bg-gray-50 border-gray-100'}`}
+                                                className={`h-10 sm:h-12 text-sm sm:text-base lg:text-lg border-2 ${darkMode ? 'bg-black/20 border-white/10 focus:border-[#065f46] placeholder:text-gray-600' : 'bg-gray-50 border-gray-100'}`}
                                             />
                                         </div>
                                     </div>
@@ -1029,8 +1032,8 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                         className={`
                                         flex-1 border-4 border-dashed rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 cursor-pointer transition-all hover:scale-[1.02] min-h-[150px] sm:min-h-[180px]
                                         ${darkMode
-                                                ? 'border-white/10 bg-white/5 hover:border-emerald-500/50 hover:bg-emerald-50/5'
-                                                : 'border-gray-200 bg-white hover:border-emerald-500/50 hover:bg-emerald-50'}
+                                                ? 'border-white/10 bg-white/5 hover:border-[#065f46]/50 hover:bg-[#065f46]/5'
+                                                : 'border-gray-200 bg-white hover:border-[#065f46]/50 hover:bg-[#065f46]/5'}
                                     `}
                                     >
                                         <input
@@ -1041,7 +1044,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                             accept="image/*,video/*"
                                             className="hidden"
                                         />
-                                        <div className={`p-3 sm:p-4 rounded-full mb-3 sm:mb-4 ${darkMode ? 'bg-white/10 text-white' : 'bg-emerald-100 text-emerald-600'}`}>
+                                        <div className={`p-3 sm:p-4 rounded-full mb-3 sm:mb-4 ${darkMode ? 'bg-white/10 text-white' : 'bg-[#065f46]/10 text-[#065f46]'}`}>
                                             <Upload className="h-6 w-6 sm:h-8 sm:w-8" />
                                         </div>
                                         <p className={`text-sm sm:text-base font-bold text-center ${darkMode ? 'text-white' : 'text-gray-700'}`}>
@@ -1058,7 +1061,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                         {item.type === 'image' ? (
                                                             <img src={item.url} alt="Preview" className="h-full w-full object-cover" />
                                                         ) : (
-                                                            <Video className="h-4 w-4 sm:h-6 sm:w-6 text-emerald-500" />
+                                                            <Video className="h-4 w-4 sm:h-6 sm:w-6 text-[#065f46]" />
                                                         )}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
@@ -1079,7 +1082,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                     <div className="mt-4 sm:mt-6 lg:mt-8 pt-4 sm:pt-6 border-t border-white/10 flex flex-col gap-2 sm:gap-3">
                                         <Button
                                             onClick={handleSaveActivity}
-                                            className="w-full bg-[#7ede56] hover:bg-[#6bc947] text-white font-black h-12 sm:h-14 rounded-xl sm:rounded-2xl text-sm sm:text-base lg:text-lg shadow-lg shadow-emerald-500/20"
+                                            className="w-full bg-[#065f46] hover:bg-[#065f46]/90 text-white font-black h-12 sm:h-14 rounded-xl sm:rounded-2xl text-sm sm:text-base lg:text-lg shadow-lg shadow-[#065f46]/20 border-none"
                                             disabled={!newActivity.date || !newActivity.activity || savingActivity}
                                         >
                                             {savingActivity ? (
@@ -1110,3 +1113,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
 };
 
 export default FarmJourneyModal;
+
+
+
+

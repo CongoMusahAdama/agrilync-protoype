@@ -11,21 +11,18 @@ import {
     Map as MapIcon,
     Search,
     Filter,
-    MoreHorizontal,
-    AlertCircle,
-    ArrowRight,
-    UserPlus,
-    Flag,
+    Phone,
+    Mail,
     Eye,
     Sprout,
     Download,
     ArrowUpRight,
     MapPin,
-    Zap,
     Building2,
-    ShieldCheck,
-    Navigation,
-    Clock
+    Users,
+    Handshake,
+    CheckCircle2,
+    XCircle
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
@@ -36,41 +33,57 @@ const FarmFarmerOversight = () => {
     const { darkMode } = useDarkMode();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
-    const [farms, setFarms] = useState<any[]>([]);
+    const [farmers, setFarmers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchFarms = async () => {
+        const fetchFarmers = async () => {
             try {
-                const res = await api.get('/super-admin/farms');
+                const res = await api.get('/super-admin/farmers');
                 if (res.data && res.data.length > 0) {
-                    setFarms(res.data);
+                    setFarmers(res.data);
                 } else {
                     throw new Error('Empty');
                 }
             } catch (err) {
-                console.error('Failed to fetch farms:', err);
-                setFarms([]);
+                console.error('Failed to fetch farmers:', err);
+                setFarmers([]);
             } finally {
                 setLoading(false);
             }
         };
-        fetchFarms();
+        fetchFarmers();
     }, []);
 
     const getStatusStyle = (status: string) => {
         switch (status.toLowerCase()) {
-            case 'active': return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+            case 'active': return 'bg-[#7ede56]/10 text-[#7ede56] border-[#7ede56]/20';
             case 'inactive': return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
             case 'needs attention': return 'bg-rose-500/10 text-rose-500 border-rose-500/20 animate-pulse';
             default: return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
         }
     };
 
+    const handleContact = (type: 'phone' | 'email', value: string, farmerName: string) => {
+        if (type === 'phone') {
+            window.location.href = `tel:${value}`;
+            toast.success(`Calling ${farmerName}...`);
+        } else {
+            window.location.href = `mailto:${value}`;
+            toast.success(`Opening email to ${farmerName}...`);
+        }
+    };
+
+    const totalFarmers = farmers.length;
+    const activeFarmers = farmers.filter(f => f.status.toLowerCase() === 'active').length;
+    const matchedFarmers = farmers.filter(f => f.hasInvestor).length;
+    const totalAcreage = farmers.reduce((sum, f) => sum + (f.acreage || 0), 0);
+
     const metrics = [
-        { title: 'Registered Assets', value: 1284, icon: Sprout, path: '/dashboard/super-admin/regions', color: 'bg-slate-950', iconColor: 'text-[#7ede56]', description: 'Total Live Farms' },
-        { title: 'Active Yields', value: 892, icon: Activity, path: '/dashboard/super-admin/regions', color: 'bg-[#002f37]', iconColor: 'text-white', description: 'Productive Plots' },
-        { title: 'Land Intensity', value: 15420, icon: MapIcon, path: '/dashboard/super-admin/regions', suffix: ' AC', color: 'bg-[#1e1b4b]', iconColor: 'text-white', description: 'Total Managed Acreage' },
+        { title: 'Total Farmers', value: totalFarmers, icon: Users, color: 'bg-slate-950', iconColor: 'text-[#7ede56]', description: 'Registered Farmers' },
+        { title: 'Active Farmers', value: activeFarmers, icon: Activity, color: 'bg-[#002f37]', iconColor: 'text-white', description: 'Currently Farming' },
+        { title: 'Matched Farmers', value: matchedFarmers, icon: Handshake, color: 'bg-[#1e1b4b]', iconColor: 'text-white', description: 'With Investors' },
+        { title: 'Total Acreage', value: Math.round(totalAcreage), icon: MapIcon, suffix: ' AC', color: 'bg-[#002f37]', iconColor: 'text-white', description: 'Under Cultivation' },
     ];
 
     return (
@@ -80,28 +93,28 @@ const FarmFarmerOversight = () => {
                 <div className="space-y-1">
                     <div className="flex items-center gap-3">
                         <div className="p-2 rounded-xl bg-[#7ede56]/10 text-[#7ede56]">
-                            <Building2 className="w-6 h-6" />
+                            <Users className="w-6 h-6" />
                         </div>
                         <h1 className={`text-2xl md:text-3xl font-black uppercase tracking-tighter ${darkMode ? 'text-white' : 'text-[#002f37]'}`}>
-                            Asset Oversight
+                            Farmer Oversight
                         </h1>
                     </div>
                     <p className={`text-[10px] font-bold uppercase tracking-[0.2em] ml-11 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        Real-time registry of farms, farmers, and yield vitality
+                        Comprehensive farmer registry with contact details and investor matching
                     </p>
                 </div>
                 <div className="flex gap-3">
                     <Button variant="outline" className={`h-11 px-6 rounded-xl font-black uppercase text-[10px] tracking-widest border-2 border-dashed ${darkMode ? 'border-gray-800' : 'border-gray-200 shadow-premium'}`}>
-                        <Filter className="w-4 h-4 mr-2" /> Geo-Filters
+                        <Filter className="w-4 h-4 mr-2" /> Filter
                     </Button>
                     <Button className="bg-[#7ede56] text-[#002f37] hover:bg-[#6bcb4b] font-black uppercase text-[10px] tracking-widest h-11 px-8 rounded-xl shadow-premium">
-                        <Download className="w-4 h-4 mr-2" /> Master Export
+                        <Download className="w-4 h-4 mr-2" /> Export Data
                     </Button>
                 </div>
             </div>
 
             {/* Premium Metric Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
                 {metrics.map((m, idx) => (
                     <Card
                         key={idx}
@@ -119,7 +132,7 @@ const FarmFarmerOversight = () => {
                                 {m.title}
                             </p>
                             <h3 className="text-3xl font-black text-white">
-                                <CountUp end={m.value} duration={2000} />{m.suffix}
+                                {loading ? '...' : <CountUp end={m.value} duration={2000} />}{m.suffix}
                             </h3>
                             <p className="text-[8px] font-bold mt-1 text-white/30 truncate uppercase tracking-tighter italic">
                                 {m.description}
@@ -129,19 +142,20 @@ const FarmFarmerOversight = () => {
                 ))}
             </div>
 
+            {/* Farmers Table */}
             <Card className={`border-none shadow-premium overflow-hidden ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white'}`}>
                 <CardHeader className="pb-4 border-b border-gray-100 dark:border-gray-800">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="space-y-1">
                             <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-                                <Sprout className="w-5 h-5 text-[#7ede56]" /> Global Asset Registry
+                                <Sprout className="w-5 h-5 text-[#7ede56]" /> Farmer Registry
                             </CardTitle>
-                            <CardDescription className="text-[10px] uppercase font-bold tracking-widest mt-1">Managed farms and owner-operator status</CardDescription>
+                            <CardDescription className="text-[10px] uppercase font-bold tracking-widest mt-1">Complete farmer profiles with contact and investor information</CardDescription>
                         </div>
                         <div className="relative w-full md:w-80 group">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#7ede56] transition-colors" />
                             <Input
-                                placeholder="Search farm, farmer, or agent..."
+                                placeholder="Search farmer, farm, or region..."
                                 className={`pl-12 h-12 text-sm border-none shadow-inner ${darkMode ? 'bg-gray-800 focus:ring-1 ring-[#7ede56]/30' : 'bg-gray-50'}`}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -152,66 +166,129 @@ const FarmFarmerOversight = () => {
                 <CardContent className="p-0 overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className={`${darkMode ? 'bg-gray-800/30 text-gray-400' : 'bg-gray-50 text-gray-500'} text-[10px] font-black uppercase tracking-widest`}>
-                                <th className="px-6 py-5">Managed Asset</th>
-                                <th className="px-6 py-5">Ownership Profile</th>
-                                <th className="px-6 py-5">Operational Zone</th>
-                                <th className="px-6 py-5">Vitality Pulse</th>
-                                <th className="px-6 py-5">Authority Status</th>
-                                <th className="px-6 py-5 text-right">Observation</th>
+                            <tr className="bg-[#002f37] text-white text-[10px] font-bold uppercase tracking-widest">
+                                <th className="p-4 border-r border-[#ffffff20]">Farmer Profile</th>
+                                <th className="p-4 border-r border-[#ffffff20]">Farm Details</th>
+                                <th className="p-4 border-r border-[#ffffff20]">Location</th>
+                                <th className="p-4 border-r border-[#ffffff20]">Contact Info</th>
+                                <th className="p-4 border-r border-[#ffffff20]">Investor Match</th>
+                                <th className="p-4 border-r border-[#ffffff20]">Assigned Agent</th>
+                                <th className="p-4 border-r border-[#ffffff20]">Status</th>
+                                <th className="p-4 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                            {farms.filter(f =>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={8} className="px-6 py-12 text-center">
+                                        <div className="flex items-center justify-center gap-3">
+                                            <div className="animate-spin w-6 h-6 border-2 border-[#7ede56] border-t-transparent rounded-full"></div>
+                                            <span className={`text-sm font-bold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Loading farmers...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : farmers.filter(f =>
                                 f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                f.farmer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                f.agent.toLowerCase().includes(searchTerm.toLowerCase())
-                            ).map((farm) => (
-                                <tr key={farm.id} className={`${darkMode ? 'hover:bg-[#7ede56]/5' : 'hover:bg-[#7ede56]/5'} transition-colors group`}>
+                                f.farmName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                f.region.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                f.crop.toLowerCase().includes(searchTerm.toLowerCase())
+                            ).map((farmer) => (
+                                <tr key={farmer.id} className={`${darkMode ? 'hover:bg-[#7ede56]/5' : 'hover:bg-[#7ede56]/5'} transition-colors group`}>
                                     <td className="px-6 py-5 border-l-4 border-transparent group-hover:border-[#7ede56]">
-                                        <div className="flex flex-col gap-0.5">
-                                            <span className={`font-black uppercase tracking-tight text-sm ${darkMode ? 'text-white' : 'text-[#002f37]'}`}>{farm.name}</span>
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Crop: <span className="text-[#7ede56]">{farm.crop}</span></span>
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm ${darkMode ? 'bg-[#7ede56]/10 text-[#7ede56]' : 'bg-[#7ede56]/20 text-[#002f37]'}`}>
+                                                {farmer.name.split(' ').map((n: string) => n[0]).join('')}
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className={`font-black uppercase tracking-tight text-sm ${darkMode ? 'text-white' : 'text-[#002f37]'}`}>{farmer.name}</span>
+                                                <span className="text-[10px] font-bold text-gray-400 lowercase">{farmer.email}</span>
+                                            </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <div className="flex flex-col">
-                                            <span className={`text-[11px] font-black uppercase tracking-tight ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{farm.farmer}</span>
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase mt-0.5 tracking-tighter">Verified Principal</span>
+                                        <div className="flex flex-col gap-0.5">
+                                            <span className={`text-[11px] font-black uppercase tracking-tight ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{farmer.farmName}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase">Crop:</span>
+                                                <Badge variant="outline" className="text-[8px] font-black px-2 py-0 h-4 border-none bg-[#7ede56]/10 text-[#7ede56]">{farmer.crop}</Badge>
+                                                <span className="text-[9px] font-bold text-gray-400">â€¢ {farmer.acreage} AC</span>
+                                            </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5">
                                         <div className="flex items-center gap-2">
-                                            <MapPin className="w-3.5 h-3.5 text-[#7ede56]/60" />
-                                            <Badge variant="outline" className={`font-black text-[9px] uppercase tracking-widest border-none ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{farm.region}</Badge>
+                                            <MapPin className="w-3.5 h-3.5 text-blue-500/60" />
+                                            <Badge variant="outline" className={`font-black text-[9px] uppercase tracking-widest border-none ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{farmer.region}</Badge>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <div className="flex flex-col gap-1.5 w-24">
-                                            <div className="flex justify-between text-[9px] font-black uppercase tracking-widest">
-                                                <span className="text-gray-400">Maturity</span>
-                                                <span className="text-blue-500">{farm.maturity}</span>
+                                        <div className="flex flex-col gap-2">
+                                            <button
+                                                onClick={() => handleContact('phone', farmer.phone, farmer.name)}
+                                                className="flex items-center gap-2 text-[10px] font-bold text-blue-500 hover:text-blue-600 transition-colors"
+                                            >
+                                                <Phone className="w-3 h-3" />
+                                                <span>{farmer.phone}</span>
+                                            </button>
+                                            <button
+                                                onClick={() => handleContact('email', farmer.email, farmer.name)}
+                                                className="flex items-center gap-2 text-[10px] font-bold text-[#7ede56] hover:text-[#7ede56] transition-colors"
+                                            >
+                                                <Mail className="w-3 h-3" />
+                                                <span className="truncate max-w-[150px]">Email</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-5">
+                                        {farmer.hasInvestor ? (
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex items-center gap-2">
+                                                    <CheckCircle2 className="w-4 h-4 text-[#7ede56]" />
+                                                    <span className="text-[10px] font-black text-[#7ede56] uppercase">Matched</span>
+                                                </div>
+                                                <span className={`text-[10px] font-bold ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{farmer.investorName}</span>
+                                                <span className="text-[9px] font-bold text-gray-400">{farmer.matchDate}</span>
                                             </div>
-                                            <div className="h-1 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                                                <div className="h-full bg-blue-500 rounded-full" style={{ width: farm.maturity }}></div>
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                <XCircle className="w-4 h-4 text-gray-400" />
+                                                <span className="text-[10px] font-black text-gray-400 uppercase">No Match</span>
+                                            </div>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-5">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`p-1.5 rounded-full ${darkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                                                <Users className="w-3 h-3" />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className={`text-[10px] font-black uppercase tracking-tight ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{farmer.agentName || 'Unassigned'}</span>
+                                                <span className="text-[8px] font-bold text-gray-400">ID: AG-{Math.floor((farmer.id * 1234) % 9000) + 1000}</span>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <div className={`inline-flex items-center px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${getStatusStyle(farm.status)} border-none`}>
-                                            {farm.status}
+                                        <div className={`inline-flex items-center px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${getStatusStyle(farmer.status)} border-none`}>
+                                            {farmer.status}
                                         </div>
                                     </td>
                                     <td className="px-6 py-5 text-right">
-                                        <div className="flex justify-end gap-1 opacity-10 group-hover:opacity-100 transition-all duration-300 translate-x-4 group-hover:translate-x-0">
-                                            <Button variant="ghost" size="icon" className="h-9 w-9 text-[#7ede56] hover:bg-[#7ede56]/10 rounded-lg">
+                                        <div className="flex justify-end gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-9 w-9 text-[#7ede56] hover:bg-[#7ede56]/10 rounded-lg"
+                                                onClick={() => toast.info(`Viewing ${farmer.name}'s profile...`)}
+                                            >
                                                 <Eye className="w-4 h-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="h-9 w-9 text-blue-500 hover:bg-blue-50 rounded-lg">
-                                                <UserPlus className="w-4 h-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="h-9 w-9 text-rose-500 hover:bg-rose-50 rounded-lg">
-                                                <Flag className="w-4 h-4" />
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-9 w-9 text-blue-500 hover:bg-blue-50 rounded-lg"
+                                                onClick={() => handleContact('phone', farmer.phone, farmer.name)}
+                                            >
+                                                <Phone className="w-4 h-4" />
                                             </Button>
                                         </div>
                                     </td>
@@ -222,21 +299,22 @@ const FarmFarmerOversight = () => {
                 </CardContent>
             </Card>
 
-            <div className={`p-8 rounded-[32px] border border-dashed ${darkMode ? 'bg-amber-950/20 border-amber-500/20' : 'bg-amber-50 border-amber-200'} flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group`}>
-                <div className="absolute top-0 right-10 h-full w-32 bg-amber-500/5 rotate-12 blur-3xl group-hover:bg-amber-500/10 transition-colors"></div>
+            {/* Info Banner */}
+            <div className={`p-8 rounded-[32px] border border-dashed ${darkMode ? 'bg-blue-950/20 border-blue-500/20' : 'bg-blue-50 border-blue-200'} flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group`}>
+                <div className="absolute top-0 right-10 h-full w-32 bg-blue-500/5 rotate-12 blur-3xl group-hover:bg-blue-500/10 transition-colors"></div>
                 <div className="flex items-center gap-6 relative z-10">
-                    <div className="p-4 rounded-[24px] bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-inner">
-                        <AlertTriangle className="w-8 h-8" />
+                    <div className="p-4 rounded-[24px] bg-blue-500/10 text-blue-500 border border-blue-500/20 shadow-inner">
+                        <Handshake className="w-8 h-8" />
                     </div>
                     <div>
-                        <h3 className={`text-xl font-black uppercase tracking-tight text-amber-900 dark:text-amber-400`}>Strategic Yield Watch</h3>
-                        <p className={`text-xs max-w-md font-bold uppercase tracking-wide text-amber-700/60 dark:text-amber-400/60 mt-2 leading-relaxed`}>
-                            Automated satellite monitoring for drought and pests is active in Ashanti and Western hubs. High-risk assets are flagged for forensic audit.
+                        <h3 className={`text-xl font-black uppercase tracking-tight text-blue-900 dark:text-blue-400`}>Investor Matching System</h3>
+                        <p className={`text-xs max-w-md font-bold uppercase tracking-wide text-blue-700/60 dark:text-blue-400/60 mt-2 leading-relaxed`}>
+                            {matchedFarmers} of {totalFarmers} farmers are currently matched with investors. Contact farmers directly to facilitate new partnerships.
                         </p>
                     </div>
                 </div>
-                <Button className="font-black text-[10px] px-10 tracking-widest h-12 uppercase bg-amber-600 hover:bg-amber-700 text-white shadow-lg rounded-xl relative z-10">
-                    View Risk Analytics
+                <Button className="font-black text-[10px] px-10 tracking-widest h-12 uppercase bg-blue-600 hover:bg-blue-700 text-white shadow-lg rounded-xl relative z-10">
+                    View Matching Analytics
                 </Button>
             </div>
         </div>
@@ -244,3 +322,7 @@ const FarmFarmerOversight = () => {
 };
 
 export default FarmFarmerOversight;
+
+
+
+

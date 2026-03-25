@@ -6,10 +6,13 @@ const reportSchema = new mongoose.Schema({
     type: {
         type: String,
         required: true,
-        enum: ['field-visit', 'harvest', 'planting', 'inspection', 'monitoring', 'issue', 'other']
+        // Match the frontend values
+        enum: ['Routine Inspection', 'Pest Alert', 'Harvest Prep', 'Soil Test', 'field-visit', 'harvest', 'planting', 'inspection', 'monitoring', 'issue', 'other']
     },
     date: { type: String, required: true },
     notes: { type: String, required: true },
+    cropStage: { type: String },
+    healthScore: { type: String },
     media: [{
         type: { type: String, enum: ['image', 'video', 'document'] },
         url: String, // Base64 or URL

@@ -10,7 +10,7 @@ import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 const BRAND_TEAL = '#002F37';
 const BRAND_GREEN = '#7ede56';
-const BRAND_MAGENTA = '#921573';
+const BRAND_MAGENTA = '#7ede56';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -40,8 +40,8 @@ const Contact = () => {
     e.preventDefault();
 
     // Redirect to WhatsApp with the message
-    const phone = '233506626068'; // WhatsApp format: country code + number without leading 0
-    const message = `Hello AgriLync!
+    const phone = '233506626068'; // Primary WhatsApp
+    const message = `Hello Agrilync Nexus!
 
 Name: ${formData.name}
 Email: ${formData.email}
@@ -65,9 +65,9 @@ ${formData.message}`;
           <h1 className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (heroVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
             Get in Touch
           </h1>
-          <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3 mx-auto"></div>
+          <div className="w-16 h-0.5 bg-[#7ede56] mb-2 sm:mb-3 mx-auto"></div>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Have questions about AgriLync? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            Have questions about Agrilync Nexus? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
           </p>
         </div>
       </section>
@@ -82,7 +82,7 @@ ${formData.message}`;
               <h2 className={"text-2xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (formVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
                 Send us a Message
               </h2>
-              <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3"></div>
+              <div className="w-16 h-0.5 bg-[#7ede56] mb-2 sm:mb-3"></div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -179,7 +179,7 @@ ${formData.message}`;
               <h2 className={"text-2xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (infoVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
                 Contact Information
               </h2>
-              <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3"></div>
+              <div className="w-16 h-0.5 bg-[#7ede56] mb-2 sm:mb-3"></div>
 
               <div className="space-y-6">
                 <div className="flex items-start space-x-4">
@@ -194,7 +194,8 @@ ${formData.message}`;
                   <Phone className="h-6 w-6 text-green-600 mt-1 flex-shrink-0" />
                   <div>
                     <h3 className="font-semibold text-gray-900">Phone</h3>
-                    <p className="text-gray-600">+233 50 662 6068</p>
+                    <p className="text-gray-600">+233 506 626 068</p>
+                    <p className="text-gray-600">+233 247 552 111</p>
                   </div>
                 </div>
 
@@ -287,7 +288,7 @@ ${formData.message}`;
           </Button>
 
           <p className="text-sm text-gray-400 mt-6">
-            Free 30-minute session • No credit card required
+            Free 30-minute session � No credit card required
           </p>
         </div>
       </section>
@@ -298,9 +299,9 @@ ${formData.message}`;
           <h2 className={"text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (communityVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
             Join Our WhatsApp Community
           </h2>
-          <div className="w-16 h-0.5 bg-purple-600 mb-2 sm:mb-3 mx-auto"></div>
+          <div className="w-16 h-0.5 bg-[#7ede56] mb-2 sm:mb-3 mx-auto"></div>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Connect with fellow farmers, get real-time updates, and be part of the AgriLync community. Join our WhatsApp group for exclusive content and direct support.
+            Connect with fellow farmers, get real-time updates, and be part of the Agrilync Nexus community. Join our WhatsApp group for exclusive content and direct support.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
