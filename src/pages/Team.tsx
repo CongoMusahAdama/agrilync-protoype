@@ -119,9 +119,9 @@ const Team = () => {
         </div>
 
         {/* Co-Founders Section - Grid of 3 */}
-        <div id="founding-team" ref={foundersRef} className={`mb-24 transition-all duration-700 ease-out ${foundersVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div id="founding-team" ref={foundersRef} className="mb-24">
           <div className="mb-10 pb-4 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-[#002F37] mb-2">Founding Team</h2>
+            <h2 className={`text-2xl font-bold text-[#002F37] mb-2 transition-all duration-700 ease-out ${foundersVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>Founding Team</h2>
             <div className="w-16 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full"></div>
           </div>
           {/* Strict 3 column grid */}
@@ -135,9 +135,9 @@ const Team = () => {
         </div>
 
         {/* Product & Design Section - Grid of 3 */}
-        <div id="product-design" ref={productRef} className={`mb-24 transition-all duration-700 ease-out ${productVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div id="product-design" ref={productRef} className="mb-24">
           <div className="mb-10 pb-4 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-[#002F37] mb-2">Product & Design Team</h2>
+            <h2 className={`text-2xl font-bold text-[#002F37] mb-2 transition-all duration-700 ease-out ${productVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>Product & Design Team</h2>
             <div className="w-16 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full"></div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 justify-items-center">
@@ -150,9 +150,9 @@ const Team = () => {
         </div>
 
         {/* Strategy & Marketing Section - Grid of 3 */}
-        <div id="marketing" ref={marketingRef} className={`mb-24 transition-all duration-700 ease-out ${marketingVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div id="marketing" ref={marketingRef} className="mb-24">
           <div className="mb-10 pb-4 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-[#002F37] mb-2">Strategy & Marketing Team</h2>
+            <h2 className={`text-2xl font-bold text-[#002F37] mb-2 transition-all duration-700 ease-out ${marketingVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>Strategy & Marketing Team</h2>
             <div className="w-16 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full"></div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 justify-items-center">
@@ -165,9 +165,9 @@ const Team = () => {
         </div>
 
         {/* Operations Section - Grid of 3 */}
-        <div id="operations" ref={operationsRef} className={`mb-12 transition-all duration-700 ease-out ${operationsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div id="operations" ref={operationsRef} className="mb-12">
           <div className="mb-10 pb-4 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-[#002F37] mb-2">Community & Operations</h2>
+            <h2 className={`text-2xl font-bold text-[#002F37] mb-2 transition-all duration-700 ease-out ${operationsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>Community & Operations</h2>
             <div className="w-16 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full"></div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 justify-items-center">

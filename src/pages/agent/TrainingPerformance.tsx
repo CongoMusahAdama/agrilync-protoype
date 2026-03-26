@@ -54,7 +54,9 @@ import {
   Handshake,
   Loader2,
   MessageSquare,
-  Phone
+  Phone,
+  X,
+  CheckCircle2
 } from 'lucide-react';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
@@ -251,14 +253,14 @@ export const TrainingPerformanceContent = () => {
   ];
 
   const MetricCardSkeleton = () => (
-    <Card className="bg-gray-800/50 border-gray-700 rounded-lg p-3 sm:p-6 shadow-lg animate-pulse">
+    <Card className="bg-gray-800/50 border-gray-700 rounded-lg p-3 sm:p-6 shadow-lg animate-pulse h-28 sm:h-36">
       <div className="flex flex-col h-full gap-4 text-left">
         <div className="flex items-center gap-3">
-          <Skeleton className="h-8 w-8 rounded-lg bg-gray-700" />
-          <Skeleton className="h-4 w-24 bg-gray-700" />
+          <Skeleton className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-gray-700" />
+          <Skeleton className="h-3 w-16 sm:h-4 sm:w-24 bg-gray-700" />
         </div>
         <div className="flex-1 flex items-center">
-          <Skeleton className="h-10 w-16 bg-gray-700" />
+          <Skeleton className="h-8 w-12 sm:h-10 sm:w-16 bg-gray-700" />
         </div>
       </div>
     </Card>
@@ -281,12 +283,12 @@ export const TrainingPerformanceContent = () => {
           ) : (
             <Card
               key={idx}
-              className={`${card.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-700 relative overflow-hidden opacity-100 translate-y-0`}
+              className={`${card.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-700 relative overflow-hidden h-28 sm:h-36 opacity-100 translate-y-0`}
               style={{ transitionDelay: `${idx * 100}ms` }}
             >
               {/* Background Decoration */}
-              <div className="absolute inset-0 opacity-10 pointer-events-none">
-                <card.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
+              <div className="absolute -right-4 -bottom-4 opacity-10 pointer-events-none">
+                <card.icon className="absolute top-1 right-1 h-12 w-12 sm:h-16 sm:w-16 text-white rotate-12" />
               </div>
 
               <div className="p-3 sm:p-5 flex flex-col h-full relative z-10">
@@ -295,7 +297,7 @@ export const TrainingPerformanceContent = () => {
                   <p className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">{card.title}</p>
                 </div>
                 <div className="flex-1 flex items-center">
-                  <p className="big-metric text-white">{card.value}</p>
+                  <p className="text-2xl sm:text-4xl font-bold text-white">{card.value}</p>
                 </div>
               </div>
             </Card>
@@ -520,23 +522,31 @@ export const TrainingPerformanceContent = () => {
                             <div className="flex justify-end gap-2">
                               <Button
                                 size="sm"
-                                className="h-7 bg-[#065f46] hover:bg-[#065f46]/90 text-white text-[10px] font-bold border-none"
+                                className="h-8 px-3 bg-[#065f46] hover:bg-[#065f46]/90 text-white text-[10px] font-black uppercase tracking-widest rounded-lg border-none flex items-center gap-2"
                                 onClick={() => handleConsultationAction(req.id, 'accept')}
                                 disabled={isProcessingConsultation === req.id}
                               >
-                                {isProcessingConsultation === req.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Accept'}
+                                {isProcessingConsultation === req.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                                {isProcessingConsultation === req.id ? 'Loading' : 'Accept'}
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="h-7 border-red-500 text-red-500 hover:bg-red-500/10 text-[10px]"
+                                className="h-8 px-3 border-rose-200 text-rose-600 hover:bg-rose-50 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-2"
                                 onClick={() => handleConsultationAction(req.id, 'decline')}
                                 disabled={isProcessingConsultation === req.id}
                               >
-                                {isProcessingConsultation === req.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Decline'}
+                                {isProcessingConsultation === req.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+                                {isProcessingConsultation === req.id ? 'Loading' : 'Decline'}
                               </Button>
-                              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleConsultationAction(req.id, 'reschedule')}>
-                                <Clock className="h-3 w-3" />
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-8 px-3 text-[10px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 rounded-lg flex items-center gap-2" 
+                                onClick={() => handleConsultationAction(req.id, 'reschedule')}
+                              >
+                                <Clock className="h-3.5 w-3.5" />
+                                Reschedule
                               </Button>
                             </div>
                           )}

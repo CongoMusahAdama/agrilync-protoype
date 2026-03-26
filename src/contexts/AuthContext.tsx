@@ -11,6 +11,8 @@ interface Agent {
     isVerified: boolean;
     verificationStatus: string;
     region?: string;
+    district?: string;
+    community?: string;
     contact?: string;
     avatar?: string;
     role: 'super_admin' | 'supervisor' | 'agent';

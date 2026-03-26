@@ -55,6 +55,8 @@ const Index = () => {
   const [farmersCryingRef, farmersCryingVisible] = useScrollReveal();
   const [successStoriesRef, successStoriesVisible] = useScrollReveal();
   const [faqRef, faqVisible] = useScrollReveal();
+  const [innovationRef, innovationVisible] = useScrollReveal();
+  const [expertiseRef, expertiseVisible] = useScrollReveal();
   // Services ref will be handled manually
 
 
@@ -205,14 +207,14 @@ const Index = () => {
 
 
       {/* HERO SECTION - Akofresh Inspired Redesign */}
-      <section className="relative min-h-[100svh] md:h-[80vh] md:min-h-[600px] overflow-hidden bg-black flex flex-col md:flex-row md:items-start md:justify-start md:pt-48 pb-0">
+      <section className="relative min-h-[75svh] md:h-[80vh] md:min-h-[600px] overflow-hidden bg-black flex flex-col md:flex-row md:items-start md:justify-start pt-28 md:pt-48 pb-12 md:pb-0">
         {/* Background Video / Image */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           {/* Mobile Background Image */}
           <img 
-            src="/lovable-uploads/image copy 6.png" 
+            src="/lovable-uploads/image%20copy%2012.png" 
             alt="Hero background" 
-            className="absolute inset-0 w-full h-full object-cover md:hidden opacity-60"
+            className="absolute inset-0 w-full h-full object-cover object-[85%_top] sm:object-right-top md:hidden opacity-60"
           />
           {/* Desktop Background Video */}
           <div className="hidden md:block absolute inset-0">
@@ -229,11 +231,11 @@ const Index = () => {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)] z-10"></div>
         </div>
 
-        <div className="relative z-20 w-full px-8 sm:px-12 lg:px-24 xl:px-32 mt-auto pb-24 md:mt-0 md:pb-0">
-          <div className="max-w-4xl text-left">
+        <div className="relative z-20 w-full px-4 sm:px-12 lg:px-24 xl:px-32 mt-auto md:mt-0 pb-6 md:pb-0">
+          <div className="max-w-3xl text-left pr-12 sm:pr-0">
             {/* Main Heading with refined spacing and alignment */}
-            <h1 className="text-[28px] md:text-4xl lg:text-5xl font-bold text-white mb-8 md:mb-10 leading-[1.1] md:leading-[1.05] font-montserrat tracking-tight animate-fade-in-up">
-              Unlocking Difficult Access to <span className="font-playfair italic text-[#FFD700] inline-block">Farm Investment</span> and <span className="font-playfair italic text-[#FFD700] inline-block">Timely Information</span> Through <span className="font-playfair italic text-[#FFD700] inline-block">AI</span>
+            <h1 className="text-[22px] leading-[1.35] sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-5 md:mb-10 md:leading-[1.05] font-montserrat tracking-tight animate-fade-in-up drop-shadow-lg max-w-[280px] sm:max-w-full">
+              Unlocking Difficult Access to <br className="hidden md:block"/> <span className="text-[#7ede56]">Farm Investment</span> and <span className="text-[#7ede56]">Timely Information</span> Through <span className="text-[#7ede56]">AI</span>
             </h1>
 
             {/* Subheadline - Hidden on mobile, visible on desktop */}
@@ -242,8 +244,8 @@ const Index = () => {
             </p>
 
             {/* CTA Buttons - Compact on mobile, prominent on desktop */}
-            <div className="flex flex-row flex-wrap items-center sm:items-start justify-start gap-3 md:gap-6 animate-fade-in-up delay-400">
-              <a href="https://agrilync.netlify.app/" target="_blank" rel="noopener noreferrer" className="shrink-0">
+            <div className="flex flex-col sm:flex-row items-start justify-start gap-3 md:gap-6 animate-fade-in-up delay-400">
+              <a href="https://agrilync.netlify.app/" target="_blank" rel="noopener noreferrer" className="shrink-0 w-full sm:w-auto">
                 <Button className="bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] px-6 py-4 md:px-10 md:py-7 text-sm md:text-lg font-bold font-montserrat rounded-full shadow-[0_15px_30px_-10px_rgba(126,222,86,0.4)] transition-all duration-300 transform hover:scale-105 active:scale-95">
                   Join Waitlist
                 </Button>
@@ -302,12 +304,12 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-6 lg:px-24 relative z-10">
           {/* Header Row - Constrained for readability */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-24 mb-20">
-            <div className="animate-fade-in-right">
+            <div ref={whoWeAreRef} className={`transition-all duration-700 ease-out ${whoWeAreVisible ? 'animate-fade-in-right opacity-100' : 'opacity-0 -translate-x-12'}`}>
               <h2 className="text-4xl md:text-6xl font-bold font-montserrat leading-[0.9] text-[#7ede56] mb-6 md:mb-0">
                 The <span className="italic">Hero's</span> <br /> Journey
               </h2>
             </div>
-            <div className="animate-fade-in-left max-w-xl">
+            <div className={`max-w-xl transition-all duration-700 delay-200 ease-out ${whoWeAreVisible ? 'animate-fade-in-left opacity-100' : 'opacity-0 translate-x-12'}`}>
               <p className="text-gray-300 font-sans text-base md:text-lg leading-relaxed mb-6">
                 Sarah spent <strong className="text-white">months growing her vegetables</strong>. But once they're picked, the real race begins. Without a way to connect with the right <strong className="text-white">investors and buyers</strong>, even her best harvest can go to waste before it reaches the market.
               </p>
@@ -402,14 +404,14 @@ const Index = () => {
       <section className="py-32 md:py-40 bg-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-24 items-start">
-            <div className="animate-fade-in-right">
+            <div ref={innovationRef} className={`transition-all duration-700 ease-out ${innovationVisible ? 'animate-fade-in-right opacity-100' : 'opacity-0 -translate-x-12'}`}>
               <h2 className="text-5xl md:text-7xl font-montserrat tracking-tight leading-[0.85] mb-8 md:mb-0">
                 <span className="text-[#002f37] font-bold">Our</span> <br />
                 <span className="text-[#002f37] font-playfair italic">Innovation</span>
               </h2>
             </div>
 
-            <div className="animate-fade-in-left space-y-8 max-w-xl">
+            <div className={`space-y-8 max-w-xl transition-all duration-700 delay-200 ease-out ${innovationVisible ? 'animate-fade-in-left opacity-100' : 'opacity-0 translate-x-12'}`}>
               <p className="text-gray-800 font-sans text-lg md:text-xl leading-relaxed">
                 Agrilync Nexus provides a finance-first, training-led platform that connects smallholder farmers and investors/partners, supported by AI advisory and local agent operations.
               </p>
@@ -426,18 +428,18 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-6 lg:px-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-24 items-start">
             {/* Left Column - Title */}
-            <div className="animate-fade-in-right transition-all duration-700 ease-in-out">
+            <div ref={farmersCryingRef} className={`transition-all duration-700 ease-out ${farmersCryingVisible ? 'animate-fade-in-right opacity-100' : 'opacity-0 -translate-x-12'}`}>
               <div className="flex items-center mb-6">
                 <div className="w-2.5 h-2.5" style={{ backgroundColor: '#7ede56' }}></div>
                 <span className="text-gray-300 text-sm uppercase tracking-[0.2em] ml-4">THE CHALLENGE</span>
               </div>
-              <h2 ref={farmersCryingRef} className={"text-4xl md:text-5xl lg:text-6xl font-bold font-montserrat leading-tight transition-all duration-700 ease-in-out " + (farmersCryingVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: 'white' }}>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold font-montserrat leading-tight text-white">
                 The Challenge
               </h2>
             </div>
 
             {/* Right Column - Content */}
-            <div className="animate-fade-in-left transition-all duration-700 ease-in-out max-w-xl">
+            <div className={`max-w-xl transition-all duration-700 delay-200 ease-out ${farmersCryingVisible ? 'animate-fade-in-left opacity-100' : 'opacity-0 translate-x-12'}`}>
               <p className="text-gray-300 leading-relaxed text-lg md:text-xl">
                 Farmers are not crying without reason. They need timely access to the right information to boost productivity, ready markets immediately after harvest to reduce post-harvest losses, and most importantly, flexible financing and investor partnerships to scale and improve yield.
               </p>
@@ -452,7 +454,7 @@ const Index = () => {
         <div className="absolute top-0 right-0 w-1/3 h-full bg-[#7ede56]/5 pointer-events-none -skew-x-12 transform translate-x-1/2"></div>
         
         <div className="max-w-7xl mx-auto px-6 lg:px-24 relative z-10">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-12">
+          <div ref={expertiseRef} className={`flex flex-col md:flex-row justify-between items-end mb-24 gap-12 transition-all duration-700 ease-out ${expertiseVisible ? 'animate-fade-in-up opacity-100' : 'opacity-0 translate-y-12'}`}>
             <div className="max-w-3xl">
               <span className="text-[#002f37]/60 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] mb-6 block">Our Expertise</span>
               <h2 className="text-4xl md:text-7xl font-bold text-[#002f37] font-playfair italic leading-[1.1]">
@@ -460,7 +462,7 @@ const Index = () => {
                 <span className="text-[#7ede56] font-sans not-italic">succeed with us</span>
               </h2>
             </div>
-            <div className="hidden lg:block max-w-[280px] transition-opacity duration-300">
+            <div className="hidden lg:block max-w-[280px]">
               <p className="text-[#002f37]/70 text-base leading-relaxed border-l-2 border-[#7ede56] pl-8 py-3">
                 We combine deep-rooted farming tradition with the world's most advanced intelligence to empower the hands that feed the nation.
               </p>
@@ -572,8 +574,8 @@ const Index = () => {
       {/* Success Stories Section - Premium Padding */}
       <section className="py-32 md:py-40" style={{ backgroundColor: '#002f37' }}>
         <div className="max-w-7xl mx-auto px-6 lg:px-24">
-          <div className="text-center mb-24 animate-fade-in-up transition-all duration-700 ease-in-out">
-            <h2 ref={successStoriesRef} className={"text-5xl md:text-7xl font-bold text-white mb-8 transition-all duration-700 ease-in-out " + (successStoriesVisible ? " animate-fade-in-up" : " opacity-0")}>
+          <div ref={successStoriesRef} className={`text-center mb-24 transition-all duration-700 ease-out ${successStoriesVisible ? 'animate-fade-in-up opacity-100' : 'opacity-0 translate-y-12'}`}>
+            <h2 className="text-5xl md:text-7xl font-bold text-white mb-8">
               Success Stories
             </h2>
             <div className="w-48 h-[1px] bg-[#7ede56] mb-10 mx-auto opacity-70"></div>
@@ -643,8 +645,8 @@ const Index = () => {
       {/* FAQ Section - Clean & Spaced */}
       <section className="py-32 md:py-40 bg-gray-50">
         <div className="max-w-5xl mx-auto px-6 lg:px-8">
-          <div className="text-center mb-20 animate-fade-in-up transition-all duration-700 ease-in-out">
-            <h2 ref={faqRef} className={"text-3xl md:text-5xl font-bold mb-6 transition-all duration-700 ease-in-out " + (faqVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: '#002f37' }}>
+          <div ref={faqRef} className={`text-center mb-20 transition-all duration-700 ease-out ${faqVisible ? 'animate-fade-in-up opacity-100' : 'opacity-0 translate-y-12'}`}>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-[#002f37]">
               Frequently Asked Questions
             </h2>
             <div className="w-24 h-1 bg-[#7ede56] mb-10 mx-auto rounded-full"></div>

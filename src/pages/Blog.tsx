@@ -54,6 +54,8 @@ const Blog = () => {
   const [blogSectionRef, blogSectionVisible] = useScrollReveal();
   const [webinarSectionRef, webinarSectionVisible] = useScrollReveal();
   const [completedSectionRef, completedSectionVisible] = useScrollReveal();
+  const [latestRef, latestVisible] = useScrollReveal();
+  const [transformRef, transformVisible] = useScrollReveal();
 
   const [consultationSectionRef, consultationSectionVisible] = useScrollReveal();
 
@@ -98,6 +100,34 @@ const Blog = () => {
 
   // Enhanced blog posts with categories and tags
   const blogPosts = [
+    {
+      id: 10,
+      slug: "ghana-tomato-productivity-fix",
+      title: "From 8 to 20 Tonnes: Can Ghana Finally Fix Its Tomato Crisis?",
+      excerpt: "Explore how government-backed research from WACCI and Agrilync's finance-first innovation are unlocking massive productivity gains for smallholder farmers.",
+      author: "Agrilync Nexus Team",
+      date: "2026-03-26",
+      readTime: "8 min read",
+      category: "Agribusiness",
+      tags: ["Policy", "Innovation", "Tomato Crisis", "WACCI"],
+      image: "/lovable-uploads/image copy 15.png",
+      link: "https://agri-insider-series.beehiiv.com/p/from-8-to-20-tonnes-can-ghana-finally-fix-its-tomato-crisis",
+      featured: true
+    },
+    {
+      id: 9,
+      slug: "smart-greenhouse-tomato-crisis",
+      title: "How Smart Greenhouse Technology Can Solve Ghana’s Tomato Crisis",
+      excerpt: "Discover how smart greenhouse technology is revolutionizing Ghana's agriculture and solving the tomato crisis by 2026. A practical guide to year-round production.",
+      author: "Agrilync Nexus Team",
+      date: "2026-03-26",
+      readTime: "7 min read",
+      category: "Technology",
+      tags: ["Smart Greenhouse", "Tomato Crisis", "Ag-Tech"],
+      image: "/lovable-uploads/image copy 14.png",
+      link: "https://agri-insider-series.beehiiv.com/p/how-smart-greenhouse-technology-can-solve-ghana-s-tomato-crisis",
+      featured: true
+    },
     {
       id: 8,
       slug: "mushroom-farming",
@@ -261,6 +291,20 @@ const Blog = () => {
       status: "completed",
       registrationLink: "https://luma.com/q7tsnwsl",
       pdfLink: "https://drive.google.com/file/d/1SS6YK0htLNajYWUjZDzJcpKdR8pX8xp3/view?usp=drive_link"
+    },
+    {
+      id: 5,
+      title: "Modern Greenhouse Farming & Agriculture Strategies",
+      date: "2026-03-15",
+      time: "14:00 GMT",
+      location: "Virtual",
+      spots: 150,
+      registered: 150,
+      image: "/lovable-uploads/webinargreenhouse.jpeg",
+      description: "An exclusive deep-dive into modern greenhouse farming. Discover how controlled-environment agriculture can maximize crop yields, extend growing seasons, and protect your investments from climate volatility.",
+      speaker: "Simon Sjustice",
+      status: "completed",
+      recordingLink: "https://youtu.be/k2FJAGKz35k"
     }
   ];
 
@@ -317,7 +361,7 @@ const Blog = () => {
       <Navbar />
 
       {/* Modern Hero Section with White Background */}
-      <section className="relative py-20 md:py-28 overflow-hidden bg-white">
+      <section className="relative pt-32 pb-12 md:pt-36 md:pb-16 overflow-hidden bg-white">
         {/* Decorative Elements - subtle on white */}
         <div className="absolute top-20 right-10 w-72 h-72 bg-[#7ede56]/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#7ede56]/5 rounded-full blur-3xl"></div>
@@ -447,7 +491,7 @@ const Blog = () => {
       <section className="py-16 sm:py-20 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-[#002F37]">
+            <h2 ref={latestRef} className={`text-3xl sm:text-4xl font-bold mb-4 text-[#002F37] transition-all duration-700 ${latestVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
               Latest Articles
             </h2>
             <div className="w-24 h-1 bg-gradient-to-r from-[#7ede56] to-[#7ede56] rounded-full mx-auto"></div>
@@ -717,7 +761,7 @@ const Blog = () => {
             <span className="text-sm font-semibold">Book a Free Session</span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+          <h2 ref={transformRef} className={`text-3xl sm:text-4xl font-bold mb-6 transition-all duration-700 ${transformVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
             Ready to Transform Your Farm?
           </h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">

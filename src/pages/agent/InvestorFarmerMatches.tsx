@@ -10,7 +10,8 @@ import {
   UserCheck,
   FileText,
   DollarSign,
-  Briefcase
+  Briefcase,
+  Eye
 } from 'lucide-react';
 import { 
   Card, 
@@ -191,15 +192,25 @@ const InvestorFarmerMatches: React.FC = () => {
                       </Badge>
                     </TableCell>
                     <TableCell className="py-4 px-6 text-right">
-                      {match.approvalStatus === 'pending' ? (
-                        <Button size="sm" className="bg-[#002f37] hover:bg-[#065f46] text-white text-[9px] font-black h-8 px-4 rounded-lg uppercase tracking-wider shadow-lg shadow-[#002f37]/10 transition-all border-none">
-                          VERIFY NOW
-                        </Button>
-                      ) : (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-gray-400 hover:bg-[#002f37] hover:text-white transition-all border-none">
-                          <ArrowUpRight className="h-4 w-4" />
-                        </Button>
-                      )}
+                      <div className="flex justify-end gap-2">
+                        {match.approvalStatus === 'pending' ? (
+                          <Button 
+                            className="bg-[#002f37] hover:bg-[#065f46] text-white text-[10px] font-black h-8 px-4 rounded-lg uppercase tracking-wider shadow-lg shadow-[#002f37]/10 transition-all border-none flex items-center gap-2"
+                          >
+                            <UserCheck className="h-3.5 w-3.5" />
+                            VERIFY NOW
+                          </Button>
+                        ) : (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className={`h-8 px-3 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Profile</span>
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
