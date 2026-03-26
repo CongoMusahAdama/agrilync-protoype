@@ -205,7 +205,7 @@ const Index = () => {
 
 
       {/* HERO SECTION - Akofresh Inspired Redesign */}
-      <section className="relative h-[80vh] min-h-[600px] overflow-hidden bg-black flex items-start pt-[460px] md:pt-48">
+      <section className="relative h-[85vh] min-h-[600px] md:h-[80vh] overflow-hidden bg-black flex flex-col justify-end pb-12 md:flex-row md:items-start md:justify-start md:pb-0 md:pt-48">
         {/* Background Video / Image */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           {/* Mobile Background Image */}
