@@ -205,7 +205,7 @@ const Index = () => {
 
 
       {/* HERO SECTION - Akofresh Inspired Redesign */}
-      <section className="relative h-[85vh] min-h-[600px] md:h-[80vh] overflow-hidden bg-black flex flex-col justify-end pb-12 md:flex-row md:items-start md:justify-start md:pb-0 md:pt-48">
+      <section className="relative min-h-[100svh] md:h-[80vh] md:min-h-[600px] overflow-hidden bg-black flex flex-col md:flex-row md:items-start md:justify-start md:pt-48 pb-0">
         {/* Background Video / Image */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           {/* Mobile Background Image */}
@@ -229,7 +229,7 @@ const Index = () => {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)] z-10"></div>
         </div>
 
-        <div className="relative z-20 w-full px-8 sm:px-12 lg:px-24 xl:px-32">
+        <div className="relative z-20 w-full px-8 sm:px-12 lg:px-24 xl:px-32 mt-auto pb-24 md:mt-0 md:pb-0">
           <div className="max-w-4xl text-left">
             {/* Main Heading with refined spacing and alignment */}
             <h1 className="text-[28px] md:text-4xl lg:text-5xl font-bold text-white mb-8 md:mb-10 leading-[1.1] md:leading-[1.05] font-montserrat tracking-tight animate-fade-in-up">
