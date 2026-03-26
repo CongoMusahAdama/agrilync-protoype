@@ -245,9 +245,14 @@ const Index = () => {
 
             {/* CTA Buttons - Compact on mobile, prominent on desktop */}
             <div className="flex flex-col sm:flex-row items-start justify-start gap-3 md:gap-6 animate-fade-in-up delay-400">
-              <a href="https://agrilync.netlify.app/" target="_blank" rel="noopener noreferrer" className="shrink-0 w-full sm:w-auto">
+              <a 
+                href="https://wa.me/233506626068" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="shrink-0 w-full sm:w-auto"
+              >
                 <Button className="bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] px-6 py-4 md:px-10 md:py-7 text-sm md:text-lg font-bold font-montserrat rounded-full shadow-[0_15px_30px_-10px_rgba(126,222,86,0.4)] transition-all duration-300 transform hover:scale-105 active:scale-95">
-                  Join Waitlist
+                  Get in Touch
                 </Button>
               </a>
 
