@@ -41,6 +41,7 @@ import ScheduleVisitModal from '@/components/agent/ScheduleVisitModal';
 import { TrainingPerformanceContent } from './agent/TrainingPerformance';
 import { Button } from '@/components/ui/button';
 import ActiveFarmsModal from '@/components/agent/ActiveFarmsModal';
+import MediaUploadModal from '@/components/agent/MediaUploadModal';
 import FarmJourneyModal from '@/components/agent/FarmJourneyModal';
 import OperationalMap from '@/components/agent/OperationalMap';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -158,6 +159,7 @@ const AgentDashboard: React.FC = () => {
   const [isActiveFarmsModalOpen, setIsActiveFarmsModalOpen] = useState(false);
   const [isJourneyModalOpen, setIsJourneyModalOpen] = useState(false);
   const [isUploadReportModalOpen, setIsUploadReportModalOpen] = useState(false);
+  const [isMediaUploadModalOpen, setIsMediaUploadModalOpen] = useState(false);
   const [isAddFarmerModalOpen, setIsAddFarmerModalOpen] = useState(false);
   const [logVisitModalOpen, setLogVisitModalOpen] = useState(false);
 
@@ -465,9 +467,14 @@ const AgentDashboard: React.FC = () => {
     setViewModalOpen(true);
   };
 
-  const handleNewVisit = (farmer: any) => {
+  const handleUploadReport = (farmer: any) => {
     setSelectedFarmer(farmer);
-    setIsUploadReportModalOpen(true);
+    setIsMediaUploadModalOpen(true);
+  };
+
+  const handleLogVisit = (farmer: any) => {
+    setSelectedFarmer(farmer);
+    setLogVisitModalOpen(true);
   };
 
   const handleEditFarmer = async (farmer: any) => {
@@ -662,29 +669,29 @@ const AgentDashboard: React.FC = () => {
             Operations Tracker • {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+        <div className="flex flex-row sm:flex-row items-center gap-2 sm:gap-3 w-full md:w-auto">
           <Button
-            className="bg-[#065f46] hover:bg-[#065f46]/90 text-white font-semibold text-[14px] px-6 h-12 rounded-xl shadow-lg shadow-[#065f46]/20 flex items-center justify-center gap-2 border-none w-full sm:w-auto"
+            className="bg-[#065f46] hover:bg-[#065f46]/90 text-white font-semibold text-[13px] sm:text-[14px] px-3 sm:px-6 h-11 sm:h-12 rounded-xl shadow-lg shadow-[#065f46]/20 flex items-center justify-center gap-1 sm:gap-2 border-none flex-1 sm:flex-none sm:w-auto"
             onClick={() => {
               setSelectedFarmer(null);
               setIsAddFarmerModalOpen(true);
             }}
           >
-            <Plus className="h-5 w-5" />
-            <span>Onboard Grower</span>
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+            <span className="whitespace-nowrap">Onboard Grower</span>
           </Button>
           <Button
             variant="outline"
-            className="border-2 border-[#065f46] text-[#065f46] hover:bg-[#065f46] hover:text-white font-semibold text-[14px] px-6 h-12 rounded-xl flex items-center justify-center gap-2 transition-all w-full sm:w-auto"
+            className="border-2 border-[#065f46] text-[#065f46] hover:bg-[#065f46] hover:text-white font-semibold text-[13px] sm:text-[14px] px-3 sm:px-6 h-11 sm:h-12 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all flex-1 sm:flex-none sm:w-auto"
             onClick={() => setLogVisitModalOpen(true)}
           >
-            <Calendar className="h-5 w-5" />
-            <span>Log Visit</span>
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+            <span className="whitespace-nowrap">Log Visit</span>
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-8">
         {highlightCards.map((item: any, idx: number) => {
           const isLoading = loading;
 
@@ -693,10 +700,10 @@ const AgentDashboard: React.FC = () => {
           ) : (
             <Card
               key={item.id}
-              className={`${item.id === 'total-farms' ? item.color : 'bg-white'} p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden h-36 flex flex-col justify-between group border-none cursor-pointer`}
+              className={`${item.id === 'total-farms' ? item.color : 'bg-white'} p-3 sm:p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden h-28 sm:h-36 flex flex-col justify-between group border-none cursor-pointer`}
             >
               <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
-                <item.icon className={`h-24 w-24 ${item.id === 'total-farms' ? 'text-white' : item.color.replace('bg-', 'text-')} -rotate-12`} />
+                <item.icon className={`h-16 sm:h-24 w-16 sm:w-24 ${item.id === 'total-farms' ? 'text-white' : item.color.replace('bg-', 'text-')} -rotate-12`} />
               </div>
 
               <div className="flex items-center justify-between">
@@ -707,12 +714,12 @@ const AgentDashboard: React.FC = () => {
               </div>
 
               <div>
-                <p className={`text-[10px] font-black ${item.id === 'total-farms' ? 'text-white/60' : 'text-gray-500'} uppercase tracking-widest mb-1`}>{item.title}</p>
-                <div className="flex items-baseline gap-2">
-                  <h3 className={`text-4xl font-black ${item.id === 'total-farms' ? 'text-white' : 'text-gray-900'} leading-none`}>
+                <p className={`text-[8px] sm:text-[10px] font-black ${item.id === 'total-farms' ? 'text-white/60' : 'text-gray-500'} uppercase tracking-widest mb-0.5 sm:mb-1`}>{item.title}</p>
+                <div className="flex items-baseline gap-1 sm:gap-2">
+                  <h3 className={`text-xl sm:text-4xl font-black ${item.id === 'total-farms' ? 'text-white' : 'text-gray-900'} leading-none`}>
                     <CountUp end={parseInt(String(item.value).replace(/,/g, '')) || 0} duration={1000} />
                   </h3>
-                  <span className={`text-[10px] font-bold ${item.id === 'total-farms' ? 'text-white/80' : 'text-gray-500'}`}>{item.subtext}</span>
+                  <span className={`text-[8px] sm:text-[10px] font-bold ${item.id === 'total-farms' ? 'text-white/80' : 'text-gray-500'} truncate`}>{item.subtext}</span>
                 </div>
               </div>
             </Card>
@@ -819,7 +826,7 @@ const AgentDashboard: React.FC = () => {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 rounded-lg group-hover:bg-[#002f37] group-hover:text-white transition-colors"
-                        onClick={() => handleNewVisit(farm.farmer)}
+                        onClick={() => handleLogVisit(farm.farmer)}
                       >
                         <ArrowRight className="h-4 w-4" />
                       </Button>
@@ -992,16 +999,18 @@ const AgentDashboard: React.FC = () => {
                           <div className="flex justify-end gap-2">
                             <Button
                               variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 rounded-lg text-gray-400 hover:bg-[#002f37] hover:text-white transition-all shadow-sm"
+                              size="sm"
+                              className="h-8 px-3 rounded-lg text-gray-400 hover:bg-[#002f37] hover:text-white transition-all shadow-sm flex items-center gap-2"
                               onClick={() => handleViewFarmer(farm.farmer)}
                             >
-                              <Users className="h-4 w-4" />
+                              <Users className="h-3.5 w-3.5" />
+                              <span className="text-[10px] font-black uppercase tracking-widest">Profile</span>
                             </Button>
                             <Button
-                              className="bg-[#065f46] hover:bg-[#002f37] text-white h-8 text-[9px] font-black rounded-lg px-4 transition-all shadow-lg shadow-[#065f46]/20 uppercase tracking-widest border-none"
-                              onClick={() => handleNewVisit(farm.farmer)}
+                              className="bg-[#065f46] hover:bg-[#002f37] text-white h-8 text-[9px] font-black rounded-lg px-4 transition-all shadow-lg shadow-[#065f46]/20 uppercase tracking-widest border-none flex items-center gap-2"
+                              onClick={() => handleLogVisit(farm.farmer)}
                             >
+                              <ClipboardList className="h-3.5 w-3.5" />
                               Start Visit
                             </Button>
                           </div>
@@ -1205,7 +1214,17 @@ const AgentDashboard: React.FC = () => {
         </TabsContent>
       </Tabs>
 
-      <ViewFarmerModal open={viewModalOpen} onOpenChange={setViewModalOpen} farmer={selectedFarmer} />
+      <ViewFarmerModal 
+        open={viewModalOpen} 
+        onOpenChange={setViewModalOpen} 
+        farmer={selectedFarmer} 
+        onNewVisit={(farmer) => {
+          handleLogVisit(farmer);
+        }}
+        onUploadMedia={(farmer) => {
+          handleUploadReport(farmer);
+        }}
+      />
       <AddFarmerModal open={isAddFarmerModalOpen} onOpenChange={setIsAddFarmerModalOpen} onSuccess={fetchData} />
       <AddFarmerModal open={editModalOpen} onOpenChange={setEditModalOpen} farmer={selectedFarmer} isEditMode={true} onSuccess={fetchData} />
       <ViewMatchModal open={viewMatchModalOpen} onOpenChange={setViewMatchModalOpen} match={selectedMatch} />
@@ -1247,6 +1266,13 @@ const AgentDashboard: React.FC = () => {
         onOpenChange={setIsUploadReportModalOpen}
         farmer={selectedFarmer}
         onUpload={fetchData}
+      />
+
+      <MediaUploadModal
+        open={isMediaUploadModalOpen}
+        onOpenChange={setIsMediaUploadModalOpen}
+        farmer={selectedFarmer}
+        onSuccess={fetchData}
       />
 
       <ScheduleVisitModal

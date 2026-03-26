@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import AgentLayout from './AgentLayout';
+import { useAuth } from '@/contexts/AuthContext';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import {
   Card,
@@ -35,10 +36,10 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Filter, Plus, Eye, Edit, MapPin } from 'lucide-react';
 import AddFarmerModal from '@/components/agent/AddFarmerModal';
 import ViewFarmerModal from '@/components/agent/ViewFarmerModal';
-import { useAuth } from '@/contexts/AuthContext';
-import { GHANA_REGIONS, GHANA_COMMUNITIES } from '@/data/ghanaRegions';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import UploadReportModal from '@/components/agent/UploadReportModal';
+import { GHANA_REGIONS, GHANA_COMMUNITIES } from '@/data/ghanaRegions';
 
 const statusStyles: Record<string, string> = {
   active: 'bg-[#065f46]/10 text-[#065f46]',
@@ -59,6 +60,7 @@ const FarmersManagement: React.FC = () => {
   const [selectedCommunity, setSelectedCommunity] = useState<string>('all');
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   // React Query — same key as DisputeManagement & AddFarmerModal invalidation
   const { data: farmersData = [], isLoading: loading } = useQuery({
@@ -249,18 +251,32 @@ const FarmersManagement: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className={darkMode ? 'text-gray-400 hover:text-[#065f46] hover:bg-[#065f46]/10' : 'text-gray-500 hover:text-[#065f46] hover:bg-[#065f46]/10'}
-                          onClick={() => handleViewFarmer(farmer)}
+                          onClick={() => {
+                            setSelectedFarmer(farmer);
+                            setReportModalOpen(true);
+                          }}
+                          className={`h-8 px-3 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}
                         >
-                          <Eye className="h-4 w-4" />
+                          <Plus className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-black uppercase tracking-widest">Field Report</span>
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className={darkMode ? 'text-[#065f46] hover:text-[#065f46] hover:bg-[#065f46]/10' : 'text-[#065f46] hover:text-[#065f46] hover:bg-[#065f46]/10'}
-                          onClick={() => handleEditFarmer(farmer)}
+                          onClick={() => handleViewFarmer(farmer)}
+                          className={`h-8 px-3 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
                         >
-                          <Edit className="h-4 w-4" />
+                          <Eye className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-black uppercase tracking-widest">View</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditFarmer(farmer)}
+                          className={`h-8 px-3 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}`}
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-black uppercase tracking-widest">Edit</span>
                         </Button>
                       </div>
                     </TableCell>
@@ -279,6 +295,12 @@ const FarmersManagement: React.FC = () => {
         farmer={selectedFarmer}
         isEditMode={true}
         onSuccess={handleSuccess}
+      />
+      <UploadReportModal 
+         open={reportModalOpen} 
+         onOpenChange={setReportModalOpen} 
+         farmer={selectedFarmer} 
+         onUpload={handleSuccess}
       />
     </AgentLayout>
   );

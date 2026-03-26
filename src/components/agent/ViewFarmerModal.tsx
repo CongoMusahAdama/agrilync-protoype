@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,7 +10,7 @@ import {
     MapPin, Phone, MessageSquare, X,
     Sprout, Activity, ClipboardList, Image as ImageIcon,
     History, AlertTriangle, CheckCircle2, MoreHorizontal,
-    Plus, Edit, Star, Camera
+    Plus, Edit, Star, Camera, Video
 } from 'lucide-react';
 import api from '@/utils/api';
 
@@ -18,11 +18,14 @@ interface ViewFarmerModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     farmer: any;
+    onNewVisit?: (farmer: any) => void;
+    onUploadMedia?: (farmer: any) => void;
 }
 
-const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, farmer }) => {
+const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, farmer, onNewVisit, onUploadMedia }) => {
     const { darkMode } = useDarkMode();
     const [farms, setFarms] = useState<any[]>([]);
+    const [media, setMedia] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [activeDetailTab, setActiveDetailTab] = useState('overview');
 
@@ -40,11 +43,23 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
         }
     }, [farmer?._id]);
 
+    const fetchMedia = useCallback(async () => {
+        if (!farmer?._id) return;
+        try {
+            const res = await api.get('/media');
+            const farmerMedia = res.data.filter((m: any) => m.farm === farmer._id || (farmer.community && m.community === farmer.community));
+            setMedia(farmerMedia);
+        } catch (err) {
+            console.error('Failed to fetch media', err);
+        }
+    }, [farmer?._id, farmer?.community]);
+
     useEffect(() => {
         if (open && farmer?._id) {
             fetchFarms();
+            fetchMedia();
         }
-    }, [open, farmer?._id, fetchFarms]);
+    }, [open, farmer?._id, fetchFarms, fetchMedia]);
 
     if (!farmer) return null;
 
@@ -63,6 +78,7 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
             <DialogContent className={`max-w-6xl w-full h-[80vh] p-0 flex flex-col overflow-hidden border-0 ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-50'}`}>
                 <div className="sr-only">
                     <DialogTitle>Farm Details - {farm.name}</DialogTitle>
+                    <DialogDescription>Full details and activity history for farmer {farmer.name}</DialogDescription>
                 </div>
 
                 {/* Top Action Header */}
@@ -92,11 +108,18 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                     </div>
 
                     <div className="flex items-center gap-2 w-full md:w-auto">
-                        <Button className="flex-1 md:flex-none bg-[#065f46] text-white hover:bg-[#065f46]/90 font-bold px-6 border-none">
-                            <Plus className="h-4 w-4 mr-2" /> New Visit
+                        <Button 
+                            className="flex-1 md:flex-none bg-[#065f46] text-white hover:bg-[#065f46]/90 font-black h-11 px-6 rounded-xl border-none shadow-lg shadow-[#065f46]/20 flex items-center gap-2 uppercase tracking-widest text-[11px]"
+                            onClick={() => onNewVisit && onNewVisit(farmer)}
+                        >
+                            <Plus className="h-4 w-4" /> New Visit
                         </Button>
-                        <Button variant="outline" className={`flex-1 md:flex-none ${darkMode ? 'border-white/10 text-white hover:bg-white/5' : ''}`}>
-                            <ImageIcon className="h-4 w-4 mr-2" /> Upload Media
+                        <Button 
+                            variant="outline" 
+                            className={`flex-1 md:flex-none h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[11px] flex items-center gap-2 ${darkMode ? 'border-white/10 text-white hover:bg-white/5' : 'border-gray-200 text-[#002f37] hover:bg-gray-50'}`}
+                            onClick={() => onUploadMedia && onUploadMedia(farmer)}
+                        >
+                            <Camera className="h-4 w-4" /> Upload Media
                         </Button>
                         <Button variant="ghost" size="icon" className={`hidden md:flex ${darkMode ? 'text-gray-400' : ''}`}>
                             <Edit className="h-4 w-4" />
@@ -145,12 +168,12 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                             <div className={`p-4 rounded-xl border ${darkMode ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Last Visit</p>
                                 <p className={`text-sm font-bold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{farm.lastVisit || 'Not Recorded'}</p>
-                                <p className="text-[10px] text-[#065f46] font-bold mt-1">Status: {farm.status || 'Active'}</p>
+                                <p className="text-[10px] text-[#065f46] font-bold mt-1 uppercase tracking-widest">Status: {farm.status || 'Active'}</p>
                             </div>
                             <div className={`p-4 rounded-xl border ${darkMode ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Next Scheduled</p>
                                 <p className={`text-sm font-bold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{farm.nextVisit || 'TBD'}</p>
-                                <p className="text-[10px] text-amber-500 font-bold mt-1">Pending Field Audit</p>
+                                <p className="text-[10px] text-amber-500 font-bold mt-1 uppercase tracking-widest">Pending Field Audit</p>
                             </div>
                         </div>
 
@@ -181,12 +204,12 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                     {/* Main Content: Tabs */}
                     <div className="flex-1 flex flex-col overflow-hidden">
                         <Tabs defaultValue="overview" className="flex-1 flex flex-col" onValueChange={setActiveDetailTab}>
-                            <div className={`px-6 pt-2 border-b ${darkMode ? 'bg-[#0f172a] border-white/5' : 'bg-white border-gray-200'}`}>
+                            <div className={`px-6 pt-2 border-b ${darkMode ? 'bg-[#002f37] border-white/5' : 'bg-white border-gray-200'}`}>
                                 <TabsList className="bg-transparent h-12 w-full justify-start gap-8 p-0">
-                                    <TabsTrigger value="overview" className="bg-transparent border-b-2 border-transparent data-[state=active]:border-[#065f46] data-[state=active]:text-[#065f46] rounded-none px-0 h-12 text-sm font-bold">Overview</TabsTrigger>
-                                    <TabsTrigger value="timeline" className="bg-transparent border-b-2 border-transparent data-[state=active]:border-[#065f46] data-[state=active]:text-[#065f46] rounded-none px-0 h-12 text-sm font-bold">Timeline</TabsTrigger>
-                                    <TabsTrigger value="visits" className="bg-transparent border-b-2 border-transparent data-[state=active]:border-[#065f46] data-[state=active]:text-[#065f46] rounded-none px-0 h-12 text-sm font-bold">Visits & Reports</TabsTrigger>
-                                    <TabsTrigger value="media" className="bg-transparent border-b-2 border-transparent data-[state=active]:border-[#065f46] data-[state=active]:text-[#065f46] rounded-none px-0 h-12 text-sm font-bold">Media</TabsTrigger>
+                                    <TabsTrigger value="overview" className="bg-transparent border-b-2 border-transparent data-[state=active]:border-[#065f46] data-[state=active]:text-[#065f46] rounded-none px-0 h-12 text-sm font-bold uppercase tracking-widest">Overview</TabsTrigger>
+                                    <TabsTrigger value="timeline" className="bg-transparent border-b-2 border-transparent data-[state=active]:border-[#065f46] data-[state=active]:text-[#065f46] rounded-none px-0 h-12 text-sm font-bold uppercase tracking-widest">Timeline</TabsTrigger>
+                                    <TabsTrigger value="visits" className="bg-transparent border-b-2 border-transparent data-[state=active]:border-[#065f46] data-[state=active]:text-[#065f46] rounded-none px-0 h-12 text-sm font-bold uppercase tracking-widest">Visits</TabsTrigger>
+                                    <TabsTrigger value="media" className="bg-transparent border-b-2 border-transparent data-[state=active]:border-[#065f46] data-[state=active]:text-[#065f46] rounded-none px-0 h-12 text-sm font-bold uppercase tracking-widest">Media ({media.length})</TabsTrigger>
                                 </TabsList>
                             </div>
 
@@ -241,7 +264,7 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                                             <div>
                                                 <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Quick Bio</h4>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed italic">
-                                                    "{farmer.bio || `${farmer.name} is a dedicated ${farmer.farmType || 'agricultural'} operator in ${farmer.community || farmer.region}. With ${farmer.yearsOfExperience || 'several'} years of expertise ${farmer.cropsGrown ? `cultivating ${farmer.cropsGrown}` : farmer.livestockType ? `managing ${farmer.livestockType}` : 'in the field'}, they are committed to high-yield sustainable production.`}"
+                                                    "{farmer.bio || `${farmer.name || 'This grower'} is a dedicated ${farmer.farmType || 'agricultural'} operator in ${farmer.community || farmer.region || 'their community'}. With ${farmer.yearsOfExperience || 'several'} years of expertise ${farmer.cropsGrown ? `cultivating ${farmer.cropsGrown}` : farmer.livestockType ? `managing ${farmer.livestockType}` : 'in the field'}, they are committed to high-yield sustainable production.`}"
                                                 </p>
                                                 <div className="mt-6 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
                                                     <p className="text-xs font-bold mb-2">Grower Engagement</p>
@@ -285,11 +308,37 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                                     </TabsContent>
 
                                     <TabsContent value="media" className="mt-0">
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                            <div className="aspect-video flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-white/10 rounded-xl p-4 bg-gray-50/50 dark:bg-white/5 group hover:border-[#065f46] transition-all cursor-pointer">
-                                                <Camera className="h-8 w-8 text-gray-300 group-hover:text-[#065f46] mb-2" />
-                                                <p className="text-[10px] font-bold text-gray-400 group-hover:text-[#065f46] uppercase tracking-widest">Add Field Photo</p>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                            <div 
+                                                className="aspect-[1/1] flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-white/10 rounded-3xl p-4 bg-gray-50/50 dark:bg-white/5 group hover:border-[#065f46] transition-all cursor-pointer"
+                                                onClick={() => onUploadMedia && onUploadMedia(farmer)}
+                                            >
+                                                <Camera className="h-10 w-10 text-gray-300 group-hover:text-[#065f46] mb-3" />
+                                                <p className="text-[11px] font-black text-gray-400 group-hover:text-[#065f46] uppercase tracking-widest text-center leading-tight">Add Evidence</p>
                                             </div>
+
+                                            {media.map((item: any) => (
+                                                <div key={item.id} className="relative aspect-[1/1] rounded-3xl overflow-hidden group shadow-xl border border-white/5 bg-gray-950">
+                                                    {item.thumbnail || (item.type === 'Photo' && item.url) ? (
+                                                        <img 
+                                                            src={item.thumbnail || item.url} 
+                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                                            alt={item.name} 
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex flex-col items-center justify-center text-white/30">
+                                                            <Video className="h-12 w-12" />
+                                                            <p className="text-[10px] mt-2 font-black uppercase tracking-widest">Video</p>
+                                                        </div>
+                                                    )}
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                                                        <div>
+                                                            <p className="text-[10px] font-black text-white uppercase tracking-widest truncate">{item.name}</p>
+                                                            <p className="text-[8px] text-white/60 font-bold uppercase tracking-tight">{item.category}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </TabsContent>
                                 </div>
@@ -307,7 +356,7 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} className="text-xs font-bold uppercase tracking-widest">Close</Button>
+                        <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} className="text-xs font-bold uppercase tracking-widest transition-all hover:bg-rose-500/10 hover:text-rose-500">Close Window</Button>
                     </div>
                 </div>
             </DialogContent>

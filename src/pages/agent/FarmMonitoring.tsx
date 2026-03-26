@@ -187,11 +187,21 @@ const FarmMonitoring: React.FC = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" className={darkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'}>
-                          <Eye className="h-4 w-4" />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-8 px-3 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          <span className="text-[10px] font-black uppercase tracking-widest">Detail</span>
                         </Button>
-                        <Button variant="ghost" size="icon" className={darkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'}>
-                          <FileText className="h-4 w-4" />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-8 px-3 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                          <span className="text-[10px] font-black uppercase tracking-widest">Report</span>
                         </Button>
                       </div>
                     </TableCell>

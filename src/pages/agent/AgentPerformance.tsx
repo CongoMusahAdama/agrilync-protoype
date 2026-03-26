@@ -111,57 +111,10 @@ const AgentPerformance: React.FC = () => {
           </div>
         </div>
 
-        {/* 2. AGENT SCORECARD BANNER */}
-        <div className="relative overflow-hidden rounded-[24px] p-8 text-white shadow-2xl" 
-             style={{ background: 'linear-gradient(135deg, #002f37 0%, #001a1e 100%)' }}>
-          <div className="absolute right-[-20px] bottom-[-20px] text-[180px] opacity-10 pointer-events-none grayscale brightness-200">
-            🏆
-          </div>
-          <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-6 text-center md:text-left">
-              <div className="relative">
-                <Avatar className="h-20 w-20 border-4 border-white/20">
-                  <AvatarImage src={data?.agent?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${data?.agent?.name || 'Agent'}`} />
-                  <AvatarFallback className="bg-[#065f46] text-white text-xl">{data?.agent?.name?.charAt(0) || 'A'}</AvatarFallback>
-                </Avatar>
-                <div className="absolute -bottom-1 -right-1 bg-green-500 h-5 w-5 rounded-full border-2 border-[#002f37]" />
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#7ede56]">Agent Scorecard · {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric'})}</span>
-                <h2 className="text-3xl font-black mt-1 mb-1">{data?.agent?.name || 'Agent'}</h2>
-                <div className="flex items-center gap-3">
-                  <div className="flex text-amber-400">
-                    {[1, 2, 3, 4].map(i => <Star key={i} className="h-4 w-4 fill-current" />)}
-                    <Star className="h-4 w-4 text-white/30" />
-                  </div>
-                  <span className="text-sm font-bold text-white/80">4.2 / 5.0</span>
-                  <span className="text-white/40">|</span>
-                  <span className="text-sm font-bold text-white/60">{data?.agent?.title || 'Field Agent'} · {data?.agent?.region || 'Ashanti'} · {data?.agent?.agentId || 'LYA-0021'}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-12 text-center md:text-right">
-              <div className="flex flex-col gap-1">
-                <span className="text-[28px] font-black leading-none" style={{ color: 'var(--lgreen)' }}>{data?.summary?.kpisOnTarget || 0}/{data?.summary?.totalKpis || 6}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/40">KPIs On Target</span>
-              </div>
-              <div className="w-px h-12 bg-white/10 hidden md:block" />
-              <div className="flex flex-col gap-1">
-                <span className="text-[28px] font-black leading-none text-white">{data?.summary?.totalFarmers || 0}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Farmers Managed</span>
-              </div>
-              <div className="w-px h-12 bg-white/10 hidden md:block" />
-              <div className="flex flex-col gap-1">
-                <span className="text-[28px] font-black leading-none text-amber-500">{data?.summary?.needsAttention || 0}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Needs Attention</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* 2. AGENT SCORECARD BANNER REMOVED */}
 
         {/* 3. KPI SCORECARD GRID */}
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
           {(data?.kpis || []).map((kpi: any, idx: number) => {
             const isGreen = kpi.status === 'On Track';
             const isAmber = kpi.status === 'In Progress';
@@ -171,36 +124,36 @@ const AgentPerformance: React.FC = () => {
             return (
             <Card
               key={idx}
-              className="bg-white rounded-none p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden flex flex-col justify-between group border-none min-h-[160px]"
+              className="bg-white rounded-none p-3 sm:p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden flex flex-col justify-between group border-none h-28 sm:h-auto min-h-[112px] sm:min-h-[160px]"
             >
               <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
-                <IconComponent className={`h-24 w-24 ${color.replace('bg-', 'text-')} -rotate-12`} />
+                <IconComponent className={`h-20 w-20 sm:h-24 sm:w-24 ${color.replace('bg-', 'text-')} -rotate-12`} />
               </div>
 
-              <div className="flex items-center justify-between mb-4 relative z-10">
-                <div className={`p-2 ${color.replace('bg-', 'bg-').concat('/10')} rounded-lg`}>
-                  <IconComponent className={`h-5 w-5 ${color.replace('bg-', 'text-')}`} />
+              <div className="flex items-center justify-between mb-1 sm:mb-4 relative z-10">
+                <div className={`p-1.5 sm:p-2 ${color.replace('bg-', 'bg-').concat('/10')} rounded-lg`}>
+                  <IconComponent className={`h-4 w-4 sm:h-5 sm:w-5 ${color.replace('bg-', 'text-')}`} />
                 </div>
-                <Badge className={`rounded-xl border-none font-bold text-[9px] px-2 py-0.5 ${color} text-white uppercase tracking-widest`}>
+                <Badge className={`rounded-xl border-none font-bold text-[8px] sm:text-[9px] px-1.5 sm:px-2 py-0.5 ${color} text-white uppercase tracking-widest`}>
                   {kpi.status}
                 </Badge>
               </div>
 
               <div className="relative z-10">
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">{kpi.label}</p>
-                <div className="flex items-baseline gap-2 mb-4">
-                  <h3 className="text-4xl font-black text-gray-900 leading-none">
+                <p className="text-[8px] sm:text-[10px] font-black text-gray-500 uppercase tracking-widest mb-0.5 sm:mb-1">{kpi.label}</p>
+                <div className="flex items-baseline gap-1 sm:gap-2 mb-2 sm:mb-4">
+                  <h3 className="text-xl sm:text-4xl font-black text-gray-900 leading-none">
                     {kpi.value}
                   </h3>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{kpi.unit}</span>
+                  <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest">{kpi.unit}</span>
                 </div>
 
-                <div className="space-y-1.5">
-                  <div className="flex justify-between items-center text-[10px] font-bold">
+                <div className="space-y-1 sm:space-y-1.5 hidden sm:block">
+                  <div className="flex justify-between items-center text-[8px] sm:text-[10px] font-bold">
                     <span className="text-gray-400">TARGET: {kpi.target}</span>
                     <span className={color.replace('bg-', 'text-')}>{Math.round(kpi.progress)}%</span>
                   </div>
-                  <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-1 sm:h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                     <div className="h-full transition-all duration-1000" style={{ width: `${Math.min(kpi.progress, 100)}%`, backgroundColor: color.startsWith('bg-[') ? color.match(/\[(.*?)\]/)?.[1] : 'var(--teal)' }} />
                   </div>
                 </div>

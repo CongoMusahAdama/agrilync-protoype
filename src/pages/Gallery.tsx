@@ -1,4 +1,4 @@
-﻿
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -261,12 +261,12 @@ const farmVisits = [
   },
   {
     id: 26,
-    title: "Palm Nut Operation",
-    image: "/lovable-uploads/image copy 10.png",
-    region: "Eastern Region",
-    category: "Palm Nut Farming",
-    date: "2024",
-    description: "Collaborative session with palm nut farmers in the Eastern Region, spearheaded by our Chief of Operations, Oti Gabriel Wontumi."
+    title: "AgriLync Awareness @ Mim",
+    image: "/lovable-uploads/agent.png",
+    region: "Ahafo Region",
+    category: "Community Outreach",
+    date: "2026",
+    description: "Creating AgriLync awareness and onboarding farmers in Mim, Ahafo Region. Our field team engaging directly with the community to bridge the digital gap."
   }
 ];
 
@@ -374,10 +374,10 @@ const Gallery = () => {
       <Navbar />
 
       {/* Main Container */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 pt-28 pb-16">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 pt-32 md:pt-36 pb-12">
 
         {/* Header */}
-        <header ref={heroRef} className={`mb-16 transition-all duration-1000 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} text-center max-w-4xl mx-auto`}>
+        <header ref={heroRef} className={`mb-8 transition-all duration-1000 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} text-center max-w-4xl mx-auto`}>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#002f37] mb-6 tracking-tight">
             Our Portfolio
           </h1>
@@ -390,7 +390,7 @@ const Gallery = () => {
 
         {/* Premium Filter Bar */}
         {/* Premium Dropdown Filter Bar */}
-        <section ref={filterRef} className={`mb-16 transition-all duration-1000 delay-100 ${filterVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} `}>
+        <section ref={filterRef} className={`mb-8 transition-all duration-1000 delay-100 ${filterVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} `}>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-4xl mx-auto px-4">
 
             <div className="flex items-center gap-3 text-[#002f37] font-bold mr-2 hidden md:flex">

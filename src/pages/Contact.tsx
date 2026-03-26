@@ -27,6 +27,7 @@ const Contact = () => {
   const [infoRef, infoVisible] = useScrollReveal();
   const [communityRef, communityVisible] = useScrollReveal();
   const [consultationRef, consultationVisible] = useScrollReveal();
+  const [transformRef, transformVisible] = useScrollReveal();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -270,7 +271,7 @@ ${formData.message}`;
             <span className="text-sm font-semibold">Book a Free Session</span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+          <h2 ref={transformRef} className={`text-3xl sm:text-4xl font-bold mb-6 transition-all duration-700 ${transformVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
             Ready to Transform Your Farm?
           </h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
