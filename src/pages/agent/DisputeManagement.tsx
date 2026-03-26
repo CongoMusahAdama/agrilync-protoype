@@ -259,13 +259,13 @@ const DisputeManagement: React.FC = () => {
           {summaryCards.map((card, idx) => (
             <Card
               key={idx}
-              className={`${card.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-700 relative overflow-hidden ${statusFilter === card.status ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent' : ''} ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              className={`${card.color} border-none rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-700 relative overflow-hidden h-28 sm:h-36 ${statusFilter === card.status ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent' : ''} ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
               style={{ transitionDelay: `${idx * 100}ms` }}
               onClick={() => handleFilterByStatus(card.status)}
             >
               {/* Background Decoration */}
               <div className="absolute inset-0 opacity-10 pointer-events-none">
-                <card.icon className="absolute top-1 right-1 h-12 w-12 text-white rotate-12" />
+                <card.icon className="absolute top-1 right-1 h-12 w-12 sm:h-16 sm:w-16 text-white rotate-12" />
               </div>
 
               <div className="p-3 sm:p-5 flex flex-col h-full relative z-10">
@@ -436,18 +436,20 @@ const DisputeManagement: React.FC = () => {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right pr-6">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-[#065f46] hover:text-[#065f46]/80 hover:bg-green-50 dark:hover:bg-green-900/20"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewDetails(dispute);
-                        }}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-8 px-3 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewDetails(dispute);
+                          }}
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          <span className="text-[10px] font-black uppercase tracking-widest">View</span>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

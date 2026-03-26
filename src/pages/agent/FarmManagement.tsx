@@ -15,6 +15,7 @@ import CountUp from '@/components/CountUp';
 import AddFarmerModal from '@/components/agent/AddFarmerModal';
 import ViewFarmerModal from '@/components/agent/ViewFarmerModal';
 import UploadReportModal from '@/components/agent/UploadReportModal';
+import MediaUploadModal from '@/components/agent/MediaUploadModal';
 import FarmJourneyModal from '@/components/agent/FarmJourneyModal';
 import VerificationQueueModal from '@/components/agent/VerificationQueueModal';
 import ViewMatchModal from '@/components/agent/ViewMatchModal';
@@ -101,7 +102,8 @@ const FarmManagement: React.FC = () => {
     const [selectedFarmer, setSelectedFarmer] = useState<any>(null);
     const [viewModalOpen, setViewModalOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
-    const [uploadModalOpen, setUploadModalOpen] = useState(false);
+    const [uploadReportModalOpen, setUploadReportModalOpen] = useState(false);
+    const [uploadMediaModalOpen, setUploadMediaModalOpen] = useState(false);
     const [verificationQueueModalOpen, setVerificationQueueModalOpen] = useState(false);
     const [selectedTab, setSelectedTab] = useState('personal');
     const [activeTab, setActiveTab] = useState<'farmers' | 'farms' | 'visits' | 'reports' | 'matches'>('farmers');
@@ -407,7 +409,7 @@ const FarmManagement: React.FC = () => {
 
     const handleUploadReport = (farmer: any) => {
         setSelectedFarmer(farmer);
-        setUploadModalOpen(true);
+        setUploadMediaModalOpen(true);
     };
 
     const handleLogVisit = (farmer?: any) => {
@@ -690,7 +692,7 @@ const FarmManagement: React.FC = () => {
         }
 
         const visitData = {
-            farmer: visitForm.farmerId,
+            farmerId: visitForm.farmerId,
             date: visitForm.date,
             time: visitForm.time,
             hoursSpent: Number(visitForm.hoursSpent),
@@ -719,7 +721,7 @@ const FarmManagement: React.FC = () => {
         >
             <div className="space-y-8">
                 {/* Summary Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-8">
                     {[
                         { id: 'total-farmers', title: 'Total Farmers', value: metrics.total, icon: Users, color: 'bg-emerald-800', status: null, subtext: 'Lifetime' },
                         { id: 'completed', title: 'Completed', value: metrics.verified, icon: CheckCircle, color: 'bg-blue-600', status: 'Completed', subtext: 'Verified' },
@@ -732,27 +734,27 @@ const FarmManagement: React.FC = () => {
                         ) : (
                             <Card
                                 key={item.id}
-                                className={`${item.title === 'Total Farmers' ? item.color : 'bg-white'} rounded-none p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden h-36 flex flex-col justify-between group border-none cursor-pointer ${(statusFilter === item.status && item.status !== null) || (statusFilter === null && item.status === null && activeTab === 'farmers') || (item.id === 'active-farms' && activeTab === 'farms') || (item.id === 'matched' && activeTab === 'matches') ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}
+                                className={`${item.title === 'Total Farmers' ? item.color : 'bg-white'} rounded-none p-3 sm:p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden h-28 sm:h-36 flex flex-col justify-between group border-none cursor-pointer ${(statusFilter === item.status && item.status !== null) || (statusFilter === null && item.status === null && activeTab === 'farmers') || (item.id === 'active-farms' && activeTab === 'farms') || (item.id === 'matched' && activeTab === 'matches') ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}
                                 onClick={() => handleCardClick(item.id, item.status)}
                             >
                                 <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
-                                    <item.icon className={`h-24 w-24 ${item.title === 'Total Farmers' ? 'text-white' : item.color.replace('bg-', 'text-')} -rotate-12`} />
+                                    <item.icon className={`h-20 w-20 sm:h-24 sm:w-24 ${item.title === 'Total Farmers' ? 'text-white' : item.color.replace('bg-', 'text-')} -rotate-12`} />
                                 </div>
 
                                 <div className="flex items-center justify-between">
-                                    <div className={`p-2 ${item.title === 'Total Farmers' ? 'bg-white/10' : item.color.replace('bg-', 'bg-').concat('/10')} rounded-lg`}>
-                                        <item.icon className={`h-5 w-5 ${item.title === 'Total Farmers' ? 'text-white' : item.color.replace('bg-', 'text-')}`} />
+                                    <div className={`p-1.5 sm:p-2 ${item.title === 'Total Farmers' ? 'bg-white/10' : item.color.replace('bg-', 'bg-').concat('/10')} rounded-lg`}>
+                                        <item.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${item.title === 'Total Farmers' ? 'text-white' : item.color.replace('bg-', 'text-')}`} />
                                     </div>
-                                    <span className={`text-[10px] font-black ${item.title === 'Total Farmers' ? 'text-white/40' : 'text-gray-400'} uppercase tracking-widest`}>STATUS</span>
+                                    <span className={`text-[8px] sm:text-[10px] font-black ${item.title === 'Total Farmers' ? 'text-white/40' : 'text-gray-400'} uppercase tracking-widest`}>STATUS</span>
                                 </div>
 
                                 <div>
-                                    <p className={`text-[10px] font-black ${item.title === 'Total Farmers' ? 'text-white/60' : 'text-gray-500'} uppercase tracking-widest mb-1`}>{item.title}</p>
-                                    <div className="flex items-baseline gap-2">
-                                        <h3 className={`text-4xl font-black ${item.title === 'Total Farmers' ? 'text-white' : 'text-gray-900'} leading-none`}>
+                                    <p className={`text-[8px] sm:text-[10px] font-black ${item.title === 'Total Farmers' ? 'text-white/60' : 'text-gray-500'} uppercase tracking-widest mb-0.5 sm:mb-1`}>{item.title}</p>
+                                    <div className="flex items-baseline gap-1 sm:gap-2">
+                                        <h3 className={`text-xl sm:text-4xl font-black ${item.title === 'Total Farmers' ? 'text-white' : 'text-gray-900'} leading-none`}>
                                             <CountUp end={Number(item.value)} duration={1000} />
                                         </h3>
-                                        <span className={`text-[10px] font-bold ${item.title === 'Total Farmers' ? 'text-white/80' : 'text-gray-500'}`}>{item.subtext}</span>
+                                        <span className={`text-[8px] sm:text-[10px] font-bold ${item.title === 'Total Farmers' ? 'text-white/80' : 'text-gray-500'}`}>{item.subtext}</span>
                                     </div>
                                 </div>
                             </Card>
@@ -938,9 +940,9 @@ const FarmManagement: React.FC = () => {
 
                             <div className="flex items-center gap-2">
                                 <div className={`p-1.5 rounded-md ${darkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
-                                    <Upload className="w-3.5 h-3.5" />
+                                    <FileText className="w-3.5 h-3.5" />
                                 </div>
-                                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Upload Report</span>
+                                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Field Audit</span>
                             </div>
                         </div>
 
@@ -1047,43 +1049,50 @@ const FarmManagement: React.FC = () => {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-right">
-                                                        <div className="flex items-center justify-end gap-1">
+                                                        <div className="flex items-center justify-end gap-2 flex-wrap min-w-[320px]">
                                                             <Button
-                                                                size="icon"
+                                                                size="sm"
                                                                 variant="ghost"
                                                                 onClick={() => handleViewFarmer(farmer)}
-                                                                className={`h-8 w-8 rounded-lg ${darkMode ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
+                                                                className={`h-8 px-3 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
                                                             >
-                                                                <Eye className="w-4 h-4" />
+                                                                <Eye className="w-3.5 h-3.5" />
+                                                                <span className="text-[10px] font-black uppercase tracking-widest">View</span>
                                                             </Button>
                                                             <Button
-                                                                size="icon"
+                                                                size="sm"
                                                                 variant="ghost"
                                                                 onClick={() => handleEditFarmer(farmer)}
-                                                                className={`h-8 w-8 rounded-lg ${darkMode ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}`}
+                                                                className={`h-8 px-3 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}`}
                                                             >
-                                                                <Edit className="w-4 h-4" />
+                                                                <Edit className="w-3.5 h-3.5" />
+                                                                <span className="text-[10px] font-black uppercase tracking-widest">Edit</span>
                                                             </Button>
                                                             <Button
-                                                                size="icon"
+                                                                size="sm"
                                                                 variant="ghost"
                                                                 onClick={() => {
                                                                     setSelectedFarmer(farmer);
                                                                     setJourneyModalOpen(true);
                                                                 }}
-                                                                className={`h-8 w-8 rounded-lg opacity-100 ${darkMode ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
+                                                                className={`h-8 px-3 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
                                                                 title="Track Farm Journey"
                                                             >
-                                                                <Leaf className="w-4 h-4" />
+                                                                <Leaf className="w-3.5 h-3.5" />
+                                                                <span className="text-[10px] font-black uppercase tracking-widest">Track</span>
                                                             </Button>
                                                             <Button
-                                                                size="icon"
+                                                                size="sm"
                                                                 variant="ghost"
-                                                                onClick={() => handleUploadReport(farmer)}
-                                                                className={`h-8 w-8 rounded-lg ${darkMode ? 'bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
-                                                                title="Upload Report"
+                                                                onClick={() => {
+                                                                    setSelectedFarmer(farmer);
+                                                                    setUploadReportModalOpen(true);
+                                                                }}
+                                                                className={`h-8 px-3 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
+                                                                title="Perform Field Audit"
                                                             >
-                                                                <Upload className="w-4 h-4" />
+                                                                <FileText className="w-3.5 h-3.5" />
+                                                                <span className="text-[10px] font-black uppercase tracking-widest">Report</span>
                                                             </Button>
                                                         </div>
                                                     </TableCell>
@@ -1291,28 +1300,32 @@ const FarmManagement: React.FC = () => {
                                                                     }`}>
                                                                     {visit.status}
                                                                 </div>
-                                                                <div className="flex items-center gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <div className="flex flex-wrap items-center gap-2 opacity-100 transition-opacity">
                                                                     <Button
                                                                         variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-9 w-9 md:h-8 md:w-8 rounded-lg bg-white/5 md:bg-transparent hover:bg-white/10"
+                                                                        size="sm"
+                                                                        className={`h-9 md:h-8 px-3 rounded-lg flex items-center gap-2 transition-all ${darkMode ? 'bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300' : 'bg-gray-50 border border-gray-100 hover:bg-gray-100 text-gray-600'}`}
                                                                         onClick={(e: React.MouseEvent) => {
                                                                             e.stopPropagation();
                                                                             handleEditVisit(visit);
                                                                         }}
+                                                                        title="Edit this visit entry"
                                                                     >
-                                                                        <Edit className="w-4 h-4 text-gray-400" />
+                                                                        <Edit className="w-3.5 h-3.5 text-gray-400" />
+                                                                        <span className="text-[10px] font-black uppercase tracking-widest">Edit</span>
                                                                     </Button>
                                                                     <Button
                                                                         variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-9 w-9 md:h-8 md:w-8 rounded-lg bg-emerald-500/10 md:bg-transparent hover:bg-emerald-500/20"
+                                                                        size="sm"
+                                                                        className={`h-9 md:h-8 px-3 rounded-lg flex items-center gap-2 transition-all ${darkMode ? 'bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 text-emerald-600'}`}
                                                                         onClick={(e: React.MouseEvent) => {
                                                                             e.stopPropagation();
                                                                             // Logic for completing/marking done if needed
                                                                         }}
+                                                                        title="Mark this visit as verified"
                                                                     >
-                                                                        <CheckCircle className="w-4 h-4 text-emerald-400" />
+                                                                        <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                                                                        <span className="text-[10px] font-black uppercase tracking-widest">Mark Complete</span>
                                                                     </Button>
                                                                 </div>
                                                             </div>
@@ -1677,9 +1690,20 @@ const FarmManagement: React.FC = () => {
             />
 
             <AddFarmerModal open={isAddFarmerModalOpen} onOpenChange={setIsAddFarmerModalOpen} onSuccess={fetchData} />
-            <ViewFarmerModal open={viewModalOpen} onOpenChange={setViewModalOpen} farmer={selectedFarmer} />
+            <ViewFarmerModal 
+                open={viewModalOpen} 
+                onOpenChange={setViewModalOpen} 
+                farmer={selectedFarmer} 
+                onNewVisit={(farmer) => {
+                    handleLogVisit(farmer);
+                }}
+                onUploadMedia={(farmer) => {
+                    handleUploadReport(farmer);
+                }}
+            />
             <AddFarmerModal open={editModalOpen} onOpenChange={setEditModalOpen} farmer={selectedFarmer} isEditMode={true} onSuccess={fetchData} />
-            <UploadReportModal open={uploadModalOpen} onOpenChange={setUploadModalOpen} farmer={selectedFarmer} onUpload={() => refetchReports()} />
+            <UploadReportModal open={uploadReportModalOpen} onOpenChange={setUploadReportModalOpen} farmer={selectedFarmer} onUpload={() => refetchReports()} />
+            <MediaUploadModal open={uploadMediaModalOpen} onOpenChange={setUploadMediaModalOpen} farmer={selectedFarmer} onSuccess={fetchData} />
             <FarmJourneyModal open={journeyModalOpen} onOpenChange={setJourneyModalOpen} farmer={selectedFarmer} />
 
             {/* Field Visit Modal - Premium Style */}
@@ -2059,6 +2083,7 @@ const FarmManagement: React.FC = () => {
                 onView={handleViewFarmer}
                 onEdit={handleEditFarmer}
             />
+
         </AgentLayout >
     );
 };
