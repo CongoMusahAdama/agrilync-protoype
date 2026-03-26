@@ -24,10 +24,8 @@ export const exportToPDF = async (data: ReportData) => {
     doc.setFillColor(0, 47, 55); // #002f37
     doc.rect(0, 0, pageWidth, 45, 'F');
 
-    // Logo - using a promise to ensure image is loaded if needed, 
-    // but jsPDF addImage can handle URLs in most modern browsers if reachable
     try {
-      doc.addImage(logoUrl, 'PNG', 15, 10, 25, 25);
+      doc.addImage(logoUrl, 'PNG', 15, 8, 28, 28);
     } catch (e) {
       console.warn('Logo could not be loaded for PDF', e);
     }
@@ -35,12 +33,19 @@ export const exportToPDF = async (data: ReportData) => {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(22);
     doc.setFont('times', 'bold');
-    doc.text('FIELD REPORT', 45, 25);
+    doc.text((data.type === 'field-visit' ? 'FIELD JOURNAL' : 'FIELD REPORT').toUpperCase(), 48, 20);
 
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setFont('times', 'normal');
-    doc.text(`Report ID: AL-${Math.random().toString(36).substr(2, 9).toUpperCase()}`, pageWidth - 20, 20, { align: 'right' });
-    doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth - 20, 28, { align: 'right' });
+    doc.text('AGRILYNC TECHNOLOGIES LTD', 48, 26);
+    doc.text('Plot 42, Spintex Road, Accra - Ghana', 48, 30);
+    doc.text('info@agrilync.com | www.agrilync.com', 48, 34);
+
+    doc.setFontSize(8);
+    doc.setFont('times', 'normal');
+    doc.text(`Doc Ref: AL-${Math.random().toString(36).substr(2, 9).toUpperCase()}`, pageWidth - 15, 18, { align: 'right' });
+    doc.text(`Printed: ${new Date().toLocaleString()}`, pageWidth - 15, 24, { align: 'right' });
+    doc.text('Status: OFFICIAL DOCUMENT', pageWidth - 15, 30, { align: 'right' });
 
     // Metadata Header Section
     doc.setFillColor(240, 240, 240);
@@ -192,9 +197,13 @@ export const exportToWord = async (data: ReportData) => {
       </head>
       <body>
         <div class="header">
+          <div class="logo-box">
+             <img src="${logoUrl}" width="50" height="50" />
+          </div>
           <div class="title-box">
-            <h1>Field Report</h1>
-            <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 12px;">AgriLync Official Documentation</p>
+            <h1>${data.type === 'field-visit' ? 'Field Journal' : 'Field Report'}</h1>
+            <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 11px; font-weight: bold; text-transform: uppercase;">AgriLync Technologies Ltd</p>
+            <p style="margin: 2px 0 0 0; opacity: 0.7; font-size: 10px;">Accra, Ghana | www.agrilync.com</p>
           </div>
         </div>
         <div class="container">

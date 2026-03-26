@@ -192,7 +192,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             )}
 
             {/* Top spacing placeholder */}
-            <div className="pt-10 pb-2"></div>
+            <div className="pt-2 pb-2"></div>
             {/* Agent Profile Card */}
             <SidebarProfileCard
                 sidebarCollapsed={sidebarCollapsed}

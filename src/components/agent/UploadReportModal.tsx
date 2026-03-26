@@ -105,8 +105,8 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
                                     <Sparkles className="h-6 w-6 text-[#065f46]" />}
                         </div>
                         <div>
-                            <h2 className="text-base font-black uppercase tracking-widest text-[#002f37] dark:text-white">Field Visit Report</h2>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Grower Strategy Step {step} of 3</p>
+                            <h2 className="text-base font-black uppercase tracking-widest text-[#002f37] dark:text-white">New Field Audit</h2>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Report Generation Step {step} of 3</p>
                         </div>
                     </div>
                     {step < 4 && (
@@ -123,8 +123,8 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
                     {step === 1 && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div>
-                                <DialogTitle className={`text-2xl font-black mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Field Insights</DialogTitle>
-                                <DialogDescription className={`font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Capture critical operational data for this grower profile.</DialogDescription>
+                                <DialogTitle className={`text-2xl font-black mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Audit Observations</DialogTitle>
+                                <DialogDescription className={`font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Log detailed field data and operational insights for this grower.</DialogDescription>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -200,8 +200,8 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
                                 <div className="p-4 rounded-full bg-[#065f46]/10 mb-4">
                                     <Camera className="h-10 w-10 text-[#065f46]" />
                                 </div>
-                                <p className={`text-lg font-black ${darkMode ? 'text-white' : 'text-[#002f37]'}`}>Sync Visual Data</p>
-                                <p className="text-sm font-medium text-gray-500 mt-1">Tap to access gallery or camera</p>
+                                <p className={`text-lg font-black ${darkMode ? 'text-white' : 'text-[#002f37]'}`}>Upload Report Photos</p>
+                                <p className="text-sm font-medium text-gray-500 mt-1">Select from gallery or use camera</p>
                             </div>
 
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -233,7 +233,7 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
                                     <div className="p-2 rounded-lg bg-[#065f46]/20">
                                         <Sparkles className="h-6 w-6 text-[#065f46]" />
                                     </div>
-                                    <h3 className="font-black uppercase tracking-widest text-[#065f46] text-sm">Advanced Ag-Vision Advisory</h3>
+                                    <h3 className="font-black uppercase tracking-widest text-[#065f46] text-sm">AI-Generated Report Summary</h3>
                                 </div>
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-center pb-6 border-b border-[#065f46]/20">

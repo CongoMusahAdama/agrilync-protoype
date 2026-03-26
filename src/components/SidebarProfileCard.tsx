@@ -66,10 +66,10 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({ sidebarCollapse
 
   /* ── Expanded ── */
   return (
-    <div className="mx-4 mt-2 mb-6 p-0 rounded-t-[2.5rem] rounded-b-2xl bg-[#002f37] transition-all duration-500 overflow-hidden group">
-      <div className="pt-6 pb-6 px-6 flex flex-col items-center text-center">
+    <div className="mx-4 mt-2 mb-2 p-0 rounded-t-[2.5rem] rounded-b-2xl bg-[#002f37] transition-all duration-500 overflow-hidden group">
+      <div className="pt-4 pb-4 px-6 flex flex-col items-center text-center">
         {/* Centered Avatar */}
-        <div className="relative mb-6">
+        <div className="relative mb-3">
           <div className="absolute inset-0 bg-emerald-500/20 blur-md rounded-full group-hover:bg-emerald-500/30 transition-all duration-500" />
           <Avatar className="h-20 w-20 rounded-full border-2 border-[#7ede56]/30 shadow-2xl transition-all duration-500 group-hover:scale-105">
             {profile.avatar && <AvatarImage src={profile.avatar} alt={profile.name} className="object-cover" />}
@@ -103,12 +103,12 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({ sidebarCollapse
             </p>
 
             {profile.id && (
-              <p className="text-[#065f46] bg-[#7ede56] inline-block px-3 py-0.5 rounded-full text-[9px] font-black tracking-widest uppercase mt-2 shadow-sm">
+              <p className="text-[#065f46] bg-[#7ede56] inline-block px-3 py-0.5 rounded-full text-[9px] font-black tracking-widest uppercase mt-1 shadow-sm">
                 LYNC ID: {profile.id}
               </p>
             )}
 
-            <div className="pt-4 mt-6 w-full flex flex-col gap-3">
+            <div className="pt-2 mt-3 w-full flex flex-col gap-2">
               <div className="flex items-center justify-center gap-2 text-[#7ede56]">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 <span className="text-[10px] font-black uppercase tracking-[0.15em]">

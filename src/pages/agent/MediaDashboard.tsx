@@ -174,24 +174,35 @@ const MediaDashboard: React.FC = () => {
   const albums = useMemo(() => {
     const albumMap = new Map();
     (mediaItems || []).forEach((item: any) => {
+      // Robustly identify album name
       const albumName = item.album || (item.name.startsWith('[Album] ') ? item.name.replace('[Album] ', '') : null);
       if (albumName) {
         if (!albumMap.has(albumName)) {
           albumMap.set(albumName, {
             name: albumName,
             count: 0,
-            thumbnail: item.thumbnail,
-            latest: item.createdAt
+            thumbnail: (item.url !== 'album-placeholder' && item.type === 'Photo') ? (item.thumbnail || item.url) : null,
+            latest: item.createdAt || new Date().toISOString()
           });
         }
         const album = albumMap.get(albumName);
-        if (item.type !== 'Photo' || !item.url.includes('album-placeholder')) {
+        
+        // Count actual assets (excluding the album placeholder itself)
+        if (item.url !== 'album-placeholder') {
             album.count++;
         }
-        if (item.thumbnail && (!album.thumbnail || new Date(item.createdAt) > new Date(album.latest))) {
-            album.thumbnail = item.thumbnail;
+        
+        // Update thumbnail with latest actual photo
+        const itemDate = new Date(item.createdAt || 0);
+        const albumDate = new Date(album.latest || 0);
+        
+        if (item.url !== 'album-placeholder' && item.type === 'Photo' && (item.thumbnail || item.url)) {
+            if (!album.thumbnail || itemDate >= albumDate) {
+                album.thumbnail = item.thumbnail || item.url;
+            }
         }
-        if (new Date(item.createdAt) > new Date(album.latest)) {
+        
+        if (itemDate > albumDate) {
             album.latest = item.createdAt;
         }
       }
@@ -320,7 +331,10 @@ const MediaDashboard: React.FC = () => {
         format: uploadFile.name.split('.').pop()?.toUpperCase(),
         farm: uploadForm.farm || undefined,
         album: uploadForm.album || undefined,
-        status: 'Synced'
+        status: 'Synced',
+        community: agent?.community,
+        district: agent?.district,
+        region: agent?.region
       });
     };
     reader.readAsDataURL(uploadFile);
@@ -415,8 +429,8 @@ const MediaDashboard: React.FC = () => {
                     <stat.icon className={`h-20 w-20 sm:h-24 sm:w-24 ${iconColorClass} -rotate-12`} />
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className={`p-2 ${iconBgClass} rounded-lg`}>
+                  <div className="flex items-center justify-between mb-1 sm:mb-4">
+                    <div className={`p-1.5 sm:p-2 ${iconBgClass} rounded-lg`}>
                       <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${iconColorClass}`} />
                     </div>
                     <span className={`text-[8px] sm:text-[10px] font-black ${subtextColorClass} uppercase tracking-widest`}>
@@ -435,7 +449,7 @@ const MediaDashboard: React.FC = () => {
                         )}
                       </h3>
                       <span className={`text-[8px] sm:text-[10px] font-bold ${isFirst ? 'text-white/80' : 'text-gray-500'}`}>
-                        {stat.label.includes('Files') ? 'Files' : 'Items'}
+                        {stat.label.includes('Files') ? (stat.label.includes('Photos') ? 'Photos' : 'Docs') : (stat.label.includes('Storage') ? '' : 'Files')}
                       </span>
                     </div>
                   </div>
@@ -671,24 +685,26 @@ const MediaDashboard: React.FC = () => {
                         <TableCell className="py-4 text-[11px] font-medium text-gray-500">{item.size}</TableCell>
                         <TableCell className="py-4">{statusBadge(item.status)}</TableCell>
                         <TableCell className="text-right py-4 px-6">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg group-hover:bg-[#002f37] group-hover:text-white transition-all border-none">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="rounded-xl border-none shadow-2xl p-1">
-                              <DropdownMenuItem className="flex items-center gap-2 rounded-lg py-2 font-bold text-[11px] uppercase tracking-wider cursor-pointer">
-                                <Eye className="h-3.5 w-3.5" /> View
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                className="flex items-center gap-2 rounded-lg py-2 font-bold text-[11px] uppercase tracking-wider text-rose-600 cursor-pointer"
-                                onClick={() => handleDelete(item)}
-                              >
-                                <Trash2 className="h-3.5 w-3.5" /> Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedMedia(item)}
+                              className="h-8 px-3 rounded-lg flex items-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span className="text-[10px] font-black uppercase tracking-widest">View</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(item)}
+                              className="h-8 px-3 rounded-lg flex items-center gap-2 bg-rose-50 text-rose-600 hover:bg-rose-100"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span className="text-[10px] font-black uppercase tracking-widest">Delete</span>
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

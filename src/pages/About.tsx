@@ -40,6 +40,8 @@ const About = () => {
   const [serve4Ref, serve4Visible] = useScrollReveal();
   const [howWeDoItRef, howWeDoItVisible] = useScrollReveal();
   const [whyChooseUsRef, whyChooseUsVisible] = useScrollReveal();
+  const [monitoringRef, monitoringVisible] = useScrollReveal();
+  const [trustRef, trustVisible] = useScrollReveal();
   const [mobileAppRef, mobileAppVisible] = useScrollReveal();
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -467,7 +469,7 @@ const About = () => {
                 <div className="w-2 h-2" style={{ backgroundColor: BRAND_MAGENTA }}></div>
                 <span className="text-gray-500 text-sm uppercase tracking-wider ml-3">ACCOUNTABILITY</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 text-[#002f37]">
+              <h2 ref={monitoringRef} className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-3 text-[#002f37] transition-all duration-700 ease-in-out " + (monitoringVisible ? " animate-fade-in-up" : " opacity-0")}>
                 Field Monitoring & Transparency
               </h2>
               <div className="w-16 h-0.5 bg-[#7ede56] mb-6"></div>
@@ -511,7 +513,7 @@ const About = () => {
       {/* Trust & Compliance Section */}
       <section className="py-10 sm:py-16 md:py-20" style={{ backgroundColor: BRAND_TEAL }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-white">Trust & Compliance</h2>
+          <h2 ref={trustRef} className={"text-3xl sm:text-4xl font-bold mb-3 text-white transition-all duration-700 ease-in-out " + (trustVisible ? " animate-fade-in-up" : " opacity-0")}>Trust & Compliance</h2>
           <div className="w-16 h-0.5 bg-[#7ede56]/40 mb-12 mx-auto"></div>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {[
