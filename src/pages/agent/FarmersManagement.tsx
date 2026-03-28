@@ -39,7 +39,9 @@ import ViewFarmerModal from '@/components/agent/ViewFarmerModal';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 import UploadReportModal from '@/components/agent/UploadReportModal';
-import { GHANA_REGIONS, GHANA_COMMUNITIES } from '@/data/ghanaRegions';
+import MediaUploadModal from '@/components/agent/MediaUploadModal';
+import ScheduleVisitModal from '@/components/agent/ScheduleVisitModal';
+import { GHANA_REGIONS, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
 
 const statusStyles: Record<string, string> = {
   active: 'bg-[#065f46]/10 text-[#065f46]',
@@ -60,7 +62,9 @@ const FarmersManagement: React.FC = () => {
   const [selectedCommunity, setSelectedCommunity] = useState<string>('all');
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [uploadReportModalOpen, setUploadReportModalOpen] = useState(false);
+  const [mediaUploadModalOpen, setMediaUploadModalOpen] = useState(false);
+  const [scheduleVisitModalOpen, setScheduleVisitModalOpen] = useState(false);
 
   // React Query — same key as DisputeManagement & AddFarmerModal invalidation
   const { data: farmersData = [], isLoading: loading } = useQuery({
@@ -88,6 +92,16 @@ const FarmersManagement: React.FC = () => {
       setSelectedFarmer(farmer);
       setEditModalOpen(true);
     }
+  };
+  
+  const handleLogVisit = (farmer: any) => {
+    setSelectedFarmer(farmer);
+    setScheduleVisitModalOpen(true);
+  };
+
+  const handleUploadMedia = (farmer: any) => {
+    setSelectedFarmer(farmer);
+    setMediaUploadModalOpen(true);
   };
 
   // Invalidate all farmer-related caches on add/edit success
@@ -149,7 +163,7 @@ const FarmersManagement: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent className={selectContentClass}>
                   <SelectItem value="all" className={selectItemClass}>All Districts</SelectItem>
-                  {GHANA_REGIONS[agent?.region || 'Ashanti Region']?.map(d => (
+                  {GHANA_REGIONS[getRegionKey(agent?.region)]?.map(d => (
                     <SelectItem key={d} value={d} className={selectItemClass}>{d}</SelectItem>
                   ))}
                 </SelectContent>
@@ -253,7 +267,7 @@ const FarmersManagement: React.FC = () => {
                           size="sm"
                           onClick={() => {
                             setSelectedFarmer(farmer);
-                            setReportModalOpen(true);
+                            setUploadReportModalOpen(true);
                           }}
                           className={`h-8 px-3 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}
                         >
@@ -288,7 +302,13 @@ const FarmersManagement: React.FC = () => {
         </CardContent>
       </Card>
 
-      <ViewFarmerModal open={viewModalOpen} onOpenChange={setViewModalOpen} farmer={selectedFarmer} />
+      <ViewFarmerModal 
+        open={viewModalOpen} 
+        onOpenChange={setViewModalOpen} 
+        farmer={selectedFarmer} 
+        onNewVisit={handleLogVisit}
+        onUploadMedia={handleUploadMedia}
+      />
       <AddFarmerModal
         open={editModalOpen}
         onOpenChange={setEditModalOpen}
@@ -297,10 +317,25 @@ const FarmersManagement: React.FC = () => {
         onSuccess={handleSuccess}
       />
       <UploadReportModal 
-         open={reportModalOpen} 
-         onOpenChange={setReportModalOpen} 
+         open={uploadReportModalOpen} 
+         onOpenChange={setUploadReportModalOpen} 
          farmer={selectedFarmer} 
+         farmers={farmersData}
          onUpload={handleSuccess}
+      />
+      
+      <MediaUploadModal 
+        open={mediaUploadModalOpen} 
+        onOpenChange={setMediaUploadModalOpen} 
+        farmer={selectedFarmer} 
+        onSuccess={handleSuccess} 
+      />
+      
+      <ScheduleVisitModal 
+        open={scheduleVisitModalOpen} 
+        onOpenChange={setScheduleVisitModalOpen} 
+        farmer={selectedFarmer}
+        onSuccess={handleSuccess} 
       />
     </AgentLayout>
   );

@@ -104,8 +104,8 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         {
             section: 'Farm Operations',
             items: [
-                { id: 'farm-management', label: 'Manage Your Farm', icon: Layout },
-                { id: 'farmers-management', label: 'Farmers Management', icon: Users },
+                { id: 'farm-management', label: 'Manage Farms', icon: Layout },
+                { id: 'farmers-management', label: 'Grower Directory', icon: Users },
                 { id: 'media-gallery', label: 'Media Gallery', icon: ImageIcon },
             ]
         },

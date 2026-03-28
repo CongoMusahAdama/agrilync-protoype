@@ -23,7 +23,7 @@ const TeamMemberCard = ({ member, index = 0 }: { member: TeamMember; index?: num
 
   return (
     <div
-      className="group animate-fade-in-up flex flex-col items-center p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 w-full h-full border border-transparent hover:border-gray-100"
+      className="group animate-fade-in-up flex flex-col items-center p-6 bg-white rounded-xl shadow-md hover:shadow-2xl hover:-translate-y-2 hover:border-[#7ede56]/30 transition-all duration-500 w-full h-full border border-gray-100"
       style={{ animationDelay: `${index * 100}ms` }}
     >
       <div className="relative w-full aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-6 shadow-sm">
@@ -31,7 +31,7 @@ const TeamMemberCard = ({ member, index = 0 }: { member: TeamMember; index?: num
           <img
             src={member.image}
             alt={member.name}
-            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105 group-hover:grayscale"
+            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
             style={{ objectPosition: member.imagePosition || 'center' }}
             loading="lazy"
             onError={(e) => {

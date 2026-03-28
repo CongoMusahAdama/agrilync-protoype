@@ -167,7 +167,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
                 {/* Desktop Sidebar */}
                 {!isMobile && (
-                    <div className={`${userType === 'grower' ? 'w-64' : (sidebarCollapsed ? 'w-16' : 'w-72')} bg-[#065f46] flex-shrink-0 transition-all duration-300 shadow-xl`}>
+                    <div className={`${userType === 'grower' ? 'w-[325px]' : (sidebarCollapsed ? 'w-16' : 'w-[325px]')} bg-[#065f46] flex-shrink-0 transition-all duration-300 shadow-xl`}>
                         <DashboardSidebar
                             userType={userType || ''}
                             sidebarCollapsed={sidebarCollapsed}
@@ -277,66 +277,65 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         {children}
                     </main>
 
-                    {/* Mobile Bottom Navigation - Matching the premium design */}
+                    {/* Mobile Bottom Navigation - Redesigned for Premium Look */}
                     {isMobile && (
-                        <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4">
-                            <div className={`flex items-center justify-between px-2 py-3 rounded-2xl shadow-2xl border ${darkMode ? 'bg-[#003c47]/95 border-gray-700 backdrop-blur-md' : 'bg-white/95 border-gray-200 backdrop-blur-md'}`}>
+                        <div className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-6 pointer-events-none">
+                            <div className={`pointer-events-auto flex items-center justify-between px-3 py-3 rounded-[2.5rem] shadow-[0_20px_50px_-12px_rgba(0,47,55,0.25)] border ${darkMode ? 'bg-[#002f37]/95 border-gray-700 backdrop-blur-md' : 'bg-white/95 border-gray-100 backdrop-blur-md'}`}>
                                 {userType === 'grower' ? (
                                     <>
                                         {/* Home */}
                                         <button
                                             onClick={() => navigate(`/dashboard/grower`)}
-                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeSidebarItem === 'dashboard' ? 'text-[#7ede56] scale-110' : (darkMode ? 'text-gray-400' : 'text-gray-500')}`}
+                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'dashboard' ? 'text-[#7ede56]' : 'text-gray-400'}`}
                                         >
-                                            <div className={`p-1.5 rounded-xl ${activeSidebarItem === 'dashboard' ? 'bg-[#7ede56]/10' : ''}`}>
-                                                <Home className="h-5 w-5" />
+                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'dashboard' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
+                                                <Home className={`h-5 w-5 ${activeSidebarItem === 'dashboard' ? 'text-[#7ede56]' : 'text-gray-400'}`} />
                                             </div>
-                                            <span className="text-[10px] font-bold">Home</span>
+                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'dashboard' ? 'text-[#7ede56]' : 'text-gray-400'}`}>Home</span>
                                         </button>
 
                                         {/* Farm Management */}
                                         <button
                                             onClick={() => navigate(`/dashboard/grower/farm-management`)}
-                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeSidebarItem === 'farm-management' ? 'text-[#7ede56] scale-110' : (darkMode ? 'text-gray-400' : 'text-gray-500')}`}
+                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'farm-management' ? 'text-[#7ede56]' : 'text-gray-400'}`}
                                         >
-                                            <div className={`p-1.5 rounded-xl ${activeSidebarItem === 'farm-management' ? 'bg-[#7ede56]/10' : ''}`}>
-                                                <Leaf className="h-5 w-5" />
+                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'farm-management' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
+                                                <Leaf className={`h-5 w-5 ${activeSidebarItem === 'farm-management' ? 'text-[#7ede56]' : 'text-gray-400'}`} />
                                             </div>
-                                            <span className="text-[10px] font-bold">Farm</span>
+                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'farm-management' ? 'text-[#7ede56]' : 'text-gray-400'}`}>Farm</span>
                                         </button>
 
-                                        {/* AI Advisory Action - Circular Center Button */}
-                                        <div className="relative -top-4 sm:-top-5 px-1">
+                                        {/* AI Advisory Action - Premium Floating Button */}
+                                        <div className="relative -top-7 px-2">
                                             <button
                                                 onClick={() => navigate(`/dashboard/grower/training-sessions?tab=advisory`)}
-                                                className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-[#7ede56] shadow-lg flex items-center justify-center text-[#002f37] border-4 border-[#002f37] active:scale-90 transition-transform group"
+                                                className="h-16 w-16 rounded-full bg-[#002f37] border-[3px] border-[#7ede56] shadow-[0_8px_20px_-4px_rgba(126,222,86,0.4)] flex items-center justify-center active:scale-95 transition-all group overflow-hidden"
                                             >
-                                                <div className="bg-[#002f37] rounded-full p-2 group-hover:bg-[#003c47] transition-colors">
-                                                    <Bot className="h-5 w-5 sm:h-6 sm:w-6 text-[#7ede56]" />
-                                                </div>
+                                                <div className="absolute inset-0 bg-gradient-to-tr from-[#7ede56]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <Bot className="h-7 w-7 text-[#7ede56] relative z-10" />
                                             </button>
                                         </div>
 
                                         {/* Analytics */}
                                         <button
                                             onClick={() => navigate(`/dashboard/grower/farm-analytics`)}
-                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeSidebarItem === 'farm-analytics' ? 'text-[#7ede56] scale-110' : (darkMode ? 'text-gray-400' : 'text-gray-500')}`}
+                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'farm-analytics' ? 'text-[#7ede56]' : 'text-gray-400'}`}
                                         >
-                                            <div className={`p-1.5 rounded-xl ${activeSidebarItem === 'farm-analytics' ? 'bg-[#7ede56]/10' : ''}`}>
-                                                <BarChart3 className="h-5 w-5" />
+                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'farm-analytics' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
+                                                <BarChart3 className={`h-5 w-5 ${activeSidebarItem === 'farm-analytics' ? 'text-[#7ede56]' : 'text-gray-400'}`} />
                                             </div>
-                                            <span className="text-[10px] font-bold">Analytics</span>
+                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'farm-analytics' ? 'text-[#7ede56]' : 'text-gray-400'}`}>Analytics</span>
                                         </button>
 
                                         {/* Settings / Profile */}
                                         <button
                                             onClick={() => navigate(`/dashboard/grower/settings`)}
-                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeSidebarItem === 'settings' ? 'text-[#7ede56] scale-110' : (darkMode ? 'text-gray-400' : 'text-gray-500')}`}
+                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'settings' ? 'text-[#7ede56]' : 'text-gray-400'}`}
                                         >
-                                            <div className={`p-1.5 rounded-xl ${activeSidebarItem === 'settings' ? 'bg-[#7ede56]/10' : ''}`}>
-                                                <Settings className="h-5 w-5" />
+                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'settings' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
+                                                <Settings className={`h-5 w-5 ${activeSidebarItem === 'settings' ? 'text-[#7ede56]' : 'text-gray-400'}`} />
                                             </div>
-                                            <span className="text-[10px] font-bold">Profile</span>
+                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'settings' ? 'text-[#7ede56]' : 'text-gray-400'}`}>Profile</span>
                                         </button>
                                     </>
                                 ) : (
@@ -345,27 +344,27 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                         {/* Home */}
                                         <button
                                             onClick={() => navigate(userType === 'agent' ? '/dashboard/agent' : '/dashboard/super-admin')}
-                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeSidebarItem === 'dashboard' ? 'text-[#7ede56] scale-110' : (darkMode ? 'text-gray-400' : 'text-gray-500')}`}
+                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'dashboard' ? 'text-[#7ede56]' : 'text-gray-400'}`}
                                         >
-                                            <div className={`p-1.5 rounded-xl ${activeSidebarItem === 'dashboard' ? 'bg-[#7ede56]/10' : ''}`}>
-                                                <Home className="h-5 w-5" />
+                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'dashboard' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
+                                                <Home className={`h-5 w-5 ${activeSidebarItem === 'dashboard' ? 'text-[#7ede56]' : 'text-gray-400'}`} />
                                             </div>
-                                            <span className="text-[10px] font-bold">Home</span>
+                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'dashboard' ? 'text-[#7ede56]' : 'text-gray-400'}`}>Home</span>
                                         </button>
 
                                         {/* Farmers Management / Regions */}
                                         <button
                                             onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/farmers-management' : '/dashboard/super-admin/regions')}
-                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeSidebarItem === 'farmers-management' || activeSidebarItem === 'regional-performance' ? 'text-[#7ede56] scale-110' : (darkMode ? 'text-gray-400' : 'text-gray-500')}`}
+                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'farmers-management' || activeSidebarItem === 'regional-performance' ? 'text-[#7ede56]' : 'text-gray-400'}`}
                                         >
-                                            <div className={`p-1.5 rounded-xl ${activeSidebarItem === 'farmers-management' || activeSidebarItem === 'regional-performance' ? 'bg-[#7ede56]/10' : ''}`}>
-                                                {userType === 'agent' ? <Users className="h-5 w-5" /> : <MapPin className="h-5 w-5" />}
+                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'farmers-management' || activeSidebarItem === 'regional-performance' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
+                                                {userType === 'agent' ? <Users className={`h-5 w-5 ${activeSidebarItem === 'farmers-management' ? 'text-[#7ede56]' : 'text-gray-400'}`} /> : <MapPin className={`h-5 w-5 ${activeSidebarItem === 'regional-performance' ? 'text-[#7ede56]' : 'text-gray-400'}`} />}
                                             </div>
-                                            <span className="text-[10px] font-bold">{userType === 'agent' ? 'Farmers' : 'Regions'}</span>
+                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'farmers-management' || activeSidebarItem === 'regional-performance' ? 'text-[#7ede56]' : 'text-gray-400'}`}>{userType === 'agent' ? 'Growers' : 'Regions'}</span>
                                         </button>
 
-                                        {/* Quick Action */}
-                                        <div className="relative -top-5 px-1">
+                                        {/* Quick Action - Dual Ring Plus Button */}
+                                        <div className="relative -top-8 px-2">
                                             <button
                                                 onClick={() => {
                                                     if (userType === 'agent') {
@@ -374,34 +373,34 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                                         navigate('/dashboard/super-admin/settings');
                                                     }
                                                 }}
-                                                className="h-14 w-14 rounded-full bg-[#7ede56] shadow-lg flex items-center justify-center text-[#002f37] border-4 border-[#002f37] active:scale-90 transition-transform"
+                                                className="h-16 w-16 rounded-full bg-[#002f37] border-[4px] border-[#7ede56] shadow-[0_12px_24px_-8px_rgba(126,222,86,0.5)] flex items-center justify-center active:scale-95 transition-all group relative"
                                             >
-                                                <div className="bg-[#002f37] rounded-full p-2">
-                                                    <Plus className="h-6 w-6 text-[#7ede56]" />
-                                                </div>
+                                                {/* Outer Glow Ring */}
+                                                <div className="absolute -inset-[6px] rounded-full border-2 border-[#002f37]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <Plus className="h-8 w-8 text-[#7ede56] stroke-[3px]" />
                                             </button>
                                         </div>
 
                                         {/* Training / Escalations */}
                                         <button
                                             onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/training-performance' : '/dashboard/super-admin/escalations')}
-                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeSidebarItem === 'training-sessions' || activeSidebarItem === 'escalations' ? 'text-[#7ede56] scale-110' : (darkMode ? 'text-gray-400' : 'text-gray-500')}`}
+                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'training-sessions' || activeSidebarItem === 'escalations' ? 'text-[#7ede56]' : 'text-gray-400'}`}
                                         >
-                                            <div className={`p-1.5 rounded-xl ${activeSidebarItem === 'training-sessions' || activeSidebarItem === 'escalations' ? 'bg-[#7ede56]/10' : ''}`}>
-                                                {userType === 'agent' ? <Calendar className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
+                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'training-sessions' || activeSidebarItem === 'escalations' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
+                                                {userType === 'agent' ? <Calendar className={`h-5 w-5 ${activeSidebarItem === 'training-sessions' ? 'text-[#7ede56]' : 'text-gray-400'}`} /> : <AlertTriangle className={`h-5 w-5 ${activeSidebarItem === 'escalations' ? 'text-[#7ede56]' : 'text-gray-400'}`} />}
                                             </div>
-                                            <span className="text-[10px] font-bold">{userType === 'agent' ? 'Training' : 'Alerts'}</span>
+                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'training-sessions' || activeSidebarItem === 'escalations' ? 'text-[#7ede56]' : 'text-gray-400'}`}>{userType === 'agent' ? 'Training' : 'Alerts'}</span>
                                         </button>
 
                                         {/* Settings / Profile */}
                                         <button
                                             onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/profile' : '/dashboard/super-admin/settings')}
-                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeSidebarItem === 'settings' || activeSidebarItem === 'profile' ? 'text-[#7ede56] scale-110' : (darkMode ? 'text-gray-400' : 'text-gray-500')}`}
+                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'settings' || activeSidebarItem === 'profile' ? 'text-[#7ede56]' : 'text-gray-400'}`}
                                         >
-                                            <div className={`p-1.5 rounded-xl ${activeSidebarItem === 'settings' || activeSidebarItem === 'profile' ? 'bg-[#7ede56]/10' : ''}`}>
-                                                <Settings className="h-5 w-5" />
+                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'settings' || activeSidebarItem === 'profile' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
+                                                <Settings className={`h-5 w-5 ${activeSidebarItem === 'settings' || activeSidebarItem === 'profile' ? 'text-[#7ede56]' : 'text-gray-400'}`} />
                                             </div>
-                                            <span className="text-[10px] font-bold">Profile</span>
+                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'settings' || activeSidebarItem === 'profile' ? 'text-[#7ede56]' : 'text-gray-400'}`}>Profile</span>
                                         </button>
                                     </>
                                 )}

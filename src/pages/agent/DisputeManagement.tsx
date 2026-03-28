@@ -55,7 +55,7 @@ import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import ViewDisputeModal from '@/components/agent/ViewDisputeModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { GHANA_REGIONS, GHANA_COMMUNITIES } from '@/data/ghanaRegions';
+import { GHANA_REGIONS, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
 
 const DisputeManagement: React.FC = () => {
   const { darkMode } = useDarkMode();
@@ -334,7 +334,7 @@ const DisputeManagement: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent className={darkMode ? 'bg-[#002f37] border-gray-600' : ''}>
                   <SelectItem value="all" className={darkMode ? 'text-white hover:bg-gray-800' : ''}>All Districts</SelectItem>
-                  {(agent?.region || "Ashanti Region") && GHANA_REGIONS[agent?.region || "Ashanti Region"]?.map(d => (
+                  {GHANA_REGIONS[getRegionKey(agent?.region)]?.map(d => (
                     <SelectItem key={d} value={d} className={darkMode ? 'text-white hover:bg-gray-800' : ''}>{d}</SelectItem>
                   ))}
                 </SelectContent>

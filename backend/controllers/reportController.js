@@ -20,8 +20,13 @@ exports.createReport = async (req, res) => {
         const report = await newReport.save();
         res.json({ success: true, data: report });
     } catch (err) {
-        console.error('createReport error:', err.message);
-        res.status(500).json({ success: false, message: 'Server error' });
+        console.error('createReport error:', err);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error', 
+            error: err.message,
+            details: err.errors // Mongoose validation errors
+        });
     }
 };
 
