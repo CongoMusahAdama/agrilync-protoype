@@ -45,6 +45,7 @@ import MediaUploadModal from '@/components/agent/MediaUploadModal';
 import FarmJourneyModal from '@/components/agent/FarmJourneyModal';
 import OperationalMap from '@/components/agent/OperationalMap';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+// Trigger reload
 import {
   Users,
   Sprout,
@@ -56,7 +57,6 @@ import {
   Search,
   Filter,
   CheckCircle2,
-  NotebookPen,
   Eye,
   Edit,
   Flag,
@@ -84,7 +84,7 @@ import {
   HelpCircle,
   Download,
   Star,
-  MessageSquareText,
+  MessageSquare,
   FileDown,
   Bot
 } from 'lucide-react';
@@ -98,6 +98,20 @@ import {
 } from 'recharts';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import CountUp from '@/components/CountUp';
+import {
+  GHANA_COORDS,
+  STATUS_STYLES,
+  METRIC_DATA,
+  DASHBOARD_CACHE_STALE_TIME,
+  DASHBOARD_CACHE_GC_TIME
+} from '@/data/dashboardConfig';
+
+// Modular Tab Components
+import OverviewTab from './agent/dashboard/OverviewTab';
+import FarmsTab from './agent/dashboard/FarmsTab';
+import VisitsTab from './agent/dashboard/VisitsTab';
+import MediaTab from './agent/dashboard/MediaTab';
+import ReportsTab from './agent/dashboard/ReportsTab';
 
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
@@ -126,20 +140,21 @@ const AgentDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { darkMode } = useDarkMode();
   const { agent } = useAuth();
-  
+
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialTab = queryParams.get('tab') || 'overview';
-  
+
   const [activeTab, setActiveTab] = useState(initialTab);
 
-  // Sync tab with URL if it changes
+  // Sync tab with URL if it changes with whitelisting for security
   useEffect(() => {
+    const allowedTabs = ['overview', 'farms', 'visits', 'media', 'quick-reports', 'operational-map', 'performance'];
     const tab = new URLSearchParams(location.search).get('tab');
-    if (tab && tab !== activeTab) {
+    if (tab && allowedTabs.includes(tab) && tab !== activeTab) {
       setActiveTab(tab);
     }
-  }, [location.search]);
+  }, [location.search, activeTab]);
   const [farmerSearch, setFarmerSearch] = useState('');
   const [farmerStatusFilter, setFarmerStatusFilter] = useState<'all' | 'Completed' | 'Pending' | 'inactive'>('all');
   const [farmStatusFilter, setFarmStatusFilter] = useState<'all' | 'verified' | 'scheduled' | 'needs-attention'>('all');
@@ -164,13 +179,9 @@ const AgentDashboard: React.FC = () => {
   const [logVisitModalOpen, setLogVisitModalOpen] = useState(false);
 
   // useQuery for all-in-one dashboard data with optimized caching
+  // New state for matches and disputes
   const [activeMetric, setActiveMetric] = useState('onboarding');
-  const metricData: Record<string, any> = {
-    onboarding: { color: 'var(--lgreen)', data: [45, 52, 68, 74, 85, 93], target: '100%' },
-    visits: { color: 'var(--teal)', data: [55, 60, 70, 65, 72, 80], target: '100%' },
-    sync: { color: '#921573', data: [88, 90, 94, 92, 96, 96], target: '95%' },
-    training: { color: 'var(--amber)', data: [30, 38, 45, 52, 58, 61], target: '100%' },
-  };
+  const metricData = METRIC_DATA;
 
   const currentMetric = metricData[activeMetric];
 
@@ -180,13 +191,13 @@ const AgentDashboard: React.FC = () => {
       const response = await api.get('/dashboard/summary');
       return response.data.data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache TTL
-    gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache (garbage collection time)
-    refetchOnWindowFocus: false, // Disabled for mobile performance
-    refetchOnMount: true, // Refetch on mount to get fresh data
-    retry: 2, // Retry failed requests twice
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
-    refetchOnReconnect: true // Refetch when connection is restored
+    staleTime: DASHBOARD_CACHE_STALE_TIME,
+    gcTime: DASHBOARD_CACHE_GC_TIME,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchOnReconnect: true
   });
 
   // Fetch scheduled visits for the summary card
@@ -204,7 +215,7 @@ const AgentDashboard: React.FC = () => {
     const effectiveRegion = agent?.region || "Ashanti Region";
     return (scheduledVisitsData || []).filter((v: any) => !effectiveRegion || v.region === effectiveRegion);
   }, [scheduledVisitsData, agent?.region]);
-  
+
   // Fetch Media Items for the archive tab
   const { data: mediaItems = [] } = useQuery({
     queryKey: ['mediaItems'],
@@ -219,26 +230,6 @@ const AgentDashboard: React.FC = () => {
     },
     staleTime: 5 * 60 * 1000
   });
-
-  // Ghana region → {lat, lng} map for weather lookup
-  const GHANA_COORDS: Record<string, { lat: number; lng: number }> = {
-    'Ashanti Region':        { lat: 6.6885,  lng: -1.6244 },
-    'Greater Accra Region':  { lat: 5.6037,  lng: -0.1870 },
-    'Northern Region':       { lat: 9.4008,  lng: -0.8393 },
-    'Western Region':        { lat: 5.1264,  lng: -2.0014 },
-    'Eastern Region':        { lat: 6.5581,  lng: -0.2166 },
-    'Central Region':        { lat: 5.1054,  lng: -1.2466 },
-    'Volta Region':          { lat: 6.6120,  lng: 0.4590  },
-    'Upper East Region':     { lat: 10.7887, lng: -0.8476 },
-    'Upper West Region':     { lat: 10.2529, lng: -2.3242 },
-    'Brong-Ahafo Region':    { lat: 7.9497,  lng: -2.3347 },
-    'Bono Region':           { lat: 7.9497,  lng: -2.3347 },
-    'Oti Region':            { lat: 7.9000,  lng: 0.3000  },
-    'Savannah Region':       { lat: 9.0880,  lng: -1.8230 },
-    'North East Region':     { lat: 10.5105, lng: -0.3616 },
-    'Ahafo Region':          { lat: 7.5600,  lng: -2.5500 },
-    'Western North Region':  { lat: 6.3093,  lng: -2.7905 },
-  };
 
   const agentCoords = GHANA_COORDS[agent?.region || 'Ashanti Region'] || GHANA_COORDS['Ashanti Region'];
 
@@ -498,22 +489,24 @@ const AgentDashboard: React.FC = () => {
   };
 
   const filteredFarmers = useMemo(() => {
-    return farmers.map((f: any) => {
-      let displayStatus = f.status;
-      if (displayStatus === 'active') displayStatus = 'Completed';
-      if (displayStatus === 'pending') displayStatus = 'Pending';
-      return { ...f, displayStatus };
-    }).filter((farmer: any) => {
-      const searchValue = farmerSearch.toLowerCase();
+    const searchValue = farmerSearch.toLowerCase();
+    return farmers.reduce((acc: any[], f: any) => {
+      let displayStatus = f.status === 'active' ? 'Completed' : f.status === 'pending' ? 'Pending' : f.status;
+
       const matchesSearch =
-        farmer.name?.toLowerCase().includes(searchValue) ||
-        (farmer.contact && farmer.contact.includes(searchValue)) ||
-        (farmer.region && farmer.region.toLowerCase().includes(searchValue)) ||
-        (farmer.community && farmer.community.toLowerCase().includes(searchValue));
+        f.name?.toLowerCase().includes(searchValue) ||
+        (f.contact && f.contact.includes(searchValue)) ||
+        (f.region && f.region.toLowerCase().includes(searchValue)) ||
+        (f.community && f.community.toLowerCase().includes(searchValue));
+
       const matchesStatus =
-        farmerStatusFilter === 'all' ? true : farmer.displayStatus === farmerStatusFilter;
-      return matchesSearch && matchesStatus;
-    });
+        farmerStatusFilter === 'all' ? true : displayStatus === farmerStatusFilter;
+
+      if (matchesSearch && matchesStatus) {
+        acc.push({ ...f, displayStatus });
+      }
+      return acc;
+    }, []);
   }, [farmers, farmerSearch, farmerStatusFilter]);
 
   const filteredFarms = useMemo(() => {
@@ -523,7 +516,7 @@ const AgentDashboard: React.FC = () => {
     });
   }, [farms, farmStatusFilter]);
 
-  const highlightCards = [
+  const highlightCards = useMemo(() => [
     {
       id: 'total-farms',
       title: 'Grower Impact',
@@ -564,25 +557,9 @@ const AgentDashboard: React.FC = () => {
       color: 'bg-orange-500',
       icon: FileText,
     }
-  ];
+  ], [summaryData, stats, scheduledVisits]);
 
-  const statusStyles: Record<string, string> = {
-    active: 'bg-[#065f46]/10 text-[#065f46]',
-    pending: 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
-    inactive: 'bg-slate-500/10 text-slate-600 dark:bg-slate-500/20 dark:text-slate-300',
-    verified: 'bg-[#065f46]/10 text-[#065f46]',
-    Completed: 'bg-[#065f46]/10 text-[#065f46]',
-    Pending: 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
-    scheduled: 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
-    'needs-attention': 'bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
-    'at-risk': 'bg-rose-600/10 text-rose-700 dark:bg-rose-600/20 dark:text-rose-400',
-    'Pending Funding': 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
-    'Pending Approval': 'bg-[#065f46]/10 text-[#065f46]',
-    'Under Review': 'bg-[#065f46]/10 text-[#065f46]',
-    Active: 'bg-[#065f46]/10 text-[#065f46]',
-    Ongoing: 'bg-[#065f46]/10 text-[#065f46]',
-    Resolved: 'bg-[#065f46]/10 text-[#065f46]'
-  };
+  const statusStyles = STATUS_STYLES;
 
 
   const getGreeting = () => {
@@ -800,402 +777,43 @@ const AgentDashboard: React.FC = () => {
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-3">
-            {/* Today's Priority */}
-            <Card className="lg:col-span-2 border-none bg-white shadow-xl rounded-2xl">
-              <CardHeader className="pb-3 border-b border-gray-50 flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg font-black text-[#002f37]">Active Field Missions</CardTitle>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tasks for you today</p>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y divide-gray-50">
-                  {farms.slice(0, 4).map((farm: any) => (
-                    <div key={farm._id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors group">
-                      <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-xl bg-gray-100 overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
-                          <img src={farm.farmer?.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${farm.name}`} alt={farm.name} className="w-full h-full object-cover" />
-                        </div>
-                        <div>
-                          <p className="text-[13px] font-black text-[#002f37] mb-0.5">{farm.name}</p>
-                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{farm.region || 'Assigned Region'}</span>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg group-hover:bg-[#002f37] group-hover:text-white transition-colors"
-                        onClick={() => handleLogVisit(farm.farmer)}
-                      >
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Farm Activity Timeline */}
-            <Card className={`${sectionCardClass} transition-colors min-h-[400px]`}>
-              <CardHeader className="pb-3 border-b border-gray-100 dark:border-gray-800">
-                <div className="flex items-center gap-2">
-                  <Activity className={`h-5 w-5 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
-                  <CardTitle className={`section-title ${darkMode ? 'text-gray-100' : ''}`}>Farm Updates</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="p-4 h-[400px] overflow-y-auto custom-scrollbar">
-                <div className="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-100 dark:before:bg-gray-800">
-                  {activities.filter((a: any) => a.type !== 'match' && a.type !== 'dispute').map((activity: any, index: number) => (
-                    <div key={activity._id || index} className="relative pl-8 group">
-                      <div className={`absolute left-0 top-1.5 w-6 h-6 rounded-full z-10 flex items-center justify-center border-4 ${darkMode ? 'bg-[#0b2528] border-gray-800' : 'bg-white border-gray-100'}`}>
-                        {activity.type === 'training' ? <GraduationCap className="h-2.5 w-2.5 text-[#065f46]" /> :
-                          activity.type === 'report' ? <ClipboardList className="h-2.5 w-2.5 text-blue-500" /> :
-                            activity.type === 'verification' ? <UserCheck className="h-2.5 w-2.5 text-[#065f46]" /> :
-                              <Info className="h-2.5 w-2.5 text-blue-400" />}
-                      </div>
-                      <div>
-                        <p className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                          {new Date(activity.createdAt).toLocaleDateString()}
-                        </p>
-                        <p className={`text-sm mt-0.5 font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900 group-hover:text-[#065f46] transition-colors'}`}>
-                          {activity.title}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="space-y-6">
-              <Card className="border-none bg-[#002f37] text-white rounded-2xl shadow-xl overflow-hidden relative p-8 group">
-                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform duration-700">
-                  <TrendingUp className="h-24 w-24" />
-                </div>
-                <div className="mb-6 relative z-10">
-                  <p className="text-[10px] font-black text-[#065f46] uppercase tracking-widest mb-1.5">Your Performance Summary</p>
-                  <h3 className="text-3xl font-black">Elite Agent</h3>
-                </div>
-                <div className="space-y-4 mb-10 relative z-10">
-                  <div className="flex justify-between items-end">
-                    <span className="text-[11px] font-bold text-gray-400">Progress to Gold Level</span>
-                    <span className="text-base font-black">85%</span>
-                  </div>
-                  <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#065f46]" style={{ width: '85%' }}></div>
-                  </div>
-                </div>
-                <Button 
-                  onClick={() => {
-                    navigate('/dashboard/agent/performance');
-                  }}
-                  variant="ghost" 
-                  className="w-full justify-between text-[10px] font-black tracking-widest text-[#065f46] p-0 hover:bg-transparent hover:text-white transition-colors uppercase group/btn border-none"
-                >
-                  VIEW FULL PERFORMANCE <ChevronRight className="h-3 w-3 group-hover/btn:translate-x-1 transition-transform" />
-                </Button>
-              </Card>
-
-              <Card className="border-none bg-white shadow-xl rounded-2xl">
-                <CardHeader className="pb-2 border-b border-gray-50">
-                  <CardTitle className="text-sm font-black text-[#002f37]">Support Status</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  {[1, 2].map(i => (
-                    <div key={i} className="p-4 border-b border-gray-50 last:border-none flex items-center justify-between group cursor-pointer hover:bg-gray-50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-[#065f46]/10 flex items-center justify-center text-[#065f46]">
-                          <HelpCircle className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <p className="text-[11px] font-black text-[#002f37]">Issue #{4512 + i}</p>
-                          <p className="text-[9px] font-bold text-gray-400">Processing • 2h ago</p>
-                        </div>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-[#002f37] transition-colors" />
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          <OverviewTab
+            farms={farms}
+            activities={activities}
+            darkMode={darkMode}
+            agent={agent}
+            handleLogVisit={handleLogVisit}
+            sectionCardClass={sectionCardClass}
+          />
         </TabsContent>
 
         {/* Farms Tab */}
         <TabsContent value="farms" className="space-y-6">
-          <Card className="border-none bg-white shadow-xl rounded-2xl overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-gray-50">
-              <div>
-                <CardTitle className="text-lg font-black text-[#002f37]">Grower Network Overview</CardTitle>
-                <CardDescription className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  Real-time health & productivity monitoring
-                </CardDescription>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-6">
-                <div className="relative w-full md:w-80">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  <Input
-                    placeholder="Search farms..."
-                    className="pl-10 border-none bg-gray-50 rounded-xl focus:ring-[#065f46]"
-                    value={farmerSearch}
-                    onChange={(e) => setFarmerSearch(e.target.value)}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="ghost" className="text-[10px] font-black tracking-widest text-[#002f37] hover:bg-gray-100">
-                    <Filter className="h-4 w-4 mr-2" /> FILTER
-                  </Button>
-                  <Button variant="ghost" className="text-[10px] font-black tracking-widest text-[#002f37] hover:bg-gray-100">
-                    <TrendingUp className="h-4 w-4 mr-2" /> SORT
-                  </Button>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader className="bg-[#065f46]">
-                    <TableRow className="border-none hover:bg-transparent">
-                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4 px-6">Farm Information</TableHead>
-                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4 text-center">Health Status</TableHead>
-                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4">Next Visit</TableHead>
-                      <TableHead className="text-right font-black text-[10px] uppercase tracking-widest text-white py-4 px-6">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredFarms.map((farm: any) => (
-                      <TableRow key={farm._id} className="hover:bg-gray-50 transition-colors group">
-                        <TableCell className="py-4 px-6">
-                          <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-gray-100 overflow-hidden shadow-sm">
-                              <img src={farm.farmer?.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${farm.name}`} alt={farm.name} className="w-full h-full object-cover" />
-                            </div>
-                            <div>
-                              <p className="text-[13px] font-black text-[#002f37] mb-0.5">{farm.name}</p>
-                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{farm.farmer?.name || 'Assigned Grower'}</p>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-4">
-                          <div className="flex flex-col items-center gap-1.5 px-4 w-32 mx-auto">
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-[11px] font-black text-[#002f37]">85%</span>
-                              <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Health</span>
-                            </div>
-                            <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
-                              <div className="h-full bg-[#065f46]" style={{ width: '85%' }}></div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-4">
-                          <div className="flex flex-col">
-                            <p className="text-[11px] font-black text-[#002f37] mb-0.5">{farm.nextVisit || 'TBD'}</p>
-                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Scheduled</p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right py-4 px-6">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 px-3 rounded-lg text-gray-400 hover:bg-[#002f37] hover:text-white transition-all shadow-sm flex items-center gap-2"
-                              onClick={() => handleViewFarmer(farm.farmer)}
-                            >
-                              <Users className="h-3.5 w-3.5" />
-                              <span className="text-[10px] font-black uppercase tracking-widest">Profile</span>
-                            </Button>
-                            <Button
-                              className="bg-[#065f46] hover:bg-[#002f37] text-white h-8 text-[9px] font-black rounded-lg px-4 transition-all shadow-lg shadow-[#065f46]/20 uppercase tracking-widest border-none flex items-center gap-2"
-                              onClick={() => handleLogVisit(farm.farmer)}
-                            >
-                              <ClipboardList className="h-3.5 w-3.5" />
-                              Start Visit
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+          <FarmsTab
+            filteredFarms={filteredFarms}
+            farmerSearch={farmerSearch}
+            setFarmerSearch={setFarmerSearch}
+            handleViewFarmer={handleViewFarmer}
+            handleLogVisit={handleLogVisit}
+          />
         </TabsContent>
 
         {/* Visits & Reports Tab */}
         <TabsContent value="visits" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <Card className="lg:col-span-2 xl:col-span-2 border-none bg-white shadow-xl rounded-2xl overflow-hidden">
-              <CardHeader className="border-b border-gray-50 flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg font-black text-[#002f37]">Visit Log & History</CardTitle>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Complete history of field audits</p>
-                </div>
-                <div className="p-2 bg-[#065f46]/10 rounded-xl">
-                  <ClipboardCheck className="h-5 w-5 text-[#065f46]" />
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y divide-gray-50">
-                  {activities.filter((a: any) => a.type === 'report').length > 0 ? (
-                    activities.filter((a: any) => a.type === 'report').map((report: any) => (
-                      <div key={report._id} className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors group">
-                        <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-[#002f37] transition-all">
-                            <FileText className="h-6 w-6 text-blue-600 group-hover:text-white" />
-                          </div>
-                          <div>
-                            <p className="text-[13px] font-black text-[#002f37]">{report.title}</p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-[9px] font-bold text-gray-400 uppercase bg-gray-100 px-2 py-0.5 rounded-full">{new Date(report.createdAt).toLocaleDateString('en-GB')}</span>
-                              <span className="text-[9px] font-black text-[#065f46] uppercase tracking-widest">VERIFIED</span>
-                            </div>
-                          </div>
-                        </div>
-                        <Button variant="ghost" className="h-10 text-[10px] font-black tracking-widest text-blue-600 hover:bg-blue-50 rounded-xl px-6">
-                          VIEW PDF
-                        </Button>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="py-20 text-center">
-                      <div className="h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <ClipboardList className="h-8 w-8 text-gray-200" />
-                      </div>
-                      <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No reports archived yet</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="space-y-6">
-              <Card className="bg-[#065f46] text-white border-none shadow-xl rounded-2xl p-6 relative overflow-hidden group">
-                <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
-                  <Activity className="h-24 w-24 -rotate-12" />
-                </div>
-                <h3 className="font-black text-xl mb-2">Ready for a Visit?</h3>
-                <p className="text-[11px] font-bold text-white/70 leading-relaxed mb-8 uppercase tracking-wider">
-                  Generate instant field audits with AI-powered diagnostics.
-                </p>
-                <Button
-                  className="w-full bg-[#002f37] text-white hover:bg-[#003c47] font-black py-7 rounded-2xl shadow-xl transition-all"
-                  onClick={() => setIsUploadReportModalOpen(true)}
-                >
-                  <Plus className="h-5 w-5 mr-1" /> START NEW AUDIT
-                </Button>
-              </Card>
-
-              <Card className="border-none bg-white shadow-xl rounded-2xl overflow-hidden p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-black text-[10px] uppercase tracking-widest text-[#002f37]">Weekly Progress</h3>
-                  <span className="text-[10px] font-black text-emerald-600">80%</span>
-                </div>
-                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden mb-3">
-                  <div className="h-full bg-[#065f46]" style={{ width: '80%' }}></div>
-                </div>
-                <p className="text-[9px] font-bold text-gray-400 italic">2 audits remaining for your weekly goal.</p>
-              </Card>
-            </div>
-          </div>
+          <VisitsTab
+            activities={activities}
+            setIsUploadReportModalOpen={setIsUploadReportModalOpen}
+          />
         </TabsContent>
 
         {/* Media Tab */}
         <TabsContent value="media" className="space-y-6">
-          <Card className="border-none bg-white shadow-xl rounded-2xl overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-gray-50">
-              <div>
-                <CardTitle className="text-lg font-black text-[#002f37]">Media Archive</CardTitle>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Visual evidence and field logs</p>
-              </div>
-              <Button className="bg-[#002f37] hover:bg-[#003c47] text-white font-black text-[10px] tracking-widest px-6 rounded-xl">
-                <ImageIcon className="h-4 w-4 mr-2" /> UPLOAD BATCH
-              </Button>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="flex gap-2 mb-8">
-                {['All Assets', 'Field Growth', 'Crop Issues', 'Harvesting'].map((tag, idx) => (
-                  <Badge key={tag} variant="outline" className={`cursor-pointer px-4 py-1.5 rounded-full font-black text-[9px] uppercase tracking-widest transition-all ${idx === 0 ? 'bg-[#065f46] text-white border-transparent' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 border-transparent'}`}>
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {mediaItems.length > 0 ? (
-                  mediaItems.slice(0, 10).map((item: any, i: number) => (
-                  <div key={item._id || i} className="group relative aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
-                    {item.thumbnail || item.url ? (
-                      <img
-                        src={item.thumbnail || item.url}
-                        alt={item.name}
-                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-gray-400">
-                        <ImageIcon className="h-8 w-8 mb-2" />
-                        <p className="text-[10px] font-black uppercase tracking-tighter px-2 text-center line-clamp-2">{item.name}</p>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#002f37]/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 p-4 flex flex-col justify-end">
-                      <p className="text-white text-[11px] font-black leading-tight line-clamp-1">
-                        {typeof item.farm === 'object' ? item.farm?.name : (item.farm || 'General')}
-                      </p>
-                      <p className="text-[#065f46] text-[9px] font-bold uppercase tracking-widest mt-1">{item.type || 'Field Media'}</p>
-                    </div>
-                  </div>
-                ))
-                ) : (
-                  <div className="col-span-full py-20 text-center flex flex-col items-center justify-center">
-                    <div className="h-20 w-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                      <ImageIcon className="h-10 w-10 text-gray-200" />
-                    </div>
-                    <h4 className="text-sm font-black text-[#002f37] uppercase tracking-widest">No Media Discovered</h4>
-                    <p className="text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-tight">Captured field photos and evidence will appear here</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <MediaTab mediaItems={mediaItems} />
         </TabsContent>
-
 
         {/* Quick Reports Tab */}
         <TabsContent value="quick-reports" className="space-y-6">
-          <Card className={`${sectionCardClass} border-none shadow-xl rounded-2xl overflow-hidden min-h-[500px] flex flex-col`}>
-            <CardHeader className="bg-white border-b border-gray-50">
-              <CardTitle className="text-xl font-black text-[#002f37]">Quick Reports Engine</CardTitle>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Generate and download standard templates</p>
-            </CardHeader>
-            <CardContent className="p-8 flex-1 grid md:grid-cols-2 gap-6 bg-gray-50/50">
-              <Card className="border border-gray-100 shadow-sm hover:shadow-md transition-all hover:border-[#065f46]/30 cursor-pointer">
-                <CardContent className="p-6 flex flex-col h-full bg-white">
-                  <div className="h-12 w-12 rounded-2xl bg-[#065f46]/10 flex items-center justify-center mb-4">
-                    <FileText className="h-6 w-6 text-[#065f46]" />
-                  </div>
-                  <h4 className="text-sm font-black text-[#002f37] mb-2 uppercase tracking-wide">Daily Field Report</h4>
-                  <p className="text-xs text-gray-500 mb-6 flex-1">Standard summary of all field operations, visits, and challenges recorded today.</p>
-                  <Button className="w-full bg-[#002f37] hover:bg-[#002f37]/90 text-white font-bold rounded-xl text-xs flex items-center gap-2">
-                    <Download className="h-4 w-4" /> GENERATE REPORT
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="border border-gray-100 shadow-sm hover:shadow-md transition-all hover:border-[#065f46]/30 cursor-pointer">
-                <CardContent className="p-6 flex flex-col h-full bg-white">
-                  <div className="h-12 w-12 rounded-2xl bg-[#065f46]/10 flex items-center justify-center mb-4">
-                    <BarChart3 className="h-6 w-6 text-[#065f46]" />
-                  </div>
-                  <h4 className="text-sm font-black text-[#002f37] mb-2 uppercase tracking-wide">Weekly Performance KPI</h4>
-                  <p className="text-xs text-gray-500 mb-6 flex-1">Aggregated statistics on verification rates, farm onboarding, and agent productivity.</p>
-                  <Button className="w-full bg-[#002f37] hover:bg-[#002f37]/90 text-white font-bold rounded-xl text-xs flex items-center gap-2">
-                    <Download className="h-4 w-4" /> GENERATE REPORT
-                  </Button>
-                </CardContent>
-              </Card>
-            </CardContent>
-          </Card>
+          <ReportsTab sectionCardClass={sectionCardClass} />
         </TabsContent>
 
         {/* Operational Map Tab */}
@@ -1208,16 +826,16 @@ const AgentDashboard: React.FC = () => {
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Geospatial overview of registered farms and active missions</p>
             </CardHeader>
             <div className="w-full flex-1 bg-gray-100 relative overflow-hidden">
-               <OperationalMap farms={farms} darkMode={darkMode} />
+              <OperationalMap farms={farms} darkMode={darkMode} />
             </div>
           </Card>
         </TabsContent>
       </Tabs>
 
-      <ViewFarmerModal 
-        open={viewModalOpen} 
-        onOpenChange={setViewModalOpen} 
-        farmer={selectedFarmer} 
+      <ViewFarmerModal
+        open={viewModalOpen}
+        onOpenChange={setViewModalOpen}
+        farmer={selectedFarmer}
         onNewVisit={(farmer) => {
           handleLogVisit(farmer);
         }}
@@ -1265,6 +883,7 @@ const AgentDashboard: React.FC = () => {
         open={isUploadReportModalOpen}
         onOpenChange={setIsUploadReportModalOpen}
         farmer={selectedFarmer}
+        farmers={farmers}
         onUpload={fetchData}
       />
 

@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Download,
   FolderPlus,
+  Folder,
   ArrowUpRight,
   HardDrive,
   Sprout,
@@ -73,7 +74,7 @@ import api from '@/utils/api';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import { useAuth } from '@/contexts/AuthContext';
-import { GHANA_REGIONS, GHANA_COMMUNITIES } from '@/data/ghanaRegions';
+import { GHANA_REGIONS, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
 
 const MediaDashboard: React.FC = () => {
   const { darkMode } = useDarkMode();
@@ -84,6 +85,7 @@ const MediaDashboard: React.FC = () => {
   const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
   const [selectedCommunity, setSelectedCommunity] = useState<string>('all');
   const [selectedMedia, setSelectedMedia] = useState<any>(null);
+  const [currentAlbum, setCurrentAlbum] = useState<string | null>(null);
 
   // Upload modal state
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -155,6 +157,41 @@ const MediaDashboard: React.FC = () => {
     }
   });
 
+  const handleOpenMedia = (item: any) => {
+    const url = item.url;
+    if (!url || url === 'album-placeholder') return;
+
+    if (url.startsWith('data:')) {
+      try {
+        // Convert base64 to Blob to avoid browser URL length limits
+        const parts = url.split(',');
+        const mime = parts[0].match(/:(.*?);/)?.[1] || 'application/octet-stream';
+        const binary = atob(parts[1]);
+        const array = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          array[i] = binary.charCodeAt(i);
+        }
+        const blob = new Blob([array], { type: mime });
+        const blobUrl = URL.createObjectURL(blob);
+        
+        // Open the blob URL
+        const win = window.open(blobUrl, '_blank');
+        if (win) {
+          win.focus();
+          // Clean up the URL after a short delay (once the tab has likely loaded)
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        } else {
+          toast.error('Pop-up blocked. Please allow pop-ups for this site.');
+        }
+      } catch (err) {
+        console.error('Error opening base64 media:', err);
+        toast.error('Failed to open document. The file may be corrupted.');
+      }
+    } else {
+      window.open(url, '_blank');
+    }
+  };
+
   const handleDelete = async (item: any) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -174,7 +211,7 @@ const MediaDashboard: React.FC = () => {
   const albums = useMemo(() => {
     const albumMap = new Map();
     (mediaItems || []).forEach((item: any) => {
-      // Robustly identify album name
+      // Robustly identify album name - prioritize explicit album field
       const albumName = item.album || (item.name.startsWith('[Album] ') ? item.name.replace('[Album] ', '') : null);
       if (albumName) {
         if (!albumMap.has(albumName)) {
@@ -212,6 +249,16 @@ const MediaDashboard: React.FC = () => {
 
   const filteredMedia = useMemo(() => {
     return (mediaItems || []).filter((item: any) => {
+      // If we are currently browsing an album...
+      if (currentAlbum) {
+          // Hide all placeholders for the album itself...
+          if (item.url === 'album-placeholder') return false;
+          // Only show items that match this album name exactly (ignoring case)
+          const albumName = item.album || item.name.replace('[Album] ', '');
+          if (albumName.toLowerCase() !== currentAlbum.toLowerCase()) return false;
+          return true;
+      }
+
       const matchesTab = activeTab === 'All' || 
                          (activeTab === 'KYC Docs' ? item.type === 'KYC Doc' : 
                           activeTab === 'Harvests' ? item.type === 'Harvest' :
@@ -222,18 +269,22 @@ const MediaDashboard: React.FC = () => {
       if (activeTab === 'Albums') return false;
 
       const farmName = typeof item.farm === 'object' ? item.farm?.name : item.farm;
-      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            (farmName && String(farmName).toLowerCase().includes(searchQuery.toLowerCase()));
+      const lowerQuery = searchQuery.toLowerCase();
+      const matchesSearch = item.name.toLowerCase().includes(lowerQuery) || 
+                            (farmName && String(farmName).toLowerCase().includes(lowerQuery)) ||
+                            (item.album && item.album.toLowerCase().includes(lowerQuery));
       
-      const effectiveRegion = agent?.region || "Ashanti Region";
+      const effectiveRegion = (agent?.region || "Ashanti").toLowerCase().replace(' region', '').trim();
+      const itemRegion = (item.region || "").toLowerCase().replace(' region', '').trim();
+      
       // Lenient filtering: If item has no region set, we show it (it belongs to the agent who uploaded it)
-      const matchesRegion = !item.region || !effectiveRegion || item.region === effectiveRegion;
+      const matchesRegion = !itemRegion || !effectiveRegion || itemRegion === effectiveRegion;
       const matchesDistrict = selectedDistrict === 'all' || !item.district || item.district === selectedDistrict;
       const matchesCommunity = selectedCommunity === 'all' || !item.community || item.community === selectedCommunity;
 
       return matchesTab && matchesSearch && matchesRegion && matchesDistrict && matchesCommunity;
     });
-  }, [mediaItems, activeTab, searchQuery, agent?.region, selectedDistrict, selectedCommunity]);
+  }, [mediaItems, activeTab, searchQuery, agent?.region, selectedDistrict, selectedCommunity, currentAlbum]);
 
   const stats = [
     { label: 'Total Files', value: statsData?.totalFiles || '0', icon: HardDrive, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -500,7 +551,7 @@ const MediaDashboard: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-none shadow-2xl">
                       <SelectItem value="all">All Districts</SelectItem>
-                      {(agent?.region || "Ashanti Region") && GHANA_REGIONS[agent?.region || "Ashanti Region"]?.map(d => (
+                      {GHANA_REGIONS[getRegionKey(agent?.region)]?.map(d => (
                         <SelectItem key={d} value={d}>{d}</SelectItem>
                       ))}
                     </SelectContent>
@@ -543,6 +594,28 @@ const MediaDashboard: React.FC = () => {
           
           {/* Gallery Grid */}
           <div className="xl:col-span-3 space-y-6 min-h-[600px]">
+            {currentAlbum && (
+              <div className="flex items-center gap-2 mb-6 animate-in slide-in-from-left-4 duration-500">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => {
+                    setCurrentAlbum(null);
+                    setSearchQuery('');
+                  }}
+                  className="p-0 h-auto font-black text-[#065f46] uppercase tracking-widest text-[10px] hover:bg-transparent flex items-center gap-1 group"
+                >
+                  <ArrowUpRight className="h-4 w-4 rotate-225 group-hover:-translate-x-1 transition-transform" />
+                  BACK TO ALL ASSETS
+                </Button>
+                <div className="h-4 w-[1px] bg-gray-200 mx-2"></div>
+                <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100">
+                  <Folder className="h-3 w-3 text-emerald-600" />
+                  <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">{currentAlbum}</span>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'Albums' ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
                 {albums.map((album: any) => (
@@ -589,47 +662,97 @@ const MediaDashboard: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
-                {filteredMedia.map((item: any) => (
-                <div 
-                  key={item._id || item.id} 
-                  className="group relative aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 cursor-pointer"
-                  onClick={() => setSelectedMedia(item)}
-                >
-                  {item.thumbnail ? (
-                    <img 
-                      src={item.thumbnail} 
-                      alt={item.name} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-gray-50 to-gray-200">
-                      <FileText className="h-10 w-10 text-gray-400 mb-2 group-hover:scale-110 transition-transform" />
-                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-tighter line-clamp-2">{item.name}</p>
-                    </div>
-                  )}
+                {filteredMedia.map((item: any) => {
+                  const itemType = (item.type || 'Photo').toLowerCase();
+                  const itemName = (item.name || '').toLowerCase();
+                  const isAlbum = item.url === 'album-placeholder' || itemName.startsWith('[album]') || itemType === 'album';
+                  const isPdf = itemName.endsWith('.pdf') || item.format === 'PDF';
+                  const isExcel = itemName.endsWith('.xlsx') || itemName.endsWith('.xls') || itemName.endsWith('.csv') || item.format?.includes('XLS');
+                  const isWord = itemName.endsWith('.docx') || itemName.endsWith('.doc') || item.format?.includes('DOC');
+                  const isDocument = isPdf || isExcel || isWord || itemType === 'kyc doc' || itemType === 'document' || item.format === 'PDF';
 
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#002f37]/95 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 p-4 flex flex-col justify-end">
-                    <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                      <div className="flex justify-between items-start mb-1">
-                        <p className="text-white text-[11px] font-black leading-tight line-clamp-1">
-                          {typeof item.farm === 'object' ? item.farm?.name : (item.farm || 'General')}
-                        </p>
-                        {typeBadge(item.type)}
+                  const handleItemClick = () => {
+                        if (isAlbum) {
+                          const albumName = item.album || item.name.replace('[Album] ', '');
+                          setCurrentAlbum(albumName);
+                          setActiveTab('All');
+                          toast.info(`Opening folder: ${albumName}`, { position: 'bottom-right' });
+                        } else if (isDocument) {
+                          handleOpenMedia(item);
+                        } else {
+                          setSelectedMedia(item);
+                        }
+                  };
+
+                  return (
+                    <div 
+                      key={item._id || item.id} 
+                      className="group relative aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 cursor-pointer"
+                      onClick={handleItemClick}
+                    >
+                      {item.thumbnail ? (
+                        <img 
+                          src={item.thumbnail} 
+                          alt={item.name} 
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                      ) : (
+                        (() => {
+                          let bgColorClass = "bg-gradient-to-br from-gray-50 to-gray-200";
+                          let iconColorClass = "text-gray-400";
+                          
+                          if (isAlbum) {
+                            bgColorClass = "bg-gradient-to-br from-emerald-50 to-emerald-100";
+                            iconColorClass = "text-emerald-500/50";
+                          } else if (isPdf) {
+                            bgColorClass = "bg-gradient-to-br from-rose-50 to-rose-100";
+                            iconColorClass = "text-rose-500/50";
+                          } else if (isExcel) {
+                            bgColorClass = "bg-gradient-to-br from-emerald-50 to-emerald-100";
+                            iconColorClass = "text-emerald-600/50";
+                          } else if (isWord) {
+                            bgColorClass = "bg-gradient-to-br from-blue-50 to-blue-100";
+                            iconColorClass = "text-blue-500/50";
+                          }
+
+                          return (
+                            <div className={`w-full h-full flex flex-col items-center justify-center p-6 text-center ${bgColorClass}`}>
+                              {isAlbum ? (
+                                <Folder className={`h-12 w-12 ${iconColorClass} mb-2 group-hover:scale-110 transition-transform`} />
+                              ) : isDocument ? (
+                                <FileText className={`h-10 w-10 ${iconColorClass} mb-2 group-hover:scale-110 transition-transform`} />
+                              ) : (
+                                <ImageIcon className={`h-10 w-10 ${iconColorClass} mb-2 group-hover:scale-110 transition-transform`} />
+                              )}
+                              <p className={`text-[10px] font-black uppercase tracking-tighter line-clamp-2 ${iconColorClass.replace('/50', '')}`}>{item.name}</p>
+                            </div>
+                          );
+                        })()
+                      )}
+
+                      {/* Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#002f37]/95 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 p-4 flex flex-col justify-end">
+                        <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                          <div className="flex justify-between items-start mb-1">
+                            <p className="text-white text-[11px] font-black leading-tight line-clamp-1">
+                              {typeof item.farm === 'object' ? item.farm?.name : (item.farm || 'General')}
+                            </p>
+                            {typeBadge(isAlbum ? 'Photo' : item.type)}
+                          </div>
+                          <p className="text-[#95f0a1] text-[9px] font-bold uppercase tracking-widest">
+                            {isAlbum ? 'FOLDER' : (item.createdAt ? format(new Date(item.createdAt), 'dd MMM yyyy') : 'Recently')}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-[#95f0a1] text-[9px] font-bold uppercase tracking-widest">
-                        {item.createdAt ? format(new Date(item.createdAt), 'dd MMM yyyy') : 'Recently'}
-                      </p>
+                      
+                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-gray-100">
+                        <Button size="icon" variant="secondary" className="h-7 w-7 rounded-lg bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-[#065f46] hover:border-transparent border-none">
+                          <MoreVertical className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-gray-100">
-                    <Button size="icon" variant="secondary" className="h-7 w-7 rounded-lg bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-[#065f46] hover:border-transparent border-none">
-                      <MoreVertical className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                  );
+                })}
             </div>
           )}
 
@@ -668,9 +791,26 @@ const MediaDashboard: React.FC = () => {
                                 <img src={item.thumbnail} className="w-full h-full object-cover" alt="" />
                               </div>
                             ) : (
-                              <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
-                                <FileText className="h-4 w-4" />
-                              </div>
+                              (() => {
+                                const itemName = (item.name || '').toLowerCase();
+                                const isAlbum = item.url === 'album-placeholder' || itemName.startsWith('[album]') || item.type?.toLowerCase() === 'album';
+                                const isPdf = itemName.endsWith('.pdf') || item.format === 'PDF';
+                                const isExcel = itemName.endsWith('.xlsx') || itemName.endsWith('.xls') || itemName.endsWith('.csv') || item.format?.includes('XLS');
+                                const isWord = itemName.endsWith('.docx') || itemName.endsWith('.doc') || item.format?.includes('DOC');
+                                
+                                let bg = "bg-gray-100";
+                                let tc = "text-gray-400";
+                                if (isAlbum) { bg = "bg-emerald-50"; tc = "text-emerald-500"; }
+                                else if (isPdf) { bg = "bg-rose-50"; tc = "text-rose-500"; }
+                                else if (isExcel) { bg = "bg-emerald-50"; tc = "text-emerald-500"; }
+                                else if (isWord) { bg = "bg-blue-50"; tc = "text-blue-500"; }
+                                
+                                return (
+                                  <div className={`h-8 w-8 rounded-lg ${bg} flex items-center justify-center ${tc}`}>
+                                    {isAlbum ? <Folder className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+                                  </div>
+                                );
+                              })()
                             )}
                             {item.name}
                           </div>
@@ -689,7 +829,24 @@ const MediaDashboard: React.FC = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => setSelectedMedia(item)}
+                              onClick={() => {
+                                const itemName = (item.name || '').toLowerCase();
+                                const isAlbum = item.url === 'album-placeholder' || itemName.startsWith('[album]') || item.type?.toLowerCase() === 'album';
+                                const isPdf = itemName.endsWith('.pdf') || item.format === 'PDF';
+                                const isExcel = itemName.endsWith('.xlsx') || itemName.endsWith('.xls') || itemName.endsWith('.csv') || item.format?.includes('XLS');
+                                const isWord = itemName.endsWith('.docx') || itemName.endsWith('.doc') || item.format?.includes('DOC');
+                                const isDocument = isPdf || isExcel || isWord || item.type?.toLowerCase() === 'kyc doc' || item.type?.toLowerCase() === 'document' || item.format === 'PDF';
+                                
+                                if (isAlbum) {
+                                  const albumName = item.album || item.name.replace('[Album] ', '');
+                                  setSearchQuery(albumName);
+                                  setActiveTab('All');
+                                } else if (isDocument) {
+                                  handleOpenMedia(item);
+                                } else {
+                                  setSelectedMedia(item);
+                                }
+                              }}
                               className="h-8 px-3 rounded-lg flex items-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
                             >
                               <Eye className="w-3.5 h-3.5" />
@@ -886,7 +1043,20 @@ const MediaDashboard: React.FC = () => {
       </Dialog>
 
       {/* ===== UPLOAD FILE MODAL ===== */}
-      <Dialog open={uploadOpen} onOpenChange={(o) => { setUploadOpen(o); if (!o) { setUploadFile(null); setUploadPreview(null); setUploadForm({ name: '', type: 'Photo', farm: '', album: '' }); } }}>
+      <Dialog 
+        open={uploadOpen} 
+        onOpenChange={(o) => { 
+          setUploadOpen(o); 
+          if (o) {
+            // Auto-tag with current folder if browsing
+            setUploadForm(f => ({ ...f, album: currentAlbum || f.album || '' }));
+          } else { 
+            setUploadFile(null); 
+            setUploadPreview(null); 
+            setUploadForm({ name: '', type: 'Photo', farm: '', album: '' }); 
+          } 
+        }}
+      >
         <DialogContent className="max-w-2xl border-none rounded-3xl bg-white p-0 overflow-hidden shadow-2xl">
           <DialogTitle className="sr-only">Upload File</DialogTitle>
           <DialogDescription className="sr-only">Upload a media file to the library</DialogDescription>
@@ -952,10 +1122,10 @@ const MediaDashboard: React.FC = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-none shadow-2xl">
-                    <SelectItem value="Photo">📸 Photo</SelectItem>
-                    <SelectItem value="Video">🎥 Video</SelectItem>
-                    <SelectItem value="KYC Doc">📄 KYC Document</SelectItem>
-                    <SelectItem value="Harvest">🌱 Harvest Record</SelectItem>
+                    <SelectItem value="Photo">Photo</SelectItem>
+                    <SelectItem value="Video">Video</SelectItem>
+                    <SelectItem value="KYC Doc">KYC Document</SelectItem>
+                    <SelectItem value="Harvest">Harvest Record</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -969,13 +1139,23 @@ const MediaDashboard: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-1.5">Album (optional)</label>
-                <Input
-                  placeholder="e.g. Q1 Field Visits"
-                  value={uploadForm.album}
-                  onChange={(e) => setUploadForm(f => ({ ...f, album: e.target.value }))}
-                  className="h-11 border-gray-200 rounded-xl text-sm font-medium focus:ring-[#065f46] focus:border-[#065f46]"
-                />
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-1.5">Assign to Album (optional)</label>
+                <Select 
+                  value={uploadForm.album || 'none'} 
+                  onValueChange={(v) => setUploadForm(f => ({ ...f, album: v === 'none' ? '' : v }))}
+                >
+                  <SelectTrigger className="h-11 border-gray-200 rounded-xl text-sm font-medium">
+                    <SelectValue placeholder="Select an album" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-none shadow-2xl max-h-[200px]">
+                    <SelectItem value="none">No Album</SelectItem>
+                    {albums.map((album: any) => (
+                      <SelectItem key={album.name} value={album.name}>
+                        {album.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

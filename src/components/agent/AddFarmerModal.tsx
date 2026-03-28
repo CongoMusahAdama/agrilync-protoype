@@ -35,7 +35,7 @@ import {
     Save,
     Coins
 } from 'lucide-react';
-import { GHANA_REGIONS, GHANA_LANGUAGES, GHANA_COMMUNITIES } from '@/data/ghanaRegions';
+import { GHANA_REGIONS, GHANA_LANGUAGES, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
 
 interface AddFarmerModalProps {
     trigger?: React.ReactNode;
@@ -46,15 +46,7 @@ interface AddFarmerModalProps {
     isEditMode?: boolean;
 }
 
-const normalizeRegion = (regionString?: string) => {
-    if (!regionString) return 'Ashanti Region';
-    if (GHANA_REGIONS[regionString]) return regionString;
-    const capitalized = regionString.charAt(0).toUpperCase() + regionString.slice(1).toLowerCase();
-    const withSuffix = `${capitalized} Region`;
-    if (GHANA_REGIONS[withSuffix]) return withSuffix;
-    const matchedKey = Object.keys(GHANA_REGIONS).find(k => k.toLowerCase().includes(regionString.toLowerCase()));
-    return matchedKey || 'Ashanti Region';
-};
+
 
 const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenChange, onSuccess, farmer, isEditMode }) => {
     const { agent } = useAuth();
@@ -69,7 +61,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         otherLanguage: '',
         email: '',
         password: '',
-        region: normalizeRegion(agent?.region),
+        region: getRegionKey(agent?.region),
         district: '',
         community: '',
         farmType: '',
@@ -134,7 +126,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                     otherLanguage: farmer.otherLanguage || '',
                     email: farmer.email || '',
                     password: '', // Don't show password
-                    region: normalizeRegion(farmer.region || agent?.region),
+                    region: getRegionKey(farmer.region || agent?.region),
                     district: farmer.district || '',
                     community: farmer.community || '',
                     farmType: farmer.farmType || '',
@@ -179,7 +171,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             // Note: If using trigger, we rely on the initial state or manual reset if needed
             setFormData({
                 name: '', contact: '', gender: '', dob: '', language: '', otherLanguage: '', email: '',
-                password: '', region: normalizeRegion(agent?.region), district: '', community: '', farmType: '', farmSize: '',
+                password: '', region: getRegionKey(agent?.region), district: '', community: '', farmType: '', farmSize: '',
                 yearsOfExperience: '', landOwnershipStatus: '', cropsGrown: '', livestockType: '', fieldNotes: '',
                 investmentInterest: 'no', preferredInvestmentType: '', estimatedCapitalNeed: '',
                 hasPreviousInvestment: false, investmentReadinessScore: 0, otherGender: '', otherDistrict: '',

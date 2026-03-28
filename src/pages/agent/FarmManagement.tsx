@@ -65,7 +65,7 @@ import {
     Wrench,
     MoreHorizontal
 } from 'lucide-react';
-import { GHANA_REGIONS, GHANA_COMMUNITIES } from '@/data/ghanaRegions';
+import { GHANA_REGIONS, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const MetricCardSkeleton = () => (
@@ -516,34 +516,84 @@ const FarmManagement: React.FC = () => {
 
         try {
             const doc = new jsPDF();
-            doc.setFontSize(20);
-            doc.setTextColor(6, 95, 70); // AgriLync Green (#065f46)
-            doc.text('Field Visit Logs - AgriLync', 14, 22);
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const logoUrl = '/lovable-uploads/favicorn.jpeg';
 
-            doc.setFontSize(11);
+            // Professional Geometric Header
+            doc.setFillColor(0, 47, 55); // Brand Teal
+            doc.triangle(0, 0, 80, 0, 0, 45, 'F');
+            doc.setFillColor(126, 222, 86); // Brand Green
+            doc.triangle(30, 0, 60, 0, 45, 15, 'F');
+            doc.setFillColor(0, 47, 55);
+            doc.triangle(pageWidth, 0, pageWidth - 40, 0, pageWidth, 25, 'F');
+
+            // Centered Title Section
+            doc.setTextColor(0, 47, 55);
+            doc.setFontSize(24);
+            doc.setFont('helvetica', 'bold');
+            doc.text('FIELD VISIT LOGS', pageWidth / 2, 55, { align: 'center' });
+            
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
             doc.setTextColor(100);
-            doc.text(`Agent: ${agent?.name || 'AgriLync Agent'}`, 14, 30);
-            doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 37);
-            doc.text(`Type: ${selectedVisits.size > 0 ? 'Selected Records' : 'All Records'}`, 14, 44);
+            doc.text(`REPORTING PERIOD: ${new Date().toLocaleDateString('en-GB')}`, pageWidth / 2, 63, { align: 'center' });
+            doc.text(`AUTHORIZED BY: ${(agent?.name || 'AgriLync Agent').toUpperCase()}`, pageWidth / 2, 68, { align: 'center' });
 
-            const tableColumn = ["Date", "Farmer", "Lync ID", "Purpose", "Hours", "Status"];
+            // Branding Line
+            doc.setDrawColor(126, 222, 86);
+            doc.setLineWidth(0.5);
+            doc.line(pageWidth / 2 - 30, 72, pageWidth / 2 + 30, 72);
+
+            const tableColumn = ["Date", "Time", "Farmer", "Purpose", "Observations", "Challenges", "Status"];
             const tableRows = dataToExport.map((visit: any) => [
                 new Date(visit.date).toLocaleDateString(),
+                visit.time || 'N/A',
                 visit.farmer?.name || visit.farmerName,
-                visit.farmer?.lyncId || visit.lyncId,
                 visit.purpose,
-                visit.hoursSpent,
+                visit.notes || visit.observations || 'N/A',
+                visit.challenges || 'None',
                 visit.status
             ]);
 
             autoTable(doc, {
                 head: [tableColumn],
                 body: tableRows,
-                startY: 50,
+                startY: 85,
                 theme: 'grid',
-                headStyles: { fillColor: [6, 95, 70], halign: 'center' },
-                bodyStyles: { halign: 'center' },
-                alternateRowStyles: { fillColor: [240, 240, 240] }
+                styles: { fontSize: 7, font: 'helvetica', overflow: 'linebreak' },
+                headStyles: { fillColor: [0, 47, 55], halign: 'center' },
+                columnStyles: {
+                    4: { cellWidth: 40 }, // Observations
+                    5: { cellWidth: 35 }  // Challenges
+                },
+                alternateRowStyles: { fillColor: [250, 252, 250] },
+                didDrawPage: (data) => {
+                    // Footer on every page
+                    doc.setDrawColor(240);
+                    doc.setLineWidth(0.1);
+                    doc.line(15, pageHeight - 25, pageWidth - 15, pageHeight - 25);
+
+                    // Logo in footer with white background to handle transparency
+                    try {
+                        doc.setFillColor(255, 255, 255);
+                        doc.rect(15, pageHeight - 22, 10, 10, 'F');
+                        doc.addImage(logoUrl, 'PNG', 15, pageHeight - 22, 10, 10);
+                    } catch (e) {}
+
+                    doc.setFontSize(7);
+                    doc.setTextColor(150);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('AGRILYNC NEXUS', 28, pageHeight - 18);
+                    
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(`Report for: ${agent?.name || 'Agent'}  |  Exported: ${new Date().toLocaleString()}`, 28, pageHeight - 13);
+                    
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`Page ${doc.internal.pages.length - 1}`, pageWidth - 15, pageHeight - 15, { align: 'right' });
+                    doc.setFont('helvetica', 'normal');
+                    doc.text('OFFICIAL FIELD LOG RECORD', pageWidth - 15, pageHeight - 11, { align: 'right' });
+                }
             });
 
             doc.save(`AgriLync_VisitLogs_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -773,8 +823,10 @@ const FarmManagement: React.FC = () => {
                                 : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
-                            <Users className="h-4 w-4 mr-2" />
-                            Farmers Directory ({filteredFarmers.length})
+                            <Users className="h-4 w-4 mr-1 sm:mr-2" />
+                            <span className="hidden sm:inline">Grower Directory</span>
+                            <span className="sm:hidden">Growers</span>
+                            <span className="ml-1">({filteredFarmers.length})</span>
                         </TabsTrigger>
                         <TabsTrigger
                             value="farms"
@@ -783,8 +835,10 @@ const FarmManagement: React.FC = () => {
                                 : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
-                            <TrendingUp className="h-4 w-4 mr-2" />
-                            Active Farms ({farms.length})
+                            <TrendingUp className="h-4 w-4 mr-1 sm:mr-2" />
+                            <span className="hidden sm:inline">Active Farms</span>
+                            <span className="sm:hidden">Farms</span>
+                            <span className="ml-1">({farms.length})</span>
                         </TabsTrigger>
                         <TabsTrigger
                             value="visits"
@@ -793,8 +847,10 @@ const FarmManagement: React.FC = () => {
                                 : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
-                            <ClipboardList className="h-4 w-4 mr-2" />
-                            Field Visits ({visitLogs.length})
+                            <ClipboardList className="h-4 w-4 mr-1 sm:mr-2" />
+                            <span className="hidden sm:inline">Field Visits</span>
+                            <span className="sm:hidden">Visits</span>
+                            <span className="ml-1">({visitLogs.length})</span>
                         </TabsTrigger>
                         <TabsTrigger
                             value="reports"
@@ -803,8 +859,9 @@ const FarmManagement: React.FC = () => {
                                 : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
-                            <FileText className="h-4 w-4 mr-2" />
-                            Reports ({reports.length})
+                            <FileText className="h-4 w-4 mr-1 sm:mr-2" />
+                            <span>Reports</span>
+                            <span className="ml-1">({reports.length})</span>
                         </TabsTrigger>
                         <TabsTrigger
                             value="matches"
@@ -813,8 +870,10 @@ const FarmManagement: React.FC = () => {
                                 : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
-                            <Coins className="h-4 w-4 mr-2" />
-                            Investor Matches ({matches.length})
+                            <Coins className="h-4 w-4 mr-1 sm:mr-2" />
+                            <span className="hidden sm:inline">Investor Matches</span>
+                            <span className="sm:hidden">Matches</span>
+                            <span className="ml-1">({matches.length})</span>
                         </TabsTrigger>
                     </TabsList>
 
@@ -840,14 +899,9 @@ const FarmManagement: React.FC = () => {
                                             </SelectTrigger>
                                             <SelectContent className="z-[2000] rounded-xl border-none shadow-2xl">
                                                 <SelectItem value="all">All Districts</SelectItem>
-                                                {(() => {
-                                                    const agentRegionRaw = agent?.region || "Ashanti Region";
-                                                    const normalizedSearch = agentRegionRaw.toLowerCase().replace(' region', '').trim();
-                                                    const regionKey = Object.keys(GHANA_REGIONS).find(k => k.toLowerCase().replace(' region', '').trim() === normalizedSearch) || "Ashanti Region";
-                                                    return GHANA_REGIONS[regionKey]?.map(d => (
-                                                        <SelectItem key={d} value={d}>{d}</SelectItem>
-                                                    ));
-                                                })()}
+                                                {GHANA_REGIONS[getRegionKey(agent?.region)]?.map(d => (
+                                                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
 
@@ -1357,7 +1411,7 @@ const FarmManagement: React.FC = () => {
                     <TabsContent value="reports" className="space-y-4">
                         <Card className={`${sectionCardClass} border-0 shadow-lg overflow-hidden`}>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7 px-6 pt-6">
-                                <div>
+                                <div className="hidden sm:block">
                                     <CardTitle className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                                         Submitted Field Reports
                                     </CardTitle>
@@ -1365,16 +1419,28 @@ const FarmManagement: React.FC = () => {
                                         View and download documents for your field activities.
                                     </p>
                                 </div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => refetchReports()}
-                                    disabled={loadingReports}
-                                    className={`h-9 ${darkMode ? 'border-white/10 text-gray-400 hover:bg-white/5' : ''}`}
-                                >
-                                    {loadingReports ? <Clock className="h-4 w-4 animate-spin mr-2" /> : <TrendingUp className="h-4 w-4 mr-2" />}
-                                    Refresh List
-                                </Button>
+                                <div className="flex items-center gap-3">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => refetchReports()}
+                                        disabled={loadingReports}
+                                        className={`h-9 border-none bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 font-bold px-4 rounded-xl transition-all flex items-center gap-2`}
+                                    >
+                                        {loadingReports ? <Clock className="h-4 w-4 animate-spin" /> : <TrendingUp className="h-4 w-4" />}
+                                        <span className="hidden sm:inline">Refresh List</span>
+                                    </Button>
+                                    <Button 
+                                        onClick={() => {
+                                            setSelectedFarmer(null);
+                                            setUploadReportModalOpen(true);
+                                        }}
+                                        className="h-9 bg-[#065f46] hover:bg-[#065f46]/90 text-white font-black text-[10px] uppercase tracking-widest px-5 rounded-xl flex items-center gap-2 shadow-xl shadow-emerald-500/20 border-none transition-transform active:scale-95"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        <span>Log Report</span>
+                                    </Button>
+                                </div>
                             </CardHeader>
                             <CardContent className="p-0 sm:p-6 sm:pt-0">
                                 <div className="overflow-x-auto relative custom-scrollbar">
@@ -1423,34 +1489,34 @@ const FarmManagement: React.FC = () => {
                                                             {report.notes}
                                                         </TableCell>
                                                         <TableCell className="text-right">
-                                                            <div className="flex justify-end gap-2">
+                                                            <div className="flex justify-end gap-3 px-4">
                                                                 <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    title="Download PDF"
+                                                                    variant="outline"
+                                                                    size="sm"
                                                                     onClick={() => exportToPDF({
                                                                         ...report,
                                                                         farmerName: report.farmer?.name || 'Farmer',
                                                                         agentName: agent?.name || 'AgriLync Agent',
                                                                         agentId: agent?.agentId || 'N/A'
                                                                     })}
-                                                                    className={`h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 ${darkMode ? 'hover:bg-red-500/10' : ''}`}
+                                                                    className={`h-8 px-3 text-[10px] font-black uppercase tracking-widest border-red-500/20 text-red-500 hover:bg-red-500/10 hover:text-red-600 transition-all rounded-lg gap-2`}
                                                                 >
-                                                                    <FileDown className="h-4 w-4" />
+                                                                    <FileDown className="h-3.5 w-3.5" />
+                                                                    <span>PDF</span>
                                                                 </Button>
                                                                 <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    title="Download Word"
+                                                                    variant="outline"
+                                                                    size="sm"
                                                                     onClick={() => exportToWord({
                                                                         ...report,
                                                                         farmerName: report.farmer?.name || 'Farmer',
                                                                         agentName: agent?.name || 'AgriLync Agent',
                                                                         agentId: agent?.agentId || 'N/A'
                                                                     })}
-                                                                    className={`h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50 ${darkMode ? 'hover:bg-blue-500/10' : ''}`}
+                                                                    className={`h-8 px-3 text-[10px] font-black uppercase tracking-widest border-blue-500/20 text-blue-500 hover:bg-blue-500/10 hover:text-blue-600 transition-all rounded-lg gap-2`}
                                                                 >
-                                                                    <FileText className="h-4 w-4" />
+                                                                    <FileText className="h-3.5 w-3.5" />
+                                                                    <span>Word</span>
                                                                 </Button>
                                                             </div>
                                                         </TableCell>
@@ -1468,7 +1534,7 @@ const FarmManagement: React.FC = () => {
                     <TabsContent value="farms" className="space-y-4">
                         <Card className={`${sectionCardClass} border-0 shadow-xl overflow-hidden`}>
                             <div className="overflow-hidden">
-                                <div className="p-6 border-b border-white/5 flex items-center justify-between bg-indigo-500/5">
+                                <div className="hidden md:flex p-6 border-b border-white/5 items-center justify-between bg-indigo-500/5">
                                     <div>
                                         <h3 className={`text-lg font-bold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>Active Field Missions</h3>
                                         <p className={`text-xs mt-1 font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -1702,7 +1768,7 @@ const FarmManagement: React.FC = () => {
                 }}
             />
             <AddFarmerModal open={editModalOpen} onOpenChange={setEditModalOpen} farmer={selectedFarmer} isEditMode={true} onSuccess={fetchData} />
-            <UploadReportModal open={uploadReportModalOpen} onOpenChange={setUploadReportModalOpen} farmer={selectedFarmer} onUpload={() => refetchReports()} />
+            <UploadReportModal open={uploadReportModalOpen} onOpenChange={setUploadReportModalOpen} farmer={selectedFarmer} farmers={filteredFarmers} onUpload={() => refetchReports()} />
             <MediaUploadModal open={uploadMediaModalOpen} onOpenChange={setUploadMediaModalOpen} farmer={selectedFarmer} onSuccess={fetchData} />
             <FarmJourneyModal open={journeyModalOpen} onOpenChange={setJourneyModalOpen} farmer={selectedFarmer} />
 

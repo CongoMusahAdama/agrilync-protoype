@@ -11,157 +11,238 @@ interface ReportData {
   cropStage?: string;
   agentName?: string;
   agentId?: string;
-  media?: Array<{ type: string; url: string; name: string }>;
+  media?: Array<{ type: string; url: string; name: string; description?: string }>;
 }
 
 export const exportToPDF = async (data: ReportData) => {
   try {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    const logoUrl = '/lovable-uploads/logo.png';
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const logoUrl = '/lovable-uploads/favicorn.jpeg';
 
-    // Header background
+    // Professional Geometric Header Design
+    // Top Left Large Triangle (Brand Teal)
     doc.setFillColor(0, 47, 55); // #002f37
-    doc.rect(0, 0, pageWidth, 45, 'F');
+    doc.triangle(0, 0, 80, 0, 0, 45, 'F');
+    
+    // Top Left Small Triangle (Brand Green)
+    doc.setFillColor(126, 222, 86); // #7ede56
+    doc.triangle(30, 0, 60, 0, 45, 15, 'F');
 
+    // Top Right Design
+    doc.setFillColor(0, 47, 55);
+    doc.triangle(pageWidth, 0, pageWidth - 40, 0, pageWidth, 25, 'F');
+    doc.setFillColor(126, 222, 86, 0.2); // Light version
+    doc.triangle(pageWidth - 20, 0, pageWidth - 60, 0, pageWidth - 40, 10, 'F');
+
+    // Centered Title Section
+    doc.setTextColor(0, 47, 55);
+    doc.setFontSize(26);
+    doc.setFont('helvetica', 'bold');
+    doc.text((data.type === 'field-visit' ? 'FIELD JOURNAL' : 'FIELD REPORT').toUpperCase(), pageWidth / 2, 60, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100);
+    doc.text('AGRILYNC NEXUS - STRATEGIC FIELD INSIGHTS', pageWidth / 2, 68, { align: 'center' });
+
+    // Header Horizontal Line
+    doc.setDrawColor(126, 222, 86);
+    doc.setLineWidth(0.5);
+    doc.line(pageWidth / 2 - 40, 72, pageWidth / 2 + 40, 72);
+
+    // Corporate Logo in Header
     try {
-      doc.addImage(logoUrl, 'PNG', 15, 8, 28, 28);
-    } catch (e) {
-      console.warn('Logo could not be loaded for PDF', e);
-    }
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(15, 10, 15, 15, 2, 2, 'F');
+        doc.addImage(logoUrl, 'PNG', 16, 11, 13, 13);
+    } catch (e) {}
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont('times', 'bold');
-    doc.text((data.type === 'field-visit' ? 'FIELD JOURNAL' : 'FIELD REPORT').toUpperCase(), 48, 20);
-
-    doc.setFontSize(8);
-    doc.setFont('times', 'normal');
-    doc.text('AGRILYNC TECHNOLOGIES LTD', 48, 26);
-    doc.text('Plot 42, Spintex Road, Accra - Ghana', 48, 30);
-    doc.text('info@agrilync.com | www.agrilync.com', 48, 34);
-
-    doc.setFontSize(8);
-    doc.setFont('times', 'normal');
-    doc.text(`Doc Ref: AL-${Math.random().toString(36).substr(2, 9).toUpperCase()}`, pageWidth - 15, 18, { align: 'right' });
-    doc.text(`Printed: ${new Date().toLocaleString()}`, pageWidth - 15, 24, { align: 'right' });
-    doc.text('Status: OFFICIAL DOCUMENT', pageWidth - 15, 30, { align: 'right' });
-
-    // Metadata Header Section
-    doc.setFillColor(240, 240, 240);
-    doc.rect(15, 55, pageWidth - 30, 40, 'F');
+    // Metadata Header Section - Centered and Clean
+    let currentY = 85;
+    doc.setFillColor(245, 250, 248); // Even lighter teal background
+    doc.roundedRect(15, currentY, pageWidth - 30, 45, 3, 3, 'F');
 
     doc.setTextColor(0, 47, 55);
-    doc.setFontSize(10);
-    doc.setFont('times', 'bold');
-    doc.text('REPORT PARTICIPANTS', 20, 65);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('REPORT CORE METADATA', 20, currentY + 10);
 
-    doc.setFont('times', 'normal');
-    doc.setTextColor(60, 60, 60);
+    doc.setFont('helvetica', 'normal');
+    const metaCol1 = 20;
+    const metaCol2 = 110;
+    const metaValOffset = 35;
 
-    // Left column
-    doc.text('FARMER NAME:', 20, 75);
-    doc.setFont('times', 'bold');
-    doc.text(data.farmerName.toUpperCase(), 55, 75);
+    // Row 1
+    doc.text('FARMER:', metaCol1, currentY + 22);
+    doc.setFont('helvetica', 'bold');
+    doc.text(data.farmerName.toUpperCase(), metaCol1 + metaValOffset, currentY + 22);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text('LEAD AGENT:', metaCol2, currentY + 22);
+    doc.setFont('helvetica', 'bold');
+    doc.text((data.agentName || 'Representatives').toUpperCase(), metaCol2 + metaValOffset, currentY + 22);
 
-    doc.setFont('times', 'normal');
-    doc.text('VISIT DATE:', 20, 85);
-    doc.setFont('times', 'bold');
-    doc.text(data.date, 55, 85);
+    // Row 2
+    doc.setFont('helvetica', 'normal');
+    doc.text('VISIT DATE:', metaCol1, currentY + 32);
+    doc.setFont('helvetica', 'bold');
+    doc.text(data.date, metaCol1 + metaValOffset, currentY + 32);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text('AGENT ID:', metaCol2, currentY + 32);
+    doc.setFont('helvetica', 'bold');
+    let agentId = data.agentId || 'AL-SYS-001';
+    doc.text(agentId.toUpperCase(), metaCol2 + metaValOffset, currentY + 32);
 
-    // Right column
-    doc.setFont('times', 'normal');
-    doc.text('LEAD AGENT:', 110, 72);
-    doc.setFont('times', 'bold');
-    doc.text((data.agentName || 'AgriLync Representative').toUpperCase(), 145, 72);
+    // Row 3
+    doc.setFont('helvetica', 'normal');
+    doc.text('REPORT TYPE:', metaCol1, currentY + 40);
+    doc.setFont('helvetica', 'bold');
+    doc.text(data.type.replace('-', ' ').toUpperCase(), metaCol1 + metaValOffset, currentY + 40);
 
-    doc.setFont('times', 'normal');
-    doc.text('AGENT ID:', 110, 78);
-    doc.setFont('times', 'bold');
-    let agentId = data.agentId || 'N/A';
-    if (agentId !== 'N/A' && !agentId.startsWith('LYC')) {
-      agentId = `LYC-${agentId}`;
-    }
-    doc.text(agentId.toUpperCase(), 145, 78);
-
-    doc.setFont('times', 'normal');
-    doc.text('REPORT TYPE:', 110, 87);
-    doc.setFont('times', 'bold');
-    doc.text(data.type.replace('-', ' ').toUpperCase(), 145, 87);
-
-    // New Agricultural Metadata
+    // Agricultural Performance Bar
     if (data.healthScore || data.cropStage) {
-      doc.setFillColor(245, 250, 245);
-      doc.rect(15, 96, pageWidth - 30, 8, 'F');
+      currentY += 55;
+      doc.setFillColor(0, 47, 55);
+      doc.roundedRect(15, currentY, pageWidth - 30, 12, 2, 2, 'F');
       doc.setFontSize(8);
-      doc.setTextColor(6, 95, 70);
+      doc.setTextColor(255, 255, 255);
       let agriText = '';
-      if (data.cropStage) agriText += `STAGE: ${data.cropStage.toUpperCase()}    `;
-      if (data.healthScore) agriText += `COMPUTED HEALTH SCORE: ${data.healthScore}%`;
-      doc.text(agriText, 20, 101);
+      if (data.cropStage) agriText += `GROWTH STAGE: ${data.cropStage.toUpperCase()}     |     `;
+      if (data.healthScore) agriText += `FIELD HEALTH ASSESSMENT: ${data.healthScore}%`;
+      doc.text(agriText, 25, currentY + 7.5);
     }
 
-    // Content
-    let y = 115;
+    // Content Section
+    currentY += 25;
     doc.setTextColor(0, 47, 55);
     doc.setFontSize(14);
-    doc.setFont('times', 'bold');
-    doc.text('Observations & Field Notes', 20, y);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Observations & Field Insights', 20, currentY);
 
-    doc.setDrawColor(126, 222, 86); // #7ede56
+    doc.setDrawColor(126, 222, 86);
     doc.setLineWidth(1);
-    doc.line(20, y + 2, 80, y + 2);
+    doc.line(20, currentY + 2, 50, currentY + 2);
 
-    y += 12;
-    doc.setTextColor(50, 50, 50);
-    doc.setFont('times', 'normal');
-    doc.setFontSize(11);
+    currentY += 12;
+    doc.setTextColor(60, 60, 60);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
     const splitNotes = doc.splitTextToSize(data.notes, pageWidth - 40);
-    doc.text(splitNotes, 20, y);
+    doc.text(splitNotes, 20, currentY);
 
-    // Media Check
+    // Professional Visual Evidence Grid
     if (data.media && data.media.length > 0) {
-      y += (splitNotes.length * 7) + 20;
-      if (y > 250) {
+      currentY += (splitNotes.length * 5) + 20;
+      
+      // Page break check for header
+      if (currentY > 240) {
         doc.addPage();
-        y = 20;
+        currentY = 30;
       }
-      doc.setFont('times', 'bold');
-      doc.text(`Attachments (${data.media.length} files logged)`, 20, y);
-      y += 10;
-      doc.setFont('times', 'normal');
-      doc.setFontSize(9);
-      data.media.forEach((item, i) => {
-        doc.text(`- ${item.name} (${item.type})`, 25, y);
-        y += 7;
-      });
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.text(`Visual Evidence Log (${data.media.length} items)`, 20, currentY);
+      currentY += 10;
+
+      const imgWidth = 80;
+      const imgHeight = 60;
+      const margin = 15;
+      let col = 0;
+
+      for (const item of data.media) {
+        if (item.type === 'image' && item.url) {
+          // Check for space (image height + padding)
+          if (currentY + imgHeight > 250) {
+            doc.addPage();
+            currentY = 30;
+            col = 0;
+          }
+
+          const x = 20 + (col * (imgWidth + 10));
+          
+          try {
+              // Draw image border
+              doc.setDrawColor(240);
+              doc.setLineWidth(0.1);
+              doc.rect(x - 1, currentY - 1, imgWidth + 2, imgHeight + 2);
+              
+              const imgFormat = item.url.toLowerCase().includes('png') ? 'PNG' : 'JPEG';
+              doc.addImage(item.url, imgFormat, x, currentY, imgWidth, imgHeight);
+              
+              // Image Caption (Description or Name)
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(8);
+              doc.setTextColor(6, 95, 70); // Theme color
+              const caption = item.description || item.name;
+              doc.text(caption.substring(0, 45), x, currentY + imgHeight + 6);
+              
+              if (item.description) {
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(6);
+                doc.setTextColor(120);
+                doc.text(`Asset ID: ${item.name.substring(0, 20)}`, x, currentY + imgHeight + 10);
+              }
+          } catch (e) {
+              console.error('Failed to add image to PDF:', e);
+          }
+
+          if (col === 1) {
+            col = 0;
+            currentY += imgHeight + 15;
+          } else {
+            col = 1;
+          }
+        }
+      }
     }
 
-    // Footer
+    // Footer Implementation across all pages
     const pageCount = doc.internal.pages.length - 1;
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
-      const pageHeight = doc.internal.pageSize.getHeight();
-      doc.setFontSize(9);
-      doc.setTextColor(150, 150, 150);
-      doc.text('Transforming agriculture through AI and easy access to finance.', pageWidth / 2, pageHeight - 15, { align: 'center' });
-      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 20, pageHeight - 15, { align: 'right' });
+      
+      // Footer Decorative Line
+      doc.setDrawColor(240);
+      doc.setLineWidth(0.1);
+      doc.line(15, pageHeight - 25, pageWidth - 15, pageHeight - 25);
+
+      // Logo in footer with white background to handle transparency
+      try {
+          doc.setFillColor(255, 255, 255);
+          doc.rect(15, pageHeight - 22, 10, 10, 'F');
+          doc.addImage(logoUrl, 'PNG', 15, pageHeight - 22, 10, 10);
+      } catch (e) {}
+
+      doc.setFontSize(7);
+      doc.setTextColor(150);
+      doc.setFont('helvetica', 'bold');
+      doc.text('AGRILYNC NEXUS', 28, pageHeight - 18);
+      doc.setFont('helvetica', 'normal');
+      doc.text('| Digital Agriculture & Finance Transformation', 65, pageHeight - 18);
+      
+      // Person exporting & Timestamp
+      doc.text(`Exported by: ${data.agentName || 'AgriLync System'}`, 28, pageHeight - 14);
+      doc.text(`Timestamp: ${new Date().toLocaleString()}`, 28, pageHeight - 10);
+
+      // Page numbers
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 15, pageHeight - 14, { align: 'right' });
+      doc.setFont('helvetica', 'normal');
+      doc.text('PRIVATE & CONFIDENTIAL', pageWidth - 15, pageHeight - 10, { align: 'right' });
     }
 
     doc.save(`AgriLync_Report_${data.farmerName.replace(/\s+/g, '_')}_${data.date}.pdf`);
     await Swal.fire({
       icon: 'success',
-      title: 'PDF Generated!',
-      html: `
-            <div style="text-align: center; padding: 10px 0;">
-                <p style="font-size: 18px; color: #059669; margin: 15px 0;">
-                    Professional PDF report generated!
-                </p>
-            </div>
-        `,
-      confirmButtonText: 'OK',
+      title: 'PDF Document Ready',
+      html: '<p style="font-size: 14px; color: #666;">Your professional field report has been generated successfully.</p>',
+      confirmButtonText: 'Great',
       confirmButtonColor: '#7ede56',
-      timer: 2000,
+      timer: 2500,
       timerProgressBar: true
     });
   } catch (error) {
@@ -202,7 +283,7 @@ export const exportToWord = async (data: ReportData) => {
           </div>
           <div class="title-box">
             <h1>${data.type === 'field-visit' ? 'Field Journal' : 'Field Report'}</h1>
-            <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 11px; font-weight: bold; text-transform: uppercase;">AgriLync Technologies Ltd</p>
+            <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 11px; font-weight: bold; text-transform: uppercase;">AgriLync Nexus</p>
             <p style="margin: 2px 0 0 0; opacity: 0.7; font-size: 10px;">Accra, Ghana | www.agrilync.com</p>
           </div>
         </div>

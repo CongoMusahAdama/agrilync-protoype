@@ -5,9 +5,7 @@ const reportSchema = new mongoose.Schema({
     agent: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent', required: true },
     type: {
         type: String,
-        required: true,
-        // Match the frontend values
-        enum: ['Routine Inspection', 'Pest Alert', 'Harvest Prep', 'Soil Test', 'field-visit', 'harvest', 'planting', 'inspection', 'monitoring', 'issue', 'other']
+        required: true
     },
     date: { type: String, required: true },
     notes: { type: String, required: true },
@@ -16,7 +14,8 @@ const reportSchema = new mongoose.Schema({
     media: [{
         type: { type: String, enum: ['image', 'video', 'document'] },
         url: String, // Base64 or URL
-        name: String
+        name: String,
+        description: String
     }],
     status: {
         type: String,

@@ -524,11 +524,15 @@ const AgentProfile: React.FC = () => {
                     <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 block">Interface Language</Label>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-4 rounded-xl border-2 border-[#002F37] bg-white flex flex-col items-center justify-center gap-2 cursor-pointer relative shadow-md">
-                        <span className="text-2xl">🇬🇧</span><span className="text-[13px] font-black text-[#002F37]">English</span>
-                        <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-[#002F37] flex items-center justify-center text-[8px] text-white">✓</div>
+                        <Globe className="w-6 h-6 text-[#002F37]" />
+                        <span className="text-[13px] font-black text-[#002F37]">English</span>
+                        <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-[#002F37] flex items-center justify-center text-[8px] text-white">
+                          <Check className="w-2.5 h-2.5" />
+                        </div>
                       </div>
                       <div className="p-4 rounded-xl border-2 border-gray-100 bg-white flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#7EDE56] transition-all opacity-60">
-                        <span className="text-2xl">🇬🇭</span><span className="text-[13px] font-black text-gray-500">Twi</span>
+                        <Globe className="w-6 h-6 text-gray-400" />
+                        <span className="text-[13px] font-black text-gray-500">Twi</span>
                       </div>
                     </div>
                     <p className="text-[10px] font-bold text-gray-400 mt-4 italic">Changing language affects the Agent App and training content</p>
@@ -593,8 +597,8 @@ const AgentProfile: React.FC = () => {
                      </thead>
                      <tbody className="text-[12px] font-bold text-[#002F37] divide-y divide-gray-50">
                        {[
-                         { a: 'Farmer Onboarding', c: '312', r: 'GH₵ 2.00', am: 'GH₵ 624', s: 'Paid ✓', sc: 'text-[#177209]' },
-                         { a: 'Training Sessions', c: '48', r: 'GH₵ 3.00', am: 'GH₵ 144', s: 'Paid ✓', sc: 'text-[#177209]' },
+                         { a: 'Farmer Onboarding', c: '312', r: 'GH₵ 2.00', am: 'GH₵ 624', s: 'Paid', sc: 'text-[#177209]' },
+                         { a: 'Training Sessions', c: '48', r: 'GH₵ 3.00', am: 'GH₵ 144', s: 'Paid', sc: 'text-[#177209]' },
                          { a: 'Harvest Docs', c: '50', r: 'GH₵ 1.50', am: 'GH₵ 75', s: 'Pending', sc: 'text-amber-600' },
                          { a: 'At-Risk Escalation', c: '3', r: 'GH₵ 5.00', am: 'GH₵ 15', s: 'Pending', sc: 'text-amber-600' },
                          { a: 'Bonus (March KPIs)', c: '1', r: 'GH₵ 50', am: 'GH₵ 50', s: 'Pending', sc: 'text-amber-600' }

@@ -33,7 +33,7 @@ import {
     SelectTrigger,
     SelectValue
 } from '@/components/ui/select';
-import { GHANA_REGIONS, GHANA_COMMUNITIES } from '@/data/ghanaRegions';
+import { GHANA_REGIONS, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
 
 // Mock Data
 type TaskPriority = 'urgent' | 'normal' | 'low';
@@ -227,7 +227,7 @@ const TasksDashboard = () => {
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-none shadow-2xl">
                   <SelectItem value="all">All Districts</SelectItem>
-                  {(agent?.region || "Ashanti Region") && GHANA_REGIONS[agent?.region || "Ashanti Region"]?.map(d => (
+                  {GHANA_REGIONS[getRegionKey(agent?.region)]?.map(d => (
                     <SelectItem key={d} value={d}>{d}</SelectItem>
                   ))}
                 </SelectContent>

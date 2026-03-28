@@ -30,9 +30,9 @@ exports.getMedia = async (req, res) => {
         }
         
         // Filter by geolocation metadata if provided
-        if (region) query.region = region;
-        if (district) query.district = district;
-        if (community) query.community = community;
+        if (region && region !== 'all' && region !== 'All') query.region = region;
+        if (district && district !== 'all' && district !== 'All') query.district = district;
+        if (community && community !== 'all' && community !== 'All') query.community = community;
 
         const media = await Media.find(query)
             .populate('farmer', 'name')

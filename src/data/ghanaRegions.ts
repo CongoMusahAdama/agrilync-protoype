@@ -174,3 +174,16 @@ export const GHANA_COMMUNITIES: Record<string, string[]> = {
     "Tain": ["Nsawkaw", "Debibi", "Seikwa", "Other (Specify)"],
     "Wenchi Municipal": ["Wenchi", "Subinso", "Tromeso", "Other (Specify)"]
 };
+
+export const getRegionKey = (region: string | undefined): string => {
+    if (!region) return "Ashanti Region";
+    if (GHANA_REGIONS[region]) return region;
+    
+    // Check if adding " Region" helps
+    const withSuffix = `${region} Region`;
+    if (GHANA_REGIONS[withSuffix]) return withSuffix;
+    
+    // Fuzzy match
+    const matchedKey = Object.keys(GHANA_REGIONS).find(k => k.toLowerCase().includes(region.toLowerCase()));
+    return matchedKey || "Ashanti Region";
+};

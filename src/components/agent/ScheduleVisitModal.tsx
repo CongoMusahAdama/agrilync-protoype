@@ -24,9 +24,10 @@ interface ScheduleVisitModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSuccess?: () => void;
+    farmer?: any;
 }
 
-const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenChange, onSuccess }) => {
+const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenChange, onSuccess, farmer }) => {
     const { darkMode } = useDarkMode();
     const { agent } = useAuth();
     const queryClient = useQueryClient();
@@ -68,11 +69,12 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
             tomorrow.setDate(tomorrow.getDate() + 1);
             setFormData(prev => ({
                 ...prev,
+                farmerId: farmer?._id || farmer?.id || prev.farmerId,
                 visitDate: tomorrow.toISOString().split('T')[0],
                 visitTime: '09:00',
             }));
         }
-    }, [open]);
+    }, [open, farmer]);
 
     const createVisitMutation = useMutation({
         mutationFn: async (data: any) => {

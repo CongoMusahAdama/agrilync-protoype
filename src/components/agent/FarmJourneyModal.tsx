@@ -15,7 +15,7 @@ import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
-import { GHANA_REGIONS, GHANA_COMMUNITIES } from '@/data/ghanaRegions';
+import { GHANA_REGIONS, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
 
 interface FarmJourneyModalProps {
     open: boolean;
@@ -270,13 +270,8 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
     const availableCommunities = useMemo(() => {
         if (!farmer?.region) return [];
 
-        // Find districts for the region (handle both "Ashanti" and "Ashanti Region" naming)
-        const regionKey = Object.keys(GHANA_REGIONS).find(
-            key => key.toLowerCase().includes(farmer?.region?.toLowerCase() || '')
-        );
-
-        if (!regionKey) return ["Other (Specify)"];
-
+        // Find districts for the region
+        const regionKey = getRegionKey(farmer?.region);
         const districts = GHANA_REGIONS[regionKey] || [];
         const communitiesSet = new Set<string>();
 
