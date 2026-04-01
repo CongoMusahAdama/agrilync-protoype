@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import Swal from 'sweetalert2';
 
 interface MediaFile {
     id: string;
@@ -123,7 +124,24 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({ open, onOpenChange,
 
             queryClient.invalidateQueries({ queryKey: ['mediaItems'] });
             queryClient.invalidateQueries({ queryKey: ['mediaStats'] });
-            toast.success(`${mediaFiles.length} files uploaded successfully!`);
+
+            await Swal.fire({
+                icon: 'success',
+                title: 'Data Synced',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #065f46; margin: 0 0 15px 0; font-weight: 800;">
+                            ${mediaFiles.length} Assets Logged
+                        </p>
+                        <p style="font-size: 13px; color: #6b7280;">Your field telemetry has been successfully synced to the Lync network.</p>
+                    </div>
+                `,
+                confirmButtonText: 'Done',
+                confirmButtonColor: '#065f46',
+                timer: 2000,
+                timerProgressBar: true
+            });
+
             setStep(3);
             if (onSuccess) onSuccess();
         } catch (error) {

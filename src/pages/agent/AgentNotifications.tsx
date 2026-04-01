@@ -11,7 +11,7 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, FileText, Bell } from 'lucide-react';
+import { AlertTriangle, FileText, Bell, ShieldCheck, UserCheck, Clock } from 'lucide-react';
 
 const AgentNotifications: React.FC = () => {
   const { darkMode } = useDarkMode();
@@ -53,19 +53,21 @@ const AgentNotifications: React.FC = () => {
   const filteredNotifications = notifications.filter(n => {
     if (filter === 'unread') return !n.read;
     if (filter === 'all') return true;
+    if (filter === 'admin') return n.senderRole === 'super-admin';
+    if (filter === 'supervisor') return n.senderRole === 'supervisor' || !n.senderRole;
     return n.type === filter;
   });
 
   const total = notifications.length;
   const unread = notifications.filter(n => !n.read).length;
-  const actionRequired = notifications.filter(n => n.type === 'action').length;
-  const alerts = notifications.filter(n => n.type === 'alert').length;
+  const adminAlerts = notifications.filter(n => n.senderRole === 'super-admin').length;
+  const supervisorAlerts = notifications.filter(n => n.senderRole === 'supervisor' || !n.senderRole).length;
 
   const summaryCards = [
-    { title: 'Total Alerts', label: 'ALL', value: total, icon: Bell, type: 'all', iconColor: 'text-gray-500', bgColor: 'bg-gray-500/10' },
-    { title: 'Unread', label: 'NEW', value: unread, icon: Bell, type: 'unread', iconColor: 'text-amber-500', bgColor: 'bg-amber-500/10' },
-    { title: 'Action Items', label: 'ACTION', value: actionRequired, icon: FileText, type: 'action', iconColor: 'text-[#065f46]', bgColor: 'bg-[#065f46]/10' },
-    { title: 'System Alerts', label: 'SYSTEM', value: alerts, icon: AlertTriangle, type: 'alert', iconColor: 'text-rose-500', bgColor: 'bg-rose-500/10' },
+    { title: 'All Updates', label: 'CORPORATE', value: total, icon: Bell, type: 'all', iconColor: 'text-gray-400', bgColor: 'bg-gray-100' },
+    { title: 'Unread Alerts', label: 'URGENT', value: unread, icon: Bell, type: 'unread', iconColor: 'text-amber-500', bgColor: 'bg-amber-500/10' },
+    { title: 'Admin Directives', label: 'SYSTEM', value: adminAlerts, icon: ShieldCheck, type: 'admin', iconColor: 'text-emerald-500', bgColor: 'bg-emerald-500/10' },
+    { title: 'Supervisor Briefs', label: 'FIELD', value: supervisorAlerts, icon: UserCheck, type: 'supervisor', iconColor: 'text-blue-500', bgColor: 'bg-blue-500/10' },
   ];
 
   const cardClass = darkMode ? 'bg-[#002f37] border-gray-600 border' : 'bg-white';
@@ -88,7 +90,7 @@ const AgentNotifications: React.FC = () => {
             return (
               <Card
                 key={idx}
-                className={`rounded-xl p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden h-36 flex flex-col justify-between group border-none cursor-pointer ${filter === card.type ? 'ring-2 ring-offset-[#065f46] ring-[#065f46]' : ''} ${isPrimary ? 'bg-[#065f46]' : darkMode ? 'bg-[#0f3035]' : 'bg-white'}`}
+                className={`rounded-none p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden h-36 flex flex-col justify-between group border-none cursor-pointer ${filter === card.type ? 'ring-2 ring-offset-[#065f46] ring-[#065f46]' : ''} ${isPrimary ? 'bg-[#065f46]' : darkMode ? 'bg-[#0f3035]' : 'bg-white'}`}
                 onClick={() => setFilter(card.type)}
               >
                 <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform pointer-events-none">
@@ -140,10 +142,30 @@ const AgentNotifications: React.FC = () => {
                     )}
                   </span>
                   <div className="flex-1">
-                    <p className={`text-sm font-semibold ${notificationTitleClass}`}>{notification.title}</p>
-                    <p className={`mt-1 text-xs uppercase tracking-wide ${notificationTimeClass}`}>
-                      {new Date(notification.createdAt).toLocaleString()}
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className={`text-sm font-black ${notificationTitleClass}`}>{notification.title}</p>
+                      {/* Role Badge */}
+                      {notification.senderRole === 'super-admin' ? (
+                        <div className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-700 border border-emerald-100 shadow-sm">
+                          <ShieldCheck className="h-2.5 w-2.5" /> SUPER ADMIN
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-blue-700 border border-blue-100 shadow-sm">
+                          <UserCheck className="h-2.5 w-2.5" /> SUPERVISOR
+                        </div>
+                      )}
+                    </div>
+                    
+                    <p className={`text-xs font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {notification.message || 'New directive published for your regional operational network.'}
                     </p>
+
+                    <div className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest ${notificationTimeClass}`}>
+                      <Clock className="h-3 w-3" />
+                      {new Date(notification.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      <span className="mx-1 opacity-20">•</span>
+                      {new Date(notification.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                    </div>
                   </div>
                   <Button
                     variant="ghost"

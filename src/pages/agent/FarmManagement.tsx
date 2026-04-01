@@ -393,11 +393,10 @@ const FarmManagement: React.FC = () => {
         }
     };
 
-    const generateLyncId = (farmerId: string) => {
-        // Generate a consistent 7-digit number from farmer ID
-        const numericId = farmerId.replace(/\D/g, '');
-        const paddedId = numericId.padStart(7, '0').slice(0, 7);
-        return `LYG${paddedId}`;
+    const getDisplayId = (farmer: any) => {
+        if (farmer.id) return farmer.id;
+        const baseId = farmer.ghanaCardNumber || String(farmer._id).replace(/\D/g, '').padEnd(7, '0').slice(0, 7);
+        return `LYG-${baseId}`;
     };
 
     const handleVerifyFarmer = (farmer: any) => {
@@ -418,7 +417,7 @@ const FarmManagement: React.FC = () => {
             setVisitForm({
                 farmerId: farmer._id,
                 farmerName: farmer.name,
-                lyncId: generateLyncId(farmer._id),
+                lyncId: getDisplayId(farmer),
                 phone: farmer.phone || '',
                 date: new Date().toISOString().split('T')[0],
                 time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
@@ -1061,7 +1060,7 @@ const FarmManagement: React.FC = () => {
                                                             </div>
                                                             <div>
                                                                 <p className={`font-bold text-sm ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{farmer.name}</p>
-                                                                <p className={`text-xs font-mono mt-0.5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{generateLyncId(farmer._id)}</p>
+                                                                <p className={`text-xs font-mono mt-0.5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{getDisplayId(farmer)}</p>
                                                             </div>
                                                         </div>
                                                     </TableCell>
@@ -1803,7 +1802,7 @@ const FarmManagement: React.FC = () => {
                                                 ...visitForm,
                                                 farmerId: val,
                                                 farmerName: farmer.name,
-                                                lyncId: generateLyncId(farmer._id),
+                                                lyncId: getDisplayId(farmer),
                                                 phone: farmer.contact
                                             });
                                         }

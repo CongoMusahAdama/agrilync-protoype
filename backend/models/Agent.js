@@ -55,8 +55,12 @@ const agentSchema = new mongoose.Schema({
         theme: { type: String, default: 'light' },
         highContrast: { type: Boolean, default: false },
         compactView: { type: Boolean, default: false }
-    }
+    },
+    fcmToken: { type: String, default: null }
 }, { timestamps: true });
+
+// Indexing for performance
+agentSchema.index({ fcmToken: 1 });
 
 // Hash password before saving
 agentSchema.pre('save', async function () {

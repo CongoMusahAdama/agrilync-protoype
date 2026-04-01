@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 //farmers table
 const farmerSchema = new mongoose.Schema({
     name: { type: String, required: true },
+    id: { type: String, unique: true, sparse: true }, // Primary system ID (Ghana Card or LYG-XXXX)
     password: { type: String, required: false }, // Optional - will be auto-generated if not provided
     region: { type: String, required: true },
     district: { type: String, required: true },
@@ -98,17 +99,22 @@ const farmerSchema = new mongoose.Schema({
 farmerSchema.index({ agent: 1, status: 1, region: 1 });
 farmerSchema.index({ status: 1, region: 1 });
 
-// Hash password before saving and generate if missing
+// Internal ID and Password Generation
 farmerSchema.pre('save', async function () {
-    // Generate a random password if not provided (for agent-onboarded farmers)
+    // 1. System ID (id field) - Standardized prefix: LYG-
+    if (!this.id || !this.id.startsWith('LYG')) {
+        const baseId = this.ghanaCardNumber || this._id.toString().replace(/\D/g, '').padEnd(7, '0').slice(0, 7);
+        this.id = `LYG-${baseId}`;
+    }
+
+    // 2. Password - Generate random if not provided
     if (!this.password) {
         const crypto = require('crypto');
         this.password = crypto.randomBytes(12).toString('hex');
     }
 
-    // Hash password if it's new or modified (and not already hashed)
+    // 3. Hash password
     if (this.isModified('password') && this.password) {
-        // Only hash if it's not already a bcrypt hash
         if (!this.password.startsWith('$2a$') && !this.password.startsWith('$2b$')) {
             const salt = await bcrypt.genSalt(10);
             this.password = await bcrypt.hash(this.password, salt);

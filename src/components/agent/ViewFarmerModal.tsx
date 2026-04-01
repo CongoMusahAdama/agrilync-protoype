@@ -100,6 +100,8 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                                     <Phone className="h-3.5 w-3.5" /> {farmer.name}
                                 </span>
                                 <span className="text-gray-300">•</span>
+                                <span className="font-bold text-[#065f46] uppercase tracking-widest text-[10px]">{farmer.id || `LYG-${farmer.ghanaCardNumber || String(farmer._id).replace(/\D/g, '').padEnd(7, '0').slice(0, 7)}`}</span>
+                                <span className="text-gray-300">•</span>
                                 <span className="font-bold text-gray-400 uppercase tracking-widest text-[10px]">{farmer.region}</span>
                                 <span className="text-gray-300">•</span>
                                 <Badge variant="secondary" className="text-[10px] uppercase font-black bg-[#065f46] text-white rounded-lg border-none">{farm.status}</Badge>

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Leaf, Users, TrendingUp, MapPin, Calendar, Shield, Award, Play, MessageCircle, X, ArrowUp, Quote, ArrowRight, Bot, ChevronDown, ChevronUp, Check, Salad, Globe, Sun } from 'lucide-react';
+import { Leaf, Users, TrendingUp, MapPin, Calendar, Shield, Award, Play, MessageCircle, X, ArrowUp, Quote, ArrowRight, Bot, ChevronDown, ChevronUp, Check, Salad, Globe, Sun, Sprout } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 const Index = () => {
   const navigate = useNavigate();
+  const [mobileInfoVisible, setMobileInfoVisible] = useState(false);
 
 
 
@@ -57,6 +59,7 @@ const Index = () => {
   const [faqRef, faqVisible] = useScrollReveal();
   const [innovationRef, innovationVisible] = useScrollReveal();
   const [expertiseRef, expertiseVisible] = useScrollReveal();
+  const [packagesRef, packagesVisible] = useScrollReveal();
   // Services ref will be handled manually
 
 
@@ -68,6 +71,46 @@ const Index = () => {
   const toggleFaq = (index: number) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
   };
+
+  const investmentPackages = [
+    {
+      name: 'Starter',
+      investment: 'GH₵ 1,500 – 3,000',
+      farmers: '3–5 farmers',
+      bestFor: 'NGOs, CSR programs, small impact funds',
+      term: 'Single season',
+      return: 'Revenue-share of 15–20% of net harvest value',
+      icon: <Sprout className="w-12 h-12 text-[#002f37]" />,
+      description: 'Test the model with a few farmers.',
+      isHighlighted: false,
+    },
+    {
+      name: 'Growth',
+      investment: 'GH₵ 3,000 – 7,000',
+      farmers: '10–20 farmers',
+      bestFor: 'MFIs, banks, mid-size impact funds',
+      term: 'Single or dual season',
+      return: 'Revenue-share of 18–25% of net harvest value, plus impact-linked incentives',
+      icon: <TrendingUp className="w-12 h-12 text-[#7ede56]" />,
+      description: 'A larger, more managed farm portfolio.',
+      isHighlighted: true,
+      label: 'Most Popular'
+    },
+    {
+      name: 'Portfolio',
+      investment: 'GH₵ 10,000+',
+      farmers: '40–100+ farmers',
+      bestFor: 'Large funds, DFIs, corporates',
+      term: 'Multi-season or rolling',
+      return: 'Blended model: revenue-share plus negotiated impact incentives',
+      icon: <Award className="w-12 h-12 text-[#FFD700]" />,
+      description: 'For institutional partners wanting scale & broader impact.',
+      isHighlighted: false,
+      label: 'Institutional'
+    }
+  ];
+
+  const [activePackageTab, setActivePackageTab] = useState(1); // Default to Growth (index 1)
 
   const faqs = [
     {
@@ -496,10 +539,10 @@ const Index = () => {
                   </p>
                 </div>
                 <button 
-                  onClick={() => handleFeatureClick('/signup')}
+                  onClick={() => document.getElementById('investment-packages')?.scrollIntoView({ behavior: 'smooth' })}
                   className="flex items-center text-[#7ede56] font-bold text-xs uppercase tracking-[0.2em] group/btn"
                 >
-                  Join the Initiative
+                  Browse Packages
                   <ArrowRight className="ml-3 w-4 h-4 transition-transform group-hover/btn:translate-x-2" />
                 </button>
               </div>
@@ -561,7 +604,186 @@ const Index = () => {
         </div>
       </section>
 
+      {/* FARMPARTNER INITIATIVE SECTION */}
+      <section id="investment-packages" className="py-24 md:py-32 bg-gray-50 relative border-t border-gray-100">
+        <div className="max-w-[1500px] mx-auto px-6 lg:px-12">
+          
+          {/* Initiative Intro with Image Background */}
+          <div 
+            ref={packagesRef} 
+            onClick={() => setMobileInfoVisible(!mobileInfoVisible)}
+            className={`group mb-12 md:mb-20 min-h-[350px] md:min-h-[500px] overflow-hidden relative shadow-[0_30px_60px_-15px_rgba(0,0,0,0.2)] transition-all duration-1000 ease-out flex items-center cursor-pointer ${packagesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`}
+          >
+            <img 
+              src="/lovable-uploads/investment.png" 
+              alt="FarmPartner Initiative" 
+              className="absolute inset-0 w-full h-full object-cover object-right"
+            />
+            
+            {/* Overlay - Darker on mobile for readability when active */}
+            <div className={`absolute inset-0 bg-[#002f37]/85 md:hidden transition-opacity duration-500 ${mobileInfoVisible ? 'opacity-100' : 'opacity-0'}`}></div>
+            
+            {/* Desktop Overlay */}
+            <div className="hidden md:block absolute inset-y-0 left-0 w-full md:w-[65%] bg-gradient-to-r from-[#002f37] via-[#002f37]/80 to-transparent"></div>
+            
+            {/* Content Container */}
+            <div className={`relative z-10 p-6 md:p-16 lg:px-20 lg:py-16 w-full min-h-[350px] md:min-h-[500px] flex flex-col justify-center transition-all duration-500 ${mobileInfoVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 md:opacity-100 md:translate-y-0'}`}>
+              <div className="lg:w-[60%] text-left space-y-4 md:space-y-6">
+                <div className="max-w-3xl">
+                   <p className="text-white font-bold text-base md:text-2xl leading-snug md:leading-relaxed font-montserrat drop-shadow-lg">
+                      The Agrilync Nexus FarmPartner Initiative connects verified smallholder farmers with partners who want to fund real farm production in a structured, transparent way.
+                   </p>
+                </div>
+                <div className="max-w-2xl">
+                  <p className="text-white/90 font-medium text-xs md:text-lg leading-relaxed font-sans drop-shadow-md">
+                    We manage farmer verification, training, field monitoring, AI advisory, milestone-based disbursement, and harvest reporting so partners can invest with absolute clarity and control.
+                  </p>
+                </div>
+                <div className="max-w-xl pt-2 md:pt-4">
+                  <h2 className="text-[#a8ff85] font-bold text-[10px] md:text-sm uppercase tracking-widest leading-normal drop-shadow-md">
+                    Connecting verified smallholder farmers with partners to fund real farm production.
+                  </h2>
+                </div>
+              </div>
+            </div>
 
+            {/* Clean "Tap to read" hint - Styled like 'explore our packages' */}
+            {!mobileInfoVisible && (
+              <div className="md:hidden absolute bottom-0 left-0 w-full z-20">
+                <div className="bg-[#002f37] py-3 text-center">
+                  <p className="text-[10px] text-white font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2">
+                    Tap to explore initiative <ArrowRight className="w-3 h-3 text-[#a8ff85]" />
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Package Tabs for Mobile */}
+          <div className="md:hidden flex bg-gray-100 p-1 rounded-xl mb-8">
+            {investmentPackages.map((pkg, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActivePackageTab(idx)}
+                className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${
+                  activePackageTab === idx 
+                    ? 'bg-[#002f37] text-white shadow-md' 
+                    : 'text-gray-500 hover:text-[#002f37]'
+                }`}
+              >
+                {pkg.name}
+              </button>
+            ))}
+          </div>
+
+          {/* Pricing Cards */}
+          <div className={`grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10 mb-24 transition-all duration-1000 delay-200 ease-out ${packagesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`}>
+            {investmentPackages.map((pkg, idx) => {
+              const isMiddle = pkg.name === 'Growth';
+              return (
+                <div 
+                  key={idx} 
+                  className={`group relative flex flex-col p-8 md:p-10 rounded-2xl transition-all duration-700 border border-[#002f37] hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] ${
+                    idx !== activePackageTab ? 'hidden md:flex' : 'flex'
+                  } ${
+                    isMiddle 
+                      ? 'bg-white text-[#002f37] hover:bg-[#002f37] hover:text-white' 
+                      : 'bg-[#002f37] text-white hover:bg-white hover:text-[#002f37]'
+                  } ${
+                    pkg.isHighlighted 
+                      ? `z-20 lg:-translate-y-4 ${packagesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}` 
+                      : `z-10 ${packagesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`
+                  }`}
+                  style={{ transitionDelay: `${200 + idx * 150}ms` }}
+                >
+                  {pkg.label && (
+                    <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-colors duration-300 shadow-lg whitespace-nowrap ${
+                      isMiddle 
+                        ? 'bg-[#002f37] text-white group-hover:bg-[#7ede56] group-hover:text-[#002f37]' 
+                        : 'bg-[#7ede56] text-[#002f37] group-hover:bg-[#002f37] group-hover:text-white'
+                    }`}>
+                      {pkg.label}
+                    </div>
+                  )}
+                  
+                  <div className="mb-6 flex justify-between items-center">
+                    <h3 className={`text-2xl md:text-3xl font-bold font-montserrat transition-colors duration-300 ${isMiddle ? 'text-[#002f37] group-hover:text-white' : 'text-white group-hover:text-[#002f37]'}`}>
+                      {pkg.name}
+                    </h3>
+                    <div className={`transition-colors duration-300 ${isMiddle ? 'text-[#7ede56] group-hover:text-[#a8ff85]' : 'text-[#a8ff85] group-hover:text-[#7ede56]'}`}>
+                      {pkg.icon}
+                    </div>
+                  </div>
+                  
+                  <div className={`mb-6 pb-6 border-b transition-colors duration-300 ${isMiddle ? 'border-[#002f37]/10 group-hover:border-white/10' : 'border-white/10 group-hover:border-[#002f37]/10'}`}>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest block mb-2 transition-colors duration-300 ${isMiddle ? 'text-[#7ede56] group-hover:text-[#a8ff85]' : 'text-[#a8ff85] group-hover:text-[#7ede56]'}`}>Minimum Investment</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className={`text-3xl md:text-4xl font-black font-montserrat transition-colors duration-300 ${isMiddle ? 'text-[#002f37] group-hover:text-white' : 'text-white group-hover:text-[#002f37]'}`}>{pkg.investment}</span>
+                    </div>
+                  </div>
+
+                  <p className={`text-sm mb-8 min-h-[40px] leading-relaxed transition-colors duration-300 ${isMiddle ? 'text-gray-500 group-hover:text-white/70' : 'text-white/70 group-hover:text-gray-500'}`}>
+                    {pkg.description}
+                  </p>
+
+                  <ul className="space-y-5 mb-10 flex-grow">
+                    <li className="flex flex-col">
+                      <span className={`text-[10px] font-bold uppercase tracking-widest mb-1 transition-colors duration-300 ${isMiddle ? 'text-gray-400 group-hover:text-white/40' : 'text-white/40 group-hover:text-gray-400'}`}>Farmers Funded</span>
+                      <strong className={`font-semibold text-sm transition-colors duration-300 ${isMiddle ? 'text-[#002f37] group-hover:text-white' : 'text-white group-hover:text-[#002f37]'}`}>{pkg.farmers}</strong>
+                    </li>
+                    <li className="flex flex-col">
+                      <span className={`text-[10px] font-bold uppercase tracking-widest mb-1 transition-colors duration-300 ${isMiddle ? 'text-gray-400 group-hover:text-white/40' : 'text-white/40 group-hover:text-gray-400'}`}>Best For</span>
+                      <strong className={`font-semibold text-sm leading-snug transition-colors duration-300 ${isMiddle ? 'text-[#002f37] group-hover:text-white' : 'text-white group-hover:text-[#002f37]'}`}>{pkg.bestFor}</strong>
+                    </li>
+                    <li className="flex flex-col">
+                      <span className={`text-[10px] font-bold uppercase tracking-widest mb-1 transition-colors duration-300 ${isMiddle ? 'text-gray-400 group-hover:text-white/40' : 'text-white/40 group-hover:text-gray-400'}`}>Term Option</span>
+                      <strong className={`font-semibold text-sm transition-colors duration-300 ${isMiddle ? 'text-[#002f37] group-hover:text-white' : 'text-white group-hover:text-[#002f37]'}`}>{pkg.term}</strong>
+                    </li>
+                    <li className={`flex flex-col p-4 rounded-xl mt-4 border transition-all duration-300 ${isMiddle ? 'bg-gray-50 border-gray-100 group-hover:bg-white/5 group-hover:border-white/10' : 'bg-white/5 border-white/10 group-hover:bg-gray-50 group-hover:border-gray-100'}`}>
+                      <span className={`text-[10px] font-bold uppercase tracking-widest mb-2 transition-colors duration-300 ${isMiddle ? 'text-[#7ede56] group-hover:text-[#a8ff85]' : 'text-[#a8ff85] group-hover:text-[#7ede56]'}`}>Return Structure</span>
+                      <span className={`text-sm leading-snug font-medium transition-colors duration-300 ${isMiddle ? 'text-gray-700 group-hover:text-white' : 'text-white group-hover:text-gray-700'}`}>{pkg.return}</span>
+                    </li>
+                  </ul>
+
+                  <Button 
+                    onClick={() => window.open(`https://wa.me/233506626068?text=Hello%20Agrilync,%20I%20am%20interested%20in%20the%20FarmPartner%20Initiative%20${pkg.name}%20Package.`, '_blank', 'noopener,noreferrer')}
+                    className={`w-full py-6 text-sm font-bold uppercase tracking-widest transition-all ${
+                      isMiddle 
+                        ? 'bg-[#002f37] hover:bg-black text-white group-hover:bg-white group-hover:text-[#002f37] group-hover:border-[#002f37]' 
+                        : 'bg-white group-hover:bg-[#002f37] text-[#002f37] group-hover:text-white'
+                    }`}
+                  >
+                    Select Package
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* How returns work */}
+          <div className={`transition-all duration-1000 delay-400 ease-out ${packagesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`}>
+            <div className="bg-[#F8F9FA] p-8 md:p-12 rounded-[1.5rem] flex flex-col md:flex-row gap-8 md:gap-0 items-stretch max-w-5xl mx-auto">
+              <div className="md:w-[35%] flex flex-col justify-center md:pr-12 md:border-r border-gray-200">
+                <div className="w-12 h-12 bg-white rounded-[10px] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 mb-6">
+                  <TrendingUp className="w-5 h-5 text-[#7ede56] stroke-[2.5]" />
+                </div>
+                <h3 className="text-2xl md:text-[1.75rem] font-bold text-[#002f37] font-montserrat leading-[1.1] tracking-tight">
+                  How returns<br/>work
+                </h3>
+              </div>
+              <div className="md:w-[65%] md:pl-12 flex flex-col justify-center">
+                <p className="text-[#4b5563] text-[15px] leading-[1.7] mb-6 font-sans">
+                  Returns come mainly from a <strong className="text-[#1f2937] font-semibold">revenue-share model</strong>, which means the investor earns a percentage of the net harvest value after direct production costs are deducted.
+                </p>
+                <p className="text-[#4b5563] text-[15px] leading-[1.7] font-sans">
+                  This keeps the model aligned with actual farm performance, since agriculture depends on season, weather, and market prices.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
 
       {/* Scroll to Top Button - Mobile Optimized */}
       {

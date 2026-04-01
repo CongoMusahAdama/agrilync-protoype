@@ -65,13 +65,13 @@ exports.getDashboardSummary = async (agent) => {
             Farmer.find({ agent: agentId })
                 .sort({ createdAt: -1 })
                 .limit(200)
-                .select('name status region district community farmType contact profilePicture ghanaCardNumber')
+                .select('name id status region district community farmType contact profilePicture ghanaCardNumber')
                 .lean(),
             Farm.find({ agent: agentId })
                 .sort({ createdAt: -1 })
                 .limit(200)
                 .select('name farmer location crop status nextVisit lastVisit createdAt')
-                .populate('farmer', 'name region community farmType profilePicture ghanaCardNumber')
+                .populate('farmer', 'name id region community farmType profilePicture ghanaCardNumber')
                 .lean(),
             Notification.find({ agent: agentId }).sort({ createdAt: -1 }).limit(20).lean(),
             // Limit matches to recent 20 to prevent loading all matches

@@ -448,15 +448,22 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                 return api.post('/farmers', payload);
             }
         },
-        onSuccess: async () => {
+        onSuccess: async (response: any) => {
+            const savedFarmer = response.data;
+            const lyncId = savedFarmer?.id || savedFarmer?.ghanaCardNumber || 'N/A';
+            
             await Swal.fire({
                 icon: 'success',
-                title: 'Success!',
+                title: 'Onboarding Finalized',
                 html: `
                     <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
+                        <p style="font-size: 18px; color: #065f46; margin: 0 0 15px 0; font-weight: 800;">
                             ${isEditMode ? 'Farmer profile updated successfully!' : 'Farmer onboarded successfully!'}
                         </p>
+                        <div style="background: #f0fdf4; border: 2px dashed #059669; padding: 15px; border-radius: 12px; margin: 15px 0;">
+                            <p style="text-transform: uppercase; font-size: 10px; font-weight: 800; color: #059669; margin-bottom: 5px; letter-spacing: 2px;">Assigned Lync ID</p>
+                            <p style="font-size: 24px; font-family: monospace; font-weight: 900; color: #064e3b; margin: 0;">${lyncId}</p>
+                        </div>
                     </div>
                 `,
                 confirmButtonText: 'Continue',

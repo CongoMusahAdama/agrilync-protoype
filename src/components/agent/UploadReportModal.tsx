@@ -16,6 +16,7 @@ import api from '@/utils/api';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { exportToPDF } from '@/utils/reportExport';
+import Swal from 'sweetalert2';
 
 interface UploadReportModalProps {
     open: boolean;
@@ -79,7 +80,22 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
                 return;
             }
             const res = await api.post('/reports', payload);
-            toast.success('Visit report submitted successfully!');
+            await Swal.fire({
+                icon: 'success',
+                title: 'Report Submitted',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <p style="font-size: 18px; color: #065f46; margin: 0 0 15px 0; font-weight: 800;">
+                            Field observations synced successfully!
+                        </p>
+                        <p style="font-size: 13px; color: #6b7280;">Your strategic report is now available in the grower's timeline.</p>
+                    </div>
+                `,
+                confirmButtonText: 'View Summary',
+                confirmButtonColor: '#065f46',
+                timer: 2500,
+                timerProgressBar: true
+            });
             setStep(4); // Success step
             if (onUpload) onUpload(res.data);
         } catch (error: any) {

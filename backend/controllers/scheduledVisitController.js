@@ -118,131 +118,118 @@ exports.createScheduledVisit = async (req, res) => {
 };
 
 // @route   POST api/scheduled-visits/:id/send-sms
-// @desc    Send SMS notification to farmers for scheduled visit
+// @desc    Send SMS notification to farmers using their onboarding contact number
 exports.sendSMSNotification = async (req, res) => {
     const { id } = req.params;
     const { customMessage } = req.body;
 
     try {
         if (req.agent && req.agent.isMock) {
-            console.log('[MOCK REQ] sendSMSNotification for visit:', id);
             return res.json({ success: true, message: 'Mock SMS sent successfully' });
         }
 
-        const visit = await ScheduledVisit.findById(id).populate('farmers', 'name contact');
-        
+        // Use findById without populate first to confirm ownership
+        const visit = await ScheduledVisit.findById(id);
         if (!visit) {
             return res.status(404).json({ success: false, message: 'Scheduled visit not found' });
         }
 
-        // Safely compare agent IDs
-        const agentId = String(req.agent._id || req.agent.id || req.agent);
-        // visit.agent is an ObjectId (not populated), so convert to string
+        const agentId = String(req.agent._id || req.agent.id);
         const visitAgentId = String(visit.agent);
-        
         if (visitAgentId !== agentId) {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
 
-        // Check if visit has farmers (for community visits, we might not have farmers)
-        if (visit.visitType !== 'community-visit' && (!visit.farmers || visit.farmers.length === 0)) {
-            return res.status(400).json({ success: false, message: 'No farmers assigned to this visit' });
+        // Fetch full farmer details using onboarding contact field
+        const Farmer = require('../models/Farmer');
+        let farmers = [];
+        if (visit.farmers && visit.farmers.length > 0) {
+            farmers = await Farmer.find({ _id: { $in: visit.farmers } }, 'name contact id');
         }
 
-        // Generate SMS message
-        const dateStr = new Date(visit.scheduledDate).toLocaleDateString('en-GB', { 
-            day: '2-digit', 
-            month: 'short', 
-            year: 'numeric' 
+        // Build the SMS message
+        const dateStr = new Date(visit.scheduledDate).toLocaleDateString('en-GB', {
+            day: '2-digit', month: 'short', year: 'numeric'
         });
-        
         const agentName = req.agent.name || 'AgriLync Agent';
-        const visitTypeText = visit.visitType === 'farm-visit' ? 'farm visit' : 
-                             visit.visitType === 'community-visit' ? 'community visit' : 'meeting';
-        
-        const defaultMessage = customMessage || 
+        const visitTypeLabel = visit.visitType === 'farm-visit' ? 'farm visit'
+            : visit.visitType === 'community-visit' ? 'community visit' : 'meeting';
+
+        const smsMessage = customMessage ||
             `Hello! This is ${agentName} from AgriLync. ` +
-            `I have scheduled a ${visitTypeText} ` +
-            `on ${dateStr} at ${visit.scheduledTime}. ` +
-            `Purpose: ${visit.purpose}. ` +
-            `Please confirm your availability. Thank you!`;
+            `A ${visitTypeLabel} has been scheduled for ${dateStr} at ${visit.scheduledTime}. ` +
+            `Purpose: ${visit.purpose}. Please prepare accordingly. Thank you.`;
 
-        // Get phone numbers from farmers
-        let phoneNumbers = [];
-        if (visit.visitType === 'community-visit') {
-            // For community visits, we might need to get farmers from the community
-            // For now, return a message that community notification will be sent
-            phoneNumbers = [];
-        } else {
-            // Extract contact numbers from farmers
-            if (visit.farmers && Array.isArray(visit.farmers) && visit.farmers.length > 0) {
-                phoneNumbers = visit.farmers
-                    .map(f => {
-                        if (f && f.contact) {
-                            // Clean phone number (remove spaces, dashes, etc.)
-                            return String(f.contact).replace(/[\s\-\(\)]/g, '');
-                        }
-                        return null;
-                    })
-                    .filter(Boolean);
-            } else {
-                phoneNumbers = [];
-            }
-        }
+        // Collect valid phone numbers from onboarding contact field
+        const recipients = farmers
+            .filter(f => f.contact && String(f.contact).trim() !== '')
+            .map(f => ({
+                name: f.name,
+                lyncId: f.id,
+                phone: String(f.contact).replace(/[\s\-\(\)]/g, '')
+            }));
 
-        if (phoneNumbers.length === 0 && visit.visitType !== 'community-visit') {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'No valid phone numbers found for the selected farmers' 
-            });
-        }
+        const noPhoneWarning = farmers.length > 0 && recipients.length === 0
+            ? 'Note: No growers in this visit have a phone number on file from onboarding.'
+            : null;
 
-        // Simulate SMS sending (in production, integrate with SMS gateway)
-        console.log(`[SMS] Sending to ${phoneNumbers.length} farmer(s):`, phoneNumbers);
-        console.log(`[SMS] Message: ${defaultMessage}`);
+        // ── SMS Gateway Integration Point ──────────────────────────────────────
+        // When an SMS gateway (e.g. Arkesel, Hubtel, Twilio) is configured,
+        // replace this comment block with:
+        //   for (const r of recipients) {
+        //     await smsClient.send({ to: r.phone, message: smsMessage });
+        //   }
+        // ───────────────────────────────────────────────────────────────────────
+        console.log(`[SMS] To ${recipients.length} grower(s):`, recipients.map(r => r.phone));
+        console.log(`[SMS] Message: ${smsMessage}`);
 
-        // Update visit record
-        visit.smsSent = true;
-        visit.smsSentAt = new Date();
-        visit.smsMessage = defaultMessage;
-        await visit.save();
+        // Mark SMS as sent using findByIdAndUpdate (avoids mongoose re-validation crash)
+        await ScheduledVisit.findByIdAndUpdate(id, {
+            smsSent: true,
+            smsSentAt: new Date(),
+            smsMessage
+        });
 
-        // Log activity
-        const agentIdForActivity = req.agent._id || req.agent.id;
+        // Log activity — wrapped so it never crashes the main flow
         try {
+            const agentIdForActivity = req.agent._id || req.agent.id;
             await Activity.create({
                 agent: agentIdForActivity,
                 type: 'event',
-                title: `SMS sent for scheduled visit`,
-                description: visit.visitType === 'community-visit' 
-                    ? `SMS notification sent for community visit in ${visit.community}`
-                    : `Sent to ${phoneNumbers.length} farmer(s)`
+                title: 'SMS notification sent for scheduled visit',
+                description: recipients.length > 0
+                    ? `Sent to ${recipients.length} grower(s): ${recipients.map(r => r.name).join(', ')}`
+                    : `Visit ID ${id} — ${noPhoneWarning || 'Community visit notification prepared'}`
             });
-        } catch (activityErr) {
-            // Log activity error but don't fail the request
-            console.error('Failed to log activity:', activityErr.message);
+        } catch (actErr) {
+            console.error('[SMS] Activity log failed (non-fatal):', actErr.message);
         }
 
-        res.json({ 
-            success: true, 
-            message: visit.visitType === 'community-visit'
-                ? `SMS notification prepared for community visit in ${visit.community}`
-                : `SMS sent to ${phoneNumbers.length} farmer(s)`,
-            data: { 
-                phoneNumbers, 
-                message: defaultMessage,
+        return res.json({
+            success: true,
+            message: recipients.length > 0
+                ? `SMS queued for ${recipients.length} grower(s)`
+                : visit.visitType === 'community-visit'
+                    ? 'Community visit notification prepared'
+                    : 'Visit marked — no grower phone numbers found from onboarding',
+            warning: noPhoneWarning || undefined,
+            data: {
+                recipients,
+                message: smsMessage,
                 visitType: visit.visitType
             }
         });
+
     } catch (err) {
-        console.error('sendSMSNotification error:', err.message);
-        console.error('Error stack:', err.stack);
-        res.status(500).json({ 
-            success: false, 
-            message: err.message || 'Failed to send SMS. Please try again.' 
+        console.error('[SMS] sendSMSNotification crash:', err.message);
+        console.error('[SMS] Stack:', err.stack);
+        return res.status(500).json({
+            success: false,
+            message: err.message || 'Failed to send SMS notification'
         });
     }
 };
+
 
 // @route   POST api/scheduled-visits/:id/phone-call
 // @desc    Log a phone call follow-up

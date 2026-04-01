@@ -64,6 +64,8 @@ import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import { useAuth } from '@/contexts/AuthContext';
 import ScheduleVisitModal from '@/components/agent/ScheduleVisitModal';
+import DeliverTrainingModal from '@/components/agent/DeliverTrainingModal';
+import SubmitTrainingReportModal from '@/components/agent/SubmitTrainingReportModal';
 import Preloader from '@/components/ui/Preloader';
 
 export const TrainingPerformanceContent = () => {
@@ -78,6 +80,12 @@ export const TrainingPerformanceContent = () => {
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [selectedVisitForSMS, setSelectedVisitForSMS] = useState<string | null>(null);
   const [selectedVisitForCall, setSelectedVisitForCall] = useState<string | null>(null);
+  const [deliverTrainingOpen, setDeliverTrainingOpen] = useState(false);
+  
+  // Training Report State
+  const [selectedDeliveryForReport, setSelectedDeliveryForReport] = useState<any>(null);
+  const [selectedDeliveryForEdit, setSelectedDeliveryForEdit] = useState<any>(null);
+  const [isSendingSMS, setIsSendingSMS] = useState<string | null>(null);
 
   const { data: summaryData, isLoading: loadingSummary, isFetching: fetchingSummary, refetch } = useQuery({
     queryKey: ['agentDashboardSummary'],
@@ -108,11 +116,18 @@ export const TrainingPerformanceContent = () => {
     // Uses global defaults from App.tsx
   });
 
-  const scheduledVisitsRaw = scheduledVisitsData || [];
-  const scheduledVisits = scheduledVisitsRaw.filter((v: any) => {
-    const effectiveRegion = agent?.region || "Ashanti Region";
-    return !effectiveRegion || v.region === effectiveRegion;
+  const scheduledVisits = scheduledVisitsData || [];
+
+  // Fetch training deliveries created by this agent
+  const { data: trainingDeliveriesData, refetch: refetchDeliveries } = useQuery({
+    queryKey: ['trainingDeliveries'],
+    queryFn: async () => {
+      const response = await api.get('/training-deliveries');
+      return response.data.data || [];
+    },
   });
+
+  const trainingDeliveries = trainingDeliveriesData || [];
 
   const loading = loadingSummary || loadingVisits;
   const isFetching = fetchingSummary || fetchingVisits;
@@ -241,6 +256,19 @@ export const TrainingPerformanceContent = () => {
     }
   };
 
+  const handleSendTrainingSMS = async (id: string) => {
+    setIsSendingSMS(id);
+    try {
+      const res = await api.post(`/training-deliveries/${id}/send-sms`);
+      toast.success(res.data.message || 'SMS sent to farmers');
+      refetchDeliveries();
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || 'Failed to send SMS');
+    } finally {
+      setIsSendingSMS(null);
+    }
+  };
+
 
   const sectionCardClass = darkMode
     ? 'border border-[#124b53] bg-[#0b2528] text-gray-100 shadow-lg'
@@ -350,12 +378,8 @@ export const TrainingPerformanceContent = () => {
                         return (
                           <TableRow key={visit._id || visit.id} className={darkMode ? 'border-gray-800 hover:bg-gray-800/20' : 'border-gray-50 hover:bg-gray-50'}>
                             <TableCell>
-                              <Badge className={`text-[10px] uppercase ${visit.visitType === 'farm-visit' ? 'bg-blue-500/10 text-blue-500' :
-                                visit.visitType === 'community-visit' ? 'bg-[#065f46]/10 text-[#065f46]' :
-                                  'bg-[#065f46]/10 text-[#065f46]'
-                                }`}>
-                                {visit.visitType === 'farm-visit' ? 'Farm' :
-                                  visit.visitType === 'community-visit' ? 'Community' : 'Meeting'}
+                              <Badge className={`text-[10px] uppercase ${visit.visitType === 'farm-visit' ? 'bg-blue-500/10 text-blue-500' : visit.visitType === 'community-visit' ? 'bg-[#065f46]/10 text-[#065f46]' : 'bg-[#065f46]/10 text-[#065f46]'}`}>
+                                {visit.visitType === 'farm-visit' ? 'Farm' : visit.visitType === 'community-visit' ? 'Community' : 'Meeting'}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -387,22 +411,17 @@ export const TrainingPerformanceContent = () => {
                             </TableCell>
                             <TableCell>
                               <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                {visit.purpose?.substring(0, 40)}
-                                {visit.purpose?.length > 40 ? '...' : ''}
+                                {visit.purpose?.substring(0, 40)}{visit.purpose?.length > 40 ? '...' : ''}
                               </span>
                             </TableCell>
                             <TableCell>
-                              <Badge className={`text-[10px] ${visit.status === 'scheduled' && isUpcoming ? 'bg-yellow-500/10 text-yellow-500' :
-                                visit.status === 'completed' ? 'bg-[#065f46]/10 text-[#065f46]' :
-                                  visit.status === 'cancelled' ? 'bg-red-500/10 text-red-500' :
-                                    'bg-gray-500/10 text-gray-500'
-                                }`}>
+                              <Badge className={`text-[10px] ${visit.status?.toLowerCase() === 'scheduled' ? 'bg-yellow-500/10 text-yellow-600' : visit.status?.toLowerCase() === 'completed' ? 'bg-[#065f46]/10 text-[#065f46]' : visit.status?.toLowerCase() === 'cancelled' ? 'bg-red-500/10 text-red-500' : 'bg-gray-500/10 text-gray-500'}`}>
                                 {visit.status}
                               </Badge>
                             </TableCell>
                             <TableCell className="text-right">
-                              <div className="flex justify-end gap-2">
-                                {isUpcoming && (
+                              <div className="flex justify-end gap-1.5 flex-wrap">
+                                {visit.status?.toLowerCase() === 'scheduled' && (
                                   <>
                                     <Button
                                       size="sm"
@@ -410,15 +429,11 @@ export const TrainingPerformanceContent = () => {
                                       className="h-7 text-[10px] border-blue-500 text-blue-500 hover:bg-blue-500/10"
                                       onClick={() => handleSendSMS(visit._id || visit.id)}
                                       disabled={selectedVisitForSMS === (visit._id || visit.id) || visit.smsSent}
-                                      title={visit.smsSent ? 'SMS already sent' : 'Send SMS notification'}
                                     >
                                       {selectedVisitForSMS === (visit._id || visit.id) ? (
                                         <Loader2 className="h-3 w-3 animate-spin" />
                                       ) : (
-                                        <>
-                                          <MessageSquare className="h-3 w-3 mr-1" />
-                                          {visit.smsSent ? 'Sent' : 'SMS'}
-                                        </>
+                                        <><MessageSquare className="h-3 w-3 mr-1" />{visit.smsSent ? 'Sent' : 'SMS'}</>
                                       )}
                                     </Button>
                                     <Button
@@ -427,18 +442,50 @@ export const TrainingPerformanceContent = () => {
                                       className="h-7 text-[10px] border-[#065f46] text-[#065f46] hover:bg-[#065f46]/10"
                                       onClick={() => handleLogPhoneCall(visit._id || visit.id)}
                                       disabled={selectedVisitForCall === (visit._id || visit.id)}
-                                      title="Log phone call"
                                     >
                                       {selectedVisitForCall === (visit._id || visit.id) ? (
                                         <Loader2 className="h-3 w-3 animate-spin" />
                                       ) : (
-                                        <>
-                                          <Phone className="h-3 w-3 mr-1" />
-                                          {visit.phoneCallMade ? 'Called' : 'Call'}
-                                        </>
+                                        <><Phone className="h-3 w-3 mr-1" />{visit.phoneCallMade ? 'Called' : 'Call'}</>
                                       )}
                                     </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 text-[10px] border-emerald-500 text-emerald-600 hover:bg-emerald-50"
+                                      onClick={async () => {
+                                        try {
+                                          await api.patch(`/scheduled-visits/${visit._id || visit.id}`, { status: 'completed' });
+                                          refetchScheduledVisits();
+                                        } catch (e: any) {
+                                          toast.error(e.response?.data?.message || 'Failed to update visit');
+                                        }
+                                      }}
+                                    >
+                                      <CheckCircle2 className="h-3 w-3 mr-1" /> Done
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 text-[10px] border-red-400 text-red-500 hover:bg-red-50"
+                                      onClick={async () => {
+                                        try {
+                                          await api.patch(`/scheduled-visits/${visit._id || visit.id}`, { status: 'cancelled' });
+                                          refetchScheduledVisits();
+                                        } catch (e: any) {
+                                          toast.error(e.response?.data?.message || 'Failed to cancel visit');
+                                        }
+                                      }}
+                                    >
+                                      <X className="h-3 w-3 mr-1" /> Cancel
+                                    </Button>
                                   </>
+                                )}
+                                {visit.status?.toLowerCase() === 'completed' && (
+                                  <span className="text-[10px] text-emerald-600 font-semibold italic">Completed</span>
+                                )}
+                                {visit.status?.toLowerCase() === 'cancelled' && (
+                                  <span className="text-[10px] text-red-400 font-semibold italic">Cancelled</span>
                                 )}
                               </div>
                             </TableCell>
@@ -648,52 +695,120 @@ export const TrainingPerformanceContent = () => {
 
           {/* 3. My Training Schedule */}
           <section>
-            <h2 className={`section-title mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>My Training Schedule</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className={`section-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>My Training Schedule</h2>
+              <Button
+                onClick={() => setDeliverTrainingOpen(true)}
+                className="bg-[#065f46] hover:bg-[#065f46]/90 text-white font-black text-[11px] uppercase tracking-widest h-10 px-5 rounded-xl border-none shadow-lg gap-2 flex items-center"
+              >
+                <GraduationCap className="h-4 w-4" />
+                Deliver Training
+              </Button>
+            </div>
             <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} overflow-hidden shadow-sm`}>
               <Table>
                 <TableHeader className="bg-[#065f46]">
                   <TableRow className="border-none hover:bg-transparent">
                     <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Training Title</TableHead>
                     <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Date</TableHead>
+                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Community / Venue</TableHead>
                     <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Mode</TableHead>
                     <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Status</TableHead>
-                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Cert.</TableHead>
+                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Participants</TableHead>
                     <th className="text-right text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Action</th>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {myTrainings.map((reg: any) => (
-                    <TableRow key={reg._id} className={darkMode ? 'border-gray-800 hover:bg-gray-800/30' : 'hover:bg-gray-50 border-gray-100 transition-colors'}>
-                      <TableCell className={`font-medium sm:text-sm text-xs ${darkMode ? 'text-white' : 'text-gray-900'}`}>{reg.training?.title || 'Unknown Training'}</TableCell>
-                      <TableCell className={`sm:text-sm text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{reg.training?.date || 'N/A'}</TableCell>
-                      <TableCell className={`sm:text-sm text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{reg.training?.mode || 'N/A'}</TableCell>
+                  {trainingDeliveries.map((delivery: any) => (
+                    <TableRow key={delivery._id} className={darkMode ? 'border-gray-800 hover:bg-gray-800/30' : 'hover:bg-gray-50 border-gray-100 transition-colors'}>
+                      <TableCell className={`font-medium sm:text-sm text-xs ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <div className="flex flex-col">
+                          <span className="font-extrabold">{delivery.moduleTitle}</span>
+                          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest">{delivery.moduleSubtitle}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className={`sm:text-sm text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        <div className="flex flex-col">
+                          <span>{new Date(delivery.deliveryDate).toLocaleDateString('en-GB')}</span>
+                          <span className="text-[10px] text-gray-400">{delivery.deliveryTime}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className={`sm:text-sm text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        <div className="flex flex-col">
+                          <span className="font-bold">{delivery.community || 'Not specified'}</span>
+                          <span className="text-[10px] text-gray-400">{delivery.venue || 'No venue'}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className={`sm:text-sm text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {delivery.mode}
+                      </TableCell>
                       <TableCell>
-                        <Badge className={`text-[9px] uppercase font-black px-2 py-0.5 rounded-sm shadow-none ${reg.status === 'Completed' ? 'bg-[#7ede56]/10 text-[#7ede56]' :
-                          reg.status === 'Registered' ? 'bg-blue-100 text-blue-700' :
-                            reg.status === 'Ongoing' ? 'bg-[#7ede56]/10 text-[#7ede56]' :
-                              'bg-gray-200 text-gray-600'
+                        <Badge className={`text-[9px] uppercase font-black px-2 py-0.5 rounded-sm shadow-none ${
+                            delivery.status === 'completed' ? 'bg-[#7ede56]/10 text-[#7ede56]' :
+                            delivery.status === 'cancelled' ? 'bg-red-100 text-red-500' :
+                            'bg-amber-100 text-amber-700'
                           }`}>
-                          {reg.status}
+                          {delivery.status}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {reg.certificate ? (
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:bg-blue-50">
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        ) : '—'}
+                        <span className="text-xs font-bold text-gray-500">
+                          {delivery.farmers?.length || 0} Farmer(s)
+                        </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" className="h-8 px-2 text-[10px] font-bold uppercase tracking-wider hover:bg-[#065f46]/10 text-[#065f46]">
-                          View
-                        </Button>
+                        {delivery.status === 'scheduled' ? (
+                            <div className="flex justify-end gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-8 px-2.5 text-[10px] font-black tracking-widest uppercase text-blue-600 border-blue-200 hover:bg-blue-50 gap-1.5"
+                                onClick={() => handleSendTrainingSMS(delivery._id)}
+                                disabled={isSendingSMS === delivery._id}
+                              >
+                                {isSendingSMS === delivery._id ? <Loader2 className="h-3 w-3 animate-spin" /> : <MessageSquare className="h-3 w-3" />}
+                                SMS
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 px-2 text-[10px] font-black tracking-widest uppercase hover:bg-gray-100 text-gray-600"
+                                onClick={() => setSelectedDeliveryForEdit(delivery)}
+                              >
+                                Edit
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 px-2 text-[10px] font-black tracking-widest uppercase hover:bg-emerald-50 text-emerald-600"
+                                onClick={() => setSelectedDeliveryForReport(delivery)}
+                              >
+                                Submit Report
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 px-2 text-[10px] font-black tracking-widest uppercase hover:bg-red-50 text-red-500"
+                                onClick={async () => {
+                                  await api.patch(`/training-deliveries/${delivery._id}`, { status: 'cancelled' });
+                                  refetchDeliveries();
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                        ) : (
+                          <span className={`text-[10px] font-black tracking-widest uppercase ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                            {delivery.status}
+                          </span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
-                  {myTrainings.length === 0 && (
+                  {trainingDeliveries.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                        You haven't registered for any trainings yet
+                        You haven't scheduled any training deliveries yet.
                       </TableCell>
                     </TableRow>
                   )}
@@ -768,6 +883,30 @@ export const TrainingPerformanceContent = () => {
         onSuccess={() => {
           refetchScheduledVisits();
         }}
+      />
+
+      {/* Deliver Training Modal */}
+      {/* Deliver Training Modal (Create & Edit) */}
+      <DeliverTrainingModal
+        open={deliverTrainingOpen || !!selectedDeliveryForEdit}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeliverTrainingOpen(false);
+            setSelectedDeliveryForEdit(null);
+          } else {
+            setDeliverTrainingOpen(true);
+          }
+        }}
+        editItem={selectedDeliveryForEdit}
+        onSuccess={() => refetchDeliveries()}
+      />
+
+      {/* Submit Training Report Modal */}
+      <SubmitTrainingReportModal
+        open={!!selectedDeliveryForReport}
+        onOpenChange={(open) => !open && setSelectedDeliveryForReport(null)}
+        delivery={selectedDeliveryForReport}
+        onSuccess={() => refetchDeliveries()}
       />
     </div>
   );

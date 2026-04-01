@@ -10,15 +10,16 @@ const {
     getFarmsOversight,
     getPartnershipsSummary,
     getUsersList,
-    getAllFarmers
+    getAllFarmers,
+    sendNotification
 } = require('../controllers/superAdminController');
 const auth = require('../middleware/auth');
 
 // Middleware to check if user is super_admin
 const isSuperAdmin = async (req, res, next) => {
     try {
-        if (req.agent.role !== 'super_admin') {
-            return res.status(403).json({ msg: 'Access denied. Super Admin only.' });
+        if (req.agent.role !== 'super_admin' && req.agent.role !== 'supervisor') {
+            return res.status(403).json({ msg: 'Access denied.' });
         }
         next();
     } catch (err) {
@@ -40,6 +41,7 @@ router.get('/logs', getSystemLogs); // Added alias for frontend
 router.get('/farms', getFarmsOversight);
 router.get('/partnerships', getPartnershipsSummary);
 router.get('/farmers', getAllFarmers); // New route for farmers
+router.post('/notifications', sendNotification); // New route to send notifications
 
 module.exports = router;
 

@@ -24,7 +24,7 @@ exports.getProfile = async (req, res) => {
 // @route   PUT api/agents/profile
 // @desc    Update agent profile
 exports.updateProfile = async (req, res) => {
-    const { name, contact, region, district, bio, avatar, gender, dob, email } = req.body;
+    const { name, contact, region, district, bio, avatar, gender, dob, email, fcmToken } = req.body;
 
     // Build profile object
     const profileFields = {};
@@ -37,6 +37,7 @@ exports.updateProfile = async (req, res) => {
     if (gender) profileFields.gender = gender;
     if (dob) profileFields.dob = dob;
     if (email) profileFields.email = email;
+    if (fcmToken) profileFields.fcmToken = fcmToken;
 
     try {
         let agent = await Agent.findById(req.agent.id);
@@ -159,9 +160,18 @@ exports.getPerformance = async (req, res) => {
     try {
         const agentId = req.agent._id || req.agent.id;
 
-        // DEV BYPASS: If using mock user, return realistic empty response
+        // DEV BYPASS: If using mock user, return HIGH FIDELITY simulated data
         if (req.agent && req.agent.isMock) {
             const { PERFORMANCE_TARGETS } = require('../config/constants');
+            const now = new Date();
+            const months = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
+            
+            // Simulated dynamic trend data for mock chart scannability
+            const trend = months.map((m, i) => ({
+                month: m,
+                value: 65 + Math.floor(Math.random() * 25)
+            }));
+
             return res.json({
                 success: true,
                 agent: {
@@ -169,25 +179,39 @@ exports.getPerformance = async (req, res) => {
                     agentId: req.agent.agentId,
                     region: req.agent.region,
                     avatar: req.agent.avatar,
-                    title: req.agent.title || 'Field Agent',
+                    title: req.agent.title || 'Elite Field Agent',
                     stats: req.agent.stats,
                 },
-                summary: { kpisOnTarget: 0, totalKpis: 6, totalFarmers: 0, needsAttention: 0 },
+                summary: { kpisOnTarget: 4, totalKpis: 6, totalFarmers: 312, needsAttention: 15 },
                 kpis: [
-                    { label: 'Onboarding Volume', value: '0', unit: 'farmers', target: String(PERFORMANCE_TARGETS.ONBOARDING_VOLUME), progress: 0, status: 'Needs Work' },
-                    { label: 'Onboarding Completion Rate', value: '0', unit: '%', target: `\u2265${PERFORMANCE_TARGETS.COMPLETION_RATE}%`, progress: 0, status: 'Needs Work' },
-                    { label: 'Verification Pass Rate', value: '0', unit: '%', target: `\u2265${PERFORMANCE_TARGETS.VERIFICATION_PASS_RATE}%`, progress: 0, status: 'Needs Work' },
-                    { label: 'Monitoring Visit Frequency', value: '0', unit: 'visits/mo', target: `min. ${PERFORMANCE_TARGETS.VISIT_FREQUENCY}`, progress: 0, status: 'Needs Work' },
-                    { label: 'Data Sync Timeliness', value: '0', unit: '%', target: `\u2265${PERFORMANCE_TARGETS.SYNC_RATE}%`, progress: 0, status: 'Needs Work' },
-                    { label: 'Harvest Yield Documentation', value: '0', unit: 'farms', target: '0', progress: 0, status: 'Needs Work' },
+                    { label: 'Onboarding Volume', value: '412', unit: 'farmers', target: String(PERFORMANCE_TARGETS.ONBOARDING_VOLUME), progress: 82, status: 'On Track' },
+                    { label: 'Onboarding Completion Rate', value: '94', unit: '%', target: `\u2265${PERFORMANCE_TARGETS.COMPLETION_RATE}%`, progress: 94, status: 'On Track' },
+                    { label: 'Verification Pass Rate', value: '88', unit: '%', target: `\u2265${PERFORMANCE_TARGETS.VERIFICATION_PASS_RATE}%`, progress: 88, status: 'On Track' },
+                    { label: 'Monitoring Visit Frequency', value: '1.8', unit: 'visits/mo', target: `min. ${PERFORMANCE_TARGETS.VISIT_FREQUENCY}`, progress: 90, status: 'In Progress' },
+                    { label: 'Data Sync Timeliness', value: '97', unit: '%', target: `\u2265${PERFORMANCE_TARGETS.SYNC_RATE}%`, progress: 97, status: 'On Track' },
+                    { label: 'Harvest Yield Documentation', value: '284', unit: 'farms', target: '312', progress: 91, status: 'On Track' },
                 ],
-                trend: [
-                    { month: 'Oct', value: 0 }, { month: 'Nov', value: 0 }, { month: 'Dec', value: 0 },
-                    { month: 'Jan', value: 0 }, { month: 'Feb', value: 0 }, { month: 'Mar', value: 0 },
+                trend,
+                visitLog: [
+                    { farmer: 'Kofi Mensah', farm: 'Cassava #4', region: 'Bono East', last: '27 Mar', visits: '2/2', sync: 'Synced', status: 'On Track', color: 'green' },
+                    { farmer: 'Ama Serwaa', farm: 'Maize North', region: 'Savannah', last: '26 Mar', visits: '1/2', sync: 'Synced', status: 'At Risk', color: 'amber' },
+                    { farmer: 'Samuel Osei', farm: 'Rice South', region: 'Oti', last: '25 Mar', visits: '0/2', sync: 'Pending', status: 'Off Track', color: 'red' },
                 ],
-                visitLog: [],
-                portfolio: { onTrack: 0, atRisk: 0, offTrack: 0, total: 0 },
-                trainingModules: [],
+                portfolio: { onTrack: 284, atRisk: 24, offTrack: 4, total: 312 },
+                trainingModules: [
+                    { title: 'Financial Literacy', count: '312/312', perc: '100%', color: 'var(--lgreen)', tag: 'Required' },
+                    { title: 'Farm Planning & GAP', count: '298/312', perc: '95%', color: 'var(--teal)', tag: 'Required' },
+                ],
+                seasonOutcomes: {
+                   yieldEst: '1.4k',
+                   repaymentRate: '98.2%',
+                   capitalDeployed: '$245k',
+                   partnerKpiMet: '14/15'
+                },
+                activeAlerts: [
+                    { id: 1, type: 'Pest Stress', message: '8 Farms in Rice North showing pest stress', color: 'rose' },
+                    { id: 2, type: 'Financial Lag', message: 'Repayment lag in Cassava Cluster #4', color: 'amber' }
+                ]
             });
         }
 
@@ -308,6 +332,13 @@ exports.getPerformance = async (req, res) => {
             visitLog,
             portfolio: { onTrack, atRisk, offTrack, total: totalFarmers },
             trainingModules,
+            seasonOutcomes: {
+                yieldEst: '0.0', // Standardized fallback for real data
+                repaymentRate: '0%',
+                capitalDeployed: '$0',
+                partnerKpiMet: '0/0'
+            },
+            activeAlerts: [] // Real alert engine integration point
         });
     } catch (err) {
         console.error('getPerformance Critical Error:', err);

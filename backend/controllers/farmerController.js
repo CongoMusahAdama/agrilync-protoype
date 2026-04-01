@@ -15,7 +15,7 @@ exports.getFarmers = async (req, res) => {
 
         const [farmers, total] = await Promise.all([
             Farmer.find({ agent: req.agent.id })
-                .select('-idCardFront -idCardBack -password')
+                .select('name id status region district community farmType contact createdAt ghanaCardNumber')
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)

@@ -510,9 +510,9 @@ const MediaDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Slim Sticky Filters Bar - Sticks to top of main container (which is bottom of header) */}
-        <div className="sticky top-0 z-[35] bg-[#f8fafc] pt-2 pb-4 -mx-1 px-1 border-b border-gray-100 shadow-xl shadow-gray-200/20">
-          <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden p-2 shadow-sm">
+        {/* Slim Sticky Filters Bar - Sticks to top of main container */}
+        <div className="sticky top-[-1px] z-30 bg-white/95 backdrop-blur-md pt-2 pb-4 -mx-1 px-1 border-b border-gray-100 shadow-xl shadow-gray-200/5">
+          <div className="bg-white/50 border border-gray-100/50 rounded-2xl overflow-hidden p-2 shadow-sm">
             <div className="flex flex-col lg:flex-row items-center gap-4 p-4 lg:p-2">
               <div className="flex-1 w-full lg:w-auto">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -592,10 +592,13 @@ const MediaDashboard: React.FC = () => {
         {/* Main Content Area */}
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
           
-          {/* Gallery Grid */}
-          <div className="xl:col-span-3 space-y-6 min-h-[600px]">
+          {/* Gallery Grid Section with Internal Scroll */}
+          <div className="xl:col-span-3 space-y-6">
+            <div className="bg-white/50 backdrop-blur-sm rounded-[2rem] p-4 sm:p-6 border border-gray-100 shadow-sm relative overflow-hidden">
+                <div className="overflow-y-auto h-[calc(100vh-34rem)] min-h-[500px] pr-2 scrollbar-thin scrollbar-thumb-gray-200 hover:scrollbar-thumb-gray-300 transition-colors animate-in fade-in duration-700">
+            
             {currentAlbum && (
-              <div className="flex items-center gap-2 mb-6 animate-in slide-in-from-left-4 duration-500">
+              <div className="flex items-center gap-2 mb-6 animate-in slide-in-from-left-4 duration-500 sticky top-0 bg-white/80 backdrop-blur-md z-10 py-2 -mx-2 px-2 rounded-xl">
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -755,7 +758,9 @@ const MediaDashboard: React.FC = () => {
                 })}
             </div>
           )}
-
+                </div>
+            </div>
+            
             {/* Recent Uploads Table */}
             <Card className="border-none bg-white shadow-xl rounded-2xl overflow-hidden mt-12 border-t-4 border-[#065f46]">
               <CardHeader className="border-b border-gray-50 flex flex-row items-center justify-between pb-4">
@@ -953,7 +958,7 @@ const MediaDashboard: React.FC = () => {
       </div>
 
       <Dialog open={!!selectedMedia} onOpenChange={(open) => !open && setSelectedMedia(null)}>
-        <DialogContent className="max-w-4xl p-0 border-none bg-[#002f37] overflow-hidden rounded-3xl shadow-2xl">
+        <DialogContent className="max-w-5xl p-0 border-none bg-black/80 backdrop-blur-2xl overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500">
           <div className="sr-only">
             <DialogTitle>{selectedMedia?.name || 'Media Preview'}</DialogTitle>
             <DialogDescription>Viewing details for {selectedMedia?.name}</DialogDescription>
@@ -980,43 +985,49 @@ const MediaDashboard: React.FC = () => {
                 </div>
               </div>
               
-              <div className="w-full lg:w-80 bg-[#002f37] p-8 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-white/10">
-                <div>
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="space-y-1">
-                      <h3 className="text-white text-lg font-black leading-tight break-all pr-4">{selectedMedia.name}</h3>
-                      <p className="text-[#95f0a1] text-[10px] font-bold uppercase tracking-widest">
-                        {typeof selectedMedia.farm === 'object' ? selectedMedia.farm?.name : (selectedMedia.farm || 'General')}
-                      </p>
+              <div className="w-full lg:w-[360px] bg-white/5 backdrop-blur-3xl p-10 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-white/10 relative overflow-hidden">
+                {/* Decorative Background Element */}
+                <div className="absolute -right-20 -top-20 h-40 w-40 bg-[#065f46]/20 rounded-full blur-[80px]" />
+                
+                <div className="relative z-10">
+                  <div className="flex justify-between items-start mb-8">
+                    <div className="space-y-2">
+                       <h3 className="text-white text-2xl font-black leading-tight tracking-tight break-all pr-4">{selectedMedia.name}</h3>
+                       <div className="flex items-center gap-2">
+                         <div className="h-1.5 w-1.5 rounded-full bg-[#95f0a1] animate-pulse" />
+                         <p className="text-[#95f0a1] text-[11px] font-black uppercase tracking-[0.2em]">
+                           {typeof selectedMedia.farm === 'object' ? selectedMedia.farm?.name : (selectedMedia.farm || 'General Portfolio')}
+                         </p>
+                       </div>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4 mb-8">
-                    <div className="space-y-1">
-                      <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">Type</p>
-                      <p className="text-white text-[11px] font-bold">{selectedMedia.type}</p>
+                  <div className="grid grid-cols-2 gap-y-8 gap-x-4 mb-10 py-8 border-y border-white/10">
+                    <div className="space-y-1.5">
+                      <p className="text-white/30 text-[9px] font-black uppercase tracking-[0.2em]">Format</p>
+                      <p className="text-white text-[13px] font-black">{selectedMedia.type || 'Photo'}</p>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">Size</p>
-                      <p className="text-white text-[11px] font-bold">{selectedMedia.size}</p>
+                    <div className="space-y-1.5">
+                      <p className="text-white/30 text-[9px] font-black uppercase tracking-[0.2em]">Filesize</p>
+                      <p className="text-white text-[13px] font-black">{selectedMedia.size || 'N/A'}</p>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">Date</p>
-                      <p className="text-white text-[11px] font-bold">
+                    <div className="space-y-1.5">
+                      <p className="text-white/30 text-[9px] font-black uppercase tracking-[0.2em]">Capture Date</p>
+                      <p className="text-white text-[13px] font-black">
                         {selectedMedia.createdAt ? format(new Date(selectedMedia.createdAt), 'dd MMM yyyy') : 'Recently'}
                       </p>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">Status</p>
+                    <div className="space-y-1.5">
+                      <p className="text-white/30 text-[9px] font-black uppercase tracking-[0.2em]">Sync Status</p>
                       <div className="mt-1">{statusBadge(selectedMedia.status)}</div>
                     </div>
                   </div>
 
-                  <div className="space-y-3 pt-6 border-t border-white/10">
-                    <p className="text-white/40 text-[9px] font-black uppercase tracking-widest mb-2">Meta Tags</p>
+                  <div className="space-y-4">
+                    <p className="text-white/30 text-[9px] font-black uppercase tracking-[0.2em] mb-2">Automated Meta Tags</p>
                     <div className="flex flex-wrap gap-2">
-                      {['Maize', 'Growth', 'Northern Region', 'Field Evidence'].map(tag => (
-                        <Badge key={tag} className="bg-white/5 hover:bg-white/10 text-white/70 border-none text-[9px] font-bold uppercase py-1 px-3">
+                      {['Maize', 'Growth', 'Region #7', 'Field Evidence'].map(tag => (
+                        <Badge key={tag} className="bg-white/5 hover:bg-[#065f46]/30 text-white/50 border border-white/10 text-[9px] font-black uppercase py-1.5 px-3 transition-colors">
                           #{tag.replace(' ', '')}
                         </Badge>
                       ))}
@@ -1024,16 +1035,16 @@ const MediaDashboard: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-3 mt-8">
-                  <Button className="w-full bg-[#065f46] hover:bg-[#054d39] text-white font-black text-[11px] uppercase tracking-widest py-6 rounded-xl border-none shadow-lg">
-                    <Download className="mr-2 h-4 w-4" /> DOWNLOAD ORIGINAL
+                <div className="space-y-4 mt-12 relative z-10">
+                  <Button className="w-full bg-[#065f46] hover:bg-[#054d39] text-white font-black text-[12px] uppercase tracking-[0.15em] py-7 rounded-2xl border-none shadow-2xl shadow-[#065f46]/20 group">
+                    <Download className="mr-3 h-4 w-4 transition-transform group-hover:translate-y-1" /> DOWNLOAD ORIGINAL
                   </Button>
                   <Button 
                     variant="ghost" 
-                    className="w-full text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 font-black text-[11px] uppercase tracking-widest py-6 rounded-xl"
+                    className="w-full text-rose-400 hover:text-white hover:bg-rose-500 font-extrabold text-[11px] uppercase tracking-[0.15em] py-7 rounded-2xl transition-all"
                     onClick={() => handleDelete(selectedMedia)}
                   >
-                    <Trash2 className="mr-2 h-4 w-4" /> DELETE PERMANENTLY
+                    <Trash2 className="mr-3 h-4 w-4" /> DELETE ASSET
                   </Button>
                 </div>
               </div>

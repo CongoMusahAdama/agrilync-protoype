@@ -46,21 +46,18 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
     });
     const [photos, setPhotos] = useState<string[]>([]);
 
-    // Fetch farmers
-    const { data: summaryData } = useQuery({
-        queryKey: ['agentDashboardSummary'],
+    // Fetch professional directory of saved farmers
+    const { data: farmersBatch } = useQuery({
+        queryKey: ['agentFarmersDirectory'],
         queryFn: async () => {
-            const res = await api.get('/dashboard/summary');
-            return res.data.data;
+            const res = await api.get('/farmers?limit=1000');
+            return res.data.data || [];
         },
         staleTime: 5 * 60 * 1000,
-        refetchOnWindowFocus: false,
         enabled: open,
     });
 
-    const farmersRaw = summaryData?.farmers || [];
-    const effectiveRegion = agent?.region || "Ashanti Region";
-    const farmers = farmersRaw.filter((f: any) => !effectiveRegion || f.region === effectiveRegion);
+    const farmers = farmersBatch || [];
     const selectedFarmer = farmers.find((f: any) => (f._id || f.id) === formData.farmerId);
 
     useEffect(() => {
@@ -191,9 +188,9 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
                             <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Lync ID Identification</Label>
                             <input
                                 readOnly
-                                value={selectedFarmer ? (selectedFarmer._id || selectedFarmer.id) : ''}
-                                placeholder="Select a registered grower..."
-                                className={`${inputCls} cursor-default text-gray-400 bg-gray-50 dark:bg-white/[0.03]`}
+                                value={selectedFarmer ? (selectedFarmer.id || `LYG-${selectedFarmer.ghanaCardNumber || String(selectedFarmer._id).replace(/\D/g, '').padEnd(7, '0').slice(0, 7)}`) : ''}
+                                placeholder="Identification Lync ID..."
+                                className={`${inputCls} cursor-default text-[#065f46] font-black bg-[#F4FFEE]/50 dark:bg-white/[0.03] border-dashed border-[#065f46]/30`}
                             />
                         </div>
                     </div>
