@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, Bell, Sun, Moon, Home, MapPin, BarChart3, Settings, Plus, Users, Calendar, Leaf, Bot, AlertTriangle, Search } from 'lucide-react';
+import { Menu, Bell, Sun, Moon, Home, MapPin, BarChart3, Settings, Plus, Users, Calendar, Leaf, Bot, AlertTriangle, Search, LogOut } from 'lucide-react';
 import DashboardSidebar from './DashboardSidebar';
 import Preloader from './ui/Preloader';
 import AddFarmerModal from './agent/AddFarmerModal';
@@ -24,6 +24,7 @@ import {
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { agentNotifications } from '@/pages/agent/agent-data';
+import { requestNotificationPermission, onMessageListener } from '@/lib/firebase';
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -107,8 +108,29 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             setIsLoading(false);
             setIsNavigating(false);
             setIsInitialMount(false);
+
+            // Initialize Notifications for Agents
+            if (userType === 'agent' && agent) {
+                requestNotificationPermission();
+                
+                // Set up live listener for in-app popups
+                onMessageListener().then((payload: any) => {
+                    if (payload?.notification) {
+                        toast.info(payload.notification.title, {
+                            description: payload.notification.body,
+                            duration: 6000,
+                            action: {
+                                label: 'View',
+                                onClick: () => navigate('/dashboard/agent/notifications-center')
+                            }
+                        });
+                        // Also re-fetch internal notification list
+                        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+                    }
+                }).catch(err => console.error('FCM Listener failed:', err));
+            }
         }
-    }, [location.pathname, agent]);
+    }, [location.pathname, agent, userType, navigate, queryClient]);
 
     const effectiveSubtitle = description || subtitle;
     const currentTitle = title || 'Dashboard';
@@ -180,7 +202,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 {/* Main Content Area */}
                 <div className={`flex-1 flex flex-col overflow-hidden transition-colors bg-[#f8fafc]`}>
                     {/* Top Header */}
-                    <header className="bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 md:px-8 py-0 sticky top-0 z-20 shadow-sm">
+                    <header className="bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 md:px-8 py-0 sticky top-0 z-40 shadow-sm">
                         <div className="flex items-center justify-between h-[68px]">
 
                             {/* Left: Mobile menu + Search */}
@@ -213,60 +235,99 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                             </div>
 
                             {/* Right: Actions + Profile */}
-                            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                            {/* Right: Actions + Profile - Redesigned for Premium Look */}
+                            <div className="flex items-center gap-3 sm:gap-5 shrink-0">
                                 {headerActions}
+                                {/* Action Group: Notifications & Global Settings - Redesigned with Text Labels */}
+                                <div className="hidden md:flex items-center bg-[#f8fafc] rounded-full p-1 border border-gray-100/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] gap-1">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="relative h-9 rounded-full text-gray-500 hover:text-[#065f46] hover:bg-white transition-all shadow-none group px-4 gap-2.5"
+                                        onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/notifications-center' : `/dashboard/${userType}/notifications`)}
+                                    >
+                                        <Bell className="h-[16px] w-[16px] stroke-[3px] transition-transform group-active:scale-90" />
+                                        <span className="hidden xl:inline text-[11px] font-black uppercase tracking-[0.1em] opacity-80 group-hover:opacity-100">Alerts</span>
+                                        {activeNotifications.filter(n => !n.read).length > 0 && (
+                                            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#7ede56] border-2 border-white shadow-sm animate-pulse"></span>
+                                        )}
+                                    </Button>
 
-                                {/* Notification Bell */}
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="relative h-10 w-10 rounded-full text-gray-500 hover:text-[#065f46] hover:bg-[#065f46]/8 transition-all"
-                                >
-                                    <Bell className="h-[18px] w-[18px]" />
-                                    {activeNotifications.filter(n => !n.read).length > 0 && (
-                                        <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#7ede56] border-2 border-white shadow-sm"></span>
-                                    )}
-                                </Button>
-                                 {/* Settings */}
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-10 w-10 rounded-full text-gray-500 hover:text-[#065f46] hover:bg-[#065f46]/8 transition-all"
-                                    onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/profile' : `/dashboard/${userType}/settings`)}
-                                >
-                                    <Settings className="h-[18px] w-[18px]" />
-                                </Button>
-
-                                {/* Divider */}
-                                <div className="hidden sm:block w-px h-8 bg-gray-100 mx-2" />
-
-                                {/* User Profile */}
-                                <div
-                                    className="flex items-center gap-3 cursor-pointer group"
-                                    onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/profile' : `/dashboard/${userType}/settings`)}
-                                >
-                                    {/* Text info */}
-                                    <div className="hidden sm:flex flex-col items-end">
-
-                                        <span className="text-[14px] font-semibold text-gray-900 group-hover:text-[#065f46] transition-colors leading-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
-                                            {agent?.name ? agent.name : <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />}
-                                        </span>
-                                        <span className="text-[11px] font-bold text-[#065f46] uppercase tracking-wider leading-tight">
-                                            {agent?.role === 'super_admin' ? 'Super Admin' : agent?.role === 'supervisor' ? 'Supervisor' : 'Field Agent'}
-                                        </span>
-                                    </div>
-
-                                    {/* Avatar with gradient ring */}
-                                    <div className="relative">
-                                        <div className="absolute -inset-0.5 rounded-full bg-gradient-to-br from-[#065f46] to-[#7ede56] opacity-80 group-hover:opacity-100 transition-opacity"></div>
-                                        <Avatar className="relative h-10 w-10 border-2 border-white shadow-sm">
-                                            <AvatarImage src={agent?.avatar} />
-                                            <AvatarFallback className="bg-[#065f46] text-white text-sm font-bold" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                                {agent?.name ? agent.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : ''}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                    </div>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-9 rounded-full text-gray-400 hover:text-[#065f46] hover:bg-white transition-all shadow-none group px-4 gap-2.5"
+                                        onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/profile' : `/dashboard/${userType}/settings`)}
+                                    >
+                                        <Settings className="h-[16px] w-[16px] stroke-[3px] transition-transform group-active:scale-90" />
+                                        <span className="hidden xl:inline text-[11px] font-black uppercase tracking-[0.1em] opacity-80 group-hover:opacity-100">Support</span>
+                                    </Button>
                                 </div>
+
+                                {/* Divider: Only visible on desktop when action group is shown */}
+                                <div className="hidden lg:block w-px h-6 bg-gray-100" />
+
+                                {/* User Context Menu (Premium Identity) */}
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <div className="flex items-center gap-3 cursor-pointer group active:scale-[0.98] transition-all outline-none pl-2 pr-1.5 py-1.5 rounded-full hover:bg-gray-50 border border-transparent hover:border-gray-100/80">
+                                            <div className="hidden sm:flex flex-col items-end">
+                                                <span className="text-[14px] font-bold text-gray-900 leading-tight group-hover:text-[#065f46] transition-colors" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                                    {agent?.name ? agent.name : <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />}
+                                                </span>
+                                                <div className="flex items-center gap-1.5 mt-0.5">
+                                                    <span className="h-1 w-1 rounded-full bg-[#7ede56] shadow-[0_0_8px_rgba(126,222,86,0.6)]" />
+                                                    <span className="text-[10px] font-black text-[#065f46] uppercase tracking-[0.05em] leading-none opacity-80">
+                                                        {agent?.role === 'super_admin' ? 'Super Admin' : agent?.role === 'supervisor' ? 'Supervisor' : 'Field Agent'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Avatar with Halo Effect */}
+                                            <div className="relative">
+                                                <div className="absolute -inset-0.5 rounded-full bg-gradient-to-tr from-[#065f46] to-[#7ede56] opacity-40 group-hover:opacity-100 transition-all blur-[1px]"></div>
+                                                <Avatar className="relative h-9 w-9 border-2 border-white shadow-lg transition-transform group-hover:rotate-[4deg]">
+                                                    <AvatarImage src={agent?.avatar} />
+                                                    <AvatarFallback className="bg-[#065f46] text-white text-[11px] font-black">
+                                                        {agent?.name ? agent.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'AL'}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                {/* Online Status Beacon */}
+                                                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-[#7ede56] border-2 border-white shadow-sm ring-1 ring-gray-100"></span>
+                                            </div>
+                                        </div>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-56 mt-2 rounded-[1.25rem] border-gray-100 shadow-2xl p-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <div className="px-3 py-2.5 mb-1 bg-gray-50/50 rounded-xl">
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Signed in as</p>
+                                            <p className="text-[13px] font-bold text-[#002f37] truncate">{agent?.email || 'authenticated_user'}</p>
+                                        </div>
+                                        <DropdownMenuGroup className="space-y-0.5">
+                                            <DropdownMenuItem onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/profile' : `/dashboard/${userType}/settings`)} className="rounded-xl px-3 py-2.5 gap-3 cursor-pointer group hover:bg-[#065f46]/5 hover:text-[#065f46] transition-all">
+                                                <div className="p-1.5 bg-gray-50 rounded-lg group-hover:bg-white transition-colors">
+                                                    <Users className="h-4 w-4 text-gray-500 group-hover:text-[#065f46]" />
+                                                </div>
+                                                <span className="font-bold text-[14px]">Personal Profile</span>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="rounded-xl px-3 py-2.5 gap-3 cursor-pointer group hover:bg-[#065f46]/5 hover:text-[#065f46] transition-all">
+                                                <div className="p-1.5 bg-gray-50 rounded-lg group-hover:bg-white transition-colors">
+                                                    <Settings className="h-4 w-4 text-gray-500 group-hover:text-[#065f46]" />
+                                                </div>
+                                                <span className="font-bold text-[14px]">System Settings</span>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuGroup>
+                                        <DropdownMenuSeparator className="my-2 bg-gray-100/50" />
+                                        <DropdownMenuItem 
+                                            onClick={() => { localStorage.clear(); navigate('/login'); }} 
+                                            className="rounded-xl px-3 py-2.5 gap-3 cursor-pointer text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-all font-bold"
+                                        >
+                                            <div className="p-1.5 bg-rose-100/50 rounded-lg">
+                                                <LogOut className="h-4 w-4 text-rose-600" />
+                                            </div>
+                                            <span className="text-[14px]">Secure Logout</span>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
 
                         </div>

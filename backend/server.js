@@ -113,6 +113,8 @@ try {
     console.log('✓ Support routes registered');
     app.use('/api/consultations', require('./routes/consultationRoutes'));
     console.log('✓ Consultation routes registered');
+    app.use('/api/training-deliveries', require('./routes/trainingDeliveryRoutes'));
+    console.log('✓ Training Delivery routes registered');
     console.log('✓ All routes registered successfully');
 } catch (error) {
     console.error('✗ Error registering routes:', error);

@@ -18,10 +18,19 @@ import {
   Sprout,
   ArrowRight,
   RefreshCw,
+  Users,
+  Edit2,
+  Trash2,
   MoreVertical,
   CalendarDays,
   Check
 } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import AddTaskModal from '../../components/agent/AddTaskModal';
 import api from '@/utils/api';
@@ -42,6 +51,7 @@ type TaskType = 'visit' | 'kyc' | 'training' | 'media' | 'harvest' | 'sync';
 
 interface Task {
   id: string;
+  _id?: string;
   type: TaskType;
   title: string;
   farmer: string;
@@ -95,6 +105,23 @@ const TasksDashboard = () => {
   const [selectedCommunity, setSelectedCommunity] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState<any>(null);
+
+  const handleEditTask = (task: any) => {
+    setTaskToEdit(task);
+    setIsAddModalOpen(true);
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
+    try {
+      await api.delete(`/tasks/${taskId}`);
+      toast.success('Task deleted');
+      fetchTasks();
+    } catch (err) {
+      toast.error('Failed to delete task');
+    }
+  };
 
   React.useEffect(() => {
     fetchTasks();
@@ -480,7 +507,13 @@ const TasksDashboard = () => {
             <div className="space-y-4">
                {displayedTasks.length > 0 ? (
                  displayedTasks.map(task => (
-                   <TaskCard key={task.id} task={task} onRefresh={fetchTasks} />
+                   <TaskCard 
+                       key={task.id || task._id} 
+                       task={task} 
+                       onRefresh={fetchTasks} 
+                       onEdit={handleEditTask}
+                       onDelete={handleDeleteTask}
+                   />
                  ))
                ) : (
                  <div className="bg-gray-50 border border-gray-100 rounded-2xl p-12 text-center">
@@ -497,15 +530,24 @@ const TasksDashboard = () => {
       
       <AddTaskModal 
         open={isAddModalOpen} 
-        onOpenChange={setIsAddModalOpen} 
+        onOpenChange={(open) => {
+            setIsAddModalOpen(open);
+            if (!open) setTaskToEdit(null);
+        }} 
         onTaskAdded={fetchTasks} 
+        task={taskToEdit}
       />
     </AgentLayout>
   );
 };
 
 // Sub-component for individual task
-const TaskCard = ({ task, onRefresh }: { task: Task; onRefresh: () => void }) => {
+const TaskCard = ({ task, onRefresh, onEdit, onDelete }: { 
+    task: any; 
+    onRefresh: () => void;
+    onEdit: (task: any) => void;
+    onDelete: (id: string) => void;
+}) => {
   const isOverdueTask = task.status !== 'done' && new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0);
   const isTodayTask = task.status !== 'done' && new Date(task.dueDate).setHours(0,0,0,0) === new Date().setHours(0,0,0,0);
   const isCompleted = task.status === 'done';
@@ -546,10 +588,16 @@ const TaskCard = ({ task, onRefresh }: { task: Task; onRefresh: () => void }) =>
                 
                 <div className="flex items-center flex-wrap gap-3 text-xs text-gray-500 font-medium font-inter">
                    <div className="flex items-center gap-1.5">
-                     <div className="h-6 w-6 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
-                        {task.farmer !== 'System' && <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${task.farmer}`} alt={task.farmer} />}
+                     <div className="h-6 w-6 rounded-full overflow-hidden bg-emerald-50 border border-emerald-200 flex items-center justify-center">
+                        {task.farmer === 'All Farmers' ? (
+                          <Users className="h-3.5 w-3.5 text-[#065f46]" />
+                        ) : task.farmer !== 'System' ? (
+                          <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${task.farmer}`} alt={task.farmer} />
+                        ) : (
+                          <Sprout className="h-3 w-3 text-emerald-600" />
+                        )}
                      </div>
-                     <span className="font-bold text-gray-700">{task.farmer}</span>
+                     <span className={`font-bold ${task.farmer === 'All Farmers' ? 'text-[#065f46]' : 'text-gray-700'}`}>{task.farmer}</span>
                    </div>
                    
                    {task.location && (
@@ -592,18 +640,32 @@ const TaskCard = ({ task, onRefresh }: { task: Task; onRefresh: () => void }) =>
 
           <div className="flex sm:flex-col justify-between items-end gap-3 ml-12 sm:ml-0">
              {getStatusBadge(task.status)}
-             {!isCompleted ? (
-               <Button 
-                onClick={() => handleUpdateStatus(task.status === 'pending' ? 'in-progress' : 'done')}
-                className="bg-[#065f46] hover:bg-[#065f46]/90 text-white font-semibold text-xs h-9 px-4 rounded-lg shadow-md shadow-[#065f46]/20 transition-all"
-               >
-                 {task.status === 'pending' ? 'Start Task' : 'Mark Done'}
-               </Button>
-             ) : (
-               <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 h-8 w-8 rounded-lg transition-colors">
-                 <MoreVertical className="h-4 w-4" />
-               </Button>
-             )}
+             <div className="flex items-center gap-2">
+                {!isCompleted && (
+                    <Button 
+                        onClick={() => handleUpdateStatus(task.status === 'pending' ? 'in-progress' : 'done')}
+                        className="bg-[#065f46] hover:bg-[#065f46]/90 text-white font-semibold text-xs h-9 px-4 rounded-lg shadow-md shadow-[#065f46]/20 transition-all"
+                    >
+                        {task.status === 'pending' ? 'Start Task' : 'Mark Done'}
+                    </Button>
+                )}
+                
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 h-9 w-9 rounded-lg transition-colors">
+                            <MoreVertical className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40 rounded-xl border-none shadow-2xl p-1">
+                        <DropdownMenuItem onClick={() => onEdit(task)} className="rounded-lg gap-2 cursor-pointer font-bold text-gray-700">
+                            <Edit2 className="h-3.5 w-3.5" /> Edit Task
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onDelete(task.id || task._id)} className="rounded-lg gap-2 cursor-pointer font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50">
+                            <Trash2 className="h-3.5 w-3.5" /> Delete Task
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+             </div>
           </div>
        </div>
     </Card>

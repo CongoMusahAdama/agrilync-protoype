@@ -14,10 +14,18 @@ const notificationSchema = new mongoose.Schema({
         enum: ['high', 'medium', 'low'],
         default: 'medium'
     },
+    message: { type: String },
+    senderRole: { 
+        type: String, 
+        enum: ['super-admin', 'supervisor'],
+        default: 'supervisor'
+    },
+    senderName: { type: String, default: 'Management' },
     agent: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent', required: true }
 }, { timestamps: true });
 
 // Indexing for performance
 notificationSchema.index({ agent: 1, read: 1, createdAt: -1 });
+notificationSchema.index({ senderRole: 1 });
 
 module.exports = mongoose.models.Notification || mongoose.model('Notification', notificationSchema);

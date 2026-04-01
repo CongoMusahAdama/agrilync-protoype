@@ -4,6 +4,8 @@ const Farmer = require('../models/Farmer');
 const Match = require('../models/Match');
 const Escalation = require('../models/Escalation');
 const AuditLog = require('../models/AuditLog');
+const Notification = require('../models/Notification');
+const { sendPushNotification } = require('../utils/firebase');
 const bcrypt = require('bcryptjs');
 
 // Helper to enforce timeout on DB operations (fail fast to mock data)
@@ -349,3 +351,54 @@ exports.getAllFarmers = async (req, res) => {
     }
 };
 
+// @route   POST api/super-admin/notifications
+// @desc    Send notification to a specific agent
+exports.sendNotification = async (req, res) => {
+    const { agentId, title, message, type, priority, senderRole, senderName } = req.body;
+
+    try {
+        const agentExists = await Agent.findById(agentId);
+        if (!agentExists) {
+            return res.status(404).json({ msg: 'Target agent not found' });
+        }
+
+        const notification = new Notification({
+            title,
+            message,
+            type: type || 'message',
+            priority: priority || 'medium',
+            senderRole: senderRole || req.agent.role,
+            senderName: senderName || req.agent.name,
+            agent: agentId
+        });
+
+        await notification.save();
+
+        // Dispatch Push Notification (Async)
+        if (agentExists.fcmToken) {
+            sendPushNotification(agentExists.fcmToken, {
+                title: title,
+                body: message || `New ${type} from Management`,
+                data: {
+                    notificationId: notification._id.toString(),
+                    type: type || 'message'
+                }
+            }).catch(e => console.error('Push delivery failed:', e.message));
+        }
+
+        // Audit Log
+        await AuditLog.create({
+            action: 'SEND_NOTIFICATION',
+            user: req.agent.id,
+            userRole: req.agent.role,
+            details: `Sent notification: ${title} to Agent: ${agentExists.name}`,
+            targetResource: 'Notification',
+            targetId: notification.id
+        });
+
+        res.json({ success: true, data: notification });
+    } catch (err) {
+        console.error('Error in sendNotification:', err.message);
+        res.status(500).send('Server Error');
+    }
+};

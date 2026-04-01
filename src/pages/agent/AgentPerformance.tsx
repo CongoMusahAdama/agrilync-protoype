@@ -17,15 +17,19 @@ import {
   Activity,
   CheckCircle2,
   UserCheck,
-  FileText
+  FileText,
+  Cloud
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
+import { MapPin } from 'lucide-react';
 import api from '@/utils/api';
 import AgentLayout from './AgentLayout';
+import CountUp from '@/components/CountUp';
+import { useDarkMode } from '@/contexts/DarkModeContext';
 
 const AgentPerformance: React.FC = () => {
   const { toast } = useToast();
@@ -58,15 +62,12 @@ const AgentPerformance: React.FC = () => {
 
   const currentMetric = metricData[activeMetric];
 
-  if (loading) {
-    return (
-      <AgentLayout activeSection="performance" title="My Performance" subtitle="Your KPI scorecard, farm outcomes, and field impact this season">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#002f37]"></div>
-        </div>
-      </AgentLayout>
-    );
-  }
+  const stats = [
+    { label: 'Total Onboarded', value: data?.kpis?.[0]?.value || '0', unit: 'Farmers', icon: UserCheck, color: 'text-emerald-500', isLifetime: true },
+    { label: 'Field visits', value: data?.kpis?.[1]?.value || '0', unit: 'Visits', icon: MapPin, color: 'text-teal-500', isLifetime: false },
+    { label: 'Compliance', value: data?.kpis?.[2]?.value || '0', unit: '% Rate', icon: CheckCircle2, color: 'text-amber-500', isLifetime: false },
+    { label: 'Pending Sync', value: data?.pendingSync || '0', unit: 'Items', icon: Cloud, color: 'text-rose-500', isLifetime: false },
+  ];
 
   return (
     <AgentLayout 
@@ -111,55 +112,57 @@ const AgentPerformance: React.FC = () => {
           </div>
         </div>
 
-        {/* 2. AGENT SCORECARD BANNER REMOVED */}
-
-        {/* 3. KPI SCORECARD GRID */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-          {(data?.kpis || []).map((kpi: any, idx: number) => {
-            const isGreen = kpi.status === 'On Track';
-            const isAmber = kpi.status === 'In Progress';
-            const color = isGreen ? 'bg-[#177209]' : (isAmber ? 'bg-amber-500' : 'bg-gray-500');
-            const icon = [Sprout, CheckCircle2, UserCheck, Clock, Activity, FileText][idx % 6] || Sprout;
-            const IconComponent = icon;
-            return (
-            <Card
-              key={idx}
-              className="bg-white rounded-none p-3 sm:p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden flex flex-col justify-between group border-none h-28 sm:h-auto min-h-[112px] sm:min-h-[160px]"
-            >
-              <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
-                <IconComponent className={`h-20 w-20 sm:h-24 sm:w-24 ${color.replace('bg-', 'text-')} -rotate-12`} />
-              </div>
-
-              <div className="flex items-center justify-between mb-1 sm:mb-4 relative z-10">
-                <div className={`p-1.5 sm:p-2 ${color.replace('bg-', 'bg-').concat('/10')} rounded-lg`}>
-                  <IconComponent className={`h-4 w-4 sm:h-5 sm:w-5 ${color.replace('bg-', 'text-')}`} />
-                </div>
-                <Badge className={`rounded-xl border-none font-bold text-[8px] sm:text-[9px] px-1.5 sm:px-2 py-0.5 ${color} text-white uppercase tracking-widest`}>
-                  {kpi.status}
-                </Badge>
-              </div>
-
-              <div className="relative z-10">
-                <p className="text-[8px] sm:text-[10px] font-black text-gray-500 uppercase tracking-widest mb-0.5 sm:mb-1">{kpi.label}</p>
-                <div className="flex items-baseline gap-1 sm:gap-2 mb-2 sm:mb-4">
-                  <h3 className="text-xl sm:text-4xl font-black text-gray-900 leading-none">
-                    {kpi.value}
-                  </h3>
-                  <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest">{kpi.unit}</span>
-                </div>
-
-                <div className="space-y-1 sm:space-y-1.5 hidden sm:block">
-                  <div className="flex justify-between items-center text-[8px] sm:text-[10px] font-bold">
-                    <span className="text-gray-400">TARGET: {kpi.target}</span>
-                    <span className={color.replace('bg-', 'text-')}>{Math.round(kpi.progress)}%</span>
-                  </div>
-                  <div className="h-1 sm:h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full transition-all duration-1000" style={{ width: `${Math.min(kpi.progress, 100)}%`, backgroundColor: color.startsWith('bg-[') ? color.match(/\[(.*?)\]/)?.[1] : 'var(--teal)' }} />
+        {/* 2. KPI SCORECARD GRID — Deeper Details */}
+        <div className="pt-2 mb-8">
+           <h3 className="text-[11px] font-black text-[#002f37] uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+             <div className="h-1.5 w-1.5 rounded-full bg-[#065f46]"></div>
+             Detailed KPI Scorecard
+           </h3>           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {(data?.kpis || [
+              { label: 'Onboarding Volume', value: '0', unit: 'Farmers', target: '---', progress: 0, status: 'N/A' },
+              { label: 'Onboarding Completion Rate', value: '0', unit: '%', target: '---', progress: 0, status: 'N/A' },
+              { label: 'Verification Pass Rate', value: '0', unit: '%', target: '---', progress: 0, status: 'N/A' },
+              { label: 'Monitoring Visit Frequency', value: '0.0', unit: 'Visits/Mo', target: '---', progress: 0, status: 'N/A' },
+              { label: 'Data Sync Timeliness', value: '0', unit: '%', target: '---', progress: 0, status: 'N/A' },
+              { label: 'Harvest Yield Documentation', value: '0', unit: 'Farms', target: '---', progress: 0, status: 'N/A' }
+            ]).map((kpi: any, idx: number) => {
+              const isOnTrack = kpi.status === 'On Track';
+              const isInProgress = kpi.status === 'In Progress';
+              const color = isOnTrack ? '#065f46' : (isInProgress ? '#f59e0b' : '#6b7280');
+              const icon = [Leaf, CheckCircle2, UserCheck, Clock, Activity, FileText][idx % 6] || Sprout;
+              const IconComponent = icon;
+              
+              return (
+              <Card
+                key={idx}
+                className="bg-white rounded-none p-5 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 relative overflow-hidden flex flex-col justify-between group min-h-[130px]"
+              >
+                <div className="flex items-center justify-between mb-3 relative z-10">
+                  <div className="p-2.5 rounded-xl transition-colors" style={{ backgroundColor: `${color}10` }}>
+                    <IconComponent className="h-5 w-5" style={{ color }} />
                   </div>
                 </div>
-              </div>
-            </Card>
-          )})}
+
+                <div className="relative z-10">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{kpi.label}</p>
+                  <div className="flex items-baseline gap-2 mb-3">
+                    <h2 className="text-4xl font-black text-[#002f37] tracking-tight leading-none group-hover:scale-105 transition-transform origin-left">
+                      {kpi.value}
+                    </h2>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100/30">
+                      <div 
+                        className="h-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(0,0,0,0.1)]" 
+                        style={{ width: `${Math.min(kpi.progress, 100)}%`, backgroundColor: color }} 
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )})}
+           </div>
         </div>
 
         {/* 4. TWO-COLUMN ROW */}
@@ -189,48 +192,59 @@ const AgentPerformance: React.FC = () => {
                 </div>
               </div>
 
-              <div className="relative pt-6 pb-2">
-                {/* Y-axis */}
-                <div className="absolute left-0 top-0 bottom-8 w-8 flex flex-col justify-between text-[10px] font-black text-gray-300 pointer-events-none">
-                  <span>100</span>
-                  <span>75</span>
-                  <span>50</span>
-                  <span>25</span>
-                  <span>0</span>
+              <div className="relative pt-12 pb-2">
+                {/* Advanced Y-axis & Gridlines */}
+                <div className="absolute left-0 top-0 bottom-10 w-full flex flex-col justify-between pointer-events-none">
+                  {[100, 75, 50, 25, 0].map(val => (
+                    <div key={val} className="flex items-center gap-4 w-full">
+                      <span className="text-[10px] font-black text-gray-300 w-6 text-right">{val}</span>
+                      <div className="flex-1 border-t border-gray-100/60 h-[1px]" />
+                    </div>
+                  ))}
                 </div>
 
                 {/* Chart Area */}
-                <div className="ml-10 h-48 border-b border-gray-100 flex items-end justify-between relative group">
+                <div className="ml-10 h-64 flex items-end justify-between relative group z-10 px-4">
                   {/* Target Line (Dashed) */}
-                  <div className="absolute left-0 right-0 border-t-2 border-dashed border-gray-200" style={{ bottom: currentMetric.target, zIndex: 1 }}>
-                    <span className="absolute -top-5 right-0 text-[11px] font-black uppercase text-gray-400">Target Line</span>
+                  <div className="absolute left-0 right-0 border-t-2 border-dashed border-rose-200/50 transition-all duration-500" 
+                       style={{ bottom: `calc(${currentMetric.target} + 40px)`, zIndex: 5 }}>
+                    <div className="absolute -top-5 right-0 bg-white px-2 text-[9px] font-black uppercase text-rose-500 tracking-widest border border-rose-100 rounded-full">
+                      STATED TARGET: {currentMetric.target}
+                    </div>
                   </div>
                   
                   {currentMetric.data.map((val: number, i: number) => {
                     const monthName = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'][i];
                     return (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-4 px-2 sm:px-4">
-                      <div className="w-full max-w-[40px] rounded-t-lg transition-all duration-700 hover:brightness-110 relative kpi-trend-bar" 
-                           style={{ height: `${val}%`, backgroundColor: currentMetric.color, opacity: 0.9 }}>
-                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#002f37] text-white text-[10px] font-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    <div key={i} className="flex-1 flex flex-col items-center gap-6 h-full justify-end relative group/bar">
+                      <div className="w-full max-w-[48px] rounded-t-xl transition-all duration-700 hover:scale-x-105 relative cursor-pointer" 
+                           style={{ 
+                             height: `${Math.max(val, 2)}%`, 
+                             background: `linear-gradient(to top, ${currentMetric.color}, ${currentMetric.color}dd)`,
+                             boxShadow: `0 10px 30px -10px ${currentMetric.color}66`
+                           }}>
+                        {/* Tooltip */}
+                        <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-[#002f37] text-white text-[11px] font-black py-2 px-3 rounded-xl opacity-0 group-hover/bar:opacity-100 transition-all duration-300 shadow-2xl pointer-events-none transform translate-y-2 group-hover/bar:translate-y-0 z-20">
                           {val}%
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#002f37]" />
                         </div>
                       </div>
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] transition-colors group-hover/bar:text-gray-900">
                         {data?.trend?.[i]?.month || monthName}
                       </span>
                     </div>
                   )})}
                 </div>
                 
-                <div className="mt-12 flex justify-center gap-8">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm transition-colors duration-500" style={{ backgroundColor: currentMetric.color }} />
-                    <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Actual Performance</span>
+                <div className="mt-12 flex justify-center items-center gap-12 bg-gray-50/50 py-4 rounded-2xl border border-gray-100/50 mx-10">
+                  <div className="flex items-center gap-3">
+                    <div className="h-2 w-4 rounded-full transition-colors duration-500" style={{ backgroundColor: currentMetric.color }} />
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">ACTUAL PERFORMANCE</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-0 border-t-2 border-dashed border-gray-300" />
-                    <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Target Threshold</span>
+                  <div className="w-[1px] h-4 bg-gray-200" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-0 border-t-2 border-dashed border-rose-300" />
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">SEASON THRESHOLD</span>
                   </div>
                 </div>
               </div>
@@ -287,22 +301,22 @@ const AgentPerformance: React.FC = () => {
               <h3 className="text-[10px] font-black uppercase tracking-widest text-[#7ede56] mb-6">Supervisor Feedback</h3>
               <div className="flex items-center gap-4 mb-6">
                 <Avatar className="h-12 w-12 border-2 border-white/20">
-                  <AvatarFallback className="bg-white/10 font-black text-white">SK</AvatarFallback>
+                  <AvatarFallback className="bg-white/10 font-black text-white">{data?.supervisor?.initials || 'FS'}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-black">Samuel Kwaku</p>
+                  <p className="text-sm font-black">{data?.supervisor?.name || 'Field Supervisor'}</p>
                   <div className="flex text-amber-400">
-                    {[1, 2, 3, 4].map(i => <Star key={i} className="h-3 w-3 fill-current" />)}
+                    {[1, 2, 3, 4, 5].map(i => <Star key={i} className={`h-3 w-3 ${i <= (data?.supervisor?.rating || 0) ? 'fill-current' : 'opacity-20'}`} />)}
                   </div>
                 </div>
               </div>
               <blockquote className="text-sm font-medium italic text-white/80 leading-relaxed mb-6">
-                "Good completion rate and solid sync timeliness. Focus area: increase monitoring visit frequency — 11 farms are below the 2/month minimum. Next review: April 1."
+                {data?.supervisor?.comment || '"No supervisor feedback has been recorded for this period."'}
               </blockquote>
               <div className="pt-6 border-t border-white/10 flex justify-between items-center">
-                <span className="text-[10px] font-bold text-white/40 uppercase">Next review: April 1, 2026</span>
+                <span className="text-[10px] font-bold text-white/40 uppercase">Next review: {data?.supervisor?.nextReview || 'Awaiting Schedule'}</span>
                 <button 
-                  onClick={() => toast({ title: "Reply Sent", description: "Your feedback has been sent to Samuel Kwaku." })}
+                  onClick={() => toast({ title: "Reply Sent", description: "Your feedback has been sent." })}
                   className="text-[11px] font-black text-[#7ede56] hover:underline flex items-center gap-1"
                 >
                   Reply <ArrowRight className="h-3 w-3" />
@@ -417,8 +431,8 @@ const AgentPerformance: React.FC = () => {
               {[
                 { title: 'Financial Literacy', icon: DollarSign, desc: 'Budgeting & Saving for inputs', count: data?.trainingModules?.[0]?.count || '0/0', perc: data?.trainingModules?.[0]?.perc || '0%', color: 'var(--lgreen)', tag: 'Required' },
                 { title: 'Farm Planning & GAP', icon: Sprout, desc: 'Agronomy best practices & planning', count: data?.trainingModules?.[1]?.count || '0/0', perc: data?.trainingModules?.[1]?.perc || '0%', color: 'var(--teal)', tag: 'Required' },
-                { title: 'AI Advisory Tools', icon: Bot, desc: 'Modern data tools utilization', count: '0/0', perc: '0%', color: 'var(--amber)', tag: 'Should Complete' },
-                { title: 'Climate Resilience', icon: Leaf, desc: 'Adapting to environmental changes', count: '0/0', perc: '0%', color: 'var(--gray200)', tag: 'Recommended' },
+                { title: 'AI Advisory Tools', icon: Bot, desc: 'Modern data tools utilization', count: data?.trainingModules?.[2]?.count || '0/0', perc: data?.trainingModules?.[2]?.perc || '0%', color: 'var(--amber)', tag: 'Should Complete' },
+                { title: 'Climate Resilience', icon: Leaf, desc: 'Adapting to environmental changes', count: data?.trainingModules?.[3]?.count || '0/0', perc: data?.trainingModules?.[3]?.perc || '0%', color: 'var(--gray200)', tag: 'Recommended' },
               ].map((m, i) => (
                 <div key={i}>
                   <div className="flex justify-between items-start mb-4">
@@ -460,26 +474,26 @@ const AgentPerformance: React.FC = () => {
               <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100 group hover:border-[#065f46] transition-all">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Yield Est.</p>
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl font-black text-[#002f37]">1.4k</span>
+                  <span className="text-2xl font-black text-[#002f37]">{data?.seasonOutcomes?.yieldEst || '0.0'}</span>
                   <span className="text-[10px] font-bold text-gray-400">Metric Tons</span>
                 </div>
               </div>
               <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100 group hover:border-[#065f46] transition-all">
                 <p className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-1">Repayment Rate</p>
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl font-black text-teal-600">98.2%</span>
+                  <span className="text-2xl font-black text-teal-600">{data?.seasonOutcomes?.repaymentRate || '0%'}</span>
                 </div>
               </div>
               <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100 group hover:border-[#065f46] transition-all">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Capital Deployed</p>
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl font-black text-[#002f37]">$245k</span>
+                  <span className="text-2xl font-black text-[#002f37]">{data?.seasonOutcomes?.capitalDeployed || '$0'}</span>
                 </div>
               </div>
               <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100 group hover:border-[#065f46] transition-all">
                 <p className="text-[10px] font-black text-magenta uppercase tracking-widest mb-1" style={{ color: '#921573' }}>Partner KPIs Met</p>
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl font-black" style={{ color: '#921573' }}>14/15</span>
+                  <span className="text-2xl font-black" style={{ color: '#921573' }}>{data?.seasonOutcomes?.partnerKpiMet || '0/0'}</span>
                 </div>
               </div>
             </div>
@@ -490,16 +504,17 @@ const AgentPerformance: React.FC = () => {
                    <AlertTriangle className="h-5 w-5 text-rose-500" />
                  </div>
                  <div>
-                   <h4 className="text-sm font-black mb-1">Active Alerts (4)</h4>
+                   <h4 className="text-sm font-black mb-1">Active Alerts ({data?.activeAlerts?.length || 0})</h4>
                    <ul className="space-y-2">
-                     <li className="text-[11px] font-medium text-white/70 flex items-center gap-2">
-                        <div className="w-1 h-1 bg-rose-500 rounded-full" /> 
-                        8 Farms in Rice North showing pest stress
-                     </li>
-                     <li className="text-[11px] font-medium text-white/70 flex items-center gap-2">
-                        <div className="w-1 h-1 bg-amber-500 rounded-full" /> 
-                        Repayment lag in Cassava Cluster #4
-                     </li>
+                     {(data?.activeAlerts || []).map((alert: any) => (
+                       <li key={alert.id} className="text-[11px] font-medium text-white/70 flex items-center gap-2">
+                          <div className={`w-1 h-1 rounded-full ${alert.color === 'rose' ? 'bg-rose-500' : 'bg-amber-500'}`} /> 
+                          {alert.message}
+                       </li>
+                     ))}
+                     {(!data?.activeAlerts || data.activeAlerts.length === 0) && (
+                       <li className="text-[11px] font-medium text-white/40 italic">No active field alerts at this time.</li>
+                     )}
                    </ul>
                  </div>
                </div>
