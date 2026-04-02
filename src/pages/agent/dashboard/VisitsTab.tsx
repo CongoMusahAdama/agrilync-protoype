@@ -35,10 +35,10 @@ const VisitsTab: React.FC<VisitsTabProps> = ({
           <div className="divide-y divide-gray-50">
             {activities.filter((a: any) => a.type === 'report').length > 0 ? (
               activities.filter((a: any) => a.type === 'report').map((report: any) => (
-                <div key={report._id} className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors group">
+                <div key={report._id} className="p-2 flex items-center justify-between hover:bg-[#002f37]/5 border-b border-[#002f37]/5 transition-colors group">
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-[#002f37] transition-all shrink-0">
-                      <FileText className="h-6 w-6 text-blue-600 group-hover:text-white" />
+                    <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-[#002f37] transition-all shrink-0">
+                      <FileText className="h-5 w-5 text-blue-600 group-hover:text-white" />
                     </div>
                     <div>
                       <p className="text-[13px] font-black text-[#002f37] normal-case">{report.title}</p>
@@ -67,8 +67,9 @@ const VisitsTab: React.FC<VisitsTabProps> = ({
 
       <div className="space-y-6">
         <Card className="bg-[#065f46] text-white border-none shadow-xl rounded-[2.5rem] p-8 relative overflow-hidden group">
-          <div className="absolute inset-0 z-0 opacity-10">
+          <div className="absolute inset-0 z-0 opacity-80 group-hover:scale-110 transition-all duration-[2s]">
               <img src="/metric2.jpg" alt="" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#065f46] via-[#065f46]/40 to-transparent" />
           </div>
           <div className="relative z-10">
             <h3 className="font-black text-2xl mb-2 normal-case leading-tight">Ready for a field mission?</h3>

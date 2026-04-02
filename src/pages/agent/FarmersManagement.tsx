@@ -118,16 +118,12 @@ const FarmersManagement: React.FC = () => {
         (farmer.contact && farmer.contact.includes(searchValue)) ||
         (farmer.district && farmer.district.toLowerCase().includes(searchValue)) ||
         (farmer.community && farmer.community.toLowerCase().includes(searchValue));
-      const effectiveRegion = agent?.region || 'Ashanti Region';
-      const matchesRegion = !effectiveRegion || 
-        farmer.region?.toLowerCase().includes(effectiveRegion.toLowerCase().replace(' region', '')) ||
-        effectiveRegion.toLowerCase().includes(farmer.region?.toLowerCase().replace(' region', ''));
       const matchesDistrict = selectedDistrict === 'all' ? true : farmer.district === selectedDistrict;
       const matchesCommunity = selectedCommunity === 'all' ? true : farmer.community === selectedCommunity;
       const matchesStatus = farmerStatusFilter === 'all' ? true : farmer.status === farmerStatusFilter;
-      return matchesSearch && matchesRegion && matchesDistrict && matchesCommunity && matchesStatus;
+      return matchesSearch && matchesDistrict && matchesCommunity && matchesStatus;
     });
-  }, [farmersData, farmerSearch, selectedDistrict, selectedCommunity, farmerStatusFilter, agent?.region]);
+  }, [farmersData, farmerSearch, selectedDistrict, selectedCommunity, farmerStatusFilter]);
 
   const cardClass = darkMode ? 'bg-[#002f37] border-gray-600 border' : 'bg-white';
   const titleClass = darkMode ? 'text-white' : 'text-gray-900';
@@ -236,13 +232,11 @@ const FarmersManagement: React.FC = () => {
                   <TableRow key={farmer._id} className={tableRowClass}>
                     <TableCell className={tableCellClass}>
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9 border-2 border-white/20">
+                        <Avatar className="h-9 w-9 border-2 border-slate-200">
                           {farmer.profilePicture ? (
-                            <AvatarImage src={farmer.profilePicture} alt={farmer.name} className="object-cover" />
+                            <AvatarImage src={farmer.profilePicture} alt={farmer.name} className="object-cover bg-white" />
                           ) : (
-                            <AvatarFallback className={`${darkMode ? 'bg-[#065f46]/20 text-[#065f46]' : 'bg-[#065f46]/10 text-[#065f46]'}`}>
-                              {farmer.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
-                            </AvatarFallback>
+                            <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${farmer.name}`} alt={farmer.name} className="object-cover bg-emerald-50" />
                           )}
                         </Avatar>
                         <span className="font-medium">{farmer.name}</span>

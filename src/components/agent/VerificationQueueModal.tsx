@@ -103,14 +103,14 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
 
                 <div className="p-6">
                     <div className={`rounded-2xl border ${darkMode ? 'border-white/10 bg-black/20' : 'border-gray-200 bg-white'} overflow-hidden shadow-sm`}>
-                        <Table className={`border-collapse`}>
-                            <TableHeader className="bg-[#065f46] sticky top-0 z-10">
+                        <Table className="border-collapse">
+                            <TableHeader className="bg-[#002f37] sticky top-0 z-10">
                                 <TableRow className="border-none hover:bg-transparent">
-                                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-5 px-6 border-r border-white/10">Grower Information</TableHead>
-                                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-5 px-6 border-r border-white/10">Operational Zone</TableHead>
-                                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-5 px-6 border-r border-white/10">Onboarding Date</TableHead>
-                                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-5 px-6 border-r border-white/10">Verification Status</TableHead>
-                                    <TableHead className="text-right text-white font-black text-[10px] uppercase tracking-widest py-5 px-6">Action</TableHead>
+                                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-2 px-6 border-r border-white/10">Grower Information</TableHead>
+                                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-2 px-6 border-r border-white/10">Operational Zone</TableHead>
+                                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-2 px-6 border-r border-white/10">Onboarding Date</TableHead>
+                                    <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-2 px-6 border-r border-white/10">Verification Status</TableHead>
+                                    <TableHead className="text-right text-white font-black text-[10px] uppercase tracking-widest py-2 px-6">Action</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -128,8 +128,8 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
                                     </TableRow>
                                 ) : (
                                     pendingFarmers.map((f: any) => (
-                                        <TableRow key={f._id} className={`${darkMode ? 'border-white/5 hover:bg-white/5' : 'hover:bg-gray-50'} transition-all duration-300 group`}>
-                                            <TableCell className={`py-4 px-6 border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
+                                        <TableRow key={f._id} className={`${darkMode ? 'border-[#002f37]/20 hover:bg-white/5' : 'border-[#002f37]/10 hover:bg-[#002f37]/5'} transition-all duration-300 group`}>
+                                            <TableCell className={`py-2 px-6 border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
                                                 <div className="flex items-center gap-4">
                                                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg border-2 border-white dark:border-white/10 transform group-hover:scale-110 transition-transform ${darkMode ? 'bg-[#065f46]/20 text-[#065f46]' : 'bg-[#065f46] text-white'}`}>
                                                         {f.profilePicture ? (
@@ -144,13 +144,13 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
                                                     </div>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className={`py-4 px-6 border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
+                                            <TableCell className={`py-2 px-6 border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
                                                 <div className="flex flex-col">
                                                     <span className={`text-sm font-black ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{f.community}</span>
                                                     <span className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{f.district}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className={`py-4 px-6 border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
+                                            <TableCell className={`py-2 px-6 border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
                                                 <div className="flex items-center gap-2">
                                                     <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
                                                         <Calendar className="w-4 h-4 text-indigo-400" />
@@ -163,13 +163,13 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
                                                     </div>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className={`py-4 px-6 border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
+                                            <TableCell className={`py-2 px-6 border-r ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                                                     <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Awaiting Agent Audit</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-right py-4 px-6">
+                                            <TableCell className="text-right py-2 px-6">
                                                 <div className="flex gap-2 justify-end">
                                                     <Button
                                                         size="icon"

@@ -18,13 +18,16 @@ import {
     X,
     Clock,
     Camera,
+    Activity,
+    UserCheck,
+    Briefcase
 } from 'lucide-react';
 
 interface ScheduleVisitModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSuccess?: () => void;
-    farmer?: any;
+    farmer?: { _id?: string; id?: string; name?: string };
 }
 
 const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenChange, onSuccess, farmer }) => {
@@ -57,8 +60,8 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
         enabled: open,
     });
 
-    const farmers = farmersBatch || [];
-    const selectedFarmer = farmers.find((f: any) => (f._id || f.id) === formData.farmerId);
+    const farmers = (farmersBatch || []) as Array<{ _id?: string; id?: string; name?: string; ghanaCardNumber?: string }>;
+    const selectedFarmer = farmers.find(f => (f._id || f.id) === formData.farmerId);
 
     useEffect(() => {
         if (open) {
@@ -74,7 +77,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
     }, [open, farmer]);
 
     const createVisitMutation = useMutation({
-        mutationFn: async (data: any) => {
+        mutationFn: async (data: Record<string, unknown>) => {
             const res = await api.post('/scheduled-visits', data);
             return res.data;
         },
@@ -93,7 +96,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
             handleClose();
             onSuccess?.();
         },
-        onError: (error: any) => {
+        onError: (error: { response?: { data?: { message?: string } } }) => {
             toast.error(error.response?.data?.message || 'Failed to schedule visit');
         },
     });
@@ -146,18 +149,23 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
             <DialogContent className="max-w-4xl w-[95vw] p-0 overflow-hidden flex flex-col h-[75vh] border-none bg-white dark:bg-[#002f37] rounded-2xl shadow-2xl">
 
                 {/* Header — dark green, same as Log Field Visit */}
-                <div className="relative bg-[#065f46] px-7 py-5 flex items-start justify-between shrink-0 overflow-hidden">
+                <div className="relative bg-[#065f46] px-6 py-5 flex items-start justify-between shrink-0 overflow-hidden">
                     <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.6) 1px, transparent 0)', backgroundSize: '18px 18px' }} />
-                    <div className="relative z-10">
+                    <div className="relative z-10 w-full pr-10">
                         <div className="flex items-center gap-3 mb-1">
-                            <div className="p-2 rounded-xl bg-white/20">
-                                <Calendar className="h-5 w-5 text-white" />
+                            <div className="p-2.5 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+                                <Activity className="h-5 w-5 text-white" />
                             </div>
-                            <h2 className="text-lg font-black text-white tracking-tight">Schedule Visit</h2>
+                            <div>
+                                <h2 className="text-lg font-black text-white tracking-tight uppercase">Field Visit Log</h2>
+                                <p className="text-white/70 text-[10px] font-black uppercase tracking-widest">Grower Compliance & Support</p>
+                            </div>
                         </div>
-                        <p className="text-white/60 text-[11px] font-semibold pl-1">Record your planned field deployment for grower oversight</p>
                     </div>
-                    <button onClick={handleClose} className="relative z-10 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all mt-0.5">
+                    <button 
+                        onClick={handleClose} 
+                        className="absolute right-6 top-6 z-10 p-2 rounded-xl bg-black/20 hover:bg-black/40 text-white transition-all backdrop-blur-md border border-white/10"
+                    >
                         <X className="h-4 w-4" />
                     </button>
                 </div>
@@ -166,44 +174,47 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
                 <div className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
 
                     {/* Grower Name & Lync ID inline */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Grower Name *</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2 bg-gray-50/80 dark:bg-white/5 p-4 rounded-2xl border border-gray-100 dark:border-white/5 transition-all focus-within:border-emerald-500/50">
+                            <div className="flex items-center gap-2 mb-1">
+                                <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-emerald-900/40 dark:text-gray-400">Target Grower *</Label>
+                            </div>
                             <Select value={formData.farmerId} onValueChange={v => setFormData(p => ({ ...p, farmerId: v }))}>
-                                <SelectTrigger className="h-12 rounded-xl border-2 border-[#065f46]/40 bg-white dark:bg-white/5 text-sm font-semibold text-gray-800 dark:text-white focus:border-[#065f46]">
-                                    <SelectValue placeholder="Select a registered farmer" />
+                                <SelectTrigger className="h-10 border-none bg-transparent p-0 text-sm font-black text-gray-800 dark:text-white shadow-none focus:ring-0">
+                                    <SelectValue placeholder="Identify farmer..." />
                                 </SelectTrigger>
-                                <SelectContent className="rounded-xl border-none shadow-2xl z-[2000]">
+                                <SelectContent className="rounded-2xl border-none shadow-2xl z-[2000] p-1">
                                     {farmers.length === 0
-                                        ? <SelectItem value="_none" disabled>No farmers available</SelectItem>
-                                        : farmers.map((f: any) => (
-                                            <SelectItem key={f._id || f.id} value={f._id || f.id}>{f.name}</SelectItem>
+                                        ? <SelectItem value="_none" disabled>No farmers found</SelectItem>
+                                        : farmers.map((f) => (
+                                            <SelectItem key={f._id || f.id} value={(f._id || f.id) as string} className="rounded-xl py-3 font-bold hover:bg-emerald-50">{f.name}</SelectItem>
                                         ))
                                     }
                                 </SelectContent>
                             </Select>
                         </div>
 
-                        <div className="space-y-1.5">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Lync ID Identification</Label>
-                            <input
-                                readOnly
-                                value={selectedFarmer ? (selectedFarmer.id || `LYG-${selectedFarmer.ghanaCardNumber || String(selectedFarmer._id).replace(/\D/g, '').padEnd(7, '0').slice(0, 7)}`) : ''}
-                                placeholder="Identification Lync ID..."
-                                className={`${inputCls} cursor-default text-[#065f46] font-black bg-[#F4FFEE]/50 dark:bg-white/[0.03] border-dashed border-[#065f46]/30`}
-                            />
+                        <div className="space-y-2 bg-gray-50/80 dark:bg-white/5 p-4 rounded-2xl border border-gray-100 dark:border-white/5">
+                            <div className="flex items-center gap-2 mb-1">
+                                <MapPin className="h-3.5 w-3.5 text-emerald-600" />
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-[#065f46]/40 dark:text-gray-400">Operation Lync ID</Label>
+                            </div>
+                            <p className="text-sm font-black text-[#065f46] tracking-tight truncate">
+                                {selectedFarmer ? (selectedFarmer.id || `LYG-${selectedFarmer.ghanaCardNumber || String(selectedFarmer._id).replace(/\D/g, '').padEnd(7, '0').slice(0, 7)}`) : 'No farmer selected'}
+                            </p>
                         </div>
                     </div>
 
                     {/* Visit Date | Time | Hours */}
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-1.5">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Visit Date *</Label>
-                            <div className="relative">
-                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 pl-1">Visit Date *</Label>
+                            <div className="relative group">
+                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 transition-transform group-focus-within:scale-110" />
                                 <input
                                     type="date"
-                                    className={`${inputCls} pl-9`}
+                                    className={`${inputCls} pl-11 border-gray-100 hover:border-emerald-200 focus:border-emerald-500`}
                                     min={new Date().toISOString().split('T')[0]}
                                     value={formData.visitDate}
                                     onChange={e => setFormData(p => ({ ...p, visitDate: e.target.value }))}
@@ -211,26 +222,26 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
                             </div>
                         </div>
                         <div className="space-y-1.5">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Time *</Label>
-                            <div className="relative">
-                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 pl-1">Start Time *</Label>
+                            <div className="relative group">
+                                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 transition-transform group-focus-within:scale-110" />
                                 <input
                                     type="time"
-                                    className={`${inputCls} pl-9`}
+                                    className={`${inputCls} pl-11 border-gray-100 hover:border-emerald-200 focus:border-emerald-500`}
                                     value={formData.visitTime}
                                     onChange={e => setFormData(p => ({ ...p, visitTime: e.target.value }))}
                                 />
                             </div>
                         </div>
                         <div className="space-y-1.5">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Hours Spent *</Label>
-                            <div className="relative">
-                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 pl-1">Total Hours *</Label>
+                            <div className="relative group">
+                                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 transition-transform group-focus-within:scale-110" />
                                 <input
                                     type="number"
                                     min="0.5" max="12" step="0.5"
-                                    placeholder="1"
-                                    className={`${inputCls} pl-9`}
+                                    placeholder="e.g. 2.5"
+                                    className={`${inputCls} pl-11 border-gray-100 hover:border-emerald-200 focus:border-emerald-500`}
                                     value={formData.hoursSpent}
                                     onChange={e => setFormData(p => ({ ...p, hoursSpent: e.target.value }))}
                                 />
@@ -238,36 +249,37 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
                         </div>
                     </div>
 
+
                     {/* Purpose | Visit Status */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Primary Inspection Purpose *</Label>
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 pl-1">Primary Inspection Purpose *</Label>
                             <Select value={formData.purpose} onValueChange={v => setFormData(p => ({ ...p, purpose: v }))}>
-                                <SelectTrigger className="h-12 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-semibold text-gray-800 dark:text-white">
-                                    <SelectValue placeholder="Select purpose of this visit" />
+                                <SelectTrigger className="h-12 rounded-xl border-gray-100 bg-white dark:bg-white/5 text-sm font-black text-emerald-900 focus:border-emerald-500 transition-all">
+                                    <SelectValue placeholder="Mission objective..." />
                                 </SelectTrigger>
-                                <SelectContent className="rounded-xl border-none shadow-2xl z-[2000]">
-                                    <SelectItem value="Routine Inspection">Routine Inspection</SelectItem>
-                                    <SelectItem value="Crop Assessment">Crop Assessment</SelectItem>
-                                    <SelectItem value="Pest & Disease Check">Pest & Disease Check</SelectItem>
-                                    <SelectItem value="Soil Testing">Soil Testing</SelectItem>
-                                    <SelectItem value="Harvest Readiness">Harvest Readiness</SelectItem>
-                                    <SelectItem value="Investment Follow-up">Investment Follow-up</SelectItem>
-                                    <SelectItem value="Training Delivery">Training Delivery</SelectItem>
-                                    <SelectItem value="Community Outreach">Community Outreach</SelectItem>
+                                <SelectContent className="rounded-2xl border-none shadow-2xl z-[2000] p-1">
+                                    <SelectItem value="Routine Inspection" className="rounded-xl py-3 font-bold">Routine Inspection</SelectItem>
+                                    <SelectItem value="Crop Assessment" className="rounded-xl py-3 font-bold">Crop Assessment</SelectItem>
+                                    <SelectItem value="Pest & Disease Check" className="rounded-xl py-3 font-bold">Pest & Disease Check</SelectItem>
+                                    <SelectItem value="Soil Testing" className="rounded-xl py-3 font-bold">Soil Testing</SelectItem>
+                                    <SelectItem value="Harvest Readiness" className="rounded-xl py-3 font-bold">Harvest Readiness</SelectItem>
+                                    <SelectItem value="Investment Follow-up" className="rounded-xl py-3 font-bold">Investment Follow-up</SelectItem>
+                                    <SelectItem value="Training Delivery" className="rounded-xl py-3 font-bold">Training Delivery</SelectItem>
+                                    <SelectItem value="Community Outreach" className="rounded-xl py-3 font-bold">Community Outreach</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-1.5">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Visit Status *</Label>
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 pl-1">Operational State *</Label>
                             <Select value={formData.visitStatus} onValueChange={v => setFormData(p => ({ ...p, visitStatus: v }))}>
-                                <SelectTrigger className="h-12 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-semibold text-gray-800 dark:text-white">
+                                <SelectTrigger className="h-12 rounded-xl border-gray-100 bg-white dark:bg-white/5 text-sm font-black text-emerald-900 focus:border-emerald-500 transition-all">
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="rounded-xl border-none shadow-2xl z-[2000]">
-                                    <SelectItem value="Scheduled">Scheduled</SelectItem>
-                                    <SelectItem value="Completed">Completed</SelectItem>
-                                    <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                <SelectContent className="rounded-2xl border-none shadow-2xl z-[2000] p-1">
+                                    <SelectItem value="Scheduled" className="rounded-xl py-3 font-bold">Scheduled (Future)</SelectItem>
+                                    <SelectItem value="Completed" className="rounded-xl py-3 font-bold">Completed (Historical)</SelectItem>
+                                    <SelectItem value="Cancelled" className="rounded-xl py-3 font-bold text-red-500">Cancelled</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -275,10 +287,10 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
 
                     {/* Observation Details */}
                     <div className="space-y-1.5">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Observation Details & Recommendations *</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 pl-1">Detailed Findings & Recommendations *</Label>
                         <Textarea
-                            placeholder="Log your observations, any issues identified, and recommended actions for the farmer..."
-                            className="min-h-[110px] rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-semibold text-gray-800 dark:text-white resize-none placeholder:text-gray-400 focus:border-emerald-500"
+                            placeholder="Identify crop health, farmer engagement, and corrective measures..."
+                            className="min-h-[120px] rounded-2xl border-gray-100 bg-white dark:bg-white/5 text-sm font-bold text-gray-800 dark:text-white resize-none shadow-sm focus:border-emerald-500 p-4 transition-all"
                             value={formData.notes}
                             onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))}
                         />
@@ -335,11 +347,11 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
                     <Button
                         onClick={handleSubmit}
                         disabled={createVisitMutation.isPending}
-                        className="bg-[#065f46] hover:bg-[#065f46]/90 text-white h-11 px-8 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-[#065f46]/20 border-none"
+                        className="bg-[#065f46] hover:bg-[#065f46]/90 text-white h-12 px-10 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-emerald-900/20 border-none transition-all active:scale-95"
                     >
                         {createVisitMutation.isPending
-                            ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Scheduling...</>
-                            : <><Send className="h-4 w-4 mr-2" />Save & Schedule</>
+                            ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Syncing Log...</>
+                            : <><Send className="h-4 w-4 mr-2" />Finalize Visit Log</>
                         }
                     </Button>
                 </div>

@@ -7,49 +7,64 @@ const { PERFORMANCE_TARGETS } = require('../config/constants');
  * Returns counts of farmers onboarded per month for the last 6 months
  */
 exports.calculateOnboardingTrend = async (agentId) => {
-    const now = new Date();
-    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-    
-    // Aggregation pipeline:
-    // 1. Match farmers for agent in the last 6 months
-    // 2. Group by month (and year to be safe)
-    // 3. Format output
-    const rawTrend = await Farmer.aggregate([
-        {
-            $match: {
-                agent: new mongoose.Types.ObjectId(agentId),
-                createdAt: { $gte: sixMonthsAgo }
-            }
-        },
-        {
-            $group: {
-                _id: {
-                    year: { $year: "$createdAt" },
-                    month: { $month: "$createdAt" }
-                },
-                count: { $sum: 1 }
-            }
-        },
-        { $sort: { "_id.year": 1, "_id.month": 1 } }
-    ]);
-
-    // Fill in missing months with zero if needed
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const trend = [];
-    
-    for (let i = 5; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const y = d.getFullYear();
-        const m = d.getMonth() + 1; // MongoDB months are 1-indexed
-        
-        const match = rawTrend.find(item => item._id.year === y && item._id.month === m);
-        trend.push({
-            month: monthNames[d.getMonth()],
-            value: match ? match.count : 0
+    // Robust agentId check to prevent 500 errors if ID is not a valid ObjectId
+    if (!agentId || !mongoose.Types.ObjectId.isValid(agentId)) {
+        console.warn(`[PERFORMANCE_SERVICE] Invalid agentId provided: ${agentId}. Returning empty trend.`);
+        return Array(6).fill(0).map((_, i) => {
+            const d = new Date();
+            d.setMonth(d.getMonth() - (5 - i));
+            return { month: d.toLocaleString('en-US', { month: 'short' }), value: 0 };
         });
     }
 
-    return trend;
+    const now = new Date();
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    
+    try {
+        const rawTrend = await Farmer.aggregate([
+            {
+                $match: {
+                    agent: new mongoose.Types.ObjectId(agentId),
+                    createdAt: { $gte: sixMonthsAgo }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$createdAt" },
+                        month: { $month: "$createdAt" }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1 } }
+        ]);
+
+        // Fill in missing months with zero if needed
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const trend = [];
+        
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const y = d.getFullYear();
+            const m = d.getMonth() + 1; // MongoDB months are 1-indexed
+            
+            const match = rawTrend.find(item => item._id.year === y && item._id.month === m);
+            trend.push({
+                month: monthNames[d.getMonth()],
+                value: match ? match.count : 0
+            });
+        }
+
+        return trend;
+    } catch (err) {
+        console.error('[PERFORMANCE_SERVICE] Aggregation Failed:', err.message);
+        return Array(6).fill(0).map((_, i) => {
+            const d = new Date();
+            d.setMonth(d.getMonth() - (5 - i));
+            return { month: d.toLocaleString('en-US', { month: 'short' }), value: 0 };
+        });
+    }
 };
 
 /**

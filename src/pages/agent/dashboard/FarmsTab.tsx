@@ -111,18 +111,18 @@ const FarmsTab: React.FC<FarmsTabProps> = ({
         {/* DESKTOP: Full Table */}
         <div className="hidden md:block overflow-x-auto">
           <Table>
-            <TableHeader className="bg-[#065f46]">
+            <TableHeader className="bg-[#002f37]">
               <TableRow className="border-none hover:bg-transparent">
-                <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4 px-6">Farm Information</TableHead>
-                <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4 text-center">Operational Status</TableHead>
-                <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4">Next Visit</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase tracking-widest text-white py-4 px-6">Action</TableHead>
+                <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-2 px-6 border-r border-white/10">Farm Information</TableHead>
+                <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-2 text-center border-r border-white/10">Operational Status</TableHead>
+                <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-2 border-r border-white/10">Next Visit</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase tracking-widest text-white py-2 px-6">Action</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody className="divide-y divide-[#002f37]/10">
               {filteredFarms.map((farm: any) => (
-                <TableRow key={farm._id} className="hover:bg-gray-50 transition-colors group">
-                  <TableCell className="py-4 px-6">
+                <TableRow key={farm._id} className="hover:bg-[#002f37]/5 transition-colors group">
+                  <TableCell className="py-2.5 px-6 border-r border-[#002f37]/10">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-xl bg-gray-100 overflow-hidden shadow-sm">
                         <img src={farm.farmer?.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${farm.name}`} alt={farm.name} className="w-full h-full object-cover" />
@@ -133,7 +133,7 @@ const FarmsTab: React.FC<FarmsTabProps> = ({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="py-4">
+                  <TableCell className="py-2.5 border-r border-[#002f37]/10">
                     <div className="flex flex-col items-center gap-1.5 px-4 w-32 mx-auto">
                       <div className="flex items-center gap-2">
                         <span className={`h-2 w-2 rounded-full ${farm.status === 'verified' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
@@ -141,13 +141,13 @@ const FarmsTab: React.FC<FarmsTabProps> = ({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="py-4">
+                  <TableCell className="py-2.5 border-r border-[#002f37]/10">
                     <div className="flex flex-col">
                       <p className="text-[11px] font-black text-[#002f37] mb-0.5">{farm.nextVisit || 'TBD'}</p>
                       <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Scheduled</p>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right py-4 px-6">
+                  <TableCell className="text-right py-2.5 px-6">
                     <div className="flex justify-end gap-2">
                       <Button
                         variant="ghost"

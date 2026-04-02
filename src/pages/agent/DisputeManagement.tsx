@@ -126,14 +126,12 @@ const DisputeManagement: React.FC = () => {
     const matchesStatus = statusFilter === 'all' || dispute.status === statusFilter;
     const matchesType = typeFilter === 'all' || dispute.type === typeFilter;
     
-    const effectiveRegion = agent?.region || "Ashanti Region";
-    const matchesRegion = !effectiveRegion || dispute.region === effectiveRegion;
     const matchesDistrict = selectedDistrict === 'all' || dispute.district === selectedDistrict;
     const matchesCommunity = selectedCommunity === 'all' || dispute.community === selectedCommunity;
     
     const matchesSeverity = severityFilter === 'all' || dispute.severity === severityFilter;
 
-    return matchesSearch && matchesStatus && matchesType && matchesRegion && matchesDistrict && matchesCommunity && matchesSeverity;
+    return matchesSearch && matchesStatus && matchesType && matchesDistrict && matchesCommunity && matchesSeverity;
   });
 
   const getStatusColor = (status: string) => {
