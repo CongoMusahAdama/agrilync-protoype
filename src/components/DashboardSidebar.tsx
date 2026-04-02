@@ -223,7 +223,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                                 return (
                                     <div
                                         key={item.id}
-                                        className={`flex items-center gap-3.5 px-4 py-[11px] rounded-xl cursor-pointer transition-all duration-200 group relative ${isActive
+                                        className={`flex items-center gap-3.5 px-4 py-[13px] rounded-xl cursor-pointer transition-all duration-200 group relative ${isActive
                                             ? 'bg-white text-[#065f46] shadow-lg shadow-black/25'
                                             : 'text-white/65 hover:text-white hover:bg-white/[0.08]'
                                         }`}
@@ -241,7 +241,6 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                                         {(!sidebarCollapsed || isMobile) && (
                                             <span
                                                 className={`text-[13.5px] font-medium tracking-[-0.01em] truncate transition-all ${isActive ? 'font-semibold' : ''}`}
-                                                style={{ fontFamily: 'Inter, sans-serif' }}
                                             >
                                                 {item.label}
                                             </span>
@@ -266,7 +265,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                         <div className={`flex items-center gap-3.5 px-4 py-3 rounded-xl cursor-pointer text-white/40 hover:text-white hover:bg-red-500/10 transition-all group`}>
                             <LogOut className="h-[18px] w-[18px] shrink-0 group-hover:translate-x-0.5 transition-transform text-white/40 group-hover:text-red-400" />
                             {(!sidebarCollapsed || isMobile) && (
-                                <span className="text-[13.5px] font-medium group-hover:text-red-400 transition-colors" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                <span className="text-[13.5px] font-medium group-hover:text-red-400 transition-colors">
                                     Sign Out
                                 </span>
                             )}
@@ -274,10 +273,10 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                     </AlertDialogTrigger>
                     <AlertDialogContent className="bg-white rounded-3xl border-none shadow-2xl p-8 max-w-sm">
                         <AlertDialogHeader>
-                            <AlertDialogTitle className="text-[20px] font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            <AlertDialogTitle className="text-[20px] font-bold text-gray-900">
                                 Sign Out?
                             </AlertDialogTitle>
-                            <AlertDialogDescription className="text-[14px] text-gray-500 mt-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                            <AlertDialogDescription className="text-[14px] text-gray-500 mt-1">
                                 You'll be logged out of your current session. Any unsaved changes may be lost.
                             </AlertDialogDescription>
                         </AlertDialogHeader>

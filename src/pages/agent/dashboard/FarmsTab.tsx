@@ -51,12 +51,70 @@ const FarmsTab: React.FC<FarmsTabProps> = ({
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* MOBILE: Card Stack */}
+        <div className="md:hidden divide-y divide-gray-50">
+          {filteredFarms.length > 0 ? (
+            filteredFarms.map((farm: any) => (
+              <div key={farm._id} className="p-5 active:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="h-12 w-12 rounded-2xl bg-gray-100 overflow-hidden shadow-sm shrink-0">
+                    <img 
+                      src={farm.farmer?.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${farm.name}`} 
+                      alt={farm.name} 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-[14px] font-black text-[#002f37] truncate leading-tight">{farm.name}</h4>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5 truncate">{farm.farmer?.name || 'Assigned Grower'}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-5">
+                  <div className="bg-gray-50/50 p-3 rounded-xl border border-gray-100">
+                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Mission status</p>
+                    <div className="flex items-center gap-2">
+                       <span className={`h-2 w-2 rounded-full ${farm.status === 'verified' ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`} />
+                       <span className="text-[12px] font-black text-[#002f37] normal-case">{farm.status || 'Active'}</span>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50/50 p-3 rounded-xl border border-gray-100 text-center">
+                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Last visit</p>
+                    <p className="text-[12px] font-bold text-[#002f37] normal-case">{farm.lastVisit || 'No visit yet'}</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 h-11 rounded-xl border-gray-200 text-[#002f37] font-black text-[10px] uppercase tracking-widest gap-2"
+                    onClick={() => handleViewFarmer(farm.farmer)}
+                  >
+                    <Users className="h-4 w-4" /> Profile
+                  </Button>
+                  <Button
+                    className="flex-1 h-11 rounded-xl bg-[#065f46] hover:bg-[#002f37] text-white font-black text-[10px] uppercase tracking-widest gap-2 border-none shadow-lg shadow-[#065f46]/20"
+                    onClick={() => handleLogVisit(farm.farmer)}
+                  >
+                    <ClipboardList className="h-4 w-4" /> Start Visit
+                  </Button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="py-20 text-center">
+              <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No farms found</p>
+            </div>
+          )}
+        </div>
+
+        {/* DESKTOP: Full Table */}
+        <div className="hidden md:block overflow-x-auto">
           <Table>
             <TableHeader className="bg-[#065f46]">
               <TableRow className="border-none hover:bg-transparent">
                 <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4 px-6">Farm Information</TableHead>
-                <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4 text-center">Health Status</TableHead>
+                <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4 text-center">Operational Status</TableHead>
                 <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4">Next Visit</TableHead>
                 <TableHead className="text-right font-black text-[10px] uppercase tracking-widest text-white py-4 px-6">Action</TableHead>
               </TableRow>
@@ -70,19 +128,16 @@ const FarmsTab: React.FC<FarmsTabProps> = ({
                         <img src={farm.farmer?.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${farm.name}`} alt={farm.name} className="w-full h-full object-cover" />
                       </div>
                       <div>
-                        <p className="text-[13px] font-black text-[#002f37] mb-0.5">{farm.name}</p>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{farm.farmer?.name || 'Assigned Grower'}</p>
+                        <p className="text-[13px] font-black text-[#002f37] mb-0.5 normal-case">{farm.name}</p>
+                        <p className="text-[10px] font-bold text-gray-400 normal-case">{farm.farmer?.name || 'Grower not assigned'}</p>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="py-4">
                     <div className="flex flex-col items-center gap-1.5 px-4 w-32 mx-auto">
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-[11px] font-black text-[#002f37]">85%</span>
-                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Health</span>
-                      </div>
-                      <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#065f46]" style={{ width: '85%' }}></div>
+                      <div className="flex items-center gap-2">
+                        <span className={`h-2 w-2 rounded-full ${farm.status === 'verified' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                        <span className="text-[11px] font-black text-[#002f37] normal-case">{farm.status || 'Active'}</span>
                       </div>
                     </div>
                   </TableCell>

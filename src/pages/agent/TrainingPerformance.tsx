@@ -278,6 +278,7 @@ export const TrainingPerformanceContent = () => {
     { title: 'Available', value: availableTrainings.length.toString(), icon: GraduationCap, color: 'bg-blue-600' },
     { title: 'Upcoming', value: myTrainings.filter((t: any) => t.status === 'Registered').length.toString(), icon: Calendar, color: 'bg-[#065f46]' },
     { title: 'Consultations', value: consultationRequests.length.toString(), icon: Handshake, color: 'bg-teal-600' },
+    { title: 'My Schedule', value: trainingDeliveries.length.toString(), icon: School, color: 'bg-amber-600' },
   ];
 
   const MetricCardSkeleton = () => (
@@ -297,7 +298,7 @@ export const TrainingPerformanceContent = () => {
   return (
     <div className="space-y-8">
       {/* 1. Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {summaryCards.map((card: any, idx: number) => {
           const isLoading =
             (card.title === 'Available' && loadingAvailable) ||
@@ -864,10 +865,19 @@ export const TrainingPerformanceContent = () => {
               <h3 className="text-lg font-bold mb-2">Need Technical Help?</h3>
               <p className="text-white/80 text-sm mb-6 leading-relaxed">Connect with our support team or your regional supervisor for immediate assistance.</p>
               <div className="space-y-3">
-                <Button className="w-full bg-[#065f46] text-white hover:bg-[#065f46]/90 font-bold uppercase tracking-wider text-xs h-10 border-none">
+                <Button 
+                  onClick={() => window.location.href = 'mailto:supervisor@agrilync.com?subject=Technical Help Request'}
+                  className="w-full bg-[#065f46] text-white hover:bg-[#065f46]/90 font-bold uppercase tracking-wider text-xs h-10 border-none"
+                >
                   Contact Supervisor
                 </Button>
-                <Button variant="link" className="w-full text-white text-xs font-bold uppercase tracking-widest p-0 underline-offset-4 decoration-white/30">
+                <Button 
+                  onClick={() => {
+                    toast.info('Help Center is currently being updated for the new Dashboard.', { duration: 4000 });
+                  }}
+                  variant="link" 
+                  className="w-full text-white text-xs font-bold uppercase tracking-widest p-0 underline-offset-4 decoration-white/30"
+                >
                   View Help Center
                 </Button>
               </div>

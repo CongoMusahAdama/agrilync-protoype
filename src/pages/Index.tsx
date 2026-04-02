@@ -760,27 +760,7 @@ const Index = () => {
             })}
           </div>
 
-          {/* How returns work */}
-          <div className={`transition-all duration-1000 delay-400 ease-out ${packagesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`}>
-            <div className="bg-[#F8F9FA] p-8 md:p-12 rounded-[1.5rem] flex flex-col md:flex-row gap-8 md:gap-0 items-stretch max-w-5xl mx-auto">
-              <div className="md:w-[35%] flex flex-col justify-center md:pr-12 md:border-r border-gray-200">
-                <div className="w-12 h-12 bg-white rounded-[10px] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 mb-6">
-                  <TrendingUp className="w-5 h-5 text-[#7ede56] stroke-[2.5]" />
-                </div>
-                <h3 className="text-2xl md:text-[1.75rem] font-bold text-[#002f37] font-montserrat leading-[1.1] tracking-tight">
-                  How returns<br/>work
-                </h3>
-              </div>
-              <div className="md:w-[65%] md:pl-12 flex flex-col justify-center">
-                <p className="text-[#4b5563] text-[15px] leading-[1.7] mb-6 font-sans">
-                  Returns come mainly from a <strong className="text-[#1f2937] font-semibold">revenue-share model</strong>, which means the investor earns a percentage of the net harvest value after direct production costs are deducted.
-                </p>
-                <p className="text-[#4b5563] text-[15px] leading-[1.7] font-sans">
-                  This keeps the model aligned with actual farm performance, since agriculture depends on season, weather, and market prices.
-                </p>
-              </div>
-            </div>
-          </div>
+
 
         </div>
       </section>

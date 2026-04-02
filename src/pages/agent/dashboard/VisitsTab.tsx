@@ -5,20 +5,27 @@ import { ClipboardCheck, FileText, ClipboardList, Activity, Plus } from 'lucide-
 
 interface VisitsTabProps {
   activities: any[];
+  stats: any;
   setIsUploadReportModalOpen: (val: boolean) => void;
 }
 
 const VisitsTab: React.FC<VisitsTabProps> = ({
   activities = [],
+  stats = {},
   setIsUploadReportModalOpen
 }) => {
+  // Compute mission statistics
+  const reportCount = stats?.reportsThisMonth || 0;
+  const reportGoal = 15;
+  const missionProgress = Math.min(Math.round((reportCount / reportGoal) * 100), 100);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <Card className="lg:col-span-2 xl:col-span-2 border-none bg-white shadow-xl rounded-2xl overflow-hidden">
         <CardHeader className="border-b border-gray-50 flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-lg font-black text-[#002f37]">Visit Log & History</CardTitle>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Complete history of field audits</p>
+            <CardTitle className="text-lg font-black text-[#002f37] normal-case">Visit log & history</CardTitle>
+            <p className="text-[10px] font-bold text-gray-400 normal-case">Complete history of your field missions</p>
           </div>
           <div className="p-2 bg-[#065f46]/10 rounded-xl">
             <ClipboardCheck className="h-5 w-5 text-[#065f46]" />
@@ -30,19 +37,19 @@ const VisitsTab: React.FC<VisitsTabProps> = ({
               activities.filter((a: any) => a.type === 'report').map((report: any) => (
                 <div key={report._id} className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors group">
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-[#002f37] transition-all">
+                    <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-[#002f37] transition-all shrink-0">
                       <FileText className="h-6 w-6 text-blue-600 group-hover:text-white" />
                     </div>
                     <div>
-                      <p className="text-[13px] font-black text-[#002f37]">{report.title}</p>
+                      <p className="text-[13px] font-black text-[#002f37] normal-case">{report.title}</p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase bg-gray-100 px-2 py-0.5 rounded-full">{new Date(report.createdAt).toLocaleDateString('en-GB')}</span>
-                        <span className="text-[9px] font-black text-[#065f46] uppercase tracking-widest">VERIFIED</span>
+                        <span className="text-[9px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{new Date(report.createdAt).toLocaleDateString('en-GB')}</span>
+                        <span className="text-[9px] font-black text-[#065f46] tracking-widest">VERIFIED</span>
                       </div>
                     </div>
                   </div>
-                  <Button variant="ghost" className="h-10 text-[10px] font-black tracking-widest text-blue-600 hover:bg-blue-50 rounded-xl px-6">
-                    VIEW PDF
+                  <Button variant="outline" className="h-9 text-[10px] font-black tracking-widest text-[#002f37] border-gray-100 hover:bg-gray-50 rounded-xl px-4 px-6 md:px-8 shrink-0 normal-case">
+                    View log
                   </Button>
                 </div>
               ))
@@ -51,7 +58,7 @@ const VisitsTab: React.FC<VisitsTabProps> = ({
                 <div className="h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
                   <ClipboardList className="h-8 w-8 text-gray-200" />
                 </div>
-                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No reports archived yet</p>
+                <p className="text-sm font-bold text-gray-400 normal-case">No mission logs archived yet</p>
               </div>
             )}
           </div>
@@ -59,31 +66,37 @@ const VisitsTab: React.FC<VisitsTabProps> = ({
       </Card>
 
       <div className="space-y-6">
-        <Card className="bg-[#065f46] text-white border-none shadow-xl rounded-2xl p-6 relative overflow-hidden group">
-          <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
-            <Activity className="h-24 w-24 -rotate-12" />
+        <Card className="bg-[#065f46] text-white border-none shadow-xl rounded-[2.5rem] p-8 relative overflow-hidden group">
+          <div className="absolute inset-0 z-0 opacity-10">
+              <img src="/metric2.jpg" alt="" className="w-full h-full object-cover" />
           </div>
-          <h3 className="font-black text-xl mb-2">Ready for a Visit?</h3>
-          <p className="text-[11px] font-bold text-white/70 leading-relaxed mb-8 uppercase tracking-wider">
-            Generate instant field audits with AI-powered diagnostics.
-          </p>
-          <Button
-            className="w-full bg-[#002f37] text-white hover:bg-[#003c47] font-black py-7 rounded-2xl shadow-xl transition-all"
-            onClick={() => setIsUploadReportModalOpen(true)}
-          >
-            <Plus className="h-5 w-5 mr-1" /> START NEW AUDIT
-          </Button>
+          <div className="relative z-10">
+            <h3 className="font-black text-2xl mb-2 normal-case leading-tight">Ready for a field mission?</h3>
+            <p className="text-[11px] font-bold text-white/70 leading-relaxed mb-8 normal-case">
+              Generate instant digital logs and grower audits in seconds.
+            </p>
+            <Button
+              className="w-full bg-[#7ede56] text-[#002f37] hover:bg-[#a8f88c] font-black py-7 rounded-2xl shadow-xl transition-all normal-case border-none"
+              onClick={() => setIsUploadReportModalOpen(true)}
+            >
+              <Plus className="h-5 w-5 mr-1" /> Start new audit
+            </Button>
+          </div>
         </Card>
 
-        <Card className="border-none bg-white shadow-xl rounded-2xl overflow-hidden p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-black text-[10px] uppercase tracking-widest text-[#002f37]">Weekly Progress</h3>
-            <span className="text-[10px] font-black text-emerald-600">80%</span>
+        <Card className="border-none bg-white shadow-xl rounded-[1.5rem] overflow-hidden p-8 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-black text-[12px] text-[#002f37] normal-case">Mission progress</h3>
+            <span className="text-[12px] font-black text-[#065f46] tabular-nums">{missionProgress}%</span>
           </div>
-          <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden mb-3">
-            <div className="h-full bg-[#065f46]" style={{ width: '80%' }}></div>
+          <div className="h-2.5 w-full bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-full bg-[#065f46] rounded-full transition-all duration-1000" style={{ width: `${missionProgress}%` }}></div>
           </div>
-          <p className="text-[9px] font-bold text-gray-400 italic">2 audits remaining for your weekly goal.</p>
+          <p className="text-[10px] font-medium text-gray-400 italic normal-case">
+            {reportCount >= reportGoal 
+              ? "Target achieved! Great work this month." 
+              : `${reportGoal - reportCount} more audits to reach your monthly goal.`}
+          </p>
         </Card>
       </div>
     </div>

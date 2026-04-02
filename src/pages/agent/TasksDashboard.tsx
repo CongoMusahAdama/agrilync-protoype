@@ -62,7 +62,6 @@ interface Task {
   status: TaskStatus;
   synced?: boolean;
 }
-
 // We will fetch this data from the backend
 const mockTasks: Task[] = [];
 
@@ -238,10 +237,10 @@ const TasksDashboard = () => {
         {/* Header Section inside content */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-4">
           <div>
-            <h2 className="text-[24px] font-bold text-[#002f37]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            <h1 className="text-[28px] font-bold text-[#002f37] tracking-tight">
               My Tasks
-            </h2>
-            <p className="text-[14px] font-medium text-gray-500" style={{ fontFamily: 'Inter, sans-serif' }}>
+            </h1>
+            <p className="ui-label !normal-case !text-[13px] !mb-0">
               Your field schedule and pending actions
             </p>
           </div>
@@ -304,8 +303,8 @@ const TasksDashboard = () => {
                 <AlertCircle className="h-5 w-5 text-rose-600" />
               </div>
               <div>
-                <h3 className="text-rose-800 font-bold text-sm lg:text-base" style={{ fontFamily: 'Poppins, sans-serif' }}>You have {overdueTasks.length} overdue tasks!</h3>
-                <p className="text-rose-600 text-xs lg:text-sm font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>Please resolve these soon to maintain your KPI score.</p>
+                <h3 className="text-rose-800 font-bold text-sm lg:text-base">You have {overdueTasks.length} overdue tasks!</h3>
+                <p className="text-rose-600 text-xs lg:text-sm font-medium">Please resolve these soon to maintain your KPI score.</p>
               </div>
             </div>
             <Button 
@@ -337,10 +336,10 @@ const TasksDashboard = () => {
               <span className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest">TODAY</span>
             </div>
             <div>
-              <p className="text-[8px] sm:text-[10px] font-black text-gray-500 uppercase tracking-widest mb-0.5 sm:mb-1">Due Today</p>
+              <p className="ui-label !text-gray-500 !mb-1">Due Today</p>
               <div className="flex items-baseline gap-1 sm:gap-2">
-                <h3 className="text-xl sm:text-4xl font-black text-gray-900 leading-none">{todayTasks.length}</h3>
-                <span className="text-[8px] sm:text-[10px] font-bold text-gray-500">Tasks</span>
+                <h3 className="text-xl sm:text-4xl font-bold text-gray-900 leading-none tabular-nums">{todayTasks.length}</h3>
+                <span className="text-[10px] font-medium text-gray-500">Tasks</span>
               </div>
             </div>
           </Card>

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, Bell, Sun, Moon, Home, MapPin, BarChart3, Settings, Plus, Users, Calendar, Leaf, Bot, AlertTriangle, Search, LogOut } from 'lucide-react';
+import { Menu, Bell, Sun, Moon, Home, MapPin, BarChart3, Settings, Plus, Users, UserPlus, UserRoundPlus, LayoutGrid, ListTodo, UserCircle, Calendar, Leaf, Bot, AlertTriangle, Search, LogOut, Briefcase, Image as ImageIcon, RefreshCw, GraduationCap } from 'lucide-react';
 import DashboardSidebar from './DashboardSidebar';
 import Preloader from './ui/Preloader';
 import AddFarmerModal from './agent/AddFarmerModal';
@@ -34,6 +34,7 @@ interface DashboardLayoutProps {
     description?: string; // Add description as an alias for subtitle
     userType?: string; // Allow passing userType explicitly
     headerActions?: React.ReactNode; // Allow custom header actions
+    hideHeaderOnMobile?: boolean; // New prop to hide the top header purely on mobile
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({
@@ -43,7 +44,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     subtitle,
     description,
     userType: explicitUserType,
-    headerActions
+    headerActions,
+    hideHeaderOnMobile = false
 }) => {
     const { userType: paramUserType } = useParams();
     const userType = explicitUserType || paramUserType;
@@ -202,7 +204,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 {/* Main Content Area */}
                 <div className={`flex-1 flex flex-col overflow-hidden transition-colors bg-[#f8fafc]`}>
                     {/* Top Header */}
-                    <header className="bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 md:px-8 py-0 sticky top-0 z-40 shadow-sm">
+                    {! (isMobile && hideHeaderOnMobile) && (
+                        <header className="bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 md:px-8 py-0 sticky top-0 z-40 shadow-sm">
                         <div className="flex items-center justify-between h-[68px]">
 
                             {/* Left: Mobile menu + Search */}
@@ -246,7 +249,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                         className="relative h-9 rounded-full text-gray-500 hover:text-[#065f46] hover:bg-white transition-all shadow-none group px-4 gap-2.5"
                                         onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/notifications-center' : `/dashboard/${userType}/notifications`)}
                                     >
-                                        <Bell className="h-[16px] w-[16px] stroke-[3px] transition-transform group-active:scale-90" />
+                                        <Bell className="h-[20px] w-[20px] stroke-[3px] transition-transform group-active:scale-90" />
                                         <span className="hidden xl:inline text-[11px] font-black uppercase tracking-[0.1em] opacity-80 group-hover:opacity-100">Alerts</span>
                                         {activeNotifications.filter(n => !n.read).length > 0 && (
                                             <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#7ede56] border-2 border-white shadow-sm animate-pulse"></span>
@@ -259,7 +262,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                         className="h-9 rounded-full text-gray-400 hover:text-[#065f46] hover:bg-white transition-all shadow-none group px-4 gap-2.5"
                                         onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/profile' : `/dashboard/${userType}/settings`)}
                                     >
-                                        <Settings className="h-[16px] w-[16px] stroke-[3px] transition-transform group-active:scale-90" />
+                                        <Settings className="h-[20px] w-[20px] stroke-[3px] transition-transform group-active:scale-90" />
                                         <span className="hidden xl:inline text-[11px] font-black uppercase tracking-[0.1em] opacity-80 group-hover:opacity-100">Support</span>
                                     </Button>
                                 </div>
@@ -332,6 +335,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
                         </div>
                     </header>
+                    )}
 
                     {/* Main Content Area */}
                     <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pb-24 sm:pb-8">
@@ -340,8 +344,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
                     {/* Mobile Bottom Navigation - Redesigned for Premium Look */}
                     {isMobile && (
-                        <div className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-6 pointer-events-none">
-                            <div className={`pointer-events-auto flex items-center justify-between px-3 py-3 rounded-[2.5rem] shadow-[0_20px_50px_-12px_rgba(0,47,55,0.25)] border ${darkMode ? 'bg-[#002f37]/95 border-gray-700 backdrop-blur-md' : 'bg-white/95 border-gray-100 backdrop-blur-md'}`}>
+                        <div className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-3 pointer-events-none">
+                            <div className={`pointer-events-auto flex items-center justify-between px-3 py-1.5 rounded-[1.75rem] shadow-[0_20px_50px_-12px_rgba(0,47,55,0.25)] border ${darkMode ? 'bg-[#002f37]/95 border-gray-700 backdrop-blur-md' : 'bg-white/95 border-gray-100 backdrop-blur-md'}`}>
                                 {userType === 'grower' ? (
                                     <>
                                         {/* Home */}
@@ -401,67 +405,60 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                     </>
                                 ) : (
                                     <>
-                                        {/* Agent/Super Admin Navigation */}
+                                        {/* Agent/Super Admin Navigation - Redesigned like Pulse */}
                                         {/* Home */}
                                         <button
                                             onClick={() => navigate(userType === 'agent' ? '/dashboard/agent' : '/dashboard/super-admin')}
-                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'dashboard' ? 'text-[#7ede56]' : 'text-gray-400'}`}
+                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'dashboard' ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-gray-400'}`}
                                         >
-                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'dashboard' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
-                                                <Home className={`h-5 w-5 ${activeSidebarItem === 'dashboard' ? 'text-[#7ede56]' : 'text-gray-400'}`} />
+                                            <div className="p-1">
+                                                <LayoutGrid className={`h-6 w-6 ${activeSidebarItem === 'dashboard' ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-[#002f37]/40'}`} />
                                             </div>
-                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'dashboard' ? 'text-[#7ede56]' : 'text-gray-400'}`}>Home</span>
+                                            <span className={`text-[10px] font-black uppercase ${activeSidebarItem === 'dashboard' ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-[#002f37]/40'}`}>Home</span>
                                         </button>
-
-                                        {/* Farmers Management / Regions */}
+                                        
+                                        {/* Training */}
                                         <button
-                                            onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/farmers-management' : '/dashboard/super-admin/regions')}
-                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'farmers-management' || activeSidebarItem === 'regional-performance' ? 'text-[#7ede56]' : 'text-gray-400'}`}
+                                            onClick={() => navigate('/dashboard/agent/training-performance')}
+                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'training-sessions' ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-gray-400'}`}
                                         >
-                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'farmers-management' || activeSidebarItem === 'regional-performance' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
-                                                {userType === 'agent' ? <Users className={`h-5 w-5 ${activeSidebarItem === 'farmers-management' ? 'text-[#7ede56]' : 'text-gray-400'}`} /> : <MapPin className={`h-5 w-5 ${activeSidebarItem === 'regional-performance' ? 'text-[#7ede56]' : 'text-gray-400'}`} />}
+                                            <div className="p-1">
+                                                <GraduationCap className={`h-6 w-6 ${activeSidebarItem === 'training-sessions' ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-[#002f37]/40'}`} />
                                             </div>
-                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'farmers-management' || activeSidebarItem === 'regional-performance' ? 'text-[#7ede56]' : 'text-gray-400'}`}>{userType === 'agent' ? 'Growers' : 'Regions'}</span>
+                                            <span className={`text-[10px] font-black uppercase ${activeSidebarItem === 'training-sessions' ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-[#002f37]/40'}`}>Training</span>
                                         </button>
 
-                                        {/* Quick Action - Dual Ring Plus Button */}
-                                        <div className="relative -top-8 px-2">
+                                        {/* Pulse Inspired Quick Action - ONBOARDING */}
+                                        <div className="relative -top-6 px-1 flex flex-col items-center">
                                             <button
-                                                onClick={() => {
-                                                    if (userType === 'agent') {
-                                                        setAddFarmerModalOpen(true);
-                                                    } else {
-                                                        navigate('/dashboard/super-admin/settings');
-                                                    }
-                                                }}
-                                                className="h-16 w-16 rounded-full bg-[#002f37] border-[4px] border-[#7ede56] shadow-[0_12px_24px_-8px_rgba(126,222,86,0.5)] flex items-center justify-center active:scale-95 transition-all group relative"
+                                                onClick={() => setAddFarmerModalOpen(true)}
+                                                className="h-16 w-16 rounded-full bg-[#7ede56] border-[5px] border-white shadow-[0_15px_30px_-10px_rgba(126,222,86,0.6)] flex flex-col items-center justify-center active:scale-90 transition-all group relative overflow-hidden normal-case"
                                             >
-                                                {/* Outer Glow Ring */}
-                                                <div className="absolute -inset-[6px] rounded-full border-2 border-[#002f37]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                <Plus className="h-8 w-8 text-[#7ede56] stroke-[3px]" />
+                                                <UserRoundPlus className="h-6 w-6 text-[#002f37] stroke-[3px] mb-0.5 animate-[bounce_2s_infinite]" />
+                                                <span className="text-[7px] font-black text-[#002f37] font-montserrat tracking-tighter">Onboard</span>
                                             </button>
                                         </div>
 
-                                        {/* Training / Escalations */}
+                                        {/* Farm Management */}
                                         <button
-                                            onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/training-performance' : '/dashboard/super-admin/escalations')}
-                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'training-sessions' || activeSidebarItem === 'escalations' ? 'text-[#7ede56]' : 'text-gray-400'}`}
+                                            onClick={() => navigate('/dashboard/agent/farm-management')}
+                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'farm-management' ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-gray-400'}`}
                                         >
-                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'training-sessions' || activeSidebarItem === 'escalations' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
-                                                {userType === 'agent' ? <Calendar className={`h-5 w-5 ${activeSidebarItem === 'training-sessions' ? 'text-[#7ede56]' : 'text-gray-400'}`} /> : <AlertTriangle className={`h-5 w-5 ${activeSidebarItem === 'escalations' ? 'text-[#7ede56]' : 'text-gray-400'}`} />}
+                                            <div className="p-1">
+                                                <Leaf className={`h-6 w-6 ${activeSidebarItem === 'farm-management' ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-[#002f37]/40'}`} />
                                             </div>
-                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'training-sessions' || activeSidebarItem === 'escalations' ? 'text-[#7ede56]' : 'text-gray-400'}`}>{userType === 'agent' ? 'Training' : 'Alerts'}</span>
+                                            <span className={`text-[10px] font-black uppercase ${activeSidebarItem === 'farm-management' ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-[#002f37]/40'}`}>Farm</span>
                                         </button>
 
-                                        {/* Settings / Profile */}
+                                        {/* More / Menu */}
                                         <button
-                                            onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/profile' : '/dashboard/super-admin/settings')}
-                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'settings' || activeSidebarItem === 'profile' ? 'text-[#7ede56]' : 'text-gray-400'}`}
+                                            onClick={() => setMobileSidebarOpen(true)}
+                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${mobileSidebarOpen ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-gray-400'}`}
                                         >
-                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'settings' || activeSidebarItem === 'profile' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
-                                                <Settings className={`h-5 w-5 ${activeSidebarItem === 'settings' || activeSidebarItem === 'profile' ? 'text-[#7ede56]' : 'text-gray-400'}`} />
+                                            <div className="p-1 group-active:rotate-90 transition-transform">
+                                                <Menu className={`h-6 w-6 ${mobileSidebarOpen ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-[#002f37]/40'}`} />
                                             </div>
-                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'settings' || activeSidebarItem === 'profile' ? 'text-[#7ede56]' : 'text-gray-400'}`}>Profile</span>
+                                            <span className={`text-[10px] font-black uppercase ${mobileSidebarOpen ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-[#002f37]/40'}`}>More</span>
                                         </button>
                                     </>
                                 )}
