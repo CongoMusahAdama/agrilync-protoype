@@ -13,7 +13,7 @@ import {
   ArrowRight, ArrowLeft, BookOpen,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { GHANA_REGIONS, GHANA_COMMUNITIES } from '@/data/ghanaRegions';
+import { GHANA_REGIONS, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
 
 // ─── Module data ──────────────────────────────────────────────
 const MODULES = [
@@ -92,7 +92,8 @@ interface Props {
 
 export default function DeliverTrainingModal({ open, onOpenChange, onSuccess, editItem }: Props) {
   const { agent } = useAuth();
-  const agentRegion = agent?.region || 'Ashanti Region'; // Fallback
+  const rawAgentRegion = agent?.region || 'Ashanti Region';
+  const agentRegion = getRegionKey(rawAgentRegion);
 
   const qc = useQueryClient();
   const [step, setStep] = useState<1 | 2>(1);

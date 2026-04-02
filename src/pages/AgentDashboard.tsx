@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
@@ -86,7 +87,10 @@ import {
   Star,
   MessageSquare,
   FileDown,
-  Bot
+  Bot,
+  RefreshCw,
+  PhoneCall,
+  ChevronDown
 } from 'lucide-react';
 import {
   Bar,
@@ -140,7 +144,7 @@ const AgentDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { darkMode } = useDarkMode();
   const { agent } = useAuth();
-
+  const isMobile = useIsMobile();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialTab = queryParams.get('tab') || 'overview';
@@ -177,6 +181,7 @@ const AgentDashboard: React.FC = () => {
   const [isMediaUploadModalOpen, setIsMediaUploadModalOpen] = useState(false);
   const [isAddFarmerModalOpen, setIsAddFarmerModalOpen] = useState(false);
   const [logVisitModalOpen, setLogVisitModalOpen] = useState(false);
+  const [profileSheetOpen, setProfileSheetOpen] = useState(false);
 
   // useQuery for all-in-one dashboard data with optimized caching
   // New state for matches and disputes
@@ -524,6 +529,7 @@ const AgentDashboard: React.FC = () => {
       subtext: 'Farmers Empowered',
       color: 'bg-[#065f46]',
       icon: Users,
+      image: '/lovable-uploads/metric.png',
     },
     {
       id: 'active-farms',
@@ -532,6 +538,7 @@ const AgentDashboard: React.FC = () => {
       subtext: 'Active deliveries',
       color: 'bg-blue-600',
       icon: CheckCircle2,
+      image: '/lovable-uploads/metric2.png',
     },
     {
       id: 'farms-at-risk',
@@ -540,6 +547,7 @@ const AgentDashboard: React.FC = () => {
       subtext: 'Critical attention',
       color: 'bg-rose-600',
       icon: AlertTriangle,
+      image: '/lovable-uploads/metrci3.png',
     },
     {
       id: 'scheduled-visits',
@@ -548,16 +556,10 @@ const AgentDashboard: React.FC = () => {
       subtext: 'Next 7 days',
       color: 'bg-purple-600',
       icon: Calendar,
-    },
-    {
-      id: 'reports-due',
-      title: 'Digital Proofs',
-      value: summaryData?.stats?.reportsThisMonth || stats.reportsThisMonth || 0,
-      subtext: 'Field Evidence',
-      color: 'bg-orange-500',
-      icon: FileText,
+      image: '/lovable-uploads/metrci4.png',
     }
   ], [summaryData, stats, scheduledVisits]);
+
 
   const statusStyles = STATUS_STYLES;
 
@@ -630,6 +632,262 @@ const AgentDashboard: React.FC = () => {
     return <Preloader />;
   }
 
+  if (isMobile) {
+    return (
+      <AgentLayout activeSection="dashboard" title="Dashboard" hideTopBar={true}>
+        <div className="flex flex-col -mt-4 pb-12 relative">
+          {/* 1. COMPREHENSIVE STICKY TOP SECTION */}
+          <div className="sticky top-0 z-50 bg-[#f8fafc] dark:bg-[#002f37] -mx-4 px-4 pt-4 pb-4 border-b border-gray-100/10 shadow-sm flex flex-col gap-4">
+            {/* Status Bar / User Profile */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar 
+                  className="h-11 w-11 border-2 border-[#7ede56]/30 shadow-md cursor-pointer"
+                  onClick={() => setProfileSheetOpen(true)}
+                >
+                  <AvatarImage src={agent?.avatar} />
+                  <AvatarFallback className="bg-[#065f46] text-white text-xs font-bold">{agent?.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => setProfileSheetOpen(true)}>
+                    <h1 className="text-[17px] font-bold text-[#002f37] dark:text-white leading-none">Hello {agent?.name?.split(' ')[0] || 'Musah'}!</h1>
+                    <ChevronDown className="h-4 w-4 text-gray-500 mt-0.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-gray-500 mt-0.5">{agent?.agentId || '053 187 8243'}</span>
+                </div>
+              </div>
+              <div className="relative">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-full bg-white shadow-sm border border-gray-100 h-10 w-10 active:scale-95"
+                  onClick={() => navigate('/dashboard/agent/notifications-center')}
+                >
+                  <Bell className="h-6 w-6 text-[#002f37]" />
+                </Button>
+                <span className="absolute top-2 right-2 h-2.5 w-2.5 bg-rose-500 rounded-full border-2 border-white"></span>
+              </div>
+            </div>
+
+            {/* Performance Card - Previously Grower Impact */}
+            <Card className="bg-[#fef9c3] border-none rounded-[1.5rem] p-5 flex items-center justify-between shadow-sm active:scale-95 transition-transform">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center shadow-inner">
+                  <Star className="h-6 w-6 text-amber-500 fill-amber-500" />
+                </div>
+                <div>
+                  <p className="ui-label !text-amber-800/60 !mb-0 text-[10px] uppercase font-inter font-bold tracking-widest">AGENT PERFORMANCE</p>
+                  <p className="text-2xl font-black text-amber-900 tabular-nums font-inter">
+                     GREAT PROGRESS!
+                  </p>
+                </div>
+              </div>
+              <Button 
+                size="sm" 
+                className="bg-amber-400 hover:bg-amber-500 text-amber-900 font-bold font-montserrat rounded-full px-4 h-9 gap-1 shadow-sm border-none uppercase text-[11px]"
+                onClick={() => navigate('/dashboard/agent/performance')}
+              >
+                Details <ChevronRight className="h-4 w-4" />
+              </Button>
+            </Card>
+
+            {/* Featured Carousel / Banner Style */}
+            <div className="relative w-full aspect-[22/8] rounded-[1.25rem] overflow-hidden shadow-md group">
+              <img 
+                src="https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=2070&auto=format&fit=crop" 
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                alt="Farm Banner" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent flex flex-col justify-center px-6">
+                <h3 className="text-white font-bold font-montserrat text-base uppercase tracking-tight leading-tight max-w-[150px]">Harvest Season Tracker</h3>
+                <p className="text-white/70 font-inter font-medium text-[9px] mt-1">Verify farm yields precisely</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. SCROLLABLE AREA - Start immediately below the Harvest card */}
+          <div className="flex flex-col gap-6 pt-6 px-1">
+
+          {/* Balances / Stats section - Styled like the dark MTN cards */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-lg font-bold text-[#002f37]">Active Metrics</h2>
+            </div>
+
+            {/* Metric Cards - Image Background Style like Harvest Tracker */}
+            <div className="grid grid-cols-2 gap-3 -mt-2 px-0.5">
+              {highlightCards.map((item, idx) => (
+                <div
+                  key={item.id}
+                  className="relative overflow-hidden rounded-[1.75rem] h-36 flex flex-col justify-end group shadow-md active:scale-[0.98] transition-transform cursor-pointer"
+                  onClick={() => {}}
+                >
+                  {/* Background Image */}
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  {/* Gradient overlay — bottom heavy like harvest tracker */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  {/* Top left icon badge */}
+                  <div className="absolute top-3 left-3 p-1.5 rounded-xl bg-black/30 backdrop-blur-sm z-10">
+                    <item.icon className="h-4 w-4 text-white/90" />
+                  </div>
+                  {/* Content */}
+                  <div className="relative z-10 px-3.5 pb-3.5 space-y-0">
+                    <span className="text-[8px] font-black text-white/60 uppercase tracking-widest block">{item.title}</span>
+                    <p className="text-[22px] font-bold text-white tabular-nums leading-tight">
+                      <CountUp end={parseInt(String(item.value).replace(/,/g, '')) || 0} duration={1000} />
+                    </p>
+                    <span className="text-[9px] font-medium text-[#7ede56]">{item.subtext}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Active Field Missions */}
+          <div className="space-y-4 px-1">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-[#002f37] dark:text-white">Field Missions</h2>
+              <button onClick={() => navigate('/dashboard/agent/tasks')} className="text-[11px] font-black text-[#065f46] uppercase border-b-2 border-[#7ede56]">View All</button>
+            </div>
+            
+            <div className="space-y-3">
+              {(scheduledVisits.length > 0 ? scheduledVisits.slice(0, 2) : [
+                { farmerName: 'Kofi Mensah', community: 'Antoa', scheduledDate: new Date().toISOString() },
+                { farmerName: 'Ama Serwaa', community: 'Ejisu', scheduledDate: new Date().toISOString() }
+              ]).map((mission: any, idx: number) => (
+                <div 
+                  key={idx}
+                  className={`flex items-center gap-4 p-4 rounded-[1.75rem] shadow-sm border border-gray-100 transition-all active:scale-[0.98] ${darkMode ? 'bg-[#0f434a] border-white/5' : 'bg-white'}`}
+                >
+                  <div className={`h-12 w-12 rounded-[1.25rem] flex items-center justify-center shrink-0 ${idx % 2 === 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                    <MapPin className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className={`text-[15px] font-bold truncate ${darkMode ? 'text-white' : 'text-[#002f37]'}`}>{mission.farmerName}</h4>
+                    <p className="text-[11px] font-medium text-gray-400 truncate">{mission.community} • Mission Start</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-[13px] font-black text-[#002f37] dark:text-white block tabular-nums">09:30</span>
+                    <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">Ongoing</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Performance Summary - Premium Image Card */}
+          <div className="px-1">
+            <div className="relative overflow-hidden rounded-[2rem] h-40 shadow-xl group">
+              <img
+                src="/lovable-uploads/countryside-workers-together-field.jpg"
+                alt="Performance"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#002f37]/90 to-[#002f37]/30" />
+              <div className="relative z-10 flex flex-col justify-between h-full p-6">
+                <div>
+                  <p className="text-[9px] font-black text-[#7ede56] uppercase tracking-[0.2em] mb-0.5 font-inter">Your Performance Summary</p>
+                  <h3 className="text-[22px] font-black text-white tracking-tight font-montserrat uppercase">GREAT PROGRESS!</h3>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest font-inter">Progress to Gold Level</p>
+                    <span className="text-[14px] font-black text-[#7ede56] font-montserrat">85%</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#7ede56] rounded-full" style={{ width: '85%' }}></div>
+                  </div>
+                  <button
+                    className="text-[10px] font-black text-white/50 uppercase tracking-widest font-inter hover:text-[#7ede56] transition-colors"
+                    onClick={() => navigate('/dashboard/agent/performance')}
+                  >View Full Performance →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Farm Updates Timeline - Refined */}
+          <div className="space-y-3 px-1 pb-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[15px] font-bold text-[#002f37] font-inter">Farm Updates</h2>
+            </div>
+            
+            <div className="space-y-2">
+              {[
+                { date: '01/04/2026', msg: 'Phone call made to CONGO MUSAH ADAMA', icon: PhoneCall, status: 'Completed' },
+                { date: '31/03/2026', msg: 'Training session scheduled: Farm Planning & GAP', icon: GraduationCap, status: 'Scheduled' },
+                { date: '30/03/2026', msg: 'Soil mapping data verification: SIKASO WEST', icon: CheckCircle2, status: 'Completed' }
+              ].map((activity, idx) => (
+                <div key={idx} className="flex gap-3 bg-white rounded-2xl p-4 border border-gray-100 shadow-sm active:scale-[0.99] transition-transform">
+                  <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${activity.status === 'Completed' ? 'bg-[#7ede56]/15 text-[#065f46]' : 'bg-amber-50 text-amber-600'}`}>
+                    <activity.icon className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-medium text-[#002f37] leading-snug font-inter mb-1">{activity.msg}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-bold text-gray-400 tracking-widest uppercase font-inter">{activity.date}</span>
+                      <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${activity.status === 'Completed' ? 'bg-[#7ede56]/15 text-[#065f46]' : 'bg-amber-100 text-amber-700'}`}>{activity.status}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 3. PROFILE POPOVER LOGIC INTEGRATED */}
+          <div 
+              className={`fixed top-0 left-0 right-0 z-[100] bg-white rounded-b-[2rem] shadow-[0_25px_50px_rgba(0,0,0,0.1)] p-5 pt-1 transition-all duration-500 transform ${profileSheetOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}
+            >
+              <div className="flex flex-col items-center text-center space-y-2.5 pb-2">
+                <div className="w-10 h-1 bg-gray-100 rounded-full mb-0.5 cursor-pointer active:bg-gray-200" onClick={() => setProfileSheetOpen(false)} />
+                
+                <Avatar className="h-16 w-16 border-[3px] border-[#7ede56]/20 shadow-lg">
+                  <AvatarImage src={agent?.avatar} />
+                  <AvatarFallback className="bg-[#065f46] text-white text-xl font-bold">{agent?.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                
+                <div className="space-y-0.5">
+                  <h3 className="text-[19px] font-bold font-montserrat text-[#002f37] leading-tight uppercase tracking-tight">{agent?.name || 'Musah Adams Congo'}</h3>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <div className="flex items-center gap-1.5 text-gray-500 font-bold font-inter text-[11px]">
+                      <span className="text-[#002f37]/20 uppercase tracking-widest text-[8px] font-inter">Agent ID:</span>
+                      <span className="font-inter">{agent?.agentId || 'AL-001'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-400 font-medium font-inter text-[10px] uppercase tracking-widest">
+                       <span>{agent?.region || 'Upper East'}</span>
+                       <span className="h-2 w-[1px] bg-gray-200"></span>
+                       <span>{agent?.district || 'Bawku'}</span>
+                    </div>
+                    <div className="inline-flex items-center gap-1 rounded-full bg-[#7ede56]/10 px-2.5 py-1 mt-1 border border-[#7ede56]/15">
+                       <div className="h-1 w-1 rounded-full bg-[#7ede56]"></div>
+                       <span className="text-[#065f46] text-[9px] font-bold font-inter uppercase tracking-widest">Active Account</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Button 
+                  className="w-full bg-white hover:bg-gray-50 text-[#002f37] border border-gray-100 rounded-full h-11 font-bold font-montserrat text-[13px] shadow-sm mt-1 uppercase tracking-wider transition-all active:scale-95"
+                  onClick={() => {
+                     setProfileSheetOpen(false);
+                     navigate('/dashboard/agent/profile');
+                  }}
+                >
+                  Manage Your Account
+                </Button>
+              </div>
+            </div>
+            
+            {profileSheetOpen && <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-[90] transition-opacity" onClick={() => setProfileSheetOpen(false)} />}
+          </div>
+        </div>
+      </AgentLayout>
+    );
+  }
+
   return (
     <AgentLayout
       activeSection={activeTab === 'performance' ? 'performance' : 'dashboard'}
@@ -638,11 +896,11 @@ const AgentDashboard: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-[24px] font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            <h1 className="text-[28px] font-bold text-gray-900 tracking-tight">
               {getLocalizedGreeting()}
-            </h2>
+            </h1>
           </div>
-          <p className="text-[14px] font-medium text-gray-500" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="ui-label !normal-case !text-[13px] !mb-0">
             Operations Tracker • {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
         </div>
@@ -668,35 +926,35 @@ const AgentDashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10">
         {highlightCards.map((item: any, idx: number) => {
-          const isLoading = loading;
-
-          return isLoading ? (
+          return loading ? (
             <MetricCardSkeleton key={`skeleton-${idx}`} />
           ) : (
             <Card
               key={item.id}
-              className={`${item.id === 'total-farms' ? item.color : 'bg-white'} p-3 sm:p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] relative overflow-hidden h-28 sm:h-36 flex flex-col justify-between group border-none cursor-pointer`}
+              className="group relative overflow-hidden h-44 rounded-[2rem] border-none shadow-2xl transition-all duration-500 hover:scale-[1.03] hover:shadow-emerald-900/20 cursor-pointer bg-[#002f37]"
             >
-              <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
-                <item.icon className={`h-16 sm:h-24 w-16 sm:w-24 ${item.id === 'total-farms' ? 'text-white' : item.color.replace('bg-', 'text-')} -rotate-12`} />
+              <div className="absolute inset-0 z-0 opacity-40 group-hover:scale-110 group-hover:opacity-50 transition-all duration-[2s]">
+                <img src={item.image} alt="" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#002f37] via-[#002f37]/80 to-transparent" />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className={`p-2 ${item.id === 'total-farms' ? 'bg-white/10' : item.color.replace('bg-', 'bg-').concat('/10')} rounded-lg`}>
-                  <item.icon className={`h-5 w-5 ${item.id === 'total-farms' ? 'text-white' : item.color.replace('bg-', 'text-')}`} />
+              <div className="p-6 sm:p-8 h-full flex flex-col justify-between relative z-10">
+                <div className="flex items-start justify-between">
+                  <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 ring-1 ring-white/5">
+                    <item.icon className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-400" />
+                  </div>
                 </div>
-                <span className={`text-[10px] font-black ${item.id === 'total-farms' ? 'text-white/40' : 'text-gray-400'} uppercase tracking-widest`}>STATUS</span>
-              </div>
 
-              <div>
-                <p className={`text-[8px] sm:text-[10px] font-black ${item.id === 'total-farms' ? 'text-white/60' : 'text-gray-500'} uppercase tracking-widest mb-0.5 sm:mb-1`}>{item.title}</p>
-                <div className="flex items-baseline gap-1 sm:gap-2">
-                  <h3 className={`text-xl sm:text-4xl font-black ${item.id === 'total-farms' ? 'text-white' : 'text-gray-900'} leading-none`}>
-                    <CountUp end={parseInt(String(item.value).replace(/,/g, '')) || 0} duration={1000} />
-                  </h3>
-                  <span className={`text-[8px] sm:text-[10px] font-bold ${item.id === 'total-farms' ? 'text-white/80' : 'text-gray-500'} truncate`}>{item.subtext}</span>
+                <div className="space-y-1">
+                  <p className="text-[12px] font-black text-white/50 uppercase tracking-[0.2em] leading-none drop-shadow-sm">{item.title}</p>
+                  <div className="flex flex-col gap-1">
+                    <h3 className="text-4xl sm:text-5xl font-black text-white tracking-tighter leading-none tabular-nums font-montserrat drop-shadow-md">
+                      <CountUp end={parseInt(String(item.value).replace(/,/g, '')) || 0} duration={1500} />
+                    </h3>
+                    <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-widest leading-none drop-shadow-sm">{item.subtext}</span>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -730,7 +988,7 @@ const AgentDashboard: React.FC = () => {
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className={`flex w-full overflow-x-auto whitespace-nowrap scrollbar-hide bg-transparent p-0 h-auto gap-0 sm:gap-4 mb-4 sm:mb-8 border-b ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
+        <TabsList className={`flex w-full overflow-x-auto whitespace-nowrap scrollbar-hide bg-transparent p-0 h-auto gap-1 sm:gap-4 mb-4 sm:mb-8 border-b -mx-4 px-4 sm:mx-0 sm:px-0 ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
           <TabsTrigger
             value="overview"
             onClick={() => navigate('/dashboard/agent?tab=overview')}
@@ -780,6 +1038,8 @@ const AgentDashboard: React.FC = () => {
           <OverviewTab
             farms={farms}
             activities={activities}
+            notifications={notifications}
+            stats={stats}
             darkMode={darkMode}
             agent={agent}
             handleLogVisit={handleLogVisit}
@@ -802,6 +1062,7 @@ const AgentDashboard: React.FC = () => {
         <TabsContent value="visits" className="space-y-6">
           <VisitsTab
             activities={activities}
+            stats={stats}
             setIsUploadReportModalOpen={setIsUploadReportModalOpen}
           />
         </TabsContent>

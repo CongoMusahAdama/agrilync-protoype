@@ -59,9 +59,9 @@ const MediaTab: React.FC<MediaTabProps> = ({
         </Button>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="flex gap-2 mb-8">
+        <div className="flex gap-2 mb-8 overflow-x-auto whitespace-nowrap scrollbar-hide pb-2 -mx-2 px-2 sm:mx-0 sm:px-0">
           {['All Assets', 'Field Growth', 'Crop Issues', 'Harvesting'].map((tag, idx) => (
-            <Badge key={tag} variant="outline" className={`cursor-pointer px-4 py-1.5 rounded-full font-black text-[9px] uppercase tracking-widest transition-all ${idx === 0 ? 'bg-[#065f46] text-white border-transparent' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 border-transparent'}`}>
+            <Badge key={tag} variant="outline" className={`cursor-pointer px-5 py-2.5 rounded-full font-black text-[9px] uppercase tracking-widest transition-all shrink-0 ${idx === 0 ? 'bg-[#065f46] text-white border-transparent' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 border-transparent'}`}>
               {tag}
             </Badge>
           ))}

@@ -441,19 +441,19 @@ const MediaDashboard: React.FC = () => {
           {/* Media Quick Actions Row */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-1">
-              <h2 className="text-2xl font-black text-[#002f37] tracking-tight">Media Library</h2>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Centralized repository for all field telemetry</p>
+              <h2 className="text-2xl font-black font-montserrat text-[#002f37] tracking-tight">Media Library</h2>
+              <p className="text-xs font-bold font-inter text-gray-400 uppercase tracking-widest">Centralized repository for all field telemetry</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
               <Button 
-                className="bg-[#065f46] hover:bg-[#054d39] text-white font-black text-[12px] tracking-wider px-8 h-12 rounded-[1.2rem] shadow-xl shadow-[#065f46]/20 transition-all active:scale-95 border-none w-full sm:w-auto flex items-center justify-center"
+                className="bg-[#065f46] hover:bg-[#054d39] text-white font-black font-montserrat text-[12px] tracking-wider px-8 h-12 rounded-[1.2rem] shadow-xl shadow-[#065f46]/20 transition-all active:scale-95 border-none w-full sm:w-auto flex items-center justify-center"
                 onClick={() => setUploadOpen(true)}
               >
                 <Upload className="mr-2 h-4 w-4" /> UPLOAD FILES
               </Button>
               <Button 
                 variant="outline" 
-                className="border-2 border-[#065f46] text-[#065f46] hover:bg-[#065f46] hover:text-white font-black text-[12px] tracking-wider px-8 h-12 rounded-[1.2rem] transition-all bg-white w-full sm:w-auto flex items-center justify-center"
+                className="border-2 border-[#065f46] text-[#065f46] hover:bg-[#065f46] hover:text-white font-black font-montserrat text-[12px] tracking-wider px-8 h-12 rounded-[1.2rem] transition-all bg-white w-full sm:w-auto flex items-center justify-center"
                 onClick={() => setAlbumOpen(true)}
               >
                 <FolderPlus className="mr-2 h-4 w-4" /> NEW ALBUM
@@ -521,7 +521,7 @@ const MediaDashboard: React.FC = () => {
                       <TabsTrigger 
                         key={tab} 
                         value={tab}
-                        className="px-6 py-2 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all data-[state=active]:bg-[#065f46] data-[state=active]:text-white data-[state=active]:shadow-md border-none"
+                        className="px-6 py-2 rounded-lg text-[11px] font-black font-montserrat uppercase tracking-wider transition-all data-[state=active]:bg-[#065f46] data-[state=active]:text-white data-[state=active]:shadow-md border-none"
                       >
                         {tab}
                       </TabsTrigger>
@@ -768,7 +768,7 @@ const MediaDashboard: React.FC = () => {
                   <CardTitle className="text-lg font-black text-[#002f37]">Recent Uploads</CardTitle>
                   <CardDescription className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Manage your most recently captured field evidence</CardDescription>
                 </div>
-                <Button variant="ghost" className="text-[10px] font-black tracking-widest text-[#065f46] hover:bg-emerald-50 border-none">
+                <Button variant="ghost" className="text-[10px] font-black font-montserrat tracking-widest text-[#065f46] hover:bg-emerald-50 border-none">
                   EXPORT LOG <Download className="h-4 w-4 ml-2" />
                 </Button>
               </CardHeader>
@@ -777,13 +777,13 @@ const MediaDashboard: React.FC = () => {
                 <Table className="relative border-collapse w-full">
                   <TableHeader className="bg-[#065f46] sticky top-0 z-30 shadow-md">
                     <TableRow className="border-none hover:bg-transparent !bg-[#065f46]">
-                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4 px-6 bg-[#065f46]">File Name</TableHead>
-                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4 bg-[#065f46]">Farm / Entity</TableHead>
-                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4 bg-[#065f46]">Type</TableHead>
-                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4 bg-[#065f46]">Upload Date</TableHead>
-                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4 bg-[#065f46]">Size</TableHead>
-                      <TableHead className="font-black text-[10px] uppercase tracking-widest text-white py-4 bg-[#065f46]">Status</TableHead>
-                      <TableHead className="text-right font-black text-[10px] uppercase tracking-widest text-white py-4 px-6 bg-[#065f46]">Actions</TableHead>
+                      <TableHead className="font-black font-montserrat text-[10px] uppercase tracking-widest text-white py-4 px-6 bg-[#065f46]">File Name</TableHead>
+                      <TableHead className="font-black font-montserrat text-[10px] uppercase tracking-widest text-white py-4 bg-[#065f46]">Farm / Entity</TableHead>
+                      <TableHead className="font-black font-montserrat text-[10px] uppercase tracking-widest text-white py-4 bg-[#065f46]">Type</TableHead>
+                      <TableHead className="font-black font-montserrat text-[10px] uppercase tracking-widest text-white py-4 bg-[#065f46]">Upload Date</TableHead>
+                      <TableHead className="font-black font-montserrat text-[10px] uppercase tracking-widest text-white py-4 bg-[#065f46]">Size</TableHead>
+                      <TableHead className="font-black font-montserrat text-[10px] uppercase tracking-widest text-white py-4 bg-[#065f46]">Status</TableHead>
+                      <TableHead className="text-right font-black font-montserrat text-[10px] uppercase tracking-widest text-white py-4 px-6 bg-[#065f46]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

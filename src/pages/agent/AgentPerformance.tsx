@@ -77,37 +77,29 @@ const AgentPerformance: React.FC = () => {
     >
       <div className="page-performance space-y-8 animate-fade-in">
         {/* 1. PAGE HEADER */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 py-2">
+        <div className="flex flex-col gap-4 py-2">
           <div>
-            <h1 className="page-title text-[24px] sm:text-[28px] font-black tracking-tight" style={{ color: 'var(--teal)' }}>Performance Dashboard</h1>
-            <p className="page-desc text-gray-500 font-semibold" style={{ fontSize: '13px' }}>Real-time field monitoring and agent productivity metrics</p>
+            <h1 className="text-[20px] sm:text-[28px] font-black tracking-tight" style={{ color: 'var(--teal)' }}>Performance Dashboard</h1>
+            <p className="text-gray-500 font-semibold text-[12px] sm:text-[13px] mt-0.5">Real-time field monitoring and agent productivity metrics</p>
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-            <div className="bg-gray-100 p-1.5 rounded-2xl flex gap-1 w-full sm:w-auto">
-              <button 
-                onClick={() => setTimeRange('month')}
-                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all ${timeRange === 'month' ? 'bg-white shadow-md text-[#002f37]' : 'text-gray-500 hover:text-gray-900'}`}
-              >
-                Month
-              </button>
-              <button 
-                onClick={() => setTimeRange('season')}
-                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all ${timeRange === 'season' ? 'bg-white shadow-md text-[#002f37]' : 'text-gray-500 hover:text-gray-900'}`}
-              >
-                Season
-              </button>
-              <button 
-                onClick={() => setTimeRange('all')}
-                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all ${timeRange === 'all' ? 'bg-white shadow-md text-[#002f37]' : 'text-gray-500 hover:text-gray-900'}`}
-              >
-                All
-              </button>
+          <div className="flex flex-col sm:flex-row items-stretch gap-3">
+            {/* Time Range Tabs */}
+            <div className="bg-gray-100 p-1.5 rounded-2xl flex gap-1 flex-1">
+              {['month', 'season', 'all'].map(range => (
+                <button
+                  key={range}
+                  onClick={() => setTimeRange(range)}
+                  className={`flex-1 py-3 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all min-h-[44px] ${timeRange === range ? 'bg-white shadow-md text-[#002f37]' : 'text-gray-500'}`}
+                >
+                  {range.charAt(0).toUpperCase() + range.slice(1)}
+                </button>
+              ))}
             </div>
-            <Button 
+            <Button
               onClick={() => toast({ title: "Downloading Report", description: "Your performance report is being prepared." })}
-              className="rounded-2xl font-black text-[11px] uppercase tracking-wider h-12 px-8 gap-2 bg-[#002f37] hover:bg-[#002f37]/90 text-white border-none shadow-xl w-full sm:w-auto"
+              className="rounded-2xl font-black text-[11px] uppercase tracking-wider min-h-[48px] px-6 gap-2 bg-[#002f37] hover:bg-[#002f37]/90 text-white border-none shadow-xl"
             >
-              <DownloadIcon className="h-4 w-4" /> <span className="sm:inline">Download Report</span>
+              <DownloadIcon className="h-4 w-4" /> Download Report
             </Button>
           </div>
         </div>
@@ -117,7 +109,8 @@ const AgentPerformance: React.FC = () => {
            <h3 className="text-[11px] font-black text-[#002f37] uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
              <div className="h-1.5 w-1.5 rounded-full bg-[#065f46]"></div>
              Detailed KPI Scorecard
-           </h3>           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+           </h3>           
+           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
             {(data?.kpis || [
               { label: 'Onboarding Volume', value: '0', unit: 'Farmers', target: '---', progress: 0, status: 'N/A' },
               { label: 'Onboarding Completion Rate', value: '0', unit: '%', target: '---', progress: 0, status: 'N/A' },
@@ -126,36 +119,37 @@ const AgentPerformance: React.FC = () => {
               { label: 'Data Sync Timeliness', value: '0', unit: '%', target: '---', progress: 0, status: 'N/A' },
               { label: 'Harvest Yield Documentation', value: '0', unit: 'Farms', target: '---', progress: 0, status: 'N/A' }
             ]).map((kpi: any, idx: number) => {
-              const isOnTrack = kpi.status === 'On Track';
-              const isInProgress = kpi.status === 'In Progress';
-              const color = isOnTrack ? '#065f46' : (isInProgress ? '#f59e0b' : '#6b7280');
+              const colors = ['bg-[#002f37]', 'bg-[#004d4d]', 'bg-[#006666]', 'bg-[#008080]'];
+              const bgColor = colors[idx % colors.length];
               const icon = [Leaf, CheckCircle2, UserCheck, Clock, Activity, FileText][idx % 6] || Sprout;
               const IconComponent = icon;
               
               return (
               <Card
                 key={idx}
-                className="bg-white rounded-none p-5 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 relative overflow-hidden flex flex-col justify-between group min-h-[130px]"
+                className={`${bgColor} rounded-2xl p-4 shadow-sm border-none text-white relative overflow-hidden flex flex-col justify-between group min-h-[110px]`}
               >
-                <div className="flex items-center justify-between mb-3 relative z-10">
-                  <div className="p-2.5 rounded-xl transition-colors" style={{ backgroundColor: `${color}10` }}>
-                    <IconComponent className="h-5 w-5" style={{ color }} />
+                <div className="absolute -right-4 -top-4 w-20 h-20 border-[12px] border-white/5 rounded-full" />
+                <div className="flex items-center justify-between mb-2 relative z-10">
+                  <div className="p-2 rounded-xl bg-white/10">
+                    <IconComponent className="h-4 w-4 text-white" />
                   </div>
                 </div>
 
                 <div className="relative z-10">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{kpi.label}</p>
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <h2 className="text-4xl font-black text-[#002f37] tracking-tight leading-none group-hover:scale-105 transition-transform origin-left">
+                  <p className="text-[9px] font-black text-white/60 uppercase tracking-widest mb-1 leading-tight">{kpi.label}</p>
+                  <div className="flex items-baseline gap-1 mb-2">
+                    <h2 className="text-2xl font-black text-white tracking-tight leading-none group-hover:scale-105 transition-transform origin-left font-montserrat">
                       {kpi.value}
                     </h2>
+                    <span className="text-[9px] font-bold text-white/50 uppercase">{kpi.unit}</span>
                   </div>
 
-                  <div className="space-y-2">
-                    <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100/30">
+                  <div className="space-y-1.5">
+                    <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
                       <div 
-                        className="h-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(0,0,0,0.1)]" 
-                        style={{ width: `${Math.min(kpi.progress, 100)}%`, backgroundColor: color }} 
+                        className="h-full bg-[#7ede56] transition-all duration-1000 ease-out" 
+                        style={{ width: `${Math.min(kpi.progress, 100)}%` }} 
                       />
                     </div>
                   </div>
@@ -326,44 +320,86 @@ const AgentPerformance: React.FC = () => {
           </div>
         </div>
 
-        {/* 5. FARM VISIT LOG TABLE */}
+        {/* 5. FARM VISIT LOG */}
         <Card className="border-none shadow-xl rounded-2xl overflow-hidden">
-          <div className="p-8 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white">
-            <div>
-              <h3 className="section-title text-[#002f37] font-black text-lg">Farm Visit Log</h3>
-              <p className="text-xs text-gray-500 font-semibold uppercase tracking-widest mt-1">Detailed field compliance monitoring</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="bg-gray-100 p-1 rounded-xl flex gap-1">
-                <button 
-                  onClick={() => setVisitFilter('all')}
-                  className={`px-5 py-2 text-[10px] font-black uppercase rounded-lg transition-all ${visitFilter === 'all' ? 'bg-white shadow-sm text-[#002f37]' : 'text-gray-500 hover:text-gray-900'}`}
-                >
-                  All
-                </button>
-                <button 
-                  onClick={() => setVisitFilter('below')}
-                  className={`px-5 py-2 text-[10px] font-black uppercase rounded-lg transition-all ${visitFilter === 'below' ? 'bg-white shadow-sm text-[#002f37]' : 'text-gray-500 hover:text-gray-900'}`}
-                >
-                  Below Min
-                </button>
-                <button 
-                  onClick={() => setVisitFilter('on-track')}
-                  className={`px-5 py-2 text-[10px] font-black uppercase rounded-lg transition-all ${visitFilter === 'on-track' ? 'bg-white shadow-sm text-[#002f37]' : 'text-gray-500 hover:text-gray-900'}`}
-                >
-                  On Track
-                </button>
+          <div className="p-5 sm:p-8 border-b border-gray-100 bg-white">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h3 className="text-[#002f37] font-black text-[15px] sm:text-lg">Farm Visit Log</h3>
+                <p className="text-[10px] sm:text-xs text-gray-500 font-semibold uppercase tracking-widest mt-1">Detailed field compliance monitoring</p>
               </div>
-              <Button 
-                variant="ghost" 
-                onClick={() => toast({ title: "Export Started", description: "Exporting field compliant data to CSV." })}
-                className="rounded-xl font-black text-[10px] tracking-widest h-10 px-4 gap-2 hover:bg-gray-50"
-              >
-                <FileDown className="h-4 w-4" /> EXPORT
-              </Button>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                {/* Scrollable filter tabs */}
+                <div className="bg-gray-100 p-1 rounded-xl flex gap-1 flex-1 overflow-x-auto scrollbar-hide">
+                  {[['all','All'],['below','At Risk'],['on-track','On Track']].map(([val, label]) => (
+                    <button
+                      key={val}
+                      onClick={() => setVisitFilter(val)}
+                      className={`flex-1 min-w-[64px] py-2.5 text-[10px] font-black uppercase rounded-lg transition-all whitespace-nowrap min-h-[44px] ${visitFilter === val ? 'bg-white shadow-sm text-[#002f37]' : 'text-gray-500'}`}
+                    >{label}</button>
+                  ))}
+                </div>
+                <Button
+                  variant="ghost"
+                  onClick={() => toast({ title: "Export Started", description: "Exporting field data to CSV." })}
+                  className="rounded-xl font-black text-[10px] tracking-widest min-h-[44px] px-3 gap-1.5 hover:bg-gray-50 shrink-0"
+                >
+                  <FileDown className="h-4 w-4" />
+                  <span className="hidden sm:inline">EXPORT</span>
+                </Button>
+              </div>
             </div>
           </div>
-          <div className="overflow-x-auto">
+
+          {/* MOBILE: Card Stack */}
+          <div className="md:hidden divide-y divide-gray-50 bg-white">
+            {(data?.visitLog || []).filter((row: any) => {
+              if (visitFilter === 'all') return true;
+              if (visitFilter === 'below') return row.status === 'At Risk' || row.status === 'Off Track';
+              if (visitFilter === 'on-track') return row.status === 'On Track';
+              return true;
+            }).length === 0 ? (
+              <div className="py-16 text-center">
+                <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest">No visit records match this filter</p>
+              </div>
+            ) : (
+              (data?.visitLog || []).filter((row: any) => {
+                if (visitFilter === 'all') return true;
+                if (visitFilter === 'below') return row.status === 'At Risk' || row.status === 'Off Track';
+                if (visitFilter === 'on-track') return row.status === 'On Track';
+                return true;
+              }).map((row: any, i: number) => (
+                <div key={i} className={`p-5 ${row.color === 'amber' ? 'bg-amber-50/30' : row.color === 'red' ? 'bg-rose-50/30' : 'bg-white'}`}>
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div>
+                      <h4 className="text-[14px] font-black text-[#002f37] leading-tight">{row.farmer}</h4>
+                      <p className="text-[11px] font-medium text-gray-400 mt-0.5">{row.farm} · {row.region}</p>
+                    </div>
+                    <Badge className={`rounded-xl border-none font-bold text-[9px] px-2.5 py-1 shrink-0 ${row.status === 'On Track' ? 'bg-green-100 text-green-700' : row.status === 'At Risk' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>
+                      {row.status}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Last Visit</p>
+                      <p className="text-[11px] font-bold text-[#002f37]">{row.last || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Visits / Mo</p>
+                      <p className={`text-[11px] font-black ${row.color === 'red' ? 'text-rose-600' : row.color === 'amber' ? 'text-amber-600' : 'text-[#177209]'}`}>{row.visits || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Sync</p>
+                      <p className={`text-[11px] font-bold ${row.sync !== 'Synced' ? 'text-rose-500' : 'text-gray-400'}`}>{row.sync || '—'}</p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* DESKTOP: Full Table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left">
               <thead className="bg-[#065f46]">
                 <tr>
@@ -394,9 +430,7 @@ const AgentPerformance: React.FC = () => {
                           {[1, 2].map(j => {
                             const visitsCount = parseInt(row.visits.split('/')[0]);
                             const isFilled = j <= visitsCount;
-                            return (
-                              <div key={j} className={`h-4 w-4 rounded-sm shadow-sm ${isFilled ? 'bg-[#7ede56]' : 'bg-gray-200'}`} />
-                            );
+                            return <div key={j} className={`h-4 w-4 rounded-sm shadow-sm ${isFilled ? 'bg-[#7ede56]' : 'bg-gray-200'}`} />;
                           })}
                         </div>
                         <span className={`text-[10px] font-black ${row.color === 'red' ? 'text-rose-600' : row.color === 'amber' ? 'text-amber-600' : 'text-[#177209]'}`}>

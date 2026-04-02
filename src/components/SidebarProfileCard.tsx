@@ -54,7 +54,7 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({ sidebarCollapse
         <div className="relative group cursor-pointer">
           <Avatar className="h-12 w-12 ring-2 ring-[#7ede56]/50 shadow-lg transition-all duration-300 group-hover:ring-[#7ede56] group-hover:scale-105">
             {profile.avatar && <AvatarImage src={profile.avatar} alt={profile.name} className="object-cover" />}
-            <AvatarFallback className="bg-white text-[#002f37] font-bold text-sm" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            <AvatarFallback className="bg-white text-[#002f37] font-bold text-sm">
               {isLoading ? '...' : initials}
             </AvatarFallback>
           </Avatar>
@@ -75,7 +75,6 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({ sidebarCollapse
             {profile.avatar && <AvatarImage src={profile.avatar} alt={profile.name} className="object-cover" />}
             <AvatarFallback
               className="bg-white text-[#002f37] font-black text-2xl rounded-full"
-              style={{ fontFamily: 'Poppins, sans-serif' }}
             >
               {isLoading ? '...' : initials}
             </AvatarFallback>
@@ -92,8 +91,7 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({ sidebarCollapse
         ) : (
           <div className="space-y-2 w-full">
             <h3
-              className="text-white font-black text-lg tracking-[0.05em] uppercase leading-tight"
-              style={{ fontFamily: 'Poppins, sans-serif' }}
+              className="text-white font-bold text-lg tracking-[0.05em] uppercase leading-tight"
             >
               {profile.name}
             </h3>
