@@ -20,9 +20,10 @@ interface ViewFarmerModalProps {
     farmer: any;
     onNewVisit?: (farmer: any) => void;
     onUploadMedia?: (farmer: any) => void;
+    onAddField?: (farmer: any) => void;
 }
 
-const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, farmer, onNewVisit, onUploadMedia }) => {
+const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, farmer, onNewVisit, onUploadMedia, onAddField }) => {
     const { darkMode } = useDarkMode();
     const [farms, setFarms] = useState<any[]>([]);
     const [media, setMedia] = useState<any[]>([]);
@@ -122,6 +123,13 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                             onClick={() => onUploadMedia && onUploadMedia(farmer)}
                         >
                             <Camera className="h-4 w-4" /> Upload Media
+                        </Button>
+                        <Button 
+                            variant="outline" 
+                            className={`flex-1 md:flex-none h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[11px] flex items-center gap-2 ${darkMode ? 'border-[#7ede56]/30 text-[#7ede56] hover:bg-[#7ede56]/5' : 'border-[#065f46]/30 text-[#065f46] hover:bg-[#065f46]/5'}`}
+                            onClick={() => onAddField && onAddField(farmer)}
+                        >
+                            <Map className="h-4 w-4" /> Add Field
                         </Button>
                         <Button variant="ghost" size="icon" className={`hidden md:flex ${darkMode ? 'text-gray-400' : ''}`}>
                             <Edit className="h-4 w-4" />

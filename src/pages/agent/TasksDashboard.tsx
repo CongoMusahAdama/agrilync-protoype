@@ -43,6 +43,7 @@ import {
     SelectValue
 } from '@/components/ui/select';
 import { GHANA_REGIONS, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
+import { toast } from 'sonner';
 
 // Mock Data
 type TaskPriority = 'urgent' | 'normal' | 'low';
@@ -141,6 +142,20 @@ const TasksDashboard = () => {
       setLoading(false);
     }
   };
+
+  const [farmersMap, setFarmersMap] = useState<Record<string, string>>({});
+  React.useEffect(() => {
+    api.get('/farmers').then(res => {
+      const data = res.data?.data || res.data || [];
+      const map: Record<string, string> = {};
+      data.forEach((f: any) => {
+        if (f.name && f.profilePicture) {
+          map[f.name] = f.profilePicture;
+        }
+      });
+      setFarmersMap(map);
+    }).catch(console.error);
+  }, []);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -569,11 +584,11 @@ const TaskCard = ({ task, onRefresh, onEdit, onDelete }: {
   };
 
   return (
-    <Card className={`border border-gray-100 shadow-sm overflow-hidden transition-all hover:shadow-lg group rounded-2xl relative ${isCompleted ? 'bg-gray-50/80' : 'bg-white'}`}>
+    <Card className={`border border-[#002f37]/10 shadow-sm overflow-hidden transition-all hover:shadow-lg group rounded-2xl relative ${isCompleted ? 'bg-gray-50/80' : 'bg-white'}`}>
        {/* colored left indicator bar */}
-       <div className={`absolute left-0 top-0 bottom-0 w-[5px] ${isCompleted ? 'bg-gray-300' : isOverdueTask ? 'bg-rose-500' : isTodayTask ? 'bg-amber-500' : 'bg-[#065f46]'}`} />
+       <div className={`absolute left-0 top-0 bottom-0 w-[5px] ${isCompleted ? 'bg-gray-300' : isOverdueTask ? 'bg-rose-500' : isTodayTask ? 'bg-amber-500' : 'bg-[#002f37]'}`} />
        
-       <div className={`p-5 flex flex-col sm:flex-row gap-4 justify-between sm:items-center ml-1 ${isCompleted ? 'grayscale-[0.5] opacity-75' : ''}`}>
+       <div className={`p-2.5 flex flex-col sm:flex-row gap-3 justify-between sm:items-center ml-1 ${isCompleted ? 'grayscale-[0.5] opacity-75' : ''}`}>
           
           <div className="flex items-start gap-4">
              <div className="p-3.5 bg-gray-50 rounded-xl mt-0.5 border border-gray-100 shadow-sm group-hover:scale-105 transition-transform">
@@ -591,7 +606,11 @@ const TaskCard = ({ task, onRefresh, onEdit, onDelete }: {
                         {task.farmer === 'All Farmers' ? (
                           <Users className="h-3.5 w-3.5 text-[#065f46]" />
                         ) : task.farmer !== 'System' ? (
-                          <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${task.farmer}`} alt={task.farmer} />
+                          farmersMap[task.farmer] ? (
+                            <img src={farmersMap[task.farmer]} alt={task.farmer} className="w-full h-full object-cover" />
+                          ) : (
+                            <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${task.farmer}`} alt={task.farmer} />
+                          )
                         ) : (
                           <Sprout className="h-3 w-3 text-emerald-600" />
                         )}

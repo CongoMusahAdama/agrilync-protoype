@@ -400,19 +400,19 @@ const AgentPerformance: React.FC = () => {
 
           {/* DESKTOP: Full Table */}
           <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-[#065f46]">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-[#002f37]">
                 <tr>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-white border-none">Farmer</th>
-                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-white border-none">Farm</th>
-                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-white border-none">Region</th>
-                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-white border-none">Last Visit</th>
-                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-white border-none">Visits This Month</th>
-                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-white border-none">Sync Status</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-white border-none">Farm Status</th>
+                  <th className="px-8 py-2.5 text-[10px] font-black uppercase tracking-widest text-white border-r border-white/10 last:border-r-0">Farmer</th>
+                  <th className="px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-white border-r border-white/10">Farm</th>
+                  <th className="px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-white border-r border-white/10">Region</th>
+                  <th className="px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-white border-r border-white/10">Last Visit</th>
+                  <th className="px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-white border-r border-white/10">Visits This Month</th>
+                  <th className="px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-white border-r border-white/10">Sync Status</th>
+                  <th className="px-8 py-2.5 text-[10px] font-black uppercase tracking-widest text-white">Farm Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50 font-semibold text-sm bg-white">
+              <tbody className="divide-y divide-[#002f37]/10 font-semibold text-sm bg-white">
                 {(data?.visitLog || []).filter((row: any) => {
                   if (visitFilter === 'all') return true;
                   if (visitFilter === 'below') return row.status === 'At Risk' || row.status === 'Off Track';
@@ -420,11 +420,11 @@ const AgentPerformance: React.FC = () => {
                   return true;
                 }).map((row: any, i: number) => (
                   <tr key={i} className={`group hover:bg-gray-50/80 transition-colors ${row.color === 'amber' ? 'bg-amber-50/30' : row.color === 'red' ? 'bg-rose-50/30' : 'bg-white'}`}>
-                    <td className="px-8 py-5 font-black text-[#002f37]">{row.farmer}</td>
-                    <td className="px-6 py-5">{row.farm}</td>
-                    <td className="px-6 py-5 text-gray-500">{row.region}</td>
-                    <td className="px-6 py-5 text-gray-500 font-bold">{row.last}</td>
-                    <td className="px-6 py-5">
+                    <td className="px-8 py-2.5 font-black text-[#002f37] border-r border-[#002f37]/5">{row.farmer}</td>
+                    <td className="px-6 py-2.5 border-r border-[#002f37]/5">{row.farm}</td>
+                    <td className="px-6 py-2.5 text-gray-500 border-r border-[#002f37]/5">{row.region}</td>
+                    <td className="px-6 py-2.5 text-gray-500 font-bold border-r border-[#002f37]/5">{row.last}</td>
+                    <td className="px-6 py-2.5 border-r border-[#002f37]/5">
                       <div className="flex items-center gap-3">
                         <div className="flex gap-1">
                           {[1, 2].map(j => {
@@ -438,10 +438,10 @@ const AgentPerformance: React.FC = () => {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-5">
+                    <td className="px-6 py-2.5 border-r border-[#002f37]/5">
                       <span className={`${row.sync !== 'Synced' ? 'text-rose-500' : 'text-gray-400'}`}>{row.sync}</span>
                     </td>
-                    <td className="px-8 py-5">
+                    <td className="px-8 py-2.5">
                       <Badge className={`rounded-xl border-none font-bold text-[10px] px-3 py-1 ${row.status === 'On Track' ? 'bg-green-100 text-green-700' : row.status === 'At Risk' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>
                         {row.status}
                       </Badge>

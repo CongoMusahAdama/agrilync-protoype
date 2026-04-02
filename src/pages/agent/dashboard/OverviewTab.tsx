@@ -47,7 +47,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
         <CardContent className="p-0">
           <div className="divide-y divide-gray-50">
             {farms.length > 0 ? farms.slice(0, 4).map((farm: any) => (
-              <div key={farm._id} className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors group">
+              <div key={farm._id} className="p-3 flex items-center justify-between hover:bg-[#002f37]/5 border-b border-[#002f37]/10 transition-colors group">
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-2xl bg-gray-100 overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
                     <img src={farm.farmer?.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${farm.name}`} alt={farm.name} className="w-full h-full object-cover" />
@@ -82,34 +82,34 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
       <div className="space-y-6">
         {/* Report Progress Card - Now dynamic */}
         <Card className="border-none bg-[#002f37] text-white rounded-[2.5rem] shadow-xl overflow-hidden relative p-8 group h-64 flex flex-col justify-end">
-          <div className="absolute inset-0 z-0">
-             <img src="/metric1.jpg" alt="" className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-[3s]" />
-             <div className="absolute inset-0 bg-gradient-to-t from-[#002f37] via-[#002f37]/60 to-transparent" />
-          </div>
-
-          <div className="relative z-10 space-y-4">
-            <div>
-              <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em] mb-2 drop-shadow-md">{currentMonthName} missions</p>
-              <h3 className="text-3xl font-black text-white font-montserrat uppercase tracking-tight drop-shadow-lg">
-                {reportProgress >= 100 ? 'Mission complete!' : 'Almost done!'}
-              </h3>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="flex justify-between items-end">
-                <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Digital reports submitted</span>
-                <span className="text-sm font-black text-emerald-400 tabular-nums">{reportProgress}%</span>
-              </div>
-              <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden backdrop-blur-sm">
-                <div className="h-full bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.6)] transition-all duration-1000" style={{ width: `${reportProgress}%` }}></div>
-              </div>
+            <div className="absolute inset-0 z-0">
+              <img src="/metric1.jpg" alt="" className="w-full h-full object-cover opacity-50 group-hover:scale-110 transition-transform duration-[3s]" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#002f37] via-[#002f37]/80 to-[#002f37]/30" />
             </div>
 
-            <div className="pt-2 flex items-center gap-2 group/link cursor-pointer" onClick={() => navigate('/dashboard/agent?tab=visits')}>
-              <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest group-hover/link:text-white transition-colors">View all logs</span>
-              <ChevronRight className="h-3 w-3 text-white/30 group-hover/link:translate-x-1 group-hover/link:text-emerald-400 transition-all" />
+            <div className="relative z-10 space-y-4">
+              <div>
+                <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em] mb-2 drop-shadow-md">{currentMonthName} missions</p>
+                <h3 className="text-3xl font-black text-white font-montserrat uppercase tracking-tight drop-shadow-lg">
+                  {reportProgress >= 100 ? 'Mission complete!' : 'Almost done!'}
+                </h3>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-end">
+                  <span className="text-[10px] font-bold text-white/90 uppercase tracking-widest">Digital reports submitted</span>
+                  <span className="text-sm font-black text-emerald-400 tabular-nums">{reportProgress}%</span>
+                </div>
+                <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden backdrop-blur-sm">
+                  <div className="h-full bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.6)] transition-all duration-1000" style={{ width: `${reportProgress}%` }}></div>
+                </div>
+              </div>
+
+              <div className="pt-2 flex items-center gap-2 group/link cursor-pointer" onClick={() => navigate('/dashboard/agent?tab=visits')}>
+                <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest group-hover/link:text-white transition-colors">View all logs</span>
+                <ChevronRight className="h-3 w-3 text-white/30 group-hover/link:translate-x-1 group-hover/link:text-emerald-400 transition-all" />
+              </div>
             </div>
-          </div>
         </Card>
 
         {/* Real-time Field Alerts from Notifications */}

@@ -144,7 +144,7 @@ const Dashboard = () => {
         revenue: [],
         composition: []
       },
-      recentActivities: [],
+      recentActivities: [] as { id: string; message: string; time: string }[],
       projects: [],
       trainingSessions: [],
       notifications: []
@@ -163,7 +163,7 @@ const Dashboard = () => {
         revenue: [],
         composition: []
       },
-      recentActivities: [],
+      recentActivities: [] as { id: string; message: string; time: string }[],
       investments: [],
       trainingSessions: [],
       notifications: []
