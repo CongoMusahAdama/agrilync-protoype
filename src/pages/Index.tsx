@@ -325,7 +325,7 @@ const Index = () => {
               <img 
                 src="/lovable-uploads/exramax.png" 
                 alt="Eyramax" 
-                className="h-10 md:h-16 w-auto object-contain grayscale opacity-60 transition-all duration-500 hover:grayscale-0 hover:opacity-100"
+                className="h-10 md:h-16 w-auto object-contain transition-all duration-500 hover:scale-110"
               />
             </div>
             
@@ -335,7 +335,7 @@ const Index = () => {
               <img 
                 src="/lovable-uploads/unitedway.png" 
                 alt="United Way Ghana" 
-                className="h-10 md:h-16 w-auto object-contain grayscale opacity-60 transition-all duration-500 hover:grayscale-0 hover:opacity-100"
+                className="h-10 md:h-16 w-auto object-contain transition-all duration-500 hover:scale-110"
               />
             </div>
           </div>
