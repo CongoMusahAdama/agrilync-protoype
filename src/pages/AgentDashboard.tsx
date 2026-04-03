@@ -1000,16 +1000,13 @@ const AgentDashboard: React.FC = () => {
                 >
                   Manage Your Account
                 </Button>
-              </div>
+                </div>
             </div>
-
             {profileSheetOpen && <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-[90] transition-opacity" onClick={() => setProfileSheetOpen(false)} />}
           </div>
         </div>
-      </AgentLayout>
-        </div >
       ) : (
-
+        <>
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -1296,7 +1293,9 @@ const AgentDashboard: React.FC = () => {
         onOpenChange={setLogVisitModalOpen}
         onSuccess={fetchData}
       />
-    </AgentLayout >
+        </>
+        )}
+    </AgentLayout>
   );
 };
 
