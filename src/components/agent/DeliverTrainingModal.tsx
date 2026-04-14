@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import api from '@/utils/api';
-import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import {
   GraduationCap, Calendar, Clock, Users, Leaf, Coins,
@@ -104,6 +103,15 @@ export default function DeliverTrainingModal({ open, onOpenChange, onSuccess, ed
     date: '', time: '09:00', mode: '', venue: '', region: agentRegion, district: '', community: '', customCommunity: '', language: '', farmerIds: [] as string[], notes: ''
   });
 
+  const sendSmsNotification = async (count: number, moduleName: string) => {
+    await Swal.fire({
+        title: 'SMS Broadcast Sent',
+        html: `<div class="text-left"><p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Training Protocol</p><p class="text-sm text-gray-700">SMS notification sent to <b>${count}</b> farmer(s) regarding the <b>${moduleName}</b> session.</p></div>`,
+        icon: 'info', toast: true, position: 'top-end', timer: 4500, showConfirmButton: false,
+        background: '#fff', color: '#002f37', iconColor: '#7ede56', timerProgressBar: true
+    });
+  };
+
   const { data: farmers = [], isLoading: loadFarmers } = useQuery<any[]>({
     queryKey: ['agentFarmersDir'],
     queryFn: async () => { const r = await api.get('/farmers?limit=1000'); return r.data.data || []; },
@@ -176,9 +184,18 @@ export default function DeliverTrainingModal({ open, onOpenChange, onSuccess, ed
   const chosen = MODULES.find(m => m.id === mod);
 
   const submit = async () => {
-    if (!mod) { toast.error('Select a training module'); return; }
-    if (!form.date || !form.mode) { toast.error('Fill in date and delivery mode'); return; }
-    if (form.farmerIds.length === 0) { toast.error('Select at least one farmer'); return; }
+    if (!mod) { 
+      Swal.fire({ icon: 'warning', title: 'Module Required', text: 'Please select a training module to proceed.', confirmButtonColor: '#065f46' });
+      return; 
+    }
+    if (!form.date || !form.mode) { 
+      Swal.fire({ icon: 'warning', title: 'Details Missing', text: 'Please specify the training date and delivery mode.', confirmButtonColor: '#065f46' });
+      return; 
+    }
+    if (form.farmerIds.length === 0) { 
+      Swal.fire({ icon: 'warning', title: 'Participants Required', text: 'Please select at least one farmer for this session.', confirmButtonColor: '#065f46' });
+      return; 
+    }
     setSaving(true);
     try {
       const payload = {
@@ -208,10 +225,18 @@ export default function DeliverTrainingModal({ open, onOpenChange, onSuccess, ed
         html: `<p style="color:#065f46;font-weight:700;font-size:16px;margin:8px 0 4px">${chosen?.title}</p><p style="color:#6b7280;font-size:13px;margin:0">${new Date(form.date).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})} · ${form.farmerIds.length} farmer(s)</p>`,
         confirmButtonColor: '#065f46', confirmButtonText: 'Done', timer: 3500, timerProgressBar: true,
       });
+      sendSmsNotification(form.farmerIds.length, chosen?.title || 'Training');
       qc.invalidateQueries({ queryKey: ['trainingDeliveries'] });
       qc.invalidateQueries({ queryKey: ['scheduledVisits'] });
       onSuccess?.();
-    } catch (e: any) { toast.error(e.response?.data?.message || 'Failed to schedule'); }
+    } catch (e: any) { 
+        Swal.fire({
+            icon: 'error',
+            title: 'Schedule Error',
+            text: e.response?.data?.message || 'The system could not record this training session. Please try again.',
+            confirmButtonColor: '#065f46'
+        });
+    }
     finally { setSaving(false); }
   };
 

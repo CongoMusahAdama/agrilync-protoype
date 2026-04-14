@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import AgentLayout from './AgentLayout';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
-import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Card,
@@ -50,7 +50,12 @@ const FarmMonitoring: React.FC = () => {
         setFarms(Array.isArray(res.data) ? res.data : (res.data.data || []));
       } catch (err) {
         console.error('Error fetching farms:', err);
-        toast.error('Failed to load farms');
+        Swal.fire({
+          icon: 'error',
+          title: 'Data Load Failed',
+          text: 'Unable to retrieve your farm inventory. Please try refreshing the page.',
+          confirmButtonColor: '#065f46'
+        });
       } finally {
         setLoading(false);
       }

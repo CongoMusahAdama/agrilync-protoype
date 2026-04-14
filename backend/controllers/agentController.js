@@ -8,16 +8,27 @@ const performanceService = require('../services/performanceService');
 // @desc    Get current agent profile
 exports.getProfile = async (req, res) => {
     try {
-        // DEV BYPASS: If using mock user, skip DB lookup
-        if (req.agent && req.agent.isMock) {
-            return res.json(req.agent);
+        if (!req.agent) {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
         }
 
-        const agent = await Agent.findById(req.agent.id).select('-password').lean();
+        // DEV BYPASS or Pre-loaded agent
+        // If we have the agent object already (from auth middleware), use it safely
+        const agent = await Agent.findById(req.agent._id || req.agent.id).select('-password').lean();
+        
+        if (!agent) {
+            return res.status(404).json({ success: false, message: 'Agent not found' });
+        }
+
+        // Prototype Access Grant: Ensure agent has access to Bono for testing
+        if (!agent.assignedRegions || !agent.assignedRegions.includes('Bono')) {
+            agent.assignedRegions = ['Ashanti', 'Bono', 'Northern', 'Upper East'];
+        }
+
         res.json(agent);
     } catch (err) {
         console.error('getProfile error:', err.message);
-        res.status(500).json({ success: false, message: 'Server error' });
+        res.status(500).json({ success: false, message: 'Server error', error: err.message });
     }
 };
 

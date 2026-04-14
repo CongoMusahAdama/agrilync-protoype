@@ -409,53 +409,65 @@ const About = () => {
         </div>
       </section>
 
-      {/* How We Do It Section */}
-      <section id="process" className="py-10 sm:py-16 md:py-20" style={{ backgroundColor: BRAND_TEAL }}>
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-          <div className="text-center mb-10 sm:mb-14 md:mb-16 animate-fade-in-up transition-all duration-700 ease-in-out">
+      {/* How We Do It Section - Simplified 4-Step Process */}
+      <section id="process" className="py-16 sm:py-24 md:py-32" style={{ backgroundColor: BRAND_TEAL }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 sm:mb-20">
             <div className="flex items-center justify-center mb-4">
               <div className="w-2 h-2" style={{ backgroundColor: BRAND_GREEN }}></div>
-              <span className="text-gray-300 text-sm uppercase tracking-wider ml-3">Our Process</span>
+              <span className="text-gray-300 text-sm uppercase tracking-[0.2em] ml-3">How We Do It</span>
             </div>
-            <h2 ref={howWeDoItRef} className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (howWeDoItVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: 'white' }}>
-              how we do it
+            <h2 ref={howWeDoItRef} className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 transition-all duration-700 ease-in-out " + (howWeDoItVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: 'white' }}>
+              Our Simplified Process
             </h2>
             <div className="w-16 h-0.5 bg-[#7ede56]/40 mb-4 sm:mb-6 mx-auto"></div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
-            {/* Step 1: Connect */}
-            <div className="text-center group">
-              <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-white group-hover:text-green-400 transition-colors duration-300 mb-6" style={{ fontFamily: 'Arial, sans-serif' }}>
-                01
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
+            {[
+              {
+                step: "01",
+                title: "Connect",
+                desc: "Connecting farmers to investors on a shared-profit basis for sustainable growth.",
+                color: "green-400"
+              },
+              {
+                step: "02",
+                title: "Train",
+                desc: "Providing essential pre-investment training to ensure farming success.",
+                color: "#7ede56"
+              },
+              {
+                step: "03",
+                title: "Monitor",
+                desc: "Extension agents oversee all activities ensuring full accountability.",
+                color: "blue-400"
+              },
+              {
+                step: "04",
+                title: "Support",
+                desc: "Real-time AI advisory and strategic guidance throughout the season.",
+                color: "orange-400"
+              }
+            ].map((item, index) => (
+              <div key={index} className="text-center group">
+                <div 
+                  className="text-6xl sm:text-7xl md:text-8xl font-bold text-white group-hover:text-[#7ede56] transition-all duration-500 mb-6" 
+                  style={{ 
+                    fontFamily: 'Montserrat, sans-serif',
+                    WebkitTextStroke: '1px rgba(255,255,255,0.1)'
+                  }}
+                >
+                  {item.step}
+                </div>
+                <h3 className="text-xl font-bold mb-4 text-white group-hover:text-[#7ede56] transition-colors">
+                  {item.title}
+                </h3>
+                <p className="text-gray-300 leading-relaxed text-sm md:text-base opacity-80 group-hover:opacity-100 transition-opacity">
+                  {item.desc}
+                </p>
               </div>
-              <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">Connect</h3>
-              <p className="text-gray-300 leading-relaxed text-sm sm:text-base">
-                Connect farmers to investors on a shared-profit basis, creating mutually beneficial partnerships that drive sustainable agricultural growth.
-              </p>
-            </div>
-
-            {/* Step 2: Monitor */}
-            <div className="text-center group">
-              <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-white group-hover:text-[#7ede56] transition-colors duration-300 mb-6" style={{ fontFamily: 'Arial, sans-serif' }}>
-                02
-              </div>
-              <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">Monitor</h3>
-              <p className="text-gray-300 leading-relaxed text-sm sm:text-base">
-                Extension agents are assigned to oversee activities on/off the farm, ensuring accountability and transparency for both farmers and investors.
-              </p>
-            </div>
-
-            {/* Step 3: Support */}
-            <div className="text-center group">
-              <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-white group-hover:text-blue-400 transition-colors duration-300 mb-6" style={{ fontFamily: 'Arial, sans-serif' }}>
-                03
-              </div>
-              <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">Strategic Support</h3>
-              <p className="text-gray-300 leading-relaxed text-sm sm:text-base">
-                AgriLync Nexus provides agricultural guidance and education for farmers and investors. We support project planning and best practices without offering regulated financial advice.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -510,28 +522,6 @@ const About = () => {
         </div>
       </section>
 
-      {/* Trust & Compliance Section */}
-      <section className="py-10 sm:py-16 md:py-20" style={{ backgroundColor: BRAND_TEAL }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 ref={trustRef} className={"text-3xl sm:text-4xl font-bold mb-3 text-white transition-all duration-700 ease-in-out " + (trustVisible ? " animate-fade-in-up" : " opacity-0")}>Trust & Compliance</h2>
-          <div className="w-16 h-0.5 bg-[#7ede56]/40 mb-12 mx-auto"></div>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {[
-              { title: "Registered Business Entity", desc: "Fully compliant with local regulations." },
-              { title: "Secure Payment Processing", desc: "International standard encryption." },
-              { title: "Data Protection Compliant", desc: "Your information is safe with us." },
-              { title: "Encrypted Platform Security", desc: "Advanced cybersecurity measures." },
-              { title: "Transparent Reporting System", desc: "Full visibility for all stakeholders." },
-              { title: "Independent Verification", desc: "Third-party field monitoring agents." }
-            ].map((item, i) => (
-              <div key={i} className="p-6 rounded-2xl border border-white/10 hover:border-white/20 transition-colors bg-white/5">
-                <h3 className="font-bold text-white mb-2">{item.title}</h3>
-                <p className="text-sm text-gray-300">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Why Choose Us Section */}
       <section id="why-choose-us" className="py-10 sm:py-16 md:py-20 bg-white">

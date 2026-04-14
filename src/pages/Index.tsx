@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Leaf, Users, TrendingUp, MapPin, Calendar, Shield, Award, Play, MessageCircle, X, ArrowUp, Quote, ArrowRight, Bot, ChevronDown, ChevronUp, Check, Salad, Globe, Sun, Sprout } from 'lucide-react';
+import { Leaf, Users, TrendingUp, MapPin, Calendar, Shield, Award, Play, MessageCircle, X, ArrowUp, Quote, ArrowRight, Bot, ChevronDown, ChevronUp, Check, Salad, Globe, Sun, Sprout, Star } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
@@ -778,133 +778,227 @@ const Index = () => {
         )
       }
 
-      {/* Success Stories Section - Premium Padding */}
-      <section className="py-32 md:py-40" style={{ backgroundColor: '#002f37' }}>
-        <div className="max-w-7xl mx-auto px-6 lg:px-24">
-          <div ref={successStoriesRef} className={`text-center mb-24 transition-all duration-700 ease-out ${successStoriesVisible ? 'animate-fade-in-up opacity-100' : 'opacity-0 translate-y-12'}`}>
-            <h2 className="text-5xl md:text-7xl font-bold text-white mb-8">
-              Success Stories
-            </h2>
-            <div className="w-48 h-[1px] bg-[#7ede56] mb-10 mx-auto opacity-70"></div>
-            <p className="text-white text-xl md:text-2xl font-playfair italic max-w-2xl mx-auto">
-              What Our Clients Say About Us
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
-            {[
-              {
-                name: "Gabienu Emmanuel",
-                role: "Vegetable Farmer",
-                location: "Ashanti Region, Ejura",
-                image: "/lovable-uploads/success_story_1.jpg",
-                feedback: "Finding investors for my vegetable farm was always a struggle until I became a Lync Grower. Within weeks, I secured funding to expand my operations."
-              },
-              {
-                name: "Sarah Mensah",
-                role: "Vegetable Farmer",
-                location: "Volta Region",
-                image: "/lovable-uploads/success_story_2.jpg",
-                feedback: "Agrilync Nexus changed the game for me. I no longer worry about my vegetables going to waste; the AI insights and investor matches as a Lync Grower have given my farm a new lease on life."
-              },
-              {
-                name: "John Baah",
-                role: "Maize Farmer",
-                location: "Brong Ahafo, Techiman",
-                image: "/lovable-uploads/success_story_3.jpg",
-                feedback: "The AI crop consultation saved my maize harvest from a pest outbreak. The advice was timely, accurate, and easy to follow."
-              }
-            ].map((story, index) => (
-              <div
-                key={index}
-                className={"bg-white rounded-sm p-8 sm:p-10 shadow-lg flex flex-col h-full transform transition-all duration-500 hover:-translate-y-1 " + (successStoriesVisible ? " opacity-100 translate-y-0" : " opacity-0 translate-y-20")}
-                style={{ transitionDelay: `${index * 150}ms` }}
+      {/* Success Stories Section - Premium Redesign */}
+      <section className="py-24 md:py-32 bg-white overflow-hidden">
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-24">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-12 lg:gap-16">
+            
+            {/* Left Column: Heading & First Testimonial */}
+            <div className="flex flex-col gap-12">
+              <div 
+                ref={successStoriesRef} 
+                className={`transition-all duration-700 ease-out ${successStoriesVisible ? 'animate-fade-in-up opacity-100' : 'opacity-0 translate-y-12'}`}
               >
-                <div className="mb-8 flex-grow">
-                  <p className="text-gray-800 text-base leading-relaxed font-manrope">
-                    {story.feedback}
-                  </p>
+                <div className="flex items-center mb-6">
+                  <span className="text-[#7ede56] font-bold text-sm uppercase tracking-[0.2em]">Reviews</span>
                 </div>
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-[#002f37] font-montserrat tracking-tight leading-[1.1] mb-8">
+                  Hear What Our <span className="text-[#7ede56] relative inline-block">
+                    Clients
+                    <svg className="absolute -bottom-2 right-0 w-full h-2 text-[#7ede56]/30" viewBox="0 0 100 10" preserveAspectRatio="none">
+                      <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="2" fill="none" />
+                    </svg>
+                  </span> Say About Us
+                </h2>
+                <p className="text-gray-600 text-lg md:text-xl font-sans leading-relaxed mb-10 max-w-xl">
+                  Experience transformative agricultural journeys with AgriLync Nexus, revolutionizing farming experiences using advanced AI technology and seamless investor connections.
+                </p>
+                <Button 
+                  onClick={() => navigate('/about')}
+                  className="bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] px-8 py-7 rounded-lg text-sm font-bold shadow-[0_10px_30px_-10px_rgba(126,222,86,0.5)] transition-all transform hover:scale-105"
+                >
+                  View All Reviews
+                </Button>
+              </div>
 
-                <div className="flex items-center gap-4 mt-auto">
-                  <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-gray-100">
-                    <img
-                      src={story.image}
-                      alt={story.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${story.name}&background=random`
-                      }}
-                    />
+              {/* Featured Case Study Card */}
+              <div 
+                className={`bg-[#002f37] rounded-[2.5rem] p-6 md:p-8 text-white shadow-2xl relative overflow-hidden group transition-all duration-700 delay-300 ${successStoriesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
+              >
+                {/* Decorative background element */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 transition-transform duration-700 group-hover:scale-150"></div>
+                
+                <div className="relative z-10">
+                  <div className="flex items-center gap-6 mb-6">
+                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#7ede56] shadow-lg">
+                      <img 
+                        src="/lovable-uploads/success_story_1.jpg" 
+                        alt="Gabienu Emmanuel" 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl md:text-3xl font-bold font-montserrat text-[#7ede56]">Gabienu Emmanuel</h3>
+                      <p className="text-white/70 font-medium tracking-wide">Vegetable Farmer, Ashanti Region</p>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <h4 className="font-bold text-gray-900 text-base">{story.name}</h4>
-                    <p className="text-xs text-gray-500 uppercase tracking-wider mt-0.5">{story.role}</p>
-                    <p className="text-xs text-gray-400 font-medium mt-0.5">{story.location}</p>
+
+                  <div className="border-t border-white/10 pt-6">
+                    <h4 className="text-xl md:text-2xl font-bold mb-4 font-playfair italic underline decoration-[#7ede56]/40 underline-offset-8 text-[#7ede56]">
+                      "Finding investors was easy"
+                    </h4>
+                    <p className="text-white/80 text-base md:text-lg leading-relaxed mb-4 italic font-sans">
+                      "Finding investors for my vegetable farm was always a struggle until I became a Lync Grower. Within weeks, I secured funding to expand my operations and the support has been truly transformative."
+                    </p>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} className="w-5 h-5 fill-[#FFD700] text-[#FFD700]" />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
+            </div>
+
+            {/* Right Column: Branded Container with Cards */}
+            <div 
+              className={`bg-[#7ede56] rounded-[3rem] p-5 md:p-8 flex flex-col gap-6 shadow-2xl transition-all duration-700 delay-500 ${successStoriesVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-20'}`}
+            >
+              {[
+                {
+                  name: "Sarah Mensah",
+                  role: "Vegetable Farmer",
+                  location: "Volta Region",
+                  image: "/lovable-uploads/success_story_2.jpg",
+                  title: "Transformed our daily operations",
+                  feedback: "Agrilync Nexus changed the game for me. I no longer worry about my vegetables going to waste; the AI insights and investor matches as a Lync Grower have given my farm a new lease on life."
+                },
+                {
+                  name: "John Baah",
+                  role: "Maize Farmer",
+                  location: "Brong Ahafo, Techiman",
+                  image: "/lovable-uploads/success_story_3.jpg",
+                  title: "AI & field support and accountability",
+                  feedback: "The AI crop consultation saved my maize harvest from a pest outbreak. The advice was timely, accurate, and easy to follow. The system is intuitive and support is always responsive."
+                }
+              ].map((story, idx) => (
+                <div 
+                  key={idx}
+                  className="bg-white rounded-[2rem] p-6 md:p-7 shadow-xl flex flex-col hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group"
+                >
+                  <div className="flex items-center gap-5 mb-6">
+                    <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 border-[#7ede56]/20 group-hover:border-[#7ede56] transition-colors">
+                      <img 
+                        src={story.image} 
+                        alt={story.name} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${story.name}&background=7ede56&color=002f37`
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-[#002f37] text-xl font-montserrat">{story.name}</h4>
+                      <p className="text-gray-500 text-sm font-medium">{story.role}, {story.location}</p>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-gray-50 pt-6 mt-auto">
+                    <h5 className="text-[#002f37] font-bold text-lg mb-3 font-montserrat leading-tight group-hover:text-[#7ede56] transition-colors">
+                      {story.title}
+                    </h5>
+                    <p className="text-gray-600 text-base leading-relaxed mb-4 font-sans">
+                      "{story.feedback}"
+                    </p>
+                    <div className="flex gap-1 mt-auto">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} className="w-4 h-4 fill-[#7ede56] text-[#7ede56]" />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
       </section>
 
-      {/* FAQ Section - Clean & Spaced */}
-      <section className="py-32 md:py-40 bg-gray-50">
-        <div className="max-w-5xl mx-auto px-6 lg:px-8">
-          <div ref={faqRef} className={`text-center mb-20 transition-all duration-700 ease-out ${faqVisible ? 'animate-fade-in-up opacity-100' : 'opacity-0 translate-y-12'}`}>
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-[#002f37]">
-              Frequently Asked Questions
-            </h2>
-            <div className="w-24 h-1 bg-[#7ede56] mb-10 mx-auto rounded-full"></div>
-            <p className="text-gray-600 text-lg md:text-xl max-w-2xl mx-auto font-sans">
-              Everything you need to know about investing and growing with AgriLync Nexus.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {faqs.map((faq, index) => (
-              <div
-                key={index}
-                className={"bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-500 ease-in-out " + (faqVisible ? " opacity-100 translate-y-0" : " opacity-0 translate-y-10")}
-                style={{
-                  transitionDelay: `${index * 50}ms`
-                }}
-              >
-                <button
-                  onClick={() => toggleFaq(index)}
-                  className="w-full px-5 py-4 text-left flex items-start justify-between gap-3 focus:outline-none group hover:bg-gray-50 transition-colors"
-                  aria-expanded={openFaqIndex === index}
-                >
-                  <span className={`font-sora text-sm sm:text-base font-medium transition-colors leading-snug ${openFaqIndex === index ? 'text-[#7ede56]' : 'text-[#002f37] group-hover:text-[#002f37]/80'}`}>
-                    {faq.question}
-                  </span>
-                  {openFaqIndex === index ? (
-                    <ChevronUp className="w-5 h-5 text-[#7ede56] flex-shrink-0 mt-0.5" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-400 group-hover:text-gray-600 flex-shrink-0 mt-0.5" />
-                  )}
-                </button>
-                <div
-                  className={`px-5 overflow-hidden transition-all duration-300 ease-in-out ${openFaqIndex === index ? 'max-h-32 opacity-100 pb-5' : 'max-h-0 opacity-0'
-                    }`}
-                >
-                  <p className="text-gray-600 text-xs sm:text-sm leading-relaxed border-t border-gray-100 pt-3">
-                    {faq.answer}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 text-center">
-            <Button
-              onClick={() => navigate('/contact')}
-              variant="outline"
-              className="border-2 border-[#002f37] text-[#002f37] hover:bg-[#002f37] hover:text-white bg-transparent rounded-full px-6 py-2 text-sm font-bold transition-all"
+      {/* FAQ Section - Premium 2-Column Redesign */}
+      <section className="py-16 md:py-20 bg-white">
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-stretch">
+            
+            {/* Left Column: Branded Info Card */}
+            <div 
+              ref={faqRef} 
+              className={`bg-[#7ede56] rounded-[3rem] p-6 md:p-10 text-[#002f37] flex flex-col justify-between shadow-2xl transition-all duration-1000 ${faqVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-20'}`}
             >
-              Contact Support
-            </Button>
+              <div>
+                <span className="font-bold uppercase tracking-[0.2em] text-sm mb-4 block opacity-80">FAQ</span>
+                <div className="relative mb-6">
+                  <h2 className="text-4xl md:text-5xl lg:text-6xl font-black font-montserrat tracking-tight leading-[1.1] relative z-10 text-[#002f37]">
+                    Frequently Asked <br /> 
+                    <span className="relative inline-block text-white">
+                      Questions?
+                      <svg className="absolute -bottom-4 left-0 w-full h-4 text-white opacity-60" viewBox="0 0 200 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 15C50 5 150 5 195 15" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
+                      </svg>
+                    </span>
+                  </h2>
+                </div>
+                <div className="w-16 h-1 bg-[#002f37]/20 rounded-full mb-6 mt-4"></div>
+                <p className="text-[#002f37]/80 text-base md:text-lg font-medium leading-relaxed mb-6 max-w-md">
+                  Discover how AgriLync Nexus is bridging the gap in agricultural finance, offering effective, secure solutions for everyone involved.
+                </p>
+              </div>
+
+              {/* Decorative Image/Graphic */}
+              <div className="mt-auto rounded-[2.5rem] overflow-hidden shadow-xl border-4 border-white/20">
+                <img 
+                  src="/lovable-uploads/image copy 16.png" 
+                  alt="AgriLync FAQ" 
+                  className="w-full h-56 md:h-72 object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Right Column: Accordion Questions */}
+            <div 
+              className={`bg-[#f9fafb] rounded-[3rem] p-6 md:p-10 shadow-xl flex flex-col transition-all duration-1000 delay-300 ${faqVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-20'}`}
+            >
+              <div className="flex flex-col gap-0">
+                {faqs.map((faq, index) => (
+                  <div
+                    key={index}
+                    className="border-b border-gray-200 last:border-0"
+                  >
+                    <button
+                      onClick={() => toggleFaq(index)}
+                      className="w-full py-4 text-left flex items-center justify-between gap-6 focus:outline-none group transition-all"
+                      aria-expanded={openFaqIndex === index}
+                    >
+                      <span className={`text-base md:text-lg font-bold font-montserrat normal-case transition-colors leading-tight ${openFaqIndex === index ? 'text-[#7ede56]' : 'text-[#002f37] group-hover:text-[#002f37]/70'}`}>
+                        {faq.question}
+                      </span>
+                      <div className={`transition-transform duration-300 ${openFaqIndex === index ? 'rotate-90 text-[#7ede56]' : 'text-[#002f37]'}`}>
+                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </button>
+                    <div
+                      className={`overflow-hidden transition-all duration-500 ease-in-out ${openFaqIndex === index ? 'max-h-[500px] opacity-100 pb-6' : 'max-h-0 opacity-0'
+                        }`}
+                    >
+                      <p className="text-gray-600 text-sm md:text-base leading-relaxed font-sans border-l-4 border-[#7ede56] pl-6 ml-1">
+                        {faq.answer}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 text-center md:text-left">
+                <Button
+                  onClick={() => navigate('/contact')}
+                  className="bg-[#002f37] hover:bg-black text-white px-8 py-5 rounded-xl text-sm font-bold shadow-xl transition-all hover:scale-105 active:scale-95 h-auto uppercase"
+                >
+                  Still have questions? Contact us
+                </Button>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>

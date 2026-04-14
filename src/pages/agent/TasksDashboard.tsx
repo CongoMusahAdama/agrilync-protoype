@@ -43,7 +43,7 @@ import {
     SelectValue
 } from '@/components/ui/select';
 import { GHANA_REGIONS, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
-import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 
 // Mock Data
 type TaskPriority = 'urgent' | 'normal' | 'low';
@@ -63,8 +63,6 @@ interface Task {
   status: TaskStatus;
   synced?: boolean;
 }
-// We will fetch this data from the backend
-const mockTasks: Task[] = [];
 
 const getTaskIcon = (type: TaskType) => {
   switch (type) {
@@ -94,7 +92,7 @@ const getStatusBadge = (status: TaskStatus) => {
   }
 };
 
-const TasksDashboard = () => {
+export const TasksDashboardContent = () => {
   const { darkMode } = useDarkMode();
   const { agent } = useAuth();
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
@@ -113,13 +111,37 @@ const TasksDashboard = () => {
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    if (!window.confirm('Are you sure you want to delete this task?')) return;
-    try {
-      await api.delete(`/tasks/${taskId}`);
-      toast.success('Task deleted');
-      fetchTasks();
-    } catch (err) {
-      toast.error('Failed to delete task');
+    const result = await Swal.fire({
+      title: 'Delete Task?',
+      text: 'This operation will permanently remove this field task from the registry.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Delete',
+      cancelButtonText: 'Keep Task',
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#065f46',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await api.delete(`/tasks/${taskId}`);
+        await Swal.fire({
+          icon: 'success',
+          title: 'Task Removed',
+          text: 'The field objective has been successfully archived.',
+          confirmButtonColor: '#065f46',
+          timer: 2000,
+          timerProgressBar: true
+        });
+        fetchTasks();
+      } catch (err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Operation Failed',
+          text: 'Could not remove the task from the secure cloud.',
+          confirmButtonColor: '#065f46'
+        });
+      }
     }
   };
 
@@ -237,18 +259,12 @@ const TasksDashboard = () => {
         return filtered.filter(t => t.status === 'done');
       case 'all':
       default:
-        // if displaying all but day is NOT selected, just show pending things... actually, let's show all pending
         return filtered.filter(t => t.status !== 'done');
     }
   }, [selectedDay, activeTab, tasks, selectedDistrict, selectedCommunity]);
 
   return (
-    <AgentLayout
-      activeSection="tasks-alerts"
-      title="Tasks Dashboard"
-    >
-      <div className="space-y-6">
-
+    <div className="space-y-6">
         {/* Header Section inside content */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-4">
           <div>
@@ -527,6 +543,7 @@ const TasksDashboard = () => {
                        onRefresh={fetchTasks} 
                        onEdit={handleEditTask}
                        onDelete={handleDeleteTask}
+                       farmersMap={farmersMap}
                    />
                  ))
                ) : (
@@ -540,39 +557,42 @@ const TasksDashboard = () => {
                )}
             </div>
         </div>
-      </div>
-      
-      <AddTaskModal 
-        open={isAddModalOpen} 
-        onOpenChange={(open) => {
-            setIsAddModalOpen(open);
-            if (!open) setTaskToEdit(null);
-        }} 
-        onTaskAdded={fetchTasks} 
-        task={taskToEdit}
-      />
+
+        <AddTaskModal 
+          open={isAddModalOpen} 
+          onOpenChange={(open) => {
+              setIsAddModalOpen(open);
+              if (!open) setTaskToEdit(null);
+          }} 
+          onTaskAdded={fetchTasks} 
+          task={taskToEdit}
+        />
+    </div>
+  );
+};
+
+const TasksDashboard = () => {
+  return (
+    <AgentLayout
+      activeSection="tasks-alerts"
+      title="Tasks Dashboard"
+    >
+      <TasksDashboardContent />
     </AgentLayout>
   );
 };
 
 // Sub-component for individual task
-const TaskCard = ({ task, onRefresh, onEdit, onDelete }: { 
+const TaskCard = ({ task, onRefresh, onEdit, onDelete, farmersMap }: { 
     task: any; 
     onRefresh: () => void;
     onEdit: (task: any) => void;
     onDelete: (id: string) => void;
+    farmersMap: Record<string, string>;
 }) => {
   const isOverdueTask = task.status !== 'done' && new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0);
   const isTodayTask = task.status !== 'done' && new Date(task.dueDate).setHours(0,0,0,0) === new Date().setHours(0,0,0,0);
   const isCompleted = task.status === 'done';
-
-  const borderColor = isCompleted 
-    ? 'border-l-gray-300' 
-    : isOverdueTask 
-      ? 'border-l-rose-500' 
-      : isTodayTask 
-        ? 'border-l-amber-500' 
-        : 'border-l-emerald-500';
 
   const handleUpdateStatus = async (newStatus: TaskStatus) => {
      try {

@@ -24,11 +24,58 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import AgentLayout from './AgentLayout';
-import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 import api from '@/utils/api';
+import { playSuccessSound } from '@/utils/audio';
+
+const Field = ({ label, id, type = "text", required = false, readOnly = false, value, onChange, options }: any) => (
+  <div className="space-y-1.5">
+    <div className="flex justify-between items-center">
+      <Label htmlFor={id} className="text-[10px] font-black font-inter text-gray-400 uppercase tracking-widest">
+        {label} {required && <span className="text-red-500 font-bold">*</span>}
+      </Label>
+      {value && !readOnly && <Check className="w-3 h-3 text-[#177209]" />}
+    </div>
+    {type === "select" ? (
+      <Select disabled={readOnly} defaultValue={value}>
+        <SelectTrigger id={id} className="h-11 border-[1.5px] border-gray-100 rounded-xl bg-gray-50 focus:ring-4 focus:ring-[#7EDE56]/15 focus:border-[#7EDE56] text-[13px] font-semibold transition-all font-inter">
+          <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+        </SelectTrigger>
+        <SelectContent className="rounded-xl border-none shadow-2xl">
+          {options?.map((opt: any) => (
+            <SelectItem key={opt.value} value={opt.value} className="text-xs font-bold uppercase tracking-wider font-inter">{opt.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    ) : (
+      <Input 
+        id={id}
+        type={type}
+        readOnly={readOnly}
+        value={value || ''}
+        onChange={onChange}
+        className={`h-11 border-[1.5px] border-gray-100 rounded-xl bg-gray-50 focus:ring-4 focus:ring-[#7EDE56]/15 focus:border-[#7EDE56] text-[13px] font-semibold transition-all font-inter ${readOnly ? 'opacity-60 cursor-not-allowed shadow-none' : ''}`}
+      />
+    )}
+  </div>
+);
+
+const ToggleRow = ({ label, description, checked, onChange }: any) => (
+  <div className="flex items-center justify-between py-4 border-b border-gray-50 last:border-none">
+    <div className="space-y-0.5">
+      <h4 className="text-[13px] font-black font-montserrat text-[#002F37] leading-tight">{label}</h4>
+      <p className="text-[11px] font-medium font-inter text-gray-400">{description}</p>
+    </div>
+    <Switch 
+      checked={checked} 
+      onCheckedChange={onChange}
+      className="data-[state=checked]:bg-[#7EDE56] data-[state=unchecked]:bg-gray-200"
+    />
+  </div>
+);
 
 const AgentProfile: React.FC = () => {
-  const { agent, logout } = useAuth();
+  const { agent, logout, updateAgent } = useAuth();
   const { darkMode } = useDarkMode();
   const navigate = useNavigate();
   const [activePanel, setActivePanel] = useState('home');
@@ -138,9 +185,22 @@ const AgentProfile: React.FC = () => {
         region: formData.region,
         district: formData.district
       });
-      toast.success('Profile updated successfully');
+      playSuccessSound();
+      Swal.fire({
+        icon: 'success',
+        title: 'Profile Updated',
+        text: 'Your registration details have been synchronized.',
+        confirmButtonColor: '#065f46',
+        timer: 2000,
+        timerProgressBar: true
+      });
     } catch (err) {
-      toast.error('Failed to update profile');
+      Swal.fire({
+        icon: 'error',
+        title: 'Update Failed',
+        text: 'Could not synchronize profile changes.',
+        confirmButtonColor: '#065f46'
+      });
     } finally {
       setSaving(false);
     }
@@ -151,7 +211,12 @@ const AgentProfile: React.FC = () => {
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      return toast.error('Image size must be less than 2MB');
+      return Swal.fire({
+        icon: 'warning',
+        title: 'File Too Large',
+        text: 'Profile images must be under 2MB for optimal performance.',
+        confirmButtonColor: '#065f46'
+      });
     }
 
     const reader = new FileReader();
@@ -160,11 +225,23 @@ const AgentProfile: React.FC = () => {
       const base64data = reader.result as string;
       setSaving(true);
       try {
-        await api.put('/agents/profile', { avatar: base64data });
-        toast.success('Profile picture updated');
-        window.location.reload(); 
+        await updateAgent({ avatar: base64data });
+        playSuccessSound();
+        await Swal.fire({
+          icon: 'success',
+          title: 'Identity Updated',
+          text: 'Your profile picture has been refreshed.',
+          confirmButtonColor: '#065f46',
+          timer: 2000,
+          timerProgressBar: true
+        });
       } catch (err) {
-        toast.error('Failed to upload profile picture');
+        Swal.fire({
+          icon: 'error',
+          title: 'Upload Failed',
+          text: 'Could not update your profile picture. Please try again.',
+          confirmButtonColor: '#065f46'
+        });
       } finally {
         setSaving(false);
       }
@@ -178,18 +255,41 @@ const AgentProfile: React.FC = () => {
         : { appPreferences: prefs };
       
       await api.put('/agents/settings', body);
-      toast.success('Settings saved');
+      playSuccessSound();
+      Swal.fire({
+        icon: 'success',
+        title: 'Preferences Saved',
+        text: 'Your application settings have been updated.',
+        confirmButtonColor: '#065f46',
+        timer: 1500,
+        timerProgressBar: true
+      });
     } catch (err) {
-      toast.error('Failed to save settings');
+      Swal.fire({
+        icon: 'error',
+        title: 'Save Failed',
+        text: 'Could not commit settings changes to the cloud.',
+        confirmButtonColor: '#065f46'
+      });
     }
   };
 
   const handleUpdatePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      return toast.error('Passwords do not match');
+      return Swal.fire({
+        icon: 'warning',
+        title: 'Secret Mismatch',
+        text: 'The passwords provided do not match. Please re-type.',
+        confirmButtonColor: '#065f46'
+      });
     }
     if (passwordData.newPassword.length < 6) {
-      return toast.error('Password must be at least 6 characters');
+      return Swal.fire({
+        icon: 'warning',
+        title: 'Weak Password',
+        text: 'Security protocols require at least 6 characters.',
+        confirmButtonColor: '#065f46'
+      });
     }
 
     setSaving(true);
@@ -198,10 +298,23 @@ const AgentProfile: React.FC = () => {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       });
-      toast.success('Password updated successfully');
-      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      playSuccessSound();
+      await Swal.fire({
+        icon: 'success',
+        title: 'Security Updated',
+        text: 'Your credentials have been refreshed. Please log in with your new password.',
+        confirmButtonColor: '#065f46',
+        timer: 3000,
+        timerProgressBar: true
+      });
+      handleLogout();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update password');
+      Swal.fire({
+        icon: 'error',
+        title: 'Security Error',
+        text: err.response?.data?.message || 'Access credentials change failed.',
+        confirmButtonColor: '#065f46'
+      });
     } finally {
       setSaving(false);
     }
@@ -209,68 +322,40 @@ const AgentProfile: React.FC = () => {
 
   const handleCreateTicket = async () => {
     if (!ticketData.subject || !ticketData.description) {
-      return toast.error('Subject and description are required');
+      return Swal.fire({
+        icon: 'warning',
+        title: 'Missing Info',
+        text: 'Subject and detailed description are mandatory for support requests.',
+        confirmButtonColor: '#065f46'
+      });
     }
 
     setCreatingTicket(true);
     try {
       await api.post('/support/tickets', ticketData);
-      toast.success('Support ticket created');
+      playSuccessSound();
+      Swal.fire({
+        icon: 'success',
+        title: 'Ticket Created',
+        text: 'Your support request has been queued for review (#248).',
+        confirmButtonColor: '#065f46',
+        timer: 2000,
+        timerProgressBar: true
+      });
       setTicketModalOpen(false);
       setTicketData({ subject: '', category: 'Technical Issue', description: '' });
       fetchTickets();
     } catch (err) {
-      toast.error('Failed to create ticket');
+      Swal.fire({
+        icon: 'error',
+        title: 'Submission Failed',
+        text: 'Could not transmit the support ticket. Check your network.',
+        confirmButtonColor: '#065f46'
+      });
     } finally {
       setCreatingTicket(false);
     }
   };
-
-  const Field = ({ label, id, type = "text", required = false, readOnly = false, value, onChange, options }: any) => (
-    <div className="space-y-1.5">
-      <div className="flex justify-between items-center">
-        <Label htmlFor={id} className="text-[10px] font-black font-inter text-gray-400 uppercase tracking-widest">
-          {label} {required && <span className="text-red-500 font-bold">*</span>}
-        </Label>
-        {value && !readOnly && <Check className="w-3 h-3 text-[#177209]" />}
-      </div>
-      {type === "select" ? (
-        <Select disabled={readOnly} defaultValue={value}>
-          <SelectTrigger id={id} className="h-11 border-[1.5px] border-gray-100 rounded-xl bg-gray-50 focus:ring-4 focus:ring-[#7EDE56]/15 focus:border-[#7EDE56] text-[13px] font-semibold transition-all font-inter">
-            <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
-          </SelectTrigger>
-          <SelectContent className="rounded-xl border-none shadow-2xl">
-            {options?.map((opt: any) => (
-              <SelectItem key={opt.value} value={opt.value} className="text-xs font-bold uppercase tracking-wider font-inter">{opt.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      ) : (
-        <Input 
-          id={id}
-          type={type}
-          readOnly={readOnly}
-          value={value || ''}
-          onChange={onChange}
-          className={`h-11 border-[1.5px] border-gray-100 rounded-xl bg-gray-50 focus:ring-4 focus:ring-[#7EDE56]/15 focus:border-[#7EDE56] text-[13px] font-semibold transition-all font-inter ${readOnly ? 'opacity-60 cursor-not-allowed shadow-none' : ''}`}
-        />
-      )}
-    </div>
-  );
-
-  const ToggleRow = ({ label, description, checked, onChange }: any) => (
-    <div className="flex items-center justify-between py-4 border-b border-gray-50 last:border-none">
-      <div className="space-y-0.5">
-        <h4 className="text-[13px] font-black font-montserrat text-[#002F37] leading-tight">{label}</h4>
-        <p className="text-[11px] font-medium font-inter text-gray-400">{description}</p>
-      </div>
-      <Switch 
-        checked={checked} 
-        onCheckedChange={onChange}
-        className="data-[state=checked]:bg-[#7EDE56] data-[state=unchecked]:bg-gray-200"
-      />
-    </div>
-  );
 
   const renderContent = () => {
     switch (activePanel) {
@@ -293,7 +378,7 @@ const AgentProfile: React.FC = () => {
                       </span>
                     )}
                   </div>
-                  <label className="absolute -bottom-2 -right-2 h-10 w-10 bg-[#7EDE56] rounded-2xl border-4 border-[#002f37] flex items-center justify-center cursor-pointer shadow-xl active:scale-90 transition-all">
+                  <label className="absolute -bottom-2 -right-2 h-10 w-10 bg-[#7EDE56] rounded-2xl border-4 border-[#002f37] flex items-center justify-center cursor-pointer shadow-xl active:scale-90 transition-all" title="Upload or Snap Photo">
                     <Camera className="w-4 h-4 text-[#002f37]" />
                     <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                   </label>
@@ -560,8 +645,8 @@ const AgentProfile: React.FC = () => {
 
   return (
     <AgentLayout activeSection="profile" title="Settings & Support">
-      <div className="min-h-screen bg-gray-50/50 pb-24">
-        <div className="lg:hidden animate-fade-in bg-[#f8f9fa] min-h-screen">
+      <div className="pb-24">
+        <div className="lg:hidden animate-fade-in bg-white min-h-screen">
           {activePanel === 'home' ? (
             <div className="space-y-0 px-4">
                {/* MINIMAL CENTERED PROFILE HEADER */}
@@ -632,8 +717,8 @@ const AgentProfile: React.FC = () => {
         </div>
 
         {/* DESKTOP VIEW */}
-        <div className="hidden lg:flex flex-col lg:flex-row gap-10 max-w-7xl mx-auto px-6 pt-6">
-          <div className="w-[280px] shrink-0 space-y-8">
+        <div className="hidden lg:flex flex-col lg:flex-row gap-10 pt-4">
+          <div className="w-[300px] shrink-0 space-y-8">
             <div className="bg-white rounded-[2.5rem] p-8 shadow-xl text-center space-y-4 border-b-[6px] border-[#002f37]">
                <div className="h-24 w-24 rounded-full mx-auto border-4 border-gray-50 overflow-hidden">
                  {agent?.avatar ? <img src={agent.avatar} className="w-full h-full object-cover" /> : <User className="w-full h-full p-6 text-gray-200" />}

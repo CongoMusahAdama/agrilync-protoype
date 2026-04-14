@@ -82,9 +82,9 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                 'farmers-management': '/dashboard/agent/farmers-management',
                 'media-gallery': '/dashboard/agent/media',
                 'regional-performance': '/dashboard/super-admin/regions',
-                'agent-accountability': '/dashboard/super-admin/agents',
+                'agent-management': '/dashboard/super-admin/agents',
+                'field-audit': '/dashboard/super-admin/audit',
                 'farm-oversight': '/dashboard/super-admin/oversight',
-                'partnerships-summary': '/dashboard/super-admin/partnerships',
                 'escalations': '/dashboard/super-admin/escalations',
                 'reports-analytics': '/dashboard/super-admin/analytics',
                 'system-logs': '/dashboard/super-admin/logs',
@@ -142,22 +142,23 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             section: 'Operations',
             items: [
                 { id: 'regional-performance', label: 'Regional Performance', icon: MapPin },
-                { id: 'agent-accountability', label: 'Agent Accountability', icon: Briefcase },
+                { id: 'agent-management', label: 'Agent Management', icon: Briefcase },
+                { id: 'field-audit', label: 'Field Operations Audit', icon: Activity },
                 { id: 'farm-oversight', label: 'Farm & Farmer Oversight', icon: Sprout },
             ]
         },
         {
-            section: 'Partnerships & Alerts',
+            section: 'Alerts & Escalations',
             items: [
-                { id: 'partnerships-summary', label: 'Partnerships Summary', icon: Handshake },
                 { id: 'escalations', label: 'Escalations & Alerts', icon: AlertTriangle },
             ]
         },
         {
             section: 'Analytics',
             items: [
+                { id: 'performance', label: 'Performance Monitoring', icon: Activity },
                 { id: 'reports-analytics', label: 'Reports & Analytics', icon: BarChart3 },
-                { id: 'system-logs', label: 'System Logs & Audit', icon: Activity },
+                { id: 'system-logs', label: 'System Logs & Audit', icon: ShieldAlert },
             ]
         },
         {

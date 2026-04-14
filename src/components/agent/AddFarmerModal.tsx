@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/api';
-import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import Swal from 'sweetalert2';
 import { createWorker } from 'tesseract.js';
@@ -14,10 +13,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import FarmMap from '@/components/FarmMap';
 import FarmerIdCardModal from './FarmerIdCardModal';
+import { Badge } from '@/components/ui/badge';
 import {
     User, Sprout, FileText, X, MapPin, Camera,
     ChevronRight, ChevronLeft, UserCheck, Loader2,
-    Leaf, CheckCircle2, Edit, Coins, ShieldCheck, Activity
+    Leaf, CheckCircle2, Edit, Coins, ShieldCheck, Activity,
+    Globe, Mail, Layers, Briefcase as FarmIcon
 } from 'lucide-react';
 import { GHANA_REGIONS, GHANA_LANGUAGES, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
 
@@ -136,7 +137,12 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                 setStep(1);
                 setIsEditable(false);
             } catch (error) {
-                toast.error('Error loading farmer data. Please try again.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Load Failed',
+                    text: 'Error loading farmer profile for editing. Refined data might be missing.',
+                    confirmButtonColor: '#002f37'
+                });
             }
         } else if ((open || !trigger) && !isEditMode) {
             setFormData({ ...emptyForm, region: getRegionKey(agent?.region) });
@@ -214,10 +220,22 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             } else if (extractedData.name || extractedData.dob) {
                 setOcrMismatch([]);
                 setIdVerificationChecked(true);
-                toast.success('ID card verified successfully!');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Ghana card OCR verification completed successfully!',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    position: 'top-end'
+                });
             }
         } catch (error) {
-            toast.error('Could not read ID card. Please verify manually.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'OCR Scan Failed',
+                text: 'Could not read card data. Manual verification will be required.',
+                confirmButtonColor: '#002f37'
+            });
         } finally {
             setOcrProcessing(false);
         }
@@ -242,17 +260,20 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'front' | 'back' | 'profile') => {
         const file = e.target.files?.[0];
         if (!file) return;
-        if (file.size > 5 * 1024 * 1024) { toast.error('File is too large. Max 5MB.'); return; }
+        if (file.size > 5 * 1024 * 1024) { 
+            Swal.fire({ icon: 'error', title: 'File Too Large', text: 'Maximum upload size is 5MB. Please choose a smaller image.', confirmButtonColor: '#002f37' });
+            return; 
+        }
         const reader = new FileReader();
         reader.onloadend = async () => {
-            const processingToast = file.size > 1024 * 1024 ? toast.loading('Optimizing image...') : null;
             try {
                 const compressed = await compressImage(reader.result as string);
-                if (processingToast) toast.dismiss(processingToast);
                 if (type === 'front') { setIdCardFront(compressed); processOCR(compressed); }
                 else if (type === 'back') setIdCardBack(compressed);
                 else setProfilePicture(compressed);
-            } catch { if (processingToast) toast.dismiss(processingToast); toast.error('Failed to process image'); }
+            } catch { 
+                Swal.fire({ icon: 'error', title: 'Processing Error', text: 'Failed to optimize image for upload.', confirmButtonColor: '#002f37' });
+            }
         };
         reader.readAsDataURL(file);
     };
@@ -298,20 +319,34 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         },
         onError: (error: any) => {
             console.error('Add/Edit Farmer Error:', error.response?.data);
-            toast.error(error.response?.data?.msg || error.response?.data?.message || 'Failed to create farmer account');
+            Swal.fire({
+                icon: 'error',
+                title: 'Transaction Failed',
+                text: error.response?.data?.msg || error.response?.data?.message || 'Failed to complete grower registration',
+                confirmButtonColor: '#002f37'
+            });
         }
     });
 
     const isSubmitting = addFarmerMutation.isPending;
 
     const handleSubmit = async () => {
-        if (!certificationChecked) { toast.error('Please certify the verification of farmer information'); return; }
-        if (!idCardFront || !idCardBack) { toast.error('Please upload both sides of the Ghana Card'); return; }
+        if (!certificationChecked) {
+            Swal.fire({ icon: 'error', title: 'Action Required', text: 'Please certify the verification of farmer information', confirmButtonColor: '#002f37' });
+            return;
+        }
+        if (!idCardFront || !idCardBack) {
+            Swal.fire({ icon: 'error', title: 'Missing Documentation', text: 'Please upload both sides of the Ghana Card', confirmButtonColor: '#002f37' });
+            return;
+        }
         if (!isEditMode && ocrMismatch.length > 0) {
             Swal.fire({ icon: 'error', title: 'Cannot Proceed', text: `Mismatch in: ${ocrMismatch.join(', ')}. Please correct before submitting.`, confirmButtonColor: '#ef4444' });
             return;
         }
-        if (!idVerificationChecked) { toast.error('Please confirm the ID verification checkbox'); return; }
+        if (!idVerificationChecked) {
+            Swal.fire({ icon: 'error', title: 'Validation Pending', text: 'Please confirm the ID verification checkbox', confirmButtonColor: '#002f37' });
+            return;
+        }
 
         const requiredFields: Record<string, any> = {
             'Full Name': formData.name, 'Phone Number': formData.contact,
@@ -322,10 +357,16 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             'Farm Type': formData.farmType, 'Experience Portfolio': formData.yearsOfExperience,
         };
         const missingFields = Object.entries(requiredFields).filter(([_, v]) => !v).map(([k]) => k);
-        if (missingFields.length > 0) { toast.error(`Missing: ${missingFields.join(', ')}`); return; }
+        if (missingFields.length > 0) {
+            Swal.fire({ icon: 'error', title: 'Incomplete Data', text: `Please fill required fields: ${missingFields.join(', ')}`, confirmButtonColor: '#002f37' });
+            return;
+        }
 
         const ghanaCardRegex = /^GHA-\d{9}-\d$/;
-        if (!ghanaCardRegex.test(formData.ghanaCardNumber)) { toast.error('Invalid Ghana Card format. Expected: GHA-XXXXXXXXX-X'); return; }
+        if (!ghanaCardRegex.test(formData.ghanaCardNumber)) {
+            Swal.fire({ icon: 'error', title: 'Identity Format Error', text: 'Invalid Ghana Card format. Expected: GHA-XXXXXXXXX-X', confirmButtonColor: '#002f37' });
+            return;
+        }
 
         let tempPassword = formData.password;
         if (!isEditMode && !tempPassword) {
@@ -474,16 +515,16 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                                 ? <img src={profilePicture} alt="Profile" className="w-full h-full object-cover" />
                                                                 : <div className="flex flex-col items-center gap-1 text-gray-300 group-hover:text-[#7ede56] transition-colors">
                                                                     <Camera className="h-8 w-8" />
-                                                                    <span className="text-[9px] font-black uppercase tracking-widest">Photo</span>
+                                                                    <span className="text-[9px] font-black uppercase tracking-widest text-center">Upload or<br/>Snap</span>
                                                                   </div>
                                                             }
                                                         </div>
                                                         {isEditable && (
-                                                            <div className="absolute bottom-0 right-0 h-9 w-9 rounded-full bg-[#002f37] border-2 border-white flex items-center justify-center shadow-lg group-hover:bg-[#7ede56] transition-colors">
+                                                            <div className="absolute bottom-0 right-0 h-9 w-9 rounded-full bg-[#002f37] border-2 border-white flex items-center justify-center shadow-lg group-hover:bg-[#7ede56] transition-colors" title="Select File or Take Photo">
                                                                 <Camera className="h-4 w-4 text-white group-hover:text-[#002f37] transition-colors" />
                                                             </div>
                                                         )}
-                                                        <input type="file" accept="image/*" capture="user" className="hidden" onChange={(e) => handleFileChange(e, 'profile')} disabled={!isEditable} />
+                                                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, 'profile')} disabled={!isEditable} />
                                                     </label>
                                                 </div>
 
@@ -495,6 +536,25 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                     <div className="space-y-2">
                                                         <Label className="text-[11px] font-black uppercase text-[#002f37]/60 tracking-widest">Phone Number</Label>
                                                         <Input placeholder="+233 XX XXX XXX" className="h-14 bg-gray-50 border-none rounded-xl font-bold" value={formData.contact} onChange={(e) => handleInputChange('contact', e.target.value)} disabled={!isEditable} />
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                                                    <div className="space-y-2">
+                                                        <Label className="text-[11px] font-black uppercase text-[#002f37]/60 tracking-widest">Preferred Language</Label>
+                                                        <Select value={formData.language} onValueChange={(v) => handleInputChange('language', v)} disabled={!isEditable}>
+                                                            <SelectTrigger className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500/20"><SelectValue placeholder="Select Language" /></SelectTrigger>
+                                                            <SelectContent className="max-h-[300px] rounded-2xl border-none shadow-2xl">
+                                                                {getLanguagesForRegion(formData.region).map(lang => (
+                                                                    <SelectItem key={lang} value={lang} className="py-3 font-bold">{lang}</SelectItem>
+                                                                ))}
+                                                                <SelectItem value="Other" className="py-3 font-bold text-[#065f46]">Other</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label className="text-[11px] font-black uppercase text-[#002f37]/60 tracking-widest">Email Address (Optional)</Label>
+                                                        <Input placeholder="farmer@example.com" type="email" className="h-14 bg-gray-50 border-none rounded-xl font-bold" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} disabled={!isEditable} />
                                                     </div>
                                                 </div>
 
@@ -516,7 +576,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                     </div>
                                                     <div className="space-y-2">
                                                         <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest font-mono">Ghana Card *</Label>
-                                                        <Input placeholder="GHA-XXXX-X" className="h-14 bg-gray-50 border-none rounded-xl font-mono tracking-widest text-[#002f37] font-black placeholder:text-gray-300 transition-all focus:ring-2 focus:ring-emerald-500/20" value={formData.ghanaCardNumber} onChange={(e) => handleInputChange('ghanaCardNumber', e.target.value.toUpperCase())} disabled={!isEditable} />
+                                                        <Input placeholder="GHA-XXXX-X" className="h-14 bg-gray-50 border-none rounded-xl font-mono tracking-widest text-[#002f37] font-black placeholder:text-gray-300 transition-all focus:ring-2 focus:ring-emerald-500/20" value={formData.ghanaCardNumber} onChange={(e) => handleInputChange('ghanaCardNumber', e.target.value.toUpperCase())} disabled={!isEditable} onPaste={(e) => e.preventDefault()} onDrop={(e) => e.preventDefault()} />
                                                     </div>
                                                 </div>
                                             </div>
@@ -580,7 +640,51 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                         <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Experience (Years)</Label>
                                                         <Input type="number" placeholder="Years of farming" className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 placeholder:text-gray-400" value={formData.yearsOfExperience} onChange={(e) => handleInputChange('yearsOfExperience', e.target.value)} disabled={!isEditable} />
                                                     </div>
+                                                    <div className="space-y-2">
+                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Primary Farm Type</Label>
+                                                        <Select value={formData.farmType} onValueChange={(v) => handleInputChange('farmType', v)} disabled={!isEditable}>
+                                                            <SelectTrigger className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500/20"><SelectValue placeholder="Farm Focus" /></SelectTrigger>
+                                                            <SelectContent className="rounded-2xl border-none shadow-2xl">
+                                                                <SelectItem value="crop" className="py-3 font-bold">Crop Only</SelectItem>
+                                                                <SelectItem value="livestock" className="py-3 font-bold">Livestock Only</SelectItem>
+                                                                <SelectItem value="mixed" className="py-3 font-bold">Mixed Farming</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
                                                 </div>
+
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 border-gray-100">
+                                                    <div className="space-y-2">
+                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Land Ownership Status</Label>
+                                                        <Select value={formData.landOwnershipStatus} onValueChange={(v) => handleInputChange('landOwnershipStatus', v)} disabled={!isEditable}>
+                                                            <SelectTrigger className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500/20"><SelectValue placeholder="Ownership Status" /></SelectTrigger>
+                                                            <SelectContent className="rounded-2xl border-none shadow-2xl">
+                                                                <SelectItem value="owned" className="py-3 font-bold">Personal / Family Owned</SelectItem>
+                                                                <SelectItem value="leased" className="py-3 font-bold">Leased / Rented</SelectItem>
+                                                                <SelectItem value="sharecropped" className="py-3 font-bold">Sharecropped</SelectItem>
+                                                                <SelectItem value="communal" className="py-3 font-bold">Communal Title</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Estimated Acreage</Label>
+                                                        <Input type="number" step="0.1" placeholder="Farm size in acres" className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 placeholder:text-gray-400" value={formData.farmSize} onChange={(e) => handleInputChange('farmSize', e.target.value)} disabled={!isEditable} />
+                                                    </div>
+                                                </div>
+
+                                                {(formData.farmType === 'crop' || formData.farmType === 'mixed') && (
+                                                    <div className="space-y-2">
+                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest font-inter">Crops Currently Under Production</Label>
+                                                        <Input placeholder="e.g. Maize, Cocoa, Yam, Rice..." className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 placeholder:text-gray-400" value={formData.cropsGrown} onChange={(e) => handleInputChange('cropsGrown', e.target.value)} disabled={!isEditable} />
+                                                    </div>
+                                                )}
+
+                                                {(formData.farmType === 'livestock' || formData.farmType === 'mixed') && (
+                                                    <div className="space-y-2">
+                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest font-inter">Livestock Inventory</Label>
+                                                        <Input placeholder="e.g. Poultry (50), Pigs (10), Cattle (5)..." className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 placeholder:text-gray-400" value={formData.livestockType} onChange={(e) => handleInputChange('livestockType', e.target.value)} disabled={!isEditable} />
+                                                    </div>
+                                                )}
 
                                                 <div className="relative rounded-3xl overflow-hidden border-2 border-gray-100 h-[380px]">
                                                     <div className="absolute top-4 left-4 z-10 px-4 py-2 bg-white/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 flex items-center gap-3">
@@ -647,6 +751,26 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                             <div className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-600 font-black text-xl">₵</div>
                                                             <Input type="number" placeholder="0.00" className="h-14 pl-12 bg-gray-50 border-none rounded-xl font-black text-xl text-gray-900 placeholder:text-gray-300 transition-all focus:ring-2 focus:ring-emerald-500/20" value={formData.estimatedCapitalNeed} onChange={(e) => handleInputChange('estimatedCapitalNeed', e.target.value)} disabled={formData.investmentInterest === 'no' || !isEditable} />
                                                         </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+                                                    <div className="space-y-2">
+                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest pl-1">Primary Investment Objective</Label>
+                                                        <Select 
+                                                            value={formData.preferredInvestmentType} 
+                                                            onValueChange={(v) => handleInputChange('preferredInvestmentType', v)} 
+                                                            disabled={formData.investmentInterest === 'no' || !isEditable}
+                                                        >
+                                                            <SelectTrigger className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500/20"><SelectValue placeholder="Select Purpose" /></SelectTrigger>
+                                                            <SelectContent className="rounded-2xl border-none shadow-2xl">
+                                                                <SelectItem value="inputs" className="py-3 font-bold">Farm Inputs (Seeds, Fertilizer, Agro-chem)</SelectItem>
+                                                                <SelectItem value="mechanization" className="py-3 font-bold">Mechanization & Equipment</SelectItem>
+                                                                <SelectItem value="irrigation" className="py-3 font-bold">Irrigation Systems</SelectItem>
+                                                                <SelectItem value="infrastructure" className="py-3 font-bold">Storage & Processing Infrastructure</SelectItem>
+                                                                <SelectItem value="working_capital" className="py-3 font-bold">General Working Capital</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
                                                     </div>
                                                 </div>
 
@@ -735,11 +859,14 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                         <div className="relative group rounded-3xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 h-[240px] flex flex-col items-center justify-center transition-all hover:border-[#7ede56]">
                                                             {idCardFront
                                                                 ? <img src={idCardFront} alt="ID Front" className="w-full h-full object-cover" />
-                                                                : <Camera className="h-10 w-10 text-gray-300 group-hover:text-[#7ede56] transition-colors" />
+                                                                : <div className="flex flex-col items-center gap-2 text-gray-300 group-hover:text-[#7ede56] transition-colors">
+                                                                    <Camera className="h-10 w-10" />
+                                                                    <span className="text-[9px] font-black uppercase">Upload or Snap</span>
+                                                                  </div>
                                                             }
-                                                            <label className="absolute inset-0 cursor-pointer opacity-0 group-hover:opacity-100 bg-[#002f37]/80 flex flex-col items-center justify-center text-white gap-2 transition-all backdrop-blur-sm">
-                                                                <span className="text-[10px] font-black uppercase tracking-widest">{ocrProcessing ? 'Scanning...' : 'Capture Identification'}</span>
-                                                                <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleFileChange(e, 'front')} disabled={!isEditable} />
+                                                            <label className="absolute inset-0 cursor-pointer opacity-0 group-hover:opacity-100 bg-[#002f37]/80 flex flex-col items-center justify-center text-white gap-2 transition-all backdrop-blur-sm" title="Upload ID Front or Snap Photo">
+                                                                <span className="text-[10px] font-black uppercase tracking-widest">{ocrProcessing ? 'Scanning...' : 'Upload or Capture'}</span>
+                                                                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, 'front')} disabled={!isEditable} />
                                                             </label>
                                                         </div>
                                                     </div>
@@ -748,11 +875,14 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                         <div className="relative group rounded-3xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 h-[240px] flex flex-col items-center justify-center transition-all hover:border-[#7ede56]">
                                                             {idCardBack
                                                                 ? <img src={idCardBack} alt="ID Back" className="w-full h-full object-cover" />
-                                                                : <Camera className="h-10 w-10 text-gray-300 group-hover:text-[#7ede56] transition-colors" />
+                                                                : <div className="flex flex-col items-center gap-2 text-gray-300 group-hover:text-[#7ede56] transition-colors">
+                                                                    <Camera className="h-10 w-10" />
+                                                                    <span className="text-[9px] font-black uppercase">Upload or Snap</span>
+                                                                  </div>
                                                             }
-                                                            <label className="absolute inset-0 cursor-pointer opacity-0 group-hover:opacity-100 bg-[#002f37]/80 flex flex-col items-center justify-center text-white gap-2 transition-all backdrop-blur-sm">
-                                                                <span className="text-[10px] font-black uppercase tracking-widest">Capture Verification</span>
-                                                                <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleFileChange(e, 'back')} disabled={!isEditable} />
+                                                            <label className="absolute inset-0 cursor-pointer opacity-0 group-hover:opacity-100 bg-[#002f37]/80 flex flex-col items-center justify-center text-white gap-2 transition-all backdrop-blur-sm" title="Upload ID Back or Snap Photo">
+                                                                <span className="text-[10px] font-black uppercase tracking-widest">Upload or Capture</span>
+                                                                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, 'back')} disabled={!isEditable} />
                                                             </label>
                                                         </div>
                                                     </div>

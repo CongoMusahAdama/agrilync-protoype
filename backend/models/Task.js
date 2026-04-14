@@ -56,6 +56,10 @@ const taskSchema = new mongoose.Schema({
   synced: { 
     type: Boolean, 
     default: true 
+  },
+  reminderSent: {
+    type: Boolean,
+    default: false
   }
 }, { timestamps: true });
 

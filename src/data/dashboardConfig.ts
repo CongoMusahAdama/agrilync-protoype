@@ -41,14 +41,6 @@ export const STATUS_STYLES: Record<string, string> = {
   Resolved: 'bg-[#065f46]/10 text-[#065f46]'
 };
 
-// Metric chart data
-export const METRIC_DATA: Record<string, any> = {
-  onboarding: { color: 'var(--lgreen)', data: [45, 52, 68, 74, 85, 93], target: '100%' },
-  visits: { color: 'var(--teal)', data: [55, 60, 70, 65, 72, 80], target: '100%' },
-  sync: { color: '#921573', data: [88, 90, 94, 92, 96, 96], target: '95%' },
-  training: { color: 'var(--amber)', data: [30, 38, 45, 52, 58, 61], target: '100%' },
-};
-
 // Cache performance settings
 export const DASHBOARD_CACHE_STALE_TIME = 5 * 60 * 1000; // 5 minutes (matches backend cache TTL)
 export const DASHBOARD_CACHE_GC_TIME = 10 * 60 * 1000; // 10 minutes

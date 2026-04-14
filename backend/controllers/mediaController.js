@@ -68,8 +68,16 @@ exports.uploadMedia = async (req, res) => {
                 metadata 
             } = item;
 
-            // If URL is a base64 string, upload to Cloudinary
+            // Validate and upload
             if (url && url.startsWith('data:')) {
+                // Security check: Only allow images, videos, and PDFs
+                const allowedPrefixes = ['data:image/', 'data:video/', 'data:application/pdf'];
+                const isValid = allowedPrefixes.some(p => url.startsWith(p));
+                
+                if (!isValid) {
+                    return res.status(400).json({ msg: 'Invalid file type' });
+                }
+
                 url = await uploadBase64ToCloudinary(url, 'media/uploads');
             }
             

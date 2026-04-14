@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
-import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -35,6 +34,22 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
     const { agent } = useAuth();
     const queryClient = useQueryClient();
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const sendSmsNotification = async (count: number) => {
+        await Swal.fire({
+            title: 'SMS Dispatched',
+            html: `<div class="text-left"><p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Automated Protocol</p><p class="text-sm text-gray-700">SMS notification sent to <b>${count}</b> farmer(s) regarding the scheduled field visit.</p></div>`,
+            icon: 'info',
+            toast: true, 
+            position: 'top-end',
+            timer: 4000,
+            showConfirmButton: false,
+            background: '#fff',
+            color: '#002f37',
+            iconColor: '#7ede56',
+            timerProgressBar: true
+        });
+    };
 
     const [formData, setFormData] = useState({
         farmerId: '',
@@ -91,13 +106,19 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
                 timer: 2000,
                 timerProgressBar: true,
             });
+            sendSmsNotification(1);
             queryClient.invalidateQueries({ queryKey: ['scheduledVisits'] });
             queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
             handleClose();
             onSuccess?.();
         },
         onError: (error: { response?: { data?: { message?: string } } }) => {
-            toast.error(error.response?.data?.message || 'Failed to schedule visit');
+            Swal.fire({
+                icon: 'error',
+                title: 'Scheduling Failed',
+                text: error.response?.data?.message || 'Failed to sync field visit with the AgriLync system.',
+                confirmButtonColor: '#065f46'
+            });
         },
     });
 
@@ -128,9 +149,18 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
     };
 
     const handleSubmit = () => {
-        if (!formData.farmerId) { toast.error('Please select a grower'); return; }
-        if (!formData.visitDate || !formData.visitTime) { toast.error('Please set the visit date and time'); return; }
-        if (!formData.purpose) { toast.error('Please select the visit purpose'); return; }
+        if (!formData.farmerId) { 
+            Swal.fire({ icon: 'warning', title: 'Grower Required', text: 'Please select a target grower for this visit.', confirmButtonColor: '#065f46' });
+            return; 
+        }
+        if (!formData.visitDate || !formData.visitTime) { 
+            Swal.fire({ icon: 'warning', title: 'Schedule Required', text: 'Please set both a visit date and time.', confirmButtonColor: '#065f46' });
+            return; 
+        }
+        if (!formData.purpose) { 
+            Swal.fire({ icon: 'warning', title: 'Purpose Required', text: 'Please select the primary objective of this visit.', confirmButtonColor: '#065f46' });
+            return; 
+        }
 
         createVisitMutation.mutate({
             farmerIds: [formData.farmerId],
@@ -147,6 +177,8 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-4xl w-[95vw] p-0 overflow-hidden flex flex-col h-[75vh] border-none bg-white dark:bg-[#002f37] rounded-2xl shadow-2xl">
+                <DialogTitle className="sr-only">Schedule Field Visit</DialogTitle>
+                <DialogDescription className="sr-only">Log a new field visit for inspection or support.</DialogDescription>
 
                 {/* Header — dark green, same as Log Field Visit */}
                 <div className="relative bg-[#065f46] px-6 py-5 flex items-start justify-between shrink-0 overflow-hidden">

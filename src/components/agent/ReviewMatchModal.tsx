@@ -58,15 +58,23 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className={`max-w-2xl ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : 'bg-white'}`}>
-                <DialogHeader>
-                    <div className="flex items-center gap-2 mb-2">
-                        <ShieldCheck className="h-6 w-6 text-[#065f46]" />
-                        <DialogTitle className="text-xl">Review Investment Match</DialogTitle>
-                    </div>
-                    <DialogDescription className={darkMode ? 'text-gray-300' : 'text-gray-500'}>
-                        Verify documents and approve the partnership agreement.
-                    </DialogDescription>
+                <DialogHeader className="sr-only">
+                    <DialogTitle>Review Investment Match</DialogTitle>
+                    <DialogDescription>Verify documents and approve the partnership agreement.</DialogDescription>
                 </DialogHeader>
+                <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-[#065f46]/10 flex items-center justify-center">
+                            <ShieldCheck className="h-6 w-6 text-[#065f46]" />
+                        </div>
+                        <div>
+                            <DialogTitle className="text-xl font-bold text-[#002f37] dark:text-white">Review Investment Match</DialogTitle>
+                            <DialogDescription className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-0.5">
+                                Verify documents and approve the partnership agreement.
+                            </DialogDescription>
+                        </div>
+                    </div>
+                </div>
 
                 <div className="space-y-6 py-4">
 
@@ -77,9 +85,24 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
                                 <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Investor</p>
                                 <p className="font-medium text-base">{match.investor}</p>
                             </div>
-                            <div>
-                                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Farmer</p>
-                                <p className="font-medium text-base">{match.farmer}</p>
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-xl overflow-hidden border border-[#065f46]/10 bg-white">
+                                    {(match.farmer?.profilePicture || match.farmer?.avatar || match.farmer?.photo || match.farmer?.picture || match.farmer?.image || match.farmer?.profile_picture) ? (
+                                        <img 
+                                            src={match.farmer?.profilePicture || match.farmer?.avatar || match.farmer?.photo || match.farmer?.picture || match.farmer?.image || match.farmer?.profile_picture} 
+                                            alt={match.farmer?.name || match.farmer} 
+                                            className="w-full h-full object-cover" 
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-[#065f46]/5 text-[#065f46] font-bold text-xs">
+                                            {(match.farmer?.name || match.farmer || '?').charAt(0)}
+                                        </div>
+                                    )}
+                                </div>
+                                <div>
+                                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Farmer</p>
+                                    <p className="font-medium text-base truncate max-w-[120px]">{match.farmer?.name || match.farmer}</p>
+                                </div>
                             </div>
                             <div>
                                 <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Value</p>

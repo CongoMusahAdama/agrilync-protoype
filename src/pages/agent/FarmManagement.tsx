@@ -6,12 +6,12 @@ import * as XLSX from 'xlsx';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import { exportToPDF, exportToWord } from '@/utils/reportExport';
 import AgentLayout from './AgentLayout';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import CountUp from '@/components/CountUp';
+import { playSuccessSound } from '@/utils/audio';
 import AddFarmerModal from '@/components/agent/AddFarmerModal';
 import ViewFarmerModal from '@/components/agent/ViewFarmerModal';
 import UploadReportModal from '@/components/agent/UploadReportModal';
@@ -343,7 +343,12 @@ const FarmManagement: React.FC = () => {
             setEditModalOpen(true);
         } catch (error: any) {
             console.error('Error fetching farmer data:', error);
-            toast.error('Failed to load farmer data. Using available data.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Data Load Error',
+                text: 'Failed to load full farmer data. Using available cached data.',
+                confirmButtonColor: '#065f46'
+            });
             // Fallback to available data if fetch fails
             setSelectedFarmer(farmer);
             setEditModalOpen(true);
@@ -364,6 +369,7 @@ const FarmManagement: React.FC = () => {
         try {
             await api.post(`/matches/${matchId}/approve`);
             refetchSummary();
+            playSuccessSound();
             await Swal.fire({
                 icon: 'success',
                 title: 'Match Approved!',
@@ -380,7 +386,12 @@ const FarmManagement: React.FC = () => {
                 timerProgressBar: true
             });
         } catch (error: any) {
-            toast.error('Failed to approve match');
+            Swal.fire({
+                icon: 'error',
+                title: 'Operation Failed',
+                text: 'Failed to approve the match Request.',
+                confirmButtonColor: '#065f46'
+            });
         }
     };
 
@@ -389,7 +400,12 @@ const FarmManagement: React.FC = () => {
             await api.post(`/matches/${matchId}/reject`);
             refetchSummary();
         } catch (error) {
-            toast.error('Failed to reject match');
+            Swal.fire({
+                icon: 'error',
+                title: 'Operation Failed',
+                text: 'Failed to reject the match request.',
+                confirmButtonColor: '#065f46'
+            });
         }
     };
 
@@ -399,10 +415,26 @@ const FarmManagement: React.FC = () => {
         return `LYG-${baseId}`;
     };
 
-    const handleVerifyFarmer = (farmer: any) => {
-        const confirmed = window.confirm(`Verify farmer: ${farmer.name}?\n\nThis will change their status from Pending to Verified.`);
-        if (confirmed) {
-            alert(`Farmer ${farmer.name} has been verified successfully!`);
+    const handleVerifyFarmer = async (farmer: any) => {
+        const result = await Swal.fire({
+            title: 'Verify Farmer?',
+            text: `Verify farmer: ${farmer.name}? This will change their status from Pending to Verified.`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Verify',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#065f46',
+            cancelButtonColor: '#6b7280'
+        });
+
+        if (result.isConfirmed) {
+            playSuccessSound();
+            Swal.fire({
+                icon: 'success',
+                title: 'Farmer Verified',
+                text: `Farmer ${farmer.name} has been verified successfully!`,
+                confirmButtonColor: '#065f46'
+            });
         }
     };
 
@@ -501,7 +533,12 @@ const FarmManagement: React.FC = () => {
 
     const handleExportPDF = async () => {
         if (visitLogs.length === 0) {
-            toast.error('No visit logs to export');
+            Swal.fire({
+                icon: 'info',
+                title: 'No Data',
+                text: 'There are no visit logs available for export.',
+                confirmButtonColor: '#065f46'
+            });
             return;
         }
 
@@ -613,7 +650,12 @@ const FarmManagement: React.FC = () => {
             });
         } catch (err) {
             console.error('Export error:', err);
-            toast.error('Failed to export PDF');
+            Swal.fire({
+                icon: 'error',
+                title: 'Export Failed',
+                text: 'Could not generate the PDF report.',
+                confirmButtonColor: '#065f46'
+            });
         } finally {
             setIsExporting(null);
         }
@@ -621,7 +663,12 @@ const FarmManagement: React.FC = () => {
 
     const handleExportExcel = async () => {
         if (visitLogs.length === 0) {
-            toast.error('No visit logs to export');
+            Swal.fire({
+                icon: 'info',
+                title: 'No Data',
+                text: 'There are no visit logs available for export.',
+                confirmButtonColor: '#065f46'
+            });
             return;
         }
 
@@ -665,7 +712,12 @@ const FarmManagement: React.FC = () => {
             });
         } catch (err) {
             console.error('Export error:', err);
-            toast.error('Failed to export Excel');
+            Swal.fire({
+                icon: 'error',
+                title: 'Export Failed',
+                text: 'Could not generate the Excel spreadsheet.',
+                confirmButtonColor: '#065f46'
+            });
         } finally {
             setIsExporting(null);
         }
@@ -726,7 +778,12 @@ const FarmManagement: React.FC = () => {
         },
         onError: (err) => {
             console.error('Error saving visit:', err);
-            toast.error(visitForm.isEditing ? 'Failed to update field visit' : 'Failed to log field visit');
+            Swal.fire({
+                icon: 'error',
+                title: 'Save Failed',
+                text: visitForm.isEditing ? 'Failed to update field visit record.' : 'Failed to log the new field visit.',
+                confirmButtonColor: '#065f46'
+            });
         }
     });
 
@@ -736,7 +793,12 @@ const FarmManagement: React.FC = () => {
         const finalPurpose = visitForm.purpose === 'Other' ? visitForm.otherPurpose : visitForm.purpose;
 
         if (!visitForm.farmerId || !finalPurpose || !visitForm.notes) {
-            toast.error('Please fill all required fields');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Validation Error',
+                text: 'Please ensure all required fields are filled correctly.',
+                confirmButtonColor: '#065f46'
+            });
             return;
         }
 
@@ -1043,13 +1105,13 @@ const FarmManagement: React.FC = () => {
                                                     <TableCell>
                                                         <div className="flex items-center gap-4">
                                                             <div className="relative">
-                                                                {farmer.profilePicture ? (
+                                                                {farmer.profilePicture || farmer.avatar || farmer.photo || farmer.picture || farmer.image || farmer.profile_picture ? (
                                                                     <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-lg border-2 border-white dark:border-[#124b53] transition-transform group-hover:scale-110 group-hover:rotate-3">
-                                                                        <img src={farmer.profilePicture} alt={farmer.name} className="w-full h-full object-cover" />
+                                                                        <img src={farmer.profilePicture || farmer.avatar || farmer.photo || farmer.picture || farmer.image || farmer.profile_picture} alt={farmer.name} className="w-full h-full object-cover" />
                                                                     </div>
                                                                 ) : (
                                                                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-bold text-white shadow-lg transition-transform group-hover:scale-110 group-hover:rotate-3 ${farmer.displayStatus === 'Completed' ? 'bg-emerald-500' : farmer.displayStatus === 'Pending' ? 'bg-amber-500' : 'bg-indigo-500'}`}>
-                                                                        {farmer.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                                                                        {farmer.name?.split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase()}
                                                                     </div>
                                                                 )}
                                                                 {farmer.displayStatus === 'Completed' && (

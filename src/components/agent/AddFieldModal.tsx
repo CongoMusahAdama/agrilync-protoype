@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/api';
-import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -104,14 +103,43 @@ const AddFieldModal: React.FC<AddFieldModalProps> = ({ open, onOpenChange, farme
             onOpenChange(false);
         },
         onError: (error: { response?: { data?: { msg?: string } } }) => {
-            toast.error(error.response?.data?.msg || 'Failed to add field asset');
+            Swal.fire({
+                icon: 'error',
+                title: 'Mapping Failed',
+                text: error.response?.data?.msg || 'Failed to add field asset to the registry.',
+                confirmButtonColor: '#065f46'
+            });
         }
     });
 
     const handleSubmit = () => {
-        if (!formData.name) { toast.error('Field name is required'); return; }
-        if (!formData.crop) { toast.error('Please specify primary crop'); return; }
-        if (measuredArea === 0) { toast.error('Please map the field perimeter'); return; }
+        if (!formData.name) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Identification Required',
+                text: 'Please provide a unique name for this field operation.',
+                confirmButtonColor: '#065f46'
+            });
+            return;
+        }
+        if (!formData.crop) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Asset Metadata Required',
+                text: 'Please specify the primary crop for this field.',
+                confirmButtonColor: '#065f46'
+            });
+            return;
+        }
+        if (measuredArea === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Geospatial Data Missing',
+                text: 'Please map the field perimeter on the satellite interface.',
+                confirmButtonColor: '#065f46'
+            });
+            return;
+        }
 
         const payload = {
             farmer: farmer?._id || farmer?.id,

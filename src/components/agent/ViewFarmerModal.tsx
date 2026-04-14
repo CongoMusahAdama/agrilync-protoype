@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import {
-    MapPin, Phone, MessageSquare, X,
+    MapPin, Phone, MessageSquare, X, Map,
     Sprout, Activity, ClipboardList, Image as ImageIcon,
     History, AlertTriangle, CheckCircle2, MoreHorizontal,
     Plus, Edit, Star, Camera, Video
@@ -77,20 +77,20 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className={`max-w-6xl w-full h-[80vh] p-0 flex flex-col overflow-hidden border-0 ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-50'}`}>
-                <div className="sr-only">
+                <DialogHeader className="sr-only">
                     <DialogTitle>Farm Details - {farm.name}</DialogTitle>
                     <DialogDescription>Full details and activity history for farmer {farmer.name}</DialogDescription>
-                </div>
+                </DialogHeader>
 
                 {/* Top Action Header */}
                 <div className={`p-4 md:p-6 border-b flex flex-col md:flex-row items-start md:items-center justify-between gap-4 ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white border-gray-200'}`}>
                     <div className="flex items-center gap-4">
                         <div className="h-16 w-16 rounded-2xl overflow-hidden shadow-2xl border-2 border-[#065f46]/20 bg-white/10 flex items-center justify-center shrink-0">
-                            {farmer.profilePicture ? (
-                                <img src={farmer.profilePicture} alt={farmer.name} className="w-full h-full object-cover" />
+                            {farmer.profilePicture || farmer.avatar ? (
+                                <img src={farmer.profilePicture || farmer.avatar} alt={farmer.name} className="w-full h-full object-cover" />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-[#065f46]/10">
-                                    <Sprout className="h-8 w-8 text-[#065f46]" />
+                                <div className="w-full h-full flex items-center justify-center bg-[#065f46]/10 text-[#065f46] font-black text-xs">
+                                    {farmer.name?.split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase()}
                                 </div>
                             )}
                         </div>
@@ -191,11 +191,11 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                         <div className={`mt-auto p-4 rounded-xl border-2 border-dashed ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
                             <div className="flex items-center gap-3">
                                 <div className="h-12 w-12 rounded-xl bg-gray-200 dark:bg-gray-800 overflow-hidden flex items-center justify-center shrink-0 shadow-lg border-2 border-white dark:border-white/10">
-                                    {farmer.profilePicture ? (
-                                        <img src={farmer.profilePicture} alt={farmer.name} className="w-full h-full object-cover" />
+                                    {farmer.profilePicture || farmer.avatar ? (
+                                        <img src={farmer.profilePicture || farmer.avatar} alt={farmer.name} className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="bg-[#065f46]/20 w-full h-full flex items-center justify-center">
-                                            <Star className="h-5 w-5 text-amber-400 fill-amber-400" />
+                                        <div className="bg-[#065f46]/20 w-full h-full flex items-center justify-center text-[#065f46] font-black text-[10px]">
+                                            {farmer.name?.split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase()}
                                         </div>
                                     )}
                                 </div>

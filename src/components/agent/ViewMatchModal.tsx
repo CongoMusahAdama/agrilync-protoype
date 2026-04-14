@@ -73,8 +73,25 @@ const ViewMatchModal: React.FC<ViewMatchModalProps> = ({ open, onOpenChange, mat
                                 <Sprout className={`h-5 w-5 ${darkMode ? 'text-[#065f46]' : 'text-[#065f46]'}`} />
                                 <h3 className="font-semibold text-lg">Farmer</h3>
                             </div>
-                            <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Name</p>
-                            <p className="font-medium text-base mb-2">{match.farmer}</p>
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="h-10 w-10 rounded-xl overflow-hidden border border-[#065f46]/20 bg-white">
+                                    {(match.farmer?.profilePicture || match.farmer?.avatar || match.farmer?.photo || match.farmer?.picture || match.farmer?.image || match.farmer?.profile_picture) ? (
+                                        <img 
+                                            src={match.farmer?.profilePicture || match.farmer?.avatar || match.farmer?.photo || match.farmer?.picture || match.farmer?.image || match.farmer?.profile_picture} 
+                                            alt={match.farmer?.name || match.farmer} 
+                                            className="w-full h-full object-cover" 
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-emerald-50 text-[#065f46] font-bold text-xs">
+                                            {(match.farmer?.name || match.farmer || '?').charAt(0)}
+                                        </div>
+                                    )}
+                                </div>
+                                <div>
+                                    <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Name</p>
+                                    <p className="font-medium text-base truncate max-w-[140px]">{match.farmer?.name || match.farmer}</p>
+                                </div>
+                            </div>
                             <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Farm Type</p>
                             <p className="font-medium text-base">{match.farmType}</p>
                         </div>

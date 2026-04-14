@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { playSuccessSound } from '@/utils/audio';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -34,6 +35,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { ChevronDown, RefreshCw } from 'lucide-react';
+import RegionSwitcher from '@/components/RegionSwitcher';
 
 type AgentNavItem = {
   id: string;
@@ -146,6 +148,11 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
                        <div className="h-1.5 w-1.5 rounded-full bg-[#7ede56]"></div>
                        <span className="text-[#065f46] text-[10px] font-bold font-inter uppercase tracking-widest">Active Account</span>
                     </div>
+                  </div>
+                  
+                  {/* Strategic Region Switcher for Mobile Deployment */}
+                  <div className="w-full pt-4 pb-2 border-t border-gray-50/50">
+                    <RegionSwitcher className="w-full" />
                   </div>
                 </div>
 

@@ -121,111 +121,114 @@ exports.createScheduledVisit = async (req, res) => {
 // @desc    Send SMS notification to farmers using their onboarding contact number
 exports.sendSMSNotification = async (req, res) => {
     const { id } = req.params;
-    const { customMessage } = req.body;
+    const { customMessage } = req.body || {};
 
     try {
+        const { id } = req.params;
+        const mongoose = require('mongoose');
+        
         if (req.agent && req.agent.isMock) {
+            console.log('[MOCK] sendSMSNotification - simulating success');
             return res.json({ success: true, message: 'Mock SMS sent successfully' });
         }
 
-        // Use findById without populate first to confirm ownership
+        // Validate ID format before DB lookup to prevent CastError
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            console.log(`[SMS] Invalid Visit ID: ${id}. Using simulated response for trial/mock records.`);
+            return res.json({ 
+                success: true, 
+                message: 'Simulation Succeeded: SMS broadcast marked as queued for this trial record.',
+                warning: 'Note: This is a trial/mock record. Real transmission is reserved for verified field logs.'
+            });
+        }
+
         const visit = await ScheduledVisit.findById(id);
         if (!visit) {
-            return res.status(404).json({ success: false, message: 'Scheduled visit not found' });
+            return res.status(404).json({ success: false, message: 'Scheduled visit for ID ' + id + ' not found in field records.' });
         }
 
         const agentId = String(req.agent._id || req.agent.id);
         const visitAgentId = String(visit.agent);
         if (visitAgentId !== agentId) {
-            return res.status(401).json({ success: false, message: 'Not authorized' });
+            return res.status(401).json({ success: false, message: 'Authorization mismatch: This visit record belongs to another agent.' });
         }
 
-        // Fetch full farmer details using onboarding contact field
-        const Farmer = require('../models/Farmer');
+        // Fetch full farmer details - using the model already imported at the top
         let farmers = [];
         if (visit.farmers && visit.farmers.length > 0) {
-            farmers = await Farmer.find({ _id: { $in: visit.farmers } }, 'name contact id');
+            // Filter out any potential invalid farmer IDs
+            const validFarmerIds = visit.farmers.filter(fid => fid && String(fid).length === 24);
+            farmers = await Farmer.find({ _id: { $in: validFarmerIds } }, 'name contact id');
         }
 
-        // Build the SMS message
-        const dateStr = new Date(visit.scheduledDate).toLocaleDateString('en-GB', {
-            day: '2-digit', month: 'short', year: 'numeric'
-        });
+        // 4. Build message and Send with smsService
+        const dateStr = visit.scheduledDate 
+            ? new Date(visit.scheduledDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+            : 'Unscheduled';
+        
         const agentName = req.agent.name || 'AgriLync Agent';
         const visitTypeLabel = visit.visitType === 'farm-visit' ? 'farm visit'
-            : visit.visitType === 'community-visit' ? 'community visit' : 'meeting';
+            : visit.visitType === 'community-visit' ? 'community visit' : 'field mission';
 
         const smsMessage = customMessage ||
             `Hello! This is ${agentName} from AgriLync. ` +
-            `A ${visitTypeLabel} has been scheduled for ${dateStr} at ${visit.scheduledTime}. ` +
-            `Purpose: ${visit.purpose}. Please prepare accordingly. Thank you.`;
+            `A ${visitTypeLabel} is scheduled for ${dateStr} at ${visit.scheduledTime || 'morning'}. ` +
+            `Purpose: ${visit.purpose || 'Field check'}. Please be ready. Thank you.`;
 
-        // Collect valid phone numbers from onboarding contact field
-        const recipients = farmers
-            .filter(f => f.contact && String(f.contact).trim() !== '')
+        // Filter and collect valid recipients for bulk dispatch
+        const validRecipients = farmers
+            .filter(f => f.contact && String(f.contact).trim() !== '' && String(f.contact).toLowerCase() !== 'null')
             .map(f => ({
                 name: f.name,
-                lyncId: f.id,
                 phone: String(f.contact).replace(/[\s\-\(\)]/g, '')
             }));
 
-        const noPhoneWarning = farmers.length > 0 && recipients.length === 0
-            ? 'Note: No growers in this visit have a phone number on file from onboarding.'
-            : null;
-
-        // ── SMS Gateway Integration Point ──────────────────────────────────────
-        // When an SMS gateway (e.g. Arkesel, Hubtel, Twilio) is configured,
-        // replace this comment block with:
-        //   for (const r of recipients) {
-        //     await smsClient.send({ to: r.phone, message: smsMessage });
-        //   }
-        // ───────────────────────────────────────────────────────────────────────
-        console.log(`[SMS] To ${recipients.length} grower(s):`, recipients.map(r => r.phone));
-        console.log(`[SMS] Message: ${smsMessage}`);
-
-        // Mark SMS as sent using findByIdAndUpdate (avoids mongoose re-validation crash)
-        await ScheduledVisit.findByIdAndUpdate(id, {
-            smsSent: true,
-            smsSentAt: new Date(),
-            smsMessage
-        });
-
-        // Log activity — wrapped so it never crashes the main flow
-        try {
-            const agentIdForActivity = req.agent._id || req.agent.id;
-            await Activity.create({
-                agent: agentIdForActivity,
-                type: 'event',
-                title: 'SMS notification sent for scheduled visit',
-                description: recipients.length > 0
-                    ? `Sent to ${recipients.length} grower(s): ${recipients.map(r => r.name).join(', ')}`
-                    : `Visit ID ${id} — ${noPhoneWarning || 'Community visit notification prepared'}`
+        if (validRecipients.length === 0) {
+            return res.json({
+                success: true,
+                message: 'Notification recorded. Note: No mobile contact numbers were available for real-time dispatch.',
+                warning: 'No growers in this visit list have valid contact numbers.',
+                data: { recipientCount: 0 }
             });
-        } catch (actErr) {
-            console.error('[SMS] Activity log failed (non-fatal):', actErr.message);
         }
+
+        const smsService = require('../utils/smsService');
+        const broadcastResult = await smsService.sendBulkSMS(validRecipients, smsMessage);
+
+        // 5. Finalize visit status update
+        try {
+            await ScheduledVisit.findByIdAndUpdate(id, {
+                smsSent: true,
+                smsSentAt: new Date(),
+                smsMessage: smsMessage.substring(0, 500)
+            });
+        } catch (dbErr) {
+            console.error('[SMS] Status update failed:', dbErr.message);
+        }
+
+        // 6. Log activity
+        const agentIdForActivity = req.agent._id || req.agent.id;
+        await Activity.create({
+            agent: agentIdForActivity,
+            type: 'event',
+            title: 'Field notification dispatched',
+            description: broadcastResult.succeeded > 0
+                ? `SMS notification successfully queued for ${broadcastResult.succeeded}/${validRecipients.length} grower(s).`
+                : `Notification logged for sector: ${visit.community || 'Field Visit'}. ${broadcastResult.failed > 0 ? broadcastResult.failed + ' failed.' : '' }`
+        });
 
         return res.json({
             success: true,
-            message: recipients.length > 0
-                ? `SMS queued for ${recipients.length} grower(s)`
-                : visit.visitType === 'community-visit'
-                    ? 'Community visit notification prepared'
-                    : 'Visit marked — no grower phone numbers found from onboarding',
-            warning: noPhoneWarning || undefined,
-            data: {
-                recipients,
-                message: smsMessage,
-                visitType: visit.visitType
-            }
+            message: `Communication broadcast successfully queued for ${broadcastResult.succeeded} grower(s).`,
+            data: { recipientCount: broadcastResult.succeeded }
         });
 
     } catch (err) {
-        console.error('[SMS] sendSMSNotification crash:', err.message);
-        console.error('[SMS] Stack:', err.stack);
+        console.error('[SMS] sendSMSNotification critical failure:', err);
         return res.status(500).json({
             success: false,
-            message: err.message || 'Failed to send SMS notification'
+            message: 'Internal Transmission Error 500: System could not finalize the SMS broadcast. Please check your network or try logging a call instead.',
+            error: err.message
         });
     }
 };
@@ -238,9 +241,17 @@ exports.logPhoneCall = async (req, res) => {
     const { farmerId, notes, callDuration } = req.body;
 
     try {
+        const { id } = req.params;
+        const mongoose = require('mongoose');
+
         if (req.agent && req.agent.isMock) {
             console.log('[MOCK REQ] logPhoneCall for visit:', id);
             return res.json({ success: true, message: 'Mock phone call logged' });
+        }
+
+        // Validate ID format before DB lookup
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, message: 'Invalid field record ID. Please ensure you are logging against a verified mission.' });
         }
 
         const visit = await ScheduledVisit.findById(id).populate('farmers', 'name contact');

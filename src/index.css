@@ -515,6 +515,15 @@
   animation: pulse-scale 2s ease-in-out infinite;
 }
 
+@keyframes subtle-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(126, 222, 86, 0.1); }
+  50% { box-shadow: 0 0 25px rgba(126, 222, 86, 0.3); }
+}
+
+.animate-subtle-glow {
+  animation: subtle-glow 3s ease-in-out infinite;
+}
+
 /* Custom font families */
 .font-playfair {
   font-family: 'Playfair Display', serif;

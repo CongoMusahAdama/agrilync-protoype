@@ -4,11 +4,12 @@ const bcrypt = require('bcryptjs');
 const agentSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    password: { type: String, required: true, minlength: 8 },
     agentId: { type: String, required: true, unique: true },
     title: { type: String, default: 'Junior Lync Agent' },
     avatar: { type: String, default: '/lovable-uploads/profile.png' },
     region: { type: String, required: true },
+    assignedRegions: { type: [String], default: ['Ashanti'] },
     districts: [String],
     contact: { type: String },
     gender: { type: String, enum: ['male', 'female', 'other'], default: 'other' },
@@ -56,7 +57,10 @@ const agentSchema = new mongoose.Schema({
         highContrast: { type: Boolean, default: false },
         compactView: { type: Boolean, default: false }
     },
-    fcmToken: { type: String, default: null }
+    fcmToken: { type: String, default: null },
+    refreshToken: { type: String, default: null },
+    mfaEnabled: { type: Boolean, default: false },
+    mfaSecret: { type: String, default: null }
 }, { timestamps: true });
 
 // Indexing for performance

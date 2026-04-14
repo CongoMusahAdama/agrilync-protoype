@@ -17,10 +17,13 @@ const uploadBase64ToCloudinary = async (base64String, folder = 'agrilync') => {
   try {
     if (!base64String) return null;
 
+    // Detect resource type from base64 MIME (e.g., data:video/mp4;base64,...)
+    const isVideo = base64String.startsWith('data:video/');
+    
     // Use Cloudinary's uploader for base64 strings
     const result = await cloudinary.uploader.upload(base64String, {
       folder: folder,
-      resource_type: 'auto'
+      resource_type: isVideo ? 'video' : 'auto'
     });
 
     return result.secure_url;

@@ -19,6 +19,7 @@ import SignupGrower from "./pages/SignupGrower";
 import SignupInvestor from "./pages/SignupInvestor";
 
 import Login from "./pages/Login";
+import AgentLogin from "./pages/agent/AgentLogin";
 import Dashboard from "./pages/Dashboard";
 import AgentDashboard from "./pages/AgentDashboard";
 import AgentProfile from "./pages/agent/AgentProfile";
@@ -44,9 +45,10 @@ import GrowerProfile from "./pages/grower/GrowerProfile";
 import NotFound from "./pages/NotFound";
 import SuperAdminDashboard from "@/pages/super-admin/SuperAdminDashboard";
 import Overview from "@/pages/super-admin/Overview";
-import UserManagement from "@/pages/super-admin/UserManagement";
-import AgentAccountability from "@/pages/super-admin/AgentAccountability";
-import RegionalPerformance from "@/pages/super-admin/RegionalPerformance";
+import AgentManagement from "@/pages/super-admin/AgentManagement";
+import AgentAccountability from './pages/super-admin/AgentAccountability';
+import FieldAuditor from './pages/super-admin/FieldAuditor';
+import RegionalPerformance from './pages/super-admin/RegionalPerformance';
 import Escalations from "@/pages/super-admin/Escalations";
 import SystemLogs from "@/pages/super-admin/SystemLogs";
 import FarmFarmerOversight from "@/pages/super-admin/FarmFarmerOversight";
@@ -92,6 +94,7 @@ const App = () => (
               <Route path="/team/:memberId" element={<TeamMemberProfile />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/agent/login" element={<AgentLogin />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/signup/farmer" element={<SignupFarmer />} />
               <Route path="/signup/grower" element={<SignupGrower />} />
@@ -128,8 +131,10 @@ const App = () => (
               <Route path="/dashboard/super-admin" element={<SuperAdminDashboard />}>
                 <Route index element={<Overview />} />
                 <Route path="regions" element={<RegionalPerformance />} />
-                <Route path="agents" element={<AgentAccountability />} />
-                <Route path="users" element={<UserManagement />} />
+                <Route path="agents" element={<AgentManagement />} />
+                <Route path="users" element={<AgentManagement />} />
+                <Route path="audit" element={<FieldAuditor />} />
+                <Route path="performance" element={<AgentAccountability />} />
                 <Route path="farms" element={<FarmFarmerOversight />} />
                 <Route path="oversight" element={<FarmFarmerOversight />} />
                 <Route path="partnerships" element={<PartnershipsSummary />} />

@@ -13,7 +13,6 @@ import {
     FileText, MessageSquare, Image
 } from 'lucide-react';
 import api from '@/utils/api';
-import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { exportToPDF } from '@/utils/reportExport';
 import Swal from 'sweetalert2';
@@ -75,7 +74,12 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
             };
 
             if (!payload.farmerId) {
-                toast.error('Contextual error: No grower selected.');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Context Missing',
+                    text: 'Please identify the grower associated with this field report before submitting.',
+                    confirmButtonColor: '#065f46'
+                });
                 setLoading(false);
                 return;
             }
@@ -99,8 +103,13 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
             setStep(4); // Success step
             if (onUpload) onUpload(res.data);
         } catch (error: any) {
-            const errorMsg = error.response?.data?.error || error.message || 'Submission failed. Please try again.';
-            toast.error(errorMsg);
+            const errorMsg = error.response?.data?.error || error.message || 'The report could not be synced to the database.';
+            Swal.fire({
+                icon: 'error',
+                title: 'Submission Interrupted',
+                text: errorMsg,
+                confirmButtonColor: '#065f46'
+            });
         } finally {
             setLoading(false);
         }
