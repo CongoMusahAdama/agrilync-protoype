@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
-import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +19,12 @@ const ChangePassword = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (newPassword !== confirmPassword) {
-            return toast.error('Passwords do not match');
+            return Swal.fire({
+                icon: 'warning',
+                title: 'Mismatch Detected',
+                text: 'The password entries do not match. Please re-verify.',
+                confirmButtonColor: '#065f46'
+            });
         }
 
         setLoading(true);
@@ -47,7 +51,12 @@ const ChangePassword = () => {
             }
             navigate('/dashboard/redirect');
         } catch (err: any) {
-            toast.error(err.response?.data?.msg || 'Failed to update password');
+            Swal.fire({
+                icon: 'error',
+                title: 'Security Sync Error',
+                text: err.response?.data?.msg || 'Could not update your security credentials.',
+                confirmButtonColor: '#065f46'
+            });
         } finally {
             setLoading(false);
         }

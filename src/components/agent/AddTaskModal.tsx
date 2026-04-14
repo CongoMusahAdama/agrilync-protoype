@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PlusCircle, Loader2, MapPin } from 'lucide-react';
 import { useDarkMode } from '@/contexts/DarkModeContext';
-import { toast } from 'sonner';
 import api from '@/utils/api';
 import { useAuth } from '@/contexts/AuthContext';
 import Swal from 'sweetalert2';
@@ -90,7 +89,12 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onOpenChange, onTaskA
             
             setFarmers(filtered);
         } catch (error) {
-            toast.error('Could not load farmers list');
+            Swal.fire({
+                icon: 'error',
+                title: 'Operation Failed',
+                text: 'Could not load farmers list from the central registry.',
+                confirmButtonColor: '#065f46'
+            });
         } finally {
             setFarmersLoading(false);
         }
@@ -100,8 +104,24 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onOpenChange, onTaskA
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!title.trim()) { toast.error('Please enter a task title'); return; }
-        if (!dueDate) { toast.error('Please select a due date'); return; }
+        if (!title.trim()) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Data Required',
+                text: 'Please enter a task title to continue.',
+                confirmButtonColor: '#065f46'
+            });
+            return;
+        }
+        if (!dueDate) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Timeline Missing',
+                text: 'Please select a due date for this objective.',
+                confirmButtonColor: '#065f46'
+            });
+            return;
+        }
 
         setLoading(true);
         const isAllGroups = selectedFarmerId === 'all_farmers';
@@ -147,7 +167,12 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onOpenChange, onTaskA
             resetForm();
         } catch (error: any) {
             const msg = error?.response?.data?.msg || 'Failed to process task';
-            toast.error(msg);
+            Swal.fire({
+                icon: 'error',
+                title: 'Registry Error',
+                text: msg,
+                confirmButtonColor: '#065f46'
+            });
         } finally {
             setLoading(false);
         }

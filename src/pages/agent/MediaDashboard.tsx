@@ -67,11 +67,11 @@ import {
 } from '@/components/ui/select';
 import AgentLayout from './AgentLayout';
 import CountUp from '@/components/CountUp';
+import { playSuccessSound } from '@/utils/audio';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { format } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/api';
-import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import { useAuth } from '@/contexts/AuthContext';
 import { GHANA_REGIONS, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
@@ -132,12 +132,25 @@ const MediaDashboard: React.FC = () => {
       return res.data;
     },
     onSuccess: (data) => {
-      toast.success(data.msg || 'Sync completed!');
+      playSuccessSound();
+      Swal.fire({
+        icon: 'success',
+        title: 'Cloud Sync',
+        text: data.msg || 'Media database successfully synchronized.',
+        confirmButtonColor: '#065f46',
+        timer: 2000,
+        timerProgressBar: true
+      });
       refreshItems();
       refreshStats();
     },
     onError: () => {
-      toast.error('Sync failed. Please check your connection.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Sync Failed',
+        text: 'Could not synchronize media. Please check your connectivity.',
+        confirmButtonColor: '#065f46'
+      });
     }
   });
 
@@ -149,11 +162,24 @@ const MediaDashboard: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mediaItems'] });
       queryClient.invalidateQueries({ queryKey: ['mediaStats'] });
-      toast.success('Media deleted successfully');
+      playSuccessSound();
+      Swal.fire({
+        icon: 'success',
+        title: 'Media Deleted',
+        text: 'The asset has been removed from the registry.',
+        confirmButtonColor: '#065f46',
+        timer: 1500,
+        timerProgressBar: true
+      });
       setSelectedMedia(null);
     },
     onError: () => {
-      toast.error('Failed to delete media');
+      Swal.fire({
+        icon: 'error',
+        title: 'Operation Failed',
+        text: 'Could not remove the media asset.',
+        confirmButtonColor: '#065f46'
+      });
     }
   });
 
@@ -178,14 +204,23 @@ const MediaDashboard: React.FC = () => {
         const win = window.open(blobUrl, '_blank');
         if (win) {
           win.focus();
-          // Clean up the URL after a short delay (once the tab has likely loaded)
           setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
         } else {
-          toast.error('Pop-up blocked. Please allow pop-ups for this site.');
+          Swal.fire({
+            icon: 'warning',
+            title: 'Pop-up Blocked',
+            text: 'Please allow pop-ups to view the document.',
+            confirmButtonColor: '#065f46'
+          });
         }
       } catch (err) {
         console.error('Error opening base64 media:', err);
-        toast.error('Failed to open document. The file may be corrupted.');
+        Swal.fire({
+            icon: 'error',
+            title: 'File Error',
+            text: 'Could not open the document. The file might be corrupted.',
+            confirmButtonColor: '#065f46'
+        });
       }
     } else {
       window.open(url, '_blank');
@@ -294,10 +329,23 @@ const MediaDashboard: React.FC = () => {
   ];
 
   const handleOptimize = () => {
-    toast.promise(new Promise(resolve => setTimeout(resolve, 2000)), {
-      loading: 'Optimizing storage and thumbnails...',
-      success: 'Storage optimized by 15.4%. Thumbnails regenerated.',
-      error: 'Optimization failed.'
+    Swal.fire({
+        title: 'Optimizing Storage',
+        text: 'Regenerating thumbnails and compressing assets...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+            setTimeout(() => {
+                playSuccessSound();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Optimization Complete',
+                    text: 'Storage optimized by 15.4%. Registry is now faster.',
+                    confirmButtonColor: '#065f46',
+                    timer: 2000
+                });
+            }, 2000);
+        }
     });
   };
 
@@ -314,13 +362,28 @@ const MediaDashboard: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mediaItems'] });
       queryClient.invalidateQueries({ queryKey: ['mediaStats'] });
-      toast.success('File uploaded successfully!');
+      playSuccessSound();
+      Swal.fire({
+        icon: 'success',
+        title: 'Upload Successful',
+        text: 'The asset has been committed to the digital registry.',
+        confirmButtonColor: '#065f46',
+        timer: 2000,
+        timerProgressBar: true
+      });
       setUploadOpen(false);
       setUploadFile(null);
       setUploadPreview(null);
       setUploadForm({ name: '', type: 'Photo', farm: '', album: '' });
     },
-    onError: () => toast.error('Upload failed. Please try again.')
+    onError: () => {
+       Swal.fire({
+         icon: 'error',
+         title: 'Registry Failed',
+         text: 'Could not upload the asset. Please try again.',
+         confirmButtonColor: '#065f46'
+       });
+    }
   });
 
   // Album creation mutation (saves a placeholder media item tagged with album)
@@ -331,12 +394,27 @@ const MediaDashboard: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mediaItems'] });
-      toast.success('Album created!');
+      playSuccessSound();
+      Swal.fire({
+        icon: 'success',
+        title: 'Album Created',
+        text: 'The new media container is ready for assets.',
+        confirmButtonColor: '#065f46',
+        timer: 1500,
+        timerProgressBar: true
+      });
       setAlbumOpen(false);
       setAlbumName('');
       setAlbumDesc('');
     },
-    onError: () => toast.error('Failed to create album.')
+    onError: () => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Operation Failed',
+            text: 'Could not initialize the new album.',
+            confirmButtonColor: '#065f46'
+        });
+    }
   });
 
   const handleFileSelect = useCallback((file: File) => {
@@ -353,6 +431,11 @@ const MediaDashboard: React.FC = () => {
       const reader = new FileReader();
       reader.onload = e => setUploadPreview(e.target?.result as string);
       reader.readAsDataURL(file);
+    } else if (file.type.startsWith('video/')) {
+      // Preview for videos
+      const reader = new FileReader();
+      reader.onload = e => setUploadPreview(e.target?.result as string);
+      reader.readAsDataURL(file);
     } else {
       setUploadPreview(null);
     }
@@ -366,8 +449,24 @@ const MediaDashboard: React.FC = () => {
   }, [handleFileSelect]);
 
   const handleSubmitUpload = async () => {
-    if (!uploadFile) { toast.error('Please select a file first'); return; }
-    if (!uploadForm.name) { toast.error('Please enter a file name'); return; }
+    if (!uploadFile) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'File Required',
+            text: 'Please select a file to upload.',
+            confirmButtonColor: '#065f46'
+        });
+        return;
+    }
+    if (!uploadForm.name) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Name Required',
+            text: 'Please provide a reference name for this asset.',
+            confirmButtonColor: '#065f46'
+        });
+        return;
+    }
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64 = e.target?.result as string;
@@ -392,7 +491,15 @@ const MediaDashboard: React.FC = () => {
   };
 
   const handleCreateAlbum = () => {
-    if (!albumName.trim()) { toast.error('Please enter an album name'); return; }
+    if (!albumName.trim()) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Input Required',
+            text: 'Please enter a name for the new album.',
+            confirmButtonColor: '#065f46'
+        });
+        return;
+    }
     albumMutation.mutate({
       name: `[Album] ${albumName}`,
       type: 'Photo',
@@ -436,7 +543,7 @@ const MediaDashboard: React.FC = () => {
     >
       <div className="space-y-8 animate-fade-in">
         
-        {/* Top Header Section: Actions + Metrics (Non-sticky) */}
+        {/* Top Header Section: Actions + Metrics */}
         <div className="space-y-6 pt-2">
           {/* Media Quick Actions Row */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -449,7 +556,7 @@ const MediaDashboard: React.FC = () => {
                 className="bg-[#065f46] hover:bg-[#054d39] text-white font-black font-montserrat text-[12px] tracking-wider px-8 h-12 rounded-[1.2rem] shadow-xl shadow-[#065f46]/20 transition-all active:scale-95 border-none w-full sm:w-auto flex items-center justify-center"
                 onClick={() => setUploadOpen(true)}
               >
-                <Upload className="mr-2 h-4 w-4" /> UPLOAD FILES
+                <Upload className="mr-2 h-4 w-4" /> {currentAlbum ? `UPLOAD TO ${currentAlbum.toUpperCase()}` : 'UPLOAD FILES'}
               </Button>
               <Button 
                 variant="outline" 
@@ -598,24 +705,37 @@ const MediaDashboard: React.FC = () => {
                 <div className="overflow-y-auto h-[calc(100vh-34rem)] min-h-[500px] pr-2 scrollbar-thin scrollbar-thumb-gray-200 hover:scrollbar-thumb-gray-300 transition-colors animate-in fade-in duration-700">
             
             {currentAlbum && (
-              <div className="flex items-center gap-2 mb-6 animate-in slide-in-from-left-4 duration-500 sticky top-0 bg-white/80 backdrop-blur-md z-10 py-2 -mx-2 px-2 rounded-xl">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => {
-                    setCurrentAlbum(null);
-                    setSearchQuery('');
-                  }}
-                  className="p-0 h-auto font-black text-[#065f46] uppercase tracking-widest text-[10px] hover:bg-transparent flex items-center gap-1 group"
-                >
-                  <ArrowUpRight className="h-4 w-4 rotate-225 group-hover:-translate-x-1 transition-transform" />
-                  BACK TO ALL ASSETS
-                </Button>
-                <div className="h-4 w-[1px] bg-gray-200 mx-2"></div>
-                <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100">
-                  <Folder className="h-3 w-3 text-emerald-600" />
-                  <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">{currentAlbum}</span>
+              <div className="flex items-center justify-between gap-2 mb-6 animate-in slide-in-from-left-4 duration-500 sticky top-0 bg-white/80 backdrop-blur-md z-10 py-2 -mx-2 px-2 rounded-xl">
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => {
+                      setCurrentAlbum(null);
+                      setSearchQuery('');
+                    }}
+                    className="p-0 h-auto font-black text-[#065f46] uppercase tracking-widest text-[10px] hover:bg-transparent flex items-center gap-1 group"
+                  >
+                    <ArrowUpRight className="h-4 w-4 rotate-225 group-hover:-translate-x-1 transition-transform" />
+                    BACK TO ALL ASSETS
+                  </Button>
+                  <div className="h-4 w-[1px] bg-gray-200 mx-2"></div>
+                  <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100">
+                    <Folder className="h-3 w-3 text-emerald-600" />
+                    <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">{currentAlbum}</span>
+                  </div>
                 </div>
+                {/* Upload-to-folder button */}
+                <Button
+                  className="bg-[#065f46] hover:bg-[#054d39] text-white font-black text-[10px] uppercase tracking-widest h-9 px-4 rounded-xl border-none shadow-lg shadow-[#065f46]/20 flex items-center gap-2 transition-all active:scale-95"
+                  onClick={() => {
+                    setUploadForm(f => ({ ...f, album: currentAlbum || '' }));
+                    setUploadOpen(true);
+                  }}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  ADD TO FOLDER
+                </Button>
               </div>
             )}
 
@@ -626,7 +746,7 @@ const MediaDashboard: React.FC = () => {
                     key={album.name} 
                     className="group relative aspect-square rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 cursor-pointer flex flex-col"
                     onClick={() => {
-                       setSearchQuery(album.name);
+                       setCurrentAlbum(album.name);
                        setActiveTab('All');
                     }}
                   >
@@ -665,6 +785,38 @@ const MediaDashboard: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+                {/* Empty-state upload card — shown when inside an album with no items */}
+                {currentAlbum && filteredMedia.length === 0 && (
+                  <div
+                    className="col-span-full flex flex-col items-center justify-center gap-4 py-20 border-2 border-dashed border-[#065f46]/20 rounded-2xl cursor-pointer hover:border-[#065f46]/50 hover:bg-emerald-50/30 transition-all duration-300 group"
+                    onClick={() => {
+                      setUploadForm(f => ({ ...f, album: currentAlbum || '' }));
+                      setUploadOpen(true);
+                    }}
+                  >
+                    <div className="h-20 w-20 rounded-2xl bg-emerald-50 border-2 border-[#065f46]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-emerald-500/10">
+                      <Plus className="h-10 w-10 text-[#065f46]/40 group-hover:text-[#065f46] transition-colors" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[13px] font-black text-[#002f37] uppercase tracking-wider">
+                        Add Content to {currentAlbum}
+                      </p>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                        Tap to upload images, videos or documents
+                      </p>
+                    </div>
+                    <Button
+                      className="bg-[#065f46] hover:bg-[#054d39] text-white font-black text-[11px] uppercase tracking-widest h-11 px-8 rounded-xl border-none shadow-lg shadow-[#065f46]/20 flex items-center gap-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setUploadForm(f => ({ ...f, album: currentAlbum || '' }));
+                        setUploadOpen(true);
+                      }}
+                    >
+                      <Plus className="h-4 w-4" /> UPLOAD FILES
+                    </Button>
+                  </div>
+                )}
                 {filteredMedia.map((item: any) => {
                   const itemType = (item.type || 'Photo').toLowerCase();
                   const itemName = (item.name || '').toLowerCase();
@@ -679,7 +831,15 @@ const MediaDashboard: React.FC = () => {
                           const albumName = item.album || item.name.replace('[Album] ', '');
                           setCurrentAlbum(albumName);
                           setActiveTab('All');
-                          toast.info(`Opening folder: ${albumName}`, { position: 'bottom-right' });
+                          Swal.fire({
+                            icon: 'info',
+                            title: 'Folder Opened',
+                            text: `Opening folder: ${albumName}`,
+                            toast: true,
+                            position: 'bottom-right',
+                            showConfirmButton: false,
+                            timer: 3000
+                          });
                         } else if (isDocument) {
                           handleOpenMedia(item);
                         } else {
@@ -959,15 +1119,20 @@ const MediaDashboard: React.FC = () => {
 
       <Dialog open={!!selectedMedia} onOpenChange={(open) => !open && setSelectedMedia(null)}>
         <DialogContent className="max-w-5xl p-0 border-none bg-black/80 backdrop-blur-2xl overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500">
-          <div className="sr-only">
-            <DialogTitle>{selectedMedia?.name || 'Media Preview'}</DialogTitle>
-            <DialogDescription>Viewing details for {selectedMedia?.name}</DialogDescription>
-          </div>
+          <DialogTitle className="sr-only">{selectedMedia?.name || 'Media Preview'}</DialogTitle>
+          <DialogDescription className="sr-only">Viewing details for {selectedMedia?.name}</DialogDescription>
           {selectedMedia && (
             <div className="flex flex-col lg:flex-row h-full max-h-[90vh]">
               <div className="flex-1 bg-black flex items-center justify-center group relative min-h-[300px] lg:min-h-auto">
-                {selectedMedia.thumbnail ? (
-                  <img src={selectedMedia.thumbnail} alt={selectedMedia.name} className="max-w-full max-h-full object-contain" />
+                {selectedMedia.type === 'Video' ? (
+                  <video 
+                    src={selectedMedia.url} 
+                    controls 
+                    className="max-w-full max-h-full" 
+                    autoPlay
+                  />
+                ) : selectedMedia.thumbnail || selectedMedia.url ? (
+                  <img src={selectedMedia.thumbnail || selectedMedia.url} alt={selectedMedia.name} className="max-w-full max-h-full object-contain" />
                 ) : (
                   <div className="flex flex-col items-center">
                     <FileText className="h-24 w-24 text-gray-600 mb-4" />
@@ -1095,7 +1260,11 @@ const MediaDashboard: React.FC = () => {
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); }}
               />
               {uploadPreview ? (
-                <img src={uploadPreview} alt="preview" className="h-full w-full object-contain rounded-2xl" />
+                uploadFile?.type.startsWith('video/') ? (
+                  <video src={uploadPreview} className="h-full w-full object-contain rounded-2xl" muted />
+                ) : (
+                  <img src={uploadPreview} alt="preview" className="h-full w-full object-contain rounded-2xl" />
+                )
               ) : uploadFile ? (
                 <div className="flex flex-col items-center gap-2">
                   <FileText className="h-12 w-12 text-[#065f46]" />

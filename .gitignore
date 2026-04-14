@@ -11,25 +11,33 @@ node_modules
 dist
 dist-ssr
 *.local
+# Security & Configuration
 .env
 .env.*
-!.env.example
+!*.env.example
+backend/.env
+backend/config/*.json
+firebase-service-account.json
+backend/scripts/*.txt
+credentials.txt
+*.key
+*.pem
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# AI & Workspace Infrastructure
+.gemini/
+.antigravity/
+brain/
+.system_generated/
+artifacts/
+
+# System & OS
 .DS_Store
+Thumbs.db
+.vscode/
+!.vscode/extensions.json
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-
-# Security & Architecture (Added)
-SYSTEM_ARCHITECTURE.md
-*.key
-*.pem
-credentials.txt
-backend/scripts/field_agents_credentials.txt
-backend/scripts/credentials.txt

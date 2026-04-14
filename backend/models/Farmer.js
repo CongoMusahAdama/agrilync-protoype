@@ -81,7 +81,7 @@ const farmerSchema = new mongoose.Schema({
     },
     preferredInvestmentType: {
         type: String,
-        enum: ['inputs', 'cash', 'equipment', 'partnership'],
+        enum: ['inputs', 'cash', 'equipment', 'partnership', 'mechanization', 'irrigation', 'infrastructure', 'working_capital'],
     },
     estimatedCapitalNeed: {
         type: Number, // optional, farmer estimate
@@ -127,4 +127,9 @@ farmerSchema.methods.comparePassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-module.exports = mongoose.models.Farmer || mongoose.model('Farmer', farmerSchema);
+// Clear model from cache to force schema update in dev environment
+if (mongoose.models.Farmer) {
+    delete mongoose.models.Farmer;
+}
+
+module.exports = mongoose.model('Farmer', farmerSchema);

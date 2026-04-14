@@ -3,7 +3,6 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import api from '@/utils/api';
-import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import { CheckCircle2, FileText, X, Users, BookOpen } from 'lucide-react';
 
@@ -26,7 +25,12 @@ export default function SubmitTrainingReportModal({ open, onOpenChange, delivery
 
   const handleSubmit = async () => {
     if (!reportText.trim()) {
-      toast.error('Please enter the report details.');
+      Swal.fire({
+          icon: 'warning',
+          title: 'Notes Required',
+          text: 'Please provide session highlights or completion notes before finalizing.',
+          confirmButtonColor: '#065f46'
+      });
       return;
     }
 
@@ -47,8 +51,13 @@ export default function SubmitTrainingReportModal({ open, onOpenChange, delivery
         timerProgressBar: true
       });
       onSuccess?.();
-    } catch (e: any) {
-      toast.error(e.response?.data?.message || 'Failed to submit report');
+    } catch (error: any) {
+      Swal.fire({
+          icon: 'error',
+          title: 'Submission Failed',
+          text: error.response?.data?.message || 'We could not sync the training report at this time.',
+          confirmButtonColor: '#065f46'
+      });
     } finally {
       setSaving(false);
     }

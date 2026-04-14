@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { Search, MapPin, Navigation } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 
 import { Badge } from '@/components/ui/badge';
 
@@ -51,13 +51,34 @@ const OperationalMap: React.FC<OperationalMapProps> = ({ farms, darkMode }) => {
                 const newCenter: [number, number] = [parseFloat(lat), parseFloat(lon)];
                 setMapCenter(newCenter);
                 setZoom(13);
-                toast.success(`Located: ${data[0].display_name.split(',')[0]}`);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Location Discovered',
+                    text: `Located: ${data[0].display_name.split(',')[0]}`,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    background: darkMode ? '#002f37' : '#fff',
+                    color: darkMode ? '#fff' : '#002f37'
+                });
             } else {
-                toast.error('Location not found in Ghana');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Location Unknown',
+                    text: 'The search query did not match any markers in the Ghana registry.',
+                    confirmButtonColor: '#065f46'
+                });
             }
         } catch (error) {
             console.error('Search error:', error);
-            toast.error('Error searching for location');
+            Swal.fire({
+                icon: 'error',
+                title: 'GIS Error',
+                text: 'Could not communicate with the global positioning service.',
+                confirmButtonColor: '#065f46'
+            });
         } finally {
             setIsSearching(false);
         }
@@ -89,8 +110,8 @@ const OperationalMap: React.FC<OperationalMapProps> = ({ farms, darkMode }) => {
                 </form>
             </div>
 
-            {/* Map Legend (Moved to bottom left so it doesn't overlap search) */}
-            <div className="absolute bottom-6 left-6 z-[1000] bg-white/95 dark:bg-[#002f37]/95 backdrop-blur-sm p-4 rounded-xl shadow-xl border border-gray-100 dark:border-white/5 max-w-xs transition-all hover:scale-105">
+            {/* Map Legend (Hidden on Mobile) */}
+            <div className="hidden md:block absolute bottom-6 left-6 z-[1000] bg-white/95 dark:bg-[#002f37]/95 backdrop-blur-sm p-4 rounded-xl shadow-xl border border-gray-100 dark:border-white/5 max-w-xs transition-all hover:scale-105">
                 <h4 className="font-black text-[11px] uppercase tracking-widest text-[#065f46] dark:text-[#065f46] mb-3">Map Legend</h4>
                 <div className="space-y-2">
                     <div className="flex items-center gap-3">

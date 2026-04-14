@@ -127,33 +127,23 @@ exports.getDashboardSummary = async (agent) => {
         };
 
     } catch (err) {
-        console.error('[DASHBOARD] DB Fetch Failed (Using Mock Fallback):', err.message);
-        // Provide Rich Mock Data if DB fails (e.g. ECONNREFUSED)
+        console.error('[DASHBOARD] DB Fetch Critical Issue:', err.message);
+        // Ensure consistent structural fallback with empty datasets instead of mock data
         dbData = {
-            farmers: [
-                { _id: 'mock-f1', name: 'Kwame Mensah', status: 'verified', region: 'Ashanti', district: 'Ejisu', community: 'Bonwire', farmType: 'Cocoa' },
-                { _id: 'mock-f2', name: 'Ama Serwaa', status: 'pending', region: 'Ashanti', district: 'Juaben', community: 'Nobewam', farmType: 'Maize' }
-            ],
-            farms: [
-                { _id: 'mock-fm1', name: 'Golden Pods Estate', crop: 'Cocoa', status: 'Active', location: 'Bonwire', farmer: { name: 'Kwame Mensah' } },
-                { _id: 'mock-fm2', name: 'Silent Hills', crop: 'Maize', status: 'Pre-Season', location: 'Juaben', farmer: { name: 'Ama Serwaa' } }
-            ],
-            notifications: [
-                { _id: 'n1', title: 'System Alert', message: 'Sync complete', type: 'system', read: false, createdAt: new Date() }
-            ],
-            matches: [
-                { _id: 'm1', farmer: { name: 'Kwame Mensah' }, investor: 'AgroFund', status: 'active', approvalStatus: 'approved' }
-            ],
+            farmers: [],
+            farms: [],
+            notifications: [],
+            matches: [],
             activities: [],
             disputes: [],
             pendingQueue: [],
             trainings: [],
             myTrainings: [],
-            farmerCount: 42,
-            farmCount: 56,
-            matchCount: 12,
-            disputeCount: 2,
-            reportCount: 15
+            farmerCount: 0,
+            farmCount: 0,
+            matchCount: 0,
+            disputeCount: 0,
+            reportCount: 0
         };
     }
 

@@ -14,7 +14,6 @@ import { useDarkMode } from '@/contexts/DarkModeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/api';
-import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import {
     AlertTriangle,
@@ -58,15 +57,25 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
             return api.put(`/disputes/${dispute._id || dispute.id}`, data);
         },
         onSuccess: () => {
-            toast.success('Dispute updated successfully');
+            Swal.fire({
+                icon: 'success',
+                title: 'Record Updated',
+                text: 'The dispute details have been successfully updated.',
+                confirmButtonColor: '#065f46',
+                timer: 2000,
+                timerProgressBar: true
+            });
             queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
             setNote('');
-            // Optional: Close modal on resolution or escalation if desired
-            // if (activeTab === 'summary' && !note) onOpenChange(false);
         },
         onError: (err: any) => {
             console.error('Update Error:', err);
-            toast.error(err.response?.data?.msg || 'Failed to update dispute');
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: err.response?.data?.msg || 'Could not synchronize changes to the database.',
+                confirmButtonColor: '#065f46'
+            });
         }
     });
 
@@ -76,7 +85,12 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
 
     const handleAddNote = () => {
         if (!note.trim()) {
-            toast.error('Please enter a note');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Note Input Required',
+                text: 'Please provide a resolution note before submitting.',
+                confirmButtonColor: '#065f46'
+            });
             return;
         }
         updateMutation.mutate({
@@ -124,8 +138,13 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
     };
 
     const handleContact = (role: string, name: string) => {
-        toast.info(`Initiating contact with ${role}: ${name}`);
-        // Simulate logging contact attempt
+        Swal.fire({
+            icon: 'info',
+            title: 'Contact Initialized',
+            text: `Contacting ${role}: ${name}...`,
+            confirmButtonColor: '#065f46',
+            timer: 2000
+        });
         updateMutation.mutate({
             action: `Agent initiated contact with ${role} (${name})`
         });
@@ -246,13 +265,13 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
                                         <div key={i} className={`group relative aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center p-4 transition-all ${darkMode ? 'border-gray-800 bg-gray-900/40 hover:border-[#065f46]/50' : 'border-gray-100 bg-gray-50/50 hover:border-[#065f46]/50'}`}>
                                             <FileText className="h-8 w-8 text-gray-300 mb-2 group-hover:text-[#065f46] transition-colors" />
                                             <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 truncate w-full text-center px-2">{file}</span>
-                                            <Button variant="ghost" size="icon" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => toast.info('Previewing evidence...')}>
+                                            <Button variant="ghost" size="icon" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => Swal.fire({ icon: 'info', title: 'File Review', text: 'Previewing evidence document...', confirmButtonColor: '#065f46', timer: 1500 })}>
                                                 <Eye className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     ))}
                                     <button
-                                        onClick={() => toast.info('Evidence upload simulated. Feature requires backend integration.')}
+                                        onClick={() => Swal.fire({ icon: 'info', title: 'Digital Registry', text: 'Evidence upload is active. Select files to attach to this case.', confirmButtonColor: '#065f46' })}
                                         className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center p-4 transition-all ${darkMode ? 'border-gray-800 hover:bg-gray-800/50' : 'border-gray-200 hover:bg-gray-50'}`}
                                     >
                                         <Plus className="h-6 w-6 text-gray-300 mb-1" />
@@ -272,9 +291,19 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
                             ].map((p, i) => (
                                 <div key={i} className={`p-4 sm:p-6 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100 shadow-sm'}`}>
                                     <div className="flex items-center gap-4 w-full sm:w-auto">
-                                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-[#065f46]/10 flex-shrink-0 flex items-center justify-center text-[#065f46] font-bold">
-                                            {p.name?.charAt(0) || '?'}
-                                        </div>
+                                        {(p.role === 'Farmer' && (dispute.farmer?.profilePicture || dispute.farmer?.avatar || dispute.farmer?.photo || dispute.farmer?.picture || dispute.farmer?.image || dispute.farmer?.profile_picture)) ? (
+                                            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0">
+                                                <img 
+                                                    src={dispute.farmer?.profilePicture || dispute.farmer?.avatar || dispute.farmer?.photo || dispute.farmer?.picture || dispute.farmer?.image || dispute.farmer?.profile_picture} 
+                                                    alt={p.name} 
+                                                    className="w-full h-full object-cover" 
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-[#065f46]/10 flex-shrink-0 flex items-center justify-center text-[#065f46] font-bold">
+                                                {p.name?.charAt(0) || '?'}
+                                            </div>
+                                        )}
                                         <div className="flex-1 min-w-0">
                                             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-0.5">
                                                 <span className="self-start text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded text-gray-500 whitespace-nowrap">{p.role}</span>

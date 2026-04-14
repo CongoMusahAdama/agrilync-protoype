@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Button } from '@/components/ui/button';
@@ -205,10 +205,31 @@ const Notifications = () => {
             </Select>
           </div>
         </div>
-        <div className="flex gap-2 mb-6">
-          <Badge className="bg-[#7ede56] text-[#002f37]">All</Badge>
-          <Badge className={darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}>High Priority</Badge>
-          <Badge className={darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}>System Alerts</Badge>
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-1 scrollbar-hide">
+          <Badge 
+            className={`cursor-pointer transition-all ${typeFilter === 'all' && statusFilter === 'all' ? 'bg-[#7ede56] text-[#002f37]' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+            onClick={() => { setTypeFilter('all'); setStatusFilter('all'); setSearchTerm(''); }}
+          >
+            All
+          </Badge>
+          <Badge 
+            className={`cursor-pointer transition-all ${statusFilter === 'unread' ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+            onClick={() => { setStatusFilter('unread'); setTypeFilter('all'); }}
+          >
+            Unread
+          </Badge>
+          <Badge 
+            className={`cursor-pointer transition-all ${typeFilter === 'alert' ? 'bg-rose-500 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+            onClick={() => { setTypeFilter('alert'); setStatusFilter('all'); }}
+          >
+            System Alerts
+          </Badge>
+          <Badge 
+            className={`cursor-pointer transition-all ${typeFilter === 'training' ? 'bg-[#065f46] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+            onClick={() => { setTypeFilter('training'); setStatusFilter('all'); }}
+          >
+            Training
+          </Badge>
         </div>
 
         {/* Notification Stats - Aligned with Farm Management style */}

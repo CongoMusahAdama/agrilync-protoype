@@ -24,15 +24,14 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useToast } from '@/hooks/use-toast';
 import { MapPin } from 'lucide-react';
+import Swal from 'sweetalert2';
 import api from '@/utils/api';
 import AgentLayout from './AgentLayout';
 import CountUp from '@/components/CountUp';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 
 const AgentPerformance: React.FC = () => {
-  const { toast } = useToast();
   const [activeMetric, setActiveMetric] = useState('onboarding');
   const [timeRange, setTimeRange] = useState('month');
   const [visitFilter, setVisitFilter] = useState('all');
@@ -96,7 +95,12 @@ const AgentPerformance: React.FC = () => {
               ))}
             </div>
             <Button
-              onClick={() => toast({ title: "Downloading Report", description: "Your performance report is being prepared." })}
+              onClick={() => Swal.fire({
+                icon: 'info',
+                title: 'Report Generation',
+                text: 'Your regional performance report is being synthesized. You will be notified once it is ready for download.',
+                confirmButtonColor: '#002f37'
+              })}
               className="rounded-2xl font-black text-[11px] uppercase tracking-wider min-h-[48px] px-6 gap-2 bg-[#002f37] hover:bg-[#002f37]/90 text-white border-none shadow-xl"
             >
               <DownloadIcon className="h-4 w-4" /> Download Report
@@ -310,7 +314,14 @@ const AgentPerformance: React.FC = () => {
               <div className="pt-6 border-t border-white/10 flex justify-between items-center">
                 <span className="text-[10px] font-bold text-white/40 uppercase">Next review: {data?.supervisor?.nextReview || 'Awaiting Schedule'}</span>
                 <button 
-                  onClick={() => toast({ title: "Reply Sent", description: "Your feedback has been sent." })}
+                  onClick={() => Swal.fire({
+                    icon: 'success',
+                    title: 'Feedback Recorded',
+                    text: 'Your response has been transmitted to your regional supervisor.',
+                    confirmButtonColor: '#002f37',
+                    timer: 2000,
+                    timerProgressBar: true
+                  })}
                   className="text-[11px] font-black text-[#7ede56] hover:underline flex items-center gap-1"
                 >
                   Reply <ArrowRight className="h-3 w-3" />
@@ -341,7 +352,12 @@ const AgentPerformance: React.FC = () => {
                 </div>
                 <Button
                   variant="ghost"
-                  onClick={() => toast({ title: "Export Started", description: "Exporting field data to CSV." })}
+                  onClick={() => Swal.fire({
+                    icon: 'info',
+                    title: 'Export Initialization',
+                    text: 'Compiling field logs into a secure CSV format. The download will initiate shortly.',
+                    confirmButtonColor: '#002f37'
+                  })}
                   className="rounded-xl font-black text-[10px] tracking-widest min-h-[44px] px-3 gap-1.5 hover:bg-gray-50 shrink-0"
                 >
                   <FileDown className="h-4 w-4" />

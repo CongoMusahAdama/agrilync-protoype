@@ -42,7 +42,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [agent, setAgent] = useState<Agent | null>(null);
-    const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+    const [token, setToken] = useState<string | null>(() => {
+        try {
+            return localStorage.getItem('token');
+        } catch (e) {
+            console.warn('LocalStorage access blocked. Session persistence disabled.');
+            return null;
+        }
+    });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -64,21 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     }
                 }
             } else {
-                // On localhost, allow access without token but still try to fetch from DB
-                // This allows testing without login while still using real data
-                if (isDev) {
-                    try {
-                        // Try to fetch agent profile without token (may fail, that's OK)
-                        const res = await api.get('/agents/profile');
-                        setAgent(res.data);
-                    } catch (err) {
-                        // If no token and fetch fails, just allow access without agent
-                        // This is expected on localhost for testing
-                        setAgent(null);
-                    }
-                } else {
-                    setAgent(null);
-                }
+                setAgent(null);
             }
             setLoading(false);
         };

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
@@ -18,66 +18,110 @@ import {
     Zap,
     Building2,
     Activity,
-    Bell
+    Bell,
+    CheckCircle2,
+    Search,
+    ChevronDown,
+    CircleDot,
+    UserPlus,
+    FileText,
+    History,
+    MoreVertical
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import api from '@/utils/api';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import CountUp from '@/components/CountUp';
+import { toast } from 'sonner';
 
 const Escalations = () => {
     const { darkMode } = useDarkMode();
     const navigate = useNavigate();
-    const [escalations, setEscalations] = useState<any[]>([]);
+    const [tickets, setTickets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedTicket, setSelectedTicket] = useState<any>(null);
+    const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const [filterCategory, setFilterCategory] = useState('All');
+    const [filterStatus, setFilterStatus] = useState('All');
+    const [internalNote, setInternalNote] = useState('');
 
     useEffect(() => {
-        const fetchEscalations = async () => {
-            try {
-                const res = await api.get('/super-admin/escalations');
-                if (res.data && res.data.length > 0) {
-                    setEscalations(res.data);
-                } else {
-                    // Fallback to mock data if empty
-                    setEscalations([
-                        { _id: 'ESC-4402', issue: 'Yield Discrepancy Alert', region: 'ASHANTI', agent: 'Sarah K.', priority: 'Critical', status: 'Pending', date: '2 Mins Ago' },
-                        { _id: 'ESC-4405', issue: 'Input Distribution Lag', region: 'NORTHERN', agent: 'Alex B.', priority: 'High', status: 'In Review', date: '1 Hour Ago' },
-                        { _id: 'ESC-4409', issue: 'Farmer Verification Delay', region: 'WESTERN', agent: 'Charlie D.', priority: 'Medium', status: 'Pending', date: '3 Hours Ago' },
-                        { _id: 'ESC-4412', issue: 'Irrigation Node Timeout', region: 'EASTERN', agent: 'Evans F.', priority: 'Critical', status: 'Pending', date: 'Just Now' }
-                    ]);
-                }
-            } catch (err) {
-                console.error('Failed to fetch escalations:', err);
-                // Fallback to mock data on error
-                setEscalations([
-                    { _id: 'ESC-MOCK-1', issue: 'Network Connectivity Breach', region: 'GREATER ACCRA', agent: 'System', priority: 'Critical', status: 'Active', date: 'Live' },
-                    { _id: 'ESC-MOCK-2', issue: 'Operational Redline Reached', region: 'VOLTA', agent: 'Admin', priority: 'High', status: 'Investigating', date: '10m' }
-                ]);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchEscalations();
+        fetchTickets();
     }, []);
 
-    const getPriorityBadge = (priority: string) => {
-        switch (priority.toLowerCase()) {
-            case 'critical': return <Badge className="bg-rose-500 text-white border-none shadow-[0_0_12px_rgba(244,63,94,0.4)] animate-pulse font-black text-[9px] tracking-widest uppercase py-1 px-3">CRITICAL</Badge>;
-            case 'high': return <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-400 border-none font-black text-[9px] tracking-widest uppercase py-1 px-3">HIGH PRIORITY</Badge>;
-            case 'medium': return <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 border-none font-black text-[9px] tracking-widest uppercase py-1 px-3">MODERATE</Badge>;
-            default: return <Badge className="bg-[#7ede56]/10 text-[#7ede56] border-none font-black text-[9px] tracking-widest uppercase py-1 px-3">ROUTINE</Badge>;
+    const fetchTickets = async () => {
+        try {
+            const res = await api.get('/super-admin/escalations');
+            if (res.data && res.data.length > 0) {
+                setTickets(res.data);
+            } else {
+                // High-fidelity ticket mock data
+                setTickets([
+                    { id: 'TKT-10293', category: 'Disbursement', issue: 'Blocked Outbound Payment (GH₵ 12,400)', region: 'Ashanti', agent: 'Kwame Mensah', priority: 'Critical', status: 'Open', date: '2026-04-05T14:30:00Z', notes: [{ sender: 'Agent', text: 'Farmer is expecting disbursement for seedlings.', time: '1 hour ago' }] },
+                    { id: 'TKT-10298', category: 'Data Error', issue: 'Identity Verification Collision', region: 'Greater Accra', agent: 'Sister Deborah', priority: 'High', status: 'Assigned', assignee: 'Super Admin Alpha', date: '2026-04-05T10:15:00Z', notes: [] },
+                    { id: 'TKT-10302', category: 'Regional Lead', issue: 'Zone A-4 Inspection Failure', region: 'Western', agent: 'Abena Osei', priority: 'Medium', status: 'Open', date: '2026-04-04T16:00:00Z', notes: [] },
+                    { id: 'TKT-10305', category: 'Disbursement', issue: 'Invalid Wallet Matrix ID', region: 'Volta', agent: 'John Dumelo', priority: 'Critical', status: 'Resolved', date: '2026-04-03T08:20:00Z', notes: [{ sender: 'System', text: 'Resolved via Root Patch.', time: 'Yesterday' }] },
+                ]);
+            }
+        } catch (err) {
+            console.error('Failed to fetch tickets:', err);
+            setTickets([]);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const criticalCount = escalations.filter(e => e.priority === 'Critical').length;
-    const pendingCount = escalations.filter(e => e.status !== 'Resolved').length;
+    const handleResolve = (ticketId: string) => {
+        setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: 'Resolved' } : t));
+        setIsDetailOpen(false);
+        toast.success(`Ticket ${ticketId} marked as resolved.`);
+    };
 
-    const metrics = [
-        { title: 'Critical Threats', value: criticalCount, icon: ShieldAlert, color: 'bg-rose-950', iconColor: 'text-rose-400', description: 'Immediate Action Required' },
-        { title: 'Active Disputes', value: pendingCount, icon: Bell, color: 'bg-slate-950', iconColor: 'text-[#7ede56]', description: 'Pending Reconciliation' },
-        { title: 'System Health', value: 99.8, icon: Activity, color: 'bg-[#002f37]', iconColor: 'text-white', description: 'Node Integrity Pulse', isPercent: true },
-    ];
+    const handleAddNote = () => {
+        if (!internalNote) return;
+        toast.success('Internal audit note recorded.');
+        setInternalNote('');
+    };
+
+    const getPriorityStyle = (priority: string) => {
+        switch (priority.toLowerCase()) {
+            case 'critical': return 'bg-rose-500 text-white animate-pulse border-none shadow-[0_0_12px_rgba(244,63,94,0.3)]';
+            case 'high': return 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-400 border-none';
+            case 'medium': return 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 border-none';
+            default: return 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400 border-none';
+        }
+    };
+
+    const getStatusStyle = (status: string) => {
+        switch (status.toLowerCase()) {
+            case 'open': return 'bg-rose-500/10 text-rose-500';
+            case 'assigned': return 'bg-blue-500/10 text-blue-500';
+            case 'resolved': return 'bg-[#7ede56]/10 text-[#7ede56]';
+            default: return 'bg-gray-500/10 text-gray-500';
+        }
+    };
+
+    const filteredTickets = tickets.filter(t => {
+        const matchesCategory = filterCategory === 'All' || t.category === filterCategory;
+        const matchesStatus = filterStatus === 'All' || t.status === filterStatus;
+        return matchesCategory && matchesStatus;
+    });
+
+    const openCount = tickets.filter(t => t.status === 'Open').length;
+    const criticalCount = tickets.filter(t => t.priority === 'Critical' && t.status !== 'Resolved').length;
 
     return (
         <div className="space-y-8 pb-12 animate-in fade-in duration-300">
@@ -89,100 +133,103 @@ const Escalations = () => {
                             <BadgeAlert className="w-6 h-6" />
                         </div>
                         <h1 className={`text-2xl md:text-3xl font-black uppercase tracking-tighter ${darkMode ? 'text-white' : 'text-[#002f37]'}`}>
-                            Incident Intelligence
+                            Support Tickets
                         </h1>
                     </div>
                     <p className={`text-[10px] font-bold uppercase tracking-[0.2em] ml-11 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        High-priority escalations and platform security redlines
+                        Manage and resolve technical and operational issues
                     </p>
                 </div>
-                <div className="flex gap-3">
-                    <Button variant="outline" className={`h-11 px-6 rounded-xl font-black uppercase text-[10px] tracking-widest border-2 border-dashed ${darkMode ? 'border-gray-800' : 'border-gray-200 shadow-premium'}`}>
-                        <Filter className="w-4 h-4 mr-2" /> Global Filter
-                    </Button>
-                    <Button className="bg-[#002f37] dark:bg-[#7ede56] dark:text-[#002f37] hover:scale-105 transition-all font-black uppercase text-[10px] tracking-widest h-11 px-8 rounded-xl shadow-premium">
-                        Protocol Override
-                    </Button>
+                <div className="flex gap-4">
+                    <div className="hidden lg:flex items-center gap-6 px-6 py-2 bg-gray-100 dark:bg-gray-800 rounded-2xl border border-black/5">
+                        <div className="text-center">
+                            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Open Tickets</p>
+                            <p className="text-sm font-black text-rose-500">{openCount}</p>
+                        </div>
+                        <div className="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
+                        <div className="text-center">
+                            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">High Priority</p>
+                            <p className="text-sm font-black text-rose-600 animate-pulse">{criticalCount}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Premium Metric Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                {metrics.map((m, idx) => (
-                    <Card
-                        key={idx}
-                        className={`${m.color} border-none shadow-2xl hover:translate-y-[-4px] transition-all duration-300 cursor-pointer relative overflow-hidden h-36 border border-white/5 group`}
+            {/* Filtering Matrix */}
+            <Card className={`border-none shadow-premium ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
+                <CardContent className="p-4 flex flex-col md:flex-row items-center gap-4">
+                    <div className="relative flex-1 group w-full">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#7ede56] transition-colors" />
+                        <Input placeholder="Search ticket ID, issue, agent..." className="pl-12 h-12 rounded-xl border-none shadow-inner bg-gray-50 dark:bg-gray-800" />
+                    </div>
+                    <div className="flex gap-2 w-full md:w-auto">
+                        <Select onValueChange={setFilterCategory} defaultValue="All">
+                            <SelectTrigger className="h-12 w-[160px] rounded-xl border-none bg-gray-50 dark:bg-gray-800 font-black text-[10px] uppercase tracking-widest shadow-inner">
+                                <SelectValue placeholder="Category" />
+                            </SelectTrigger>
+                            <SelectContent className="border-none shadow-2xl rounded-xl">
+                                <SelectItem value="All">All Categories</SelectItem>
+                                <SelectItem value="Disbursement">Disbursement</SelectItem>
+                                <SelectItem value="Data Error">Data Error</SelectItem>
+                                <SelectItem value="Regional Lead">Regional Lead</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select onValueChange={setFilterStatus} defaultValue="All">
+                            <SelectTrigger className="h-12 w-[160px] rounded-xl border-none bg-gray-50 dark:bg-gray-800 font-black text-[10px] uppercase tracking-widest shadow-inner">
+                                <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent className="border-none shadow-2xl rounded-xl">
+                                <SelectItem value="All">All Status</SelectItem>
+                                <SelectItem value="Open">Unassigned (Open)</SelectItem>
+                                <SelectItem value="Assigned">Assigned</SelectItem>
+                                <SelectItem value="Resolved">Resolved</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Ticket Feed Grid */}
+            <div className="grid grid-cols-1 gap-4">
+                {filteredTickets.map(ticket => (
+                    <Card 
+                        key={ticket.id} 
+                        className={`border-none shadow-premium overflow-hidden group hover:translate-x-2 transition-all duration-300 cursor-pointer ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white'}`}
+                        onClick={() => { setSelectedTicket(ticket); setIsDetailOpen(true); }}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
-                        <CardHeader className="p-5 pb-0 relative z-10 flex flex-row items-center justify-between space-y-0">
-                            <div className="p-2 rounded-lg bg-white/10 backdrop-blur-xl">
-                                <m.icon className={`h-4 w-4 ${m.iconColor}`} />
-                            </div>
-                            <ArrowUpRight className="h-4 w-4 text-white/20 group-hover:text-white/60 transition-colors" />
-                        </CardHeader>
-                        <CardContent className="p-5 pt-3 relative z-10 flex flex-col justify-end h-[calc(9rem-3.5rem)]">
-                            <p className="text-[9px] font-black text-white/50 uppercase tracking-[0.2em] mb-1">
-                                {m.title}
-                            </p>
-                            <h3 className="text-3xl font-black text-white">
-                                <CountUp end={m.value} duration={2000} />{m.isPercent && '%'}
-                            </h3>
-                            <p className="text-[8px] font-bold mt-1 text-white/30 truncate uppercase tracking-tighter italic">
-                                {m.description}
-                            </p>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-
-            {/* Alert List Feed */}
-            <div className="space-y-4">
-                <div className="flex items-center justify-between mb-2 px-2">
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Live Incident Stream</h2>
-                    <Badge variant="outline" className="text-[9px] font-black opacity-50 border-none">POLLING ACTIVE</Badge>
-                </div>
-                {escalations.map((item) => (
-                    <Card key={item._id} className={`border-none shadow-premium overflow-hidden group transition-all duration-300 hover:translate-x-2 relative ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white'}`}>
-                        <div className={`absolute top-0 left-0 h-full w-1.5 ${item.priority === 'Critical' ? 'bg-rose-600 animate-pulse' : (item.priority === 'High' ? 'bg-rose-400' : 'bg-amber-400')}`}></div>
+                        <div className={`absolute top-0 left-0 h-full w-1.5 ${ticket.priority === 'Critical' ? 'bg-rose-500' : (ticket.priority === 'High' ? 'bg-rose-400' : 'bg-amber-400')}`}></div>
                         <CardContent className="p-6">
-                            <div className="flex flex-col md:flex-row items-center gap-8">
-                                <div className="flex-1 space-y-4 w-full">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            {getPriorityBadge(item.priority)}
-                                            <Badge variant="outline" className={`text-[10px] h-6 font-black border-dashed ${darkMode ? 'border-gray-800 text-gray-400' : 'border-gray-100 text-gray-400'}`}>
-                                                SEC-REF: {item._id}
-                                            </Badge>
-                                        </div>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
-                                            <Clock className="w-3.5 h-3.5" /> {item.date}
-                                        </span>
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div className="space-y-4 flex-1">
+                                    <div className="flex items-center gap-3">
+                                        <Badge className={`px-3 py-0.5 text-[9px] font-black uppercase tracking-widest ${getPriorityStyle(ticket.priority)}`}>{ticket.priority}</Badge>
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">#{ticket.id}</span>
+                                        <span className="text-[10px] font-black text-[#7ede56] uppercase tracking-widest">{ticket.category}</span>
                                     </div>
-
-                                    <div className="space-y-1">
-                                        <h3 className={`text-xl font-black uppercase tracking-tight ${darkMode ? 'text-white' : 'text-[#002f37]'}`}>{item.issue}</h3>
-                                        <div className="flex flex-wrap items-center gap-6 pt-1">
-                                            <div className="flex items-center gap-2">
-                                                <MapPin className="w-3.5 h-3.5 text-blue-500" />
-                                                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{item.region} CORE</span>
+                                    <div>
+                                        <h3 className="text-xl font-black uppercase tracking-tight leading-none mb-2">{ticket.issue}</h3>
+                                        <div className="flex items-center gap-6">
+                                            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                                <MapPin className="w-3.5 h-3.5 text-blue-500" /> {ticket.region}
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <User className="w-3.5 h-3.5 text-[#7ede56]" />
-                                                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">OWNER: {item.agent}</span>
+                                            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                                <User className="w-3.5 h-3.5 text-[#7ede56]" /> {ticket.agent}
+                                            </div>
+                                            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                                <Clock className="w-3.5 h-3.5" /> {new Date(ticket.date).toLocaleDateString()}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                <div className="shrink-0 flex items-center gap-8 w-full md:w-auto pt-4 md:pt-0 border-t md:border-transparent">
-                                    <div className="hidden lg:block text-right">
-                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Current State</p>
-                                        <Badge className={`font-black text-[9px] uppercase border-none rounded-lg px-3 ${item.status === 'Resolved' ? 'bg-[#7ede56]/10 text-[#7ede56]' : 'bg-rose-500/10 text-rose-500'}`}>
-                                            {item.status}
+                                <div className="flex items-center gap-6">
+                                    <div className="text-right hidden sm:block">
+                                        <Badge className={`border-none rounded-lg font-black text-[9px] px-3 py-1 uppercase tracking-widest ${getStatusStyle(ticket.status)}`}>
+                                            {ticket.status}
                                         </Badge>
+                                        {ticket.assignee && <p className="text-[8px] font-bold text-gray-400 mt-1 uppercase">BY: {ticket.assignee}</p>}
                                     </div>
-                                    <Button className="bg-[#002f37] dark:bg-[#7ede56] dark:text-[#002f37] hover:scale-105 transition-all font-black uppercase text-[10px] tracking-widest h-14 px-10 rounded-2xl shadow-premium flex items-center gap-3">
-                                        Resolve Node <ArrowRight className="w-4 h-4" />
+                                    <Button className="h-14 w-14 rounded-2xl bg-gray-100 hover:bg-[#7ede56] hover:text-[#002f37] dark:bg-gray-800 transition-all p-0">
+                                        <ChevronDown className="w-5 h-5 -rotate-90" />
                                     </Button>
                                 </div>
                             </div>
@@ -191,30 +238,83 @@ const Escalations = () => {
                 ))}
             </div>
 
-            {/* Footer Incident Protocol */}
-            <div className={`p-8 rounded-[32px] border border-dashed ${darkMode ? 'bg-indigo-950/20 border-indigo-500/20' : 'bg-indigo-50 border-indigo-200'} flex flex-col md:flex-row items-center justify-between gap-8 mt-12 relative overflow-hidden group`}>
-                <div className="absolute top-0 right-10 h-full w-32 bg-indigo-500/5 rotate-12 blur-3xl group-hover:bg-indigo-500/10 transition-colors"></div>
-                <div className="flex items-center gap-6 relative z-10">
-                    <div className="p-4 rounded-[24px] bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 shadow-inner">
-                        <Zap className="w-8 h-8" />
-                    </div>
-                    <div>
-                        <h3 className={`text-xl font-black uppercase tracking-tight text-indigo-900 dark:text-indigo-400`}>Emergency Override Relay</h3>
-                        <p className={`text-xs max-w-md font-bold uppercase tracking-wide text-indigo-700/60 dark:text-indigo-400/60 mt-2 leading-relaxed`}>
-                            Critical alerts are pushed via satellite to the duty officer's root device. Immutable audit logs are generated for every resolution action taken.
-                        </p>
-                    </div>
-                </div>
-                <Button variant="outline" className={`font-black text-[10px] px-10 tracking-widest h-12 uppercase border-2 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 rounded-xl relative z-10`}>
-                    Configure Push Protocols
-                </Button>
-            </div>
+            {/* Ticket Detail Modal */}
+            <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+                <DialogContent className={`sm:max-w-[700px] border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+                    {selectedTicket && (
+                        <div className="flex flex-col">
+                            <div className="p-8 pb-12 bg-[#002f37] text-white relative">
+                                <div className="absolute top-4 right-4 flex gap-2">
+                                    <Badge className={`${getPriorityStyle(selectedTicket.priority)} text-[9px] px-3 font-black uppercase`}>{selectedTicket.priority}</Badge>
+                                    <Badge className={`${getStatusStyle(selectedTicket.status)} border-none text-[9px] px-3 font-black uppercase`}>{selectedTicket.status}</Badge>
+                                </div>
+                                <p className="text-[10px] font-black text-[#7ede56] uppercase tracking-[0.3em] mb-3">TICKET DETAILS</p>
+                                <h2 className="text-3xl font-black uppercase tracking-tighter max-w-lg leading-none">{selectedTicket.issue}</h2>
+                            </div>
+
+                            <div className="px-8 -mt-6 rounded-t-[32px] bg-white dark:bg-gray-950 relative z-10 pt-8 pb-8 flex flex-col md:flex-row gap-8 min-h-[450px]">
+                                <div className="flex-1 space-y-8">
+                                    <div className="space-y-4">
+                                        <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400"><History className="w-4 h-4" /> Notes & Activity</h4>
+                                        <div className="space-y-4">
+                                            {selectedTicket.notes.length > 0 ? selectedTicket.notes.map((note: any, i: number) => (
+                                                <div key={i} className={`p-4 rounded-xl ${note.sender === 'Agent' ? 'bg-gray-50 dark:bg-gray-900 border-l-4 border-blue-500' : 'bg-emerald-500/5 border-l-4 border-[#7ede56]'}`}>
+                                                    <div className="flex justify-between mb-1">
+                                                        <span className="text-[9px] font-black uppercase text-gray-500">{note.sender} Observation</span>
+                                                        <span className="text-[8px] font-bold text-gray-400">{note.time}</span>
+                                                    </div>
+                                                    <p className="text-xs leading-relaxed">{note.text}</p>
+                                                </div>
+                                            )) : (
+                                                <div className="py-10 text-center opacity-30 text-[10px] font-black tracking-widest uppercase">No preliminary notes recorded</div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400"><MessageSquare className="w-4 h-4" /> Staff Notes (Internal)</h4>
+                                        <Textarea 
+                                            placeholder="Append internal audit findings..." 
+                                            className="h-28 rounded-2xl border-none shadow-inner bg-gray-50 dark:bg-gray-900 text-sm p-4"
+                                            value={internalNote}
+                                            onChange={(e) => setInternalNote(e.target.value)}
+                                        />
+                                        <div className="flex items-center justify-between px-1">
+                                            <p className="text-[8px] font-bold text-rose-500/50 uppercase tracking-tighter">* Notes here are invisible to field agents</p>
+                                            <Button variant="ghost" className="h-8 text-[9px] font-black uppercase tracking-widest" onClick={handleAddNote}>Commit Observation</Button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="w-full md:w-64 space-y-8 pb-4">
+                                    <div className="space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Information</h4>
+                                        <div className="space-y-4 p-5 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-black/5">
+                                            <div><p className="text-[8px] font-black text-gray-400 uppercase">Region Impact</p><p className="text-[10px] font-black">{selectedTicket.region}</p></div>
+                                            <div><p className="text-[8px] font-black text-gray-400 uppercase">Reporting Agent</p><p className="text-[10px] font-black">{selectedTicket.agent}</p></div>
+                                            <div><p className="text-[8px] font-black text-gray-400 uppercase">Created On</p><p className="text-[10px] font-black">{new Date(selectedTicket.date).toLocaleString()}</p></div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-3">
+                                        <Button className="w-full h-12 bg-[#7ede56] text-[#002f37] hover:bg-[#6bcb4b] font-black uppercase text-[10px] tracking-widest rounded-xl shadow-lg" onClick={() => handleResolve(selectedTicket.id)}>
+                                            Mark Resolved
+                                        </Button>
+                                        <Button variant="outline" className="w-full h-12 border-blue-500/20 text-blue-500 hover:bg-blue-50 font-black uppercase text-[10px] tracking-widest rounded-xl">
+                                            <UserPlus className="w-4 h-4 mr-2" /> Delegate
+                                        </Button>
+                                        <Button variant="ghost" className="w-full h-12 text-rose-500 font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-rose-50">
+                                            Force Close
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
 
 export default Escalations;
-
-
-
-

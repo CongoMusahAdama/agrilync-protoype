@@ -12,7 +12,6 @@ import {
     Cloud, RefreshCcw, Info, Plus, Trash2
 } from 'lucide-react';
 import api from '@/utils/api';
-import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -85,12 +84,25 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({ open, onOpenChange,
         },
         onError: (err) => {
             console.error('Upload error:', err);
-            toast.error('One or more uploads failed.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Sync Interrupted',
+                text: 'One or more field reports failed to sync with the network.',
+                confirmButtonColor: '#065f46'
+            });
         }
     });
 
     const handleSubmit = async () => {
-        if (mediaFiles.length === 0) { toast.error('Please select at least one file'); return; }
+        if (mediaFiles.length === 0) { 
+            Swal.fire({
+                icon: 'warning',
+                title: 'Queue Empty',
+                text: 'Please select at least one field asset (Image/Video/PDF) to sync.',
+                confirmButtonColor: '#065f46'
+            });
+            return; 
+        }
         
         setLoading(true);
         try {
@@ -144,8 +156,13 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({ open, onOpenChange,
 
             setStep(3);
             if (onSuccess) onSuccess();
-        } catch (error) {
-            toast.error('Something went wrong during the upload.');
+        } catch (error: any) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Transaction Error',
+                text: error.response?.data?.msg || 'An error occurred during report synchronization.',
+                confirmButtonColor: '#065f46'
+            });
         } finally {
             setLoading(false);
         }
@@ -182,7 +199,11 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({ open, onOpenChange,
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className={`max-w-2xl w-[95vw] p-0 overflow-hidden flex flex-col border-none shrink-0 ${darkMode ? 'bg-[#002f37]' : 'bg-white'} rounded-[2rem] shadow-2xl transition-all duration-500`}>
-
+                <DialogHeader className="sr-only">
+                    <DialogTitle>Upload Field Report</DialogTitle>
+                    <DialogDescription>Upload images, videos, or documents to the farmer's gallery</DialogDescription>
+                </DialogHeader>
+                
                 <div className={`px-8 py-6 border-b flex items-center justify-between shrink-0 ${darkMode ? 'bg-[#0b2528]/50 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
                     <div className="flex items-center gap-4">
                         <div className={`p-3 rounded-2xl ${darkMode ? 'bg-[#065f46]/20' : 'bg-[#065f46]/10'}`}>
@@ -208,8 +229,8 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({ open, onOpenChange,
                     {step === 1 && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="text-center mb-4">
-                                <DialogTitle className={`text-xl font-black mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Select Report Files</DialogTitle>
-                                <DialogDescription className={`text-xs font-bold uppercase tracking-tight ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>You can select multiple photos, videos or PDF reports</DialogDescription>
+                                <h3 className={`text-xl font-black mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Select Report Files</h3>
+                                <p className={`text-xs font-bold uppercase tracking-tight ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>You can select multiple photos, videos or PDF reports</p>
                             </div>
 
                             <div 
@@ -273,10 +294,10 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({ open, onOpenChange,
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <DialogTitle className={`text-xl font-black mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Validate & Categorize</DialogTitle>
-                                    <DialogDescription className={`text-xs font-bold uppercase tracking-tight ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    <h3 className={`text-xl font-black mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Validate & Categorize</h3>
+                                    <p className={`text-xs font-bold uppercase tracking-tight ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                         Editing {currentEditIndex + 1} of {mediaFiles.length}
-                                    </DialogDescription>
+                                    </p>
                                 </div>
                                 <div className="flex gap-2">
                                     <Button 

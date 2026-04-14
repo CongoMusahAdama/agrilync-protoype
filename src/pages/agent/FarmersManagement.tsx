@@ -37,7 +37,7 @@ import { Search, Filter, Plus, Eye, Edit, MapPin } from 'lucide-react';
 import AddFarmerModal from '@/components/agent/AddFarmerModal';
 import ViewFarmerModal from '@/components/agent/ViewFarmerModal';
 import api from '@/utils/api';
-import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 import UploadReportModal from '@/components/agent/UploadReportModal';
 import MediaUploadModal from '@/components/agent/MediaUploadModal';
 import ScheduleVisitModal from '@/components/agent/ScheduleVisitModal';
@@ -88,7 +88,12 @@ const FarmersManagement: React.FC = () => {
       setEditModalOpen(true);
     } catch (error: any) {
       console.error('Error fetching farmer data:', error);
-      toast.error('Failed to load farmer data. Using available data.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Registry Sync Error',
+        text: 'Failed to synchronize full grower data. Opening with existing records.',
+        confirmButtonColor: '#065f46'
+      });
       setSelectedFarmer(farmer);
       setEditModalOpen(true);
     }
@@ -232,12 +237,15 @@ const FarmersManagement: React.FC = () => {
                   <TableRow key={farmer._id} className={tableRowClass}>
                     <TableCell className={tableCellClass}>
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9 border-2 border-slate-200">
-                          {farmer.profilePicture ? (
-                            <AvatarImage src={farmer.profilePicture} alt={farmer.name} className="object-cover bg-white" />
-                          ) : (
-                            <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${farmer.name}`} alt={farmer.name} className="object-cover bg-emerald-50" />
-                          )}
+                        <Avatar className="h-10 w-10 border-2 border-slate-200 shadow-sm">
+                          <AvatarImage 
+                            src={farmer.profilePicture || farmer.avatar || farmer.photo || farmer.picture || farmer.image || farmer.profile_picture} 
+                            alt={farmer.name} 
+                            className="object-cover bg-white" 
+                          />
+                          <AvatarFallback className="bg-emerald-50 text-[#002f37] font-black text-xs uppercase">
+                            {farmer.name?.split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase()}
+                          </AvatarFallback>
                         </Avatar>
                         <span className="font-medium">{farmer.name}</span>
                       </div>

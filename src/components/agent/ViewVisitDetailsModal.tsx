@@ -108,11 +108,23 @@ const ViewVisitDetailsModal: React.FC<ViewVisitDetailsModalProps> = ({ open, onO
                     </div>
 
                     <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                            <User className={`h-5 w-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                        <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-xl overflow-hidden border border-[#065f46]/20 bg-white flex-shrink-0">
+                                {visit.farmer?.profilePicture || visit.farmer?.avatar || visit.farmer?.photo || visit.farmer?.picture || visit.farmer?.image || visit.farmer?.profile_picture ? (
+                                    <img 
+                                        src={visit.farmer?.profilePicture || visit.farmer?.avatar || visit.farmer?.photo || visit.farmer?.picture || visit.farmer?.image || visit.farmer?.profile_picture} 
+                                        alt={visit.farmer?.name || visit.farmerName || 'Farmer'} 
+                                        className="w-full h-full object-cover" 
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-[#065f46]/5 text-[#065f46] font-bold text-sm">
+                                        {(visit.farmer?.name || visit.farmerName || (typeof visit.farmer === 'string' ? visit.farmer : '?')).charAt(0)}
+                                    </div>
+                                )}
+                            </div>
                             <div>
                                 <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Farmer</p>
-                                <p className="font-medium">{visit.farmer?.name || visit.farmerName || (typeof visit.farmer === 'string' ? visit.farmer : 'N/A')}</p>
+                                <p className="font-medium truncate max-w-[200px]">{visit.farmer?.name || visit.farmerName || (typeof visit.farmer === 'string' ? visit.farmer : 'N/A')}</p>
                             </div>
                         </div>
 

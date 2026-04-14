@@ -118,7 +118,7 @@ const Login = () => {
         </div>
 
         <div className="flex-1 flex flex-col justify-center relative z-10">
-          <h1 className="text-6xl font-bold mb-6 leading-tight">
+          <h1 className="text-6xl font-bold mb-6 leading-tight text-white">
             Welcome to the <br />
             <span className="text-[#7ede56]">AgriLync Community</span>
           </h1>
@@ -158,8 +158,8 @@ const Login = () => {
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-4xl font-bold text-[#002f37]">Welcome back!</h2>
-            <p className="text-gray-500">
+            <h2 className="text-4xl font-extrabold text-[#002f37]">Welcome back!</h2>
+            <p className="text-gray-500 font-medium">
               Your agricultural journey provides you with the building blocks necessary to create true success.
             </p>
           </div>
@@ -230,13 +230,22 @@ const Login = () => {
             </Button>
           </form>
 
-          <div className="text-center pt-4">
+          <div className="text-center pt-4 space-y-4">
             <p className="text-gray-600">
               Don't have an account?{' '}
               <Link to="/signup" className="text-[#002f37] font-bold hover:underline">
                 Create free account
               </Link>
             </p>
+            
+            <div className="pt-4 border-t border-gray-100">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Field Agent Access</p>
+              <Link to="/agent/login">
+                <Button variant="outline" className="w-full border-[#002f37]/20 text-[#002f37] font-bold hover:bg-[#002f37]/5 transition-all rounded-xl gap-2">
+                   <ShieldCheck className="h-4 w-4" /> Go to Dedicated Agent Portal
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

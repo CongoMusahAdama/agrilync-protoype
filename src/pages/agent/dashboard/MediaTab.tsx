@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Image as ImageIcon, Folder, FileText } from 'lucide-react';
-import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 
 interface MediaTabProps {
   mediaItems: any[];
@@ -14,7 +14,7 @@ const MediaTab: React.FC<MediaTabProps> = ({
 }) => {
   const handleOpenMedia = (item: any) => {
     const url = item.url;
-    if (!url || url === 'album-placeholder') return;
+    if (!url) return;
 
     if (url.startsWith('data:')) {
       try {
@@ -36,11 +36,21 @@ const MediaTab: React.FC<MediaTabProps> = ({
           // Clean up the URL after a short delay
           setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
         } else {
-          toast.error('Pop-up blocked. Please allow pop-ups.');
+          Swal.fire({
+            icon: 'warning',
+            title: 'Pop-up Blocked',
+            text: 'Please allow pop-ups to view field evidence.',
+            confirmButtonColor: '#065f46'
+          });
         }
       } catch (err) {
         console.error('Error opening base64 media:', err);
-        toast.error('Failed to open document.');
+        Swal.fire({
+            icon: 'error',
+            title: 'File Error',
+            text: 'Could not open the digital asset. It might be corrupted.',
+            confirmButtonColor: '#065f46'
+        });
       }
     } else {
       window.open(url, '_blank');
@@ -71,7 +81,7 @@ const MediaTab: React.FC<MediaTabProps> = ({
             mediaItems.slice(0, 10).map((item: any, i: number) => {
               const itemType = (item.type || 'Photo').toLowerCase();
               const itemName = (item.name || '').toLowerCase();
-              const isAlbum = item.url === 'album-placeholder' || itemName.startsWith('[album]') || itemType === 'album';
+              const isAlbum = itemName.startsWith('[album]') || itemType === 'album';
               
               // Document detection
               const isPdf = itemName.endsWith('.pdf') || item.format === 'PDF';
@@ -79,7 +89,7 @@ const MediaTab: React.FC<MediaTabProps> = ({
               const isWord = itemName.endsWith('.docx') || itemName.endsWith('.doc') || item.format?.includes('DOC');
               const isDocument = isPdf || isExcel || isWord || itemType === 'kyc doc' || itemType === 'document' || item.format === 'PDF';
               
-              const hasValidImage = item.thumbnail || (item.url && item.url !== 'album-placeholder' && !isDocument);
+              const hasValidImage = item.thumbnail || (item.url && !isDocument);
 
               // Nice coloring for specific types
               let bgColorClass = "bg-gray-50";

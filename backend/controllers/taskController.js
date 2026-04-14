@@ -1,9 +1,11 @@
 const Task = require('../models/Task');
+const { sendEmail } = require('../utils/notificationService');
+const { sendSMS } = require('../utils/smsService');
 
 // Get all tasks for an agent
 exports.getTasks = async (req, res) => {
   try {
-    const tasks = await Task.find({ agent: req.agent.id })
+    const tasks = await Task.find({ agent: req.agent.id, region: req.agent.region })
                             .populate('farmer', 'name region district')
                             .populate('farm', 'name')
                             .sort({ dueDate: 1 });
@@ -25,6 +27,42 @@ exports.getTasks = async (req, res) => {
       // Use stored region → farmer's region → agent's region as fallback chain
       region: task.region || (task.farmer && task.farmer.region) || agentRegion
     }));
+
+    // CRITICAL: Check for almost due tasks and notify (Background simulation)
+    const almostDueTasks = tasks.filter(t => {
+      if (t.status === 'done' || t.reminderSent) return false;
+      const hoursLeft = (new Date(t.dueDate) - new Date()) / (1000 * 60 * 60);
+      return hoursLeft > 0 && hoursLeft <= 48;
+    });
+
+    if (almostDueTasks.length > 0) {
+      almostDueTasks.forEach(async (task) => {
+        try {
+          // Notify via Email
+          await sendEmail({
+            to: req.agent.email,
+            template: 'taskReminder',
+            data: {
+              agentName: req.agent.name,
+              taskTitle: task.title,
+              dueDate: new Date(task.dueDate).toLocaleString(),
+              location: task.location || 'Field Site',
+              priority: (task.priority || 'Normal').toUpperCase()
+            }
+          });
+
+          // Notify via SMS
+          const smsBody = `⏰ AGRI-LYNC REMINDER: Your field task "${task.title}" is due on ${new Date(task.dueDate).toLocaleDateString()}. Please prepare accordingly.`;
+          await sendSMS(req.agent.phoneNumber || '+233000000000', smsBody, req.agent.email);
+
+          // Mark as sent
+          await Task.findByIdAndUpdate(task._id, { reminderSent: true });
+          console.log(`[NOTIFY] Automated reminder dispatched for task: ${task.title}`);
+        } catch (notifyErr) {
+          console.error('[NOTIFY] Failed to dispatch task reminder:', notifyErr.message);
+        }
+      });
+    }
 
     res.json({
       success: true,

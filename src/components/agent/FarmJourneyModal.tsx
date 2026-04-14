@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
-import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import { GHANA_REGIONS, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
 
@@ -305,7 +304,12 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
             }
         } catch (error) {
             console.error("Failed to fetch farm details:", error);
-            toast.error("Could not load farm details.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Data Load Error',
+                text: 'Could not load farm journey details from the secure cloud.',
+                confirmButtonColor: '#065f46'
+            });
         } finally {
             setLoading(false);
         }
@@ -340,7 +344,12 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
             });
         } catch (error) {
             console.error("Failed to update stage:", error);
-            toast.error("Failed to update farm stage.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Protocol Error',
+                text: 'Failed to update farm stage in the field ledger.',
+                confirmButtonColor: '#065f46'
+            });
         }
     };
 
@@ -403,7 +412,12 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
             handleCloseActivityDialog();
         } catch (error) {
             console.error("Failed to save activity:", error);
-            toast.error("Failed to save activity.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Log Entry Failed',
+                text: 'Could not commit the activity log to the database.',
+                confirmButtonColor: '#065f46'
+            });
         } finally {
             setSavingActivity(false);
         }
@@ -458,7 +472,12 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
             });
         } catch (error) {
             console.error("Failed to add farm:", error);
-            toast.error("Failed to register farm. Please try again.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Registration Error',
+                text: 'Failed to register farm. Please verify network connectivity.',
+                confirmButtonColor: '#065f46'
+            });
         } finally {
             setAddingFarm(false);
         }

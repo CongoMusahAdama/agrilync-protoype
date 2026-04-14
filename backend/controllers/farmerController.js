@@ -14,13 +14,13 @@ exports.getFarmers = async (req, res) => {
         const skip = (page - 1) * limit;
 
         const [farmers, total] = await Promise.all([
-            Farmer.find({ agent: req.agent.id })
-                .select('name id status region district community farmType contact createdAt ghanaCardNumber')
+            Farmer.find({ agent: req.agent.id, region: req.agent.region })
+                .select('name id status region district community farmType contact createdAt ghanaCardNumber profilePicture investmentStatus')
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
                 .lean(),
-            Farmer.countDocuments({ agent: req.agent.id })
+            Farmer.countDocuments({ agent: req.agent.id, region: req.agent.region })
         ]);
 
         res.json({

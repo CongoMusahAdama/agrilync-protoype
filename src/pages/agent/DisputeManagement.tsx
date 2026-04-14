@@ -51,7 +51,6 @@ import {
   Loader2
 } from 'lucide-react';
 import api from '@/utils/api';
-import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import ViewDisputeModal from '@/components/agent/ViewDisputeModal';
 import { useAuth } from '@/contexts/AuthContext';
@@ -203,7 +202,12 @@ const DisputeManagement: React.FC = () => {
     },
     onError: (err: any) => {
       console.error('Error submitting dispute:', err);
-      toast.error(err.response?.data?.msg || 'Failed to log dispute');
+      Swal.fire({
+        icon: 'error',
+        title: 'Registry Failed',
+        text: err.response?.data?.msg || 'Could not log the dispute in the system.',
+        confirmButtonColor: '#065f46'
+      });
     }
   });
 
@@ -217,7 +221,12 @@ const DisputeManagement: React.FC = () => {
 
   const handleSubmitDispute = async () => {
     if (!newDispute.farmerId || !newDispute.investorName || !newDispute.type || !newDispute.severity || !newDispute.description) {
-      toast.error('Please fill in all required fields');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required Fields',
+        text: 'Please complete all necessary fields to register the dispute.',
+        confirmButtonColor: '#065f46'
+      });
       return;
     }
 

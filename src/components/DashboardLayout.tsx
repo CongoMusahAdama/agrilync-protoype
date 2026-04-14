@@ -111,25 +111,36 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             setIsNavigating(false);
             setIsInitialMount(false);
 
-            // Initialize Notifications for Agents
-            if (userType === 'agent' && agent) {
-                requestNotificationPermission();
-                
-                // Set up live listener for in-app popups
-                onMessageListener().then((payload: any) => {
-                    if (payload?.notification) {
-                        toast.info(payload.notification.title, {
-                            description: payload.notification.body,
-                            duration: 6000,
-                            action: {
-                                label: 'View',
-                                onClick: () => navigate('/dashboard/agent/notifications-center')
+            // Initialize Notifications for Agents (only on first mount to avoid spam)
+            const hasNotifications = typeof window !== 'undefined' && 'Notification' in window;
+            if (userType === 'agent' && agent && hasNotifications && Notification.permission !== 'denied') {
+                const setupNotifications = async () => {
+                    try {
+                        // Only request if not already granted or denied
+                        if (Notification.permission === 'default') {
+                            await requestNotificationPermission();
+                        }
+                        
+                        // Set up live listener for in-app popups
+                        onMessageListener().then((payload: any) => {
+                            if (payload?.notification) {
+                                toast.info(payload.notification.title, {
+                                    description: payload.notification.body,
+                                    duration: 6000,
+                                    action: {
+                                        label: 'View',
+                                        onClick: () => navigate('/dashboard/agent/notifications-center')
+                                    }
+                                });
+                                // Also re-fetch internal notification list
+                                queryClient.invalidateQueries({ queryKey: ['notifications'] });
                             }
-                        });
-                        // Also re-fetch internal notification list
-                        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+                        }).catch(err => console.error('FCM Listener failed:', err));
+                    } catch (err) {
+                        console.error('Notification setup failed:', err);
                     }
-                }).catch(err => console.error('FCM Listener failed:', err));
+                };
+                setupNotifications();
             }
         }
     }, [location.pathname, agent, userType, navigate, queryClient]);
@@ -173,9 +184,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                         'performance': userType === 'agent' ? '/dashboard/agent/performance' : `/dashboard/${userType}/performance`,
                                         // Super Admin Routes
                                         'regional-performance': '/dashboard/super-admin/regions',
-                                        'agent-accountability': '/dashboard/super-admin/agents',
+                                        'agent-management': '/dashboard/super-admin/agents',
                                         'farm-oversight': '/dashboard/super-admin/oversight',
-                                        'partnerships-summary': '/dashboard/super-admin/partnerships',
                                         'escalations': '/dashboard/super-admin/escalations',
                                         'reports-analytics': '/dashboard/super-admin/analytics',
                                         'system-logs': '/dashboard/super-admin/logs',
@@ -243,18 +253,62 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                 {headerActions}
                                 {/* Action Group: Notifications & Global Settings - Redesigned with Text Labels */}
                                 <div className="hidden md:flex items-center bg-[#f8fafc] rounded-full p-1 border border-gray-100/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] gap-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="relative h-9 rounded-full text-gray-500 hover:text-[#065f46] hover:bg-white transition-all shadow-none group px-4 gap-2.5"
-                                        onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/notifications-center' : `/dashboard/${userType}/notifications`)}
-                                    >
-                                        <Bell className="h-[20px] w-[20px] stroke-[3px] transition-transform group-active:scale-90" />
-                                        <span className="hidden xl:inline text-[11px] font-black uppercase tracking-[0.1em] opacity-80 group-hover:opacity-100">Alerts</span>
-                                        {activeNotifications.filter(n => !n.read).length > 0 && (
-                                            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#7ede56] border-2 border-white shadow-sm animate-pulse"></span>
-                                        )}
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="relative h-9 rounded-full text-gray-500 hover:text-[#065f46] hover:bg-white transition-all shadow-none group px-4 gap-2.5"
+                                            >
+                                                <Bell className="h-[20px] w-[20px] stroke-[3px] transition-transform group-active:scale-90" />
+                                                <span className="hidden xl:inline text-[11px] font-black uppercase tracking-[0.1em] opacity-80 group-hover:opacity-100">Alerts</span>
+                                                {activeNotifications.filter(n => !n.read).length > 0 && (
+                                                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#7ede56] border-2 border-white shadow-sm animate-pulse"></span>
+                                                )}
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-[380px] mt-2 rounded-[24px] border-gray-100 shadow-2xl p-0 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <div className="bg-[#002f37] p-5 text-white flex justify-between items-center">
+                                                <div>
+                                                    <h3 className="text-sm font-black uppercase tracking-widest">Notifications</h3>
+                                                    <p className="text-[10px] font-bold text-[#7ede56] uppercase tracking-widest mt-0.5">Alerts & Updates</p>
+                                                </div>
+                                                <Badge className="bg-[#7ede56]/20 text-[#7ede56] border-none text-[9px] font-black">{activeNotifications.filter(n => !n.read).length} NEW</Badge>
+                                            </div>
+                                            <div className="max-h-[400px] overflow-y-auto divide-y divide-gray-50">
+                                                {activeNotifications.length > 0 ? (
+                                                    activeNotifications.slice(0, 5).map((n, i) => (
+                                                        <DropdownMenuItem key={i} className="p-4 gap-4 cursor-pointer hover:bg-gray-50 transition-colors focus:bg-gray-50 outline-none">
+                                                            <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center ${n.read ? 'bg-gray-100 text-gray-400' : 'bg-[#eefcf0] text-[#002f37]'} border border-white/5`}>
+                                                                <Zap className="h-5 w-5" />
+                                                            </div>
+                                                            <div className="flex-1 space-y-1">
+                                                                <p className={`text-[12px] font-black uppercase tracking-tight leading-none ${n.read ? 'text-gray-400' : 'text-[#002f37]'}`}>{n.title}</p>
+                                                                <p className="text-[11px] font-bold text-gray-500 leading-tight line-clamp-2 uppercase tracking-wide">{n.message || n.body}</p>
+                                                                <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest mt-1">2 MINUTES AGO</p>
+                                                            </div>
+                                                        </DropdownMenuItem>
+                                                    ))
+                                                ) : (
+                                                    <div className="p-12 text-center space-y-3">
+                                                        <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mx-auto">
+                                                            <Bell className="w-8 h-8 text-gray-200" />
+                                                        </div>
+                                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">No notifications yet</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="p-4 bg-gray-50/50 border-t border-gray-100">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    className="w-full text-[10px] font-black uppercase tracking-[0.2em] text-[#065f46] hover:bg-white h-10 rounded-xl"
+                                                    onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/notifications-center' : `/dashboard/${userType}/notifications`)}
+                                                >
+                                                    View All Notifications
+                                                </Button>
+                                            </div>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
 
                                     <Button
                                         variant="ghost"
@@ -290,9 +344,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                             <div className="relative">
                                                 <div className="absolute -inset-0.5 rounded-full bg-gradient-to-tr from-[#065f46] to-[#7ede56] opacity-40 group-hover:opacity-100 transition-all blur-[1px]"></div>
                                                 <Avatar className="relative h-9 w-9 border-2 border-white shadow-lg transition-transform group-hover:rotate-[4deg]">
-                                                    <AvatarImage src={agent?.avatar} />
+                                                    <AvatarImage src={agent?.avatar || (agent as any)?.profilePicture} className="object-cover" />
                                                     <AvatarFallback className="bg-[#065f46] text-white text-[11px] font-black">
-                                                        {agent?.name ? agent.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'AL'}
+                                                        {agent?.name ? agent.name.split(' ').map(n => n?.[0]).join('').substring(0, 2).toUpperCase() : 'AL'}
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 {/* Online Status Beacon */}
