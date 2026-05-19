@@ -332,9 +332,15 @@ exports.createUser = async (req, res) => {
 
         // Auto-generate ID based on role
         const dbRole = role === 'Supervisor' ? 'supervisor' : 'agent';
-        const prefix = dbRole === 'supervisor' ? 'SUP' : 'AGT';
-        const randomId = Math.floor(1000 + Math.random() * 9000);
-        const agentId = `${prefix}-${randomId}`;
+        let agentId;
+        if (dbRole === 'agent') {
+            const randomId = Math.floor(10000 + Math.random() * 90000);
+            agentId = `LYC${randomId}`;
+        } else {
+            const prefix = dbRole === 'supervisor' ? 'SUP' : 'AGT';
+            const randomId = Math.floor(1000 + Math.random() * 9000);
+            agentId = `${prefix}-${randomId}`;
+        }
 
         user = new Agent({
             name,

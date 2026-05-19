@@ -288,7 +288,7 @@ const AgentManagement = () => {
 
     const handleAddNewUser = () => {
         setSelectedUser(null);
-        const autoAC = 'AC-' + Math.floor(100000 + Math.random() * 900000);
+        const autoAC = 'LYC' + Math.floor(10000 + Math.random() * 90000);
         setFormValues({
             region: 'Bono Region',
             communities: [],
@@ -979,7 +979,23 @@ const AgentManagement = () => {
                                         </Label>
                                         <Select 
                                             value={formValues.role} 
-                                            onValueChange={(val) => setFormValues(prev => ({ ...prev, role: val }))}
+                                            onValueChange={(val) => {
+                                                let updatedAC = formValues.staffAccountNumber;
+                                                if (!selectedUser) { // only autogenerate for new user creation
+                                                    if (val === 'Lync Agent') {
+                                                        updatedAC = 'LYC' + Math.floor(10000 + Math.random() * 90000);
+                                                    } else if (val === 'Supervisor') {
+                                                        updatedAC = 'SUP-' + Math.floor(1000 + Math.random() * 9000);
+                                                    } else {
+                                                        updatedAC = 'AC-' + Math.floor(100000 + Math.random() * 900000);
+                                                    }
+                                                }
+                                                setFormValues(prev => ({ 
+                                                    ...prev, 
+                                                    role: val,
+                                                    staffAccountNumber: updatedAC
+                                                }));
+                                            }}
                                         >
                                             <SelectTrigger className={`h-11 rounded-none text-sm border-none shadow-inner ${darkMode ? 'bg-gray-855 text-white' : 'bg-gray-50 text-gray-900'}`}>
                                                 <SelectValue />
