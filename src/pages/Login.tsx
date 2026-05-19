@@ -55,11 +55,17 @@ const Login = () => {
       
       const { token, agent } = res.data;
       
-      // Step 2: Store session data temporarily and open verification modal
-      setPendingSession({ token, agent });
-      setIsRegionModalOpen(true);
-      
-      toast.info('Credentials Verified. Please confirm your region.');
+      // Direct bypass of region selection for super admin role
+      if (agent.role === 'super_admin') {
+        setSession(token, agent);
+        toast.success(`Welcome back, Super Admin ${agent.name.split(' ')[0]}!`);
+        navigate('/dashboard/super-admin');
+      } else {
+        // Step 2: Store session data temporarily and open verification modal
+        setPendingSession({ token, agent });
+        setIsRegionModalOpen(true);
+        toast.info('Credentials Verified. Please confirm your region.');
+      }
     } catch (error: any) {
       console.error('Login error:', error);
       const msg = error.response?.data?.msg || 'Invalid Credentials';
