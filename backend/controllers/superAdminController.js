@@ -422,38 +422,12 @@ exports.getEscalations = async (req, res) => {
                 date: e.createdAt || new Date(),
                 status,
                 assignee: e.resolvedBy ? 'Super Admin' : null,
-                description: e.message || 'No additional description provided.'
+                description: e.message || 'No additional description provided.',
+                notes: e.notes || []
             };
         });
 
-        const defaultEscalations = [
-            {
-                id: "tkt-9021",
-                priority: "Critical",
-                category: "Disbursement",
-                issue: "Grower payment discrepancy in Dormaa East",
-                region: "Bono Region",
-                agent: "Sarkodie Osei",
-                date: new Date(Date.now() - 2 * 3600 * 1000),
-                status: "Open",
-                assignee: null,
-                description: "Farmer Kwesi Appiah flagged a missing mobile money matching payout of GHS 12,500. Agent confirms ledger sync was successful but investor partner transfer is missing."
-            },
-            {
-                id: "tkt-8742",
-                priority: "High",
-                category: "Data Error",
-                issue: "Overlapping land GPS coordinates recorded",
-                region: "Northern Region",
-                agent: "Mohammed Ibrahim",
-                date: new Date(Date.now() - 24 * 3600 * 1000),
-                status: "Assigned",
-                assignee: "Abdul-Rahman Ali",
-                description: "GPS coordinate validation failed for Ejura Valley plots. Coordinates match previously mapped farm. Potential duplicate onboarding detected."
-            }
-        ];
-
-        res.json(mappedEscalations.length > 0 ? mappedEscalations : defaultEscalations);
+        res.json(mappedEscalations);
     } catch (err) {
         console.error('Error in getEscalations:', err);
         res.json([]);
