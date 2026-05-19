@@ -179,26 +179,75 @@ const FieldOperationsAudit = () => {
 
                 {/* MEDIA TAB */}
                 <TabsContent value="media" className="mt-0">
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                        {media.map(item => (
-                            <Card key={item.id} className={`border-none shadow-premium overflow-hidden group cursor-pointer rounded-none ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
-                                <div className="aspect-square relative overflow-hidden">
-                                    <img src={item.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={item.caption} />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                                        <Badge className="w-fit bg-[#7ede56] text-[#002f37] font-black text-[7px] mb-2">{item.type}</Badge>
-                                        <p className="text-white font-black text-[9px] uppercase leading-tight">{item.caption}</p>
-                                    </div>
-                                </div>
-                                <div className="p-3">
-                                    <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">{item.date}</p>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="w-4 h-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[7px] font-black">{item.agent[0]}</div>
-                                        <p className="text-[9px] font-black uppercase text-gray-400">{item.agent}</p>
-                                    </div>
-                                </div>
-                            </Card>
-                        ))}
-                    </div>
+                    {media.length === 0 ? (
+                        <div className={`flex flex-col items-center justify-center py-24 rounded-2xl border-2 border-dashed ${darkMode ? 'border-gray-700 text-gray-500' : 'border-gray-200 text-gray-400'}`}>
+                            <Camera className="w-12 h-12 mb-4 opacity-30" />
+                            <p className="text-sm font-black uppercase tracking-widest">No media files uploaded yet</p>
+                            <p className="text-[10px] font-bold uppercase tracking-wider mt-1 opacity-60">Agents upload photos and videos from the field</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            {media.map((item: any) => {
+                                const isVideo = item.isVideo || item.type === 'Video';
+                                const FALLBACK = 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=600';
+                                return (
+                                    <Card key={item.id} className={`border-none shadow-premium overflow-hidden group cursor-pointer rounded-none ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
+                                        <div className="aspect-square relative overflow-hidden bg-gray-100 dark:bg-gray-800">
+                                            {isVideo ? (
+                                                <>
+                                                    {item.thumbnail ? (
+                                                        <img
+                                                            src={item.thumbnail}
+                                                            className="w-full h-full object-cover"
+                                                            alt={item.caption}
+                                                            onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK; }}
+                                                        />
+                                                    ) : (
+                                                        <video
+                                                            src={item.url}
+                                                            className="w-full h-full object-cover"
+                                                            preload="metadata"
+                                                            muted
+                                                            playsInline
+                                                            onError={(e) => { (e.target as HTMLVideoElement).style.display = 'none'; }}
+                                                        />
+                                                    )}
+                                                    {/* Play button overlay */}
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                                                        <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-xl">
+                                                            <svg className="w-4 h-4 text-[#002f37] ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                                                <path d="M8 5v14l11-7z" />
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <img
+                                                    src={item.url}
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                    alt={item.caption}
+                                                    onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK; }}
+                                                />
+                                            )}
+                                            {/* Hover overlay */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4 pointer-events-none">
+                                                <Badge className={`w-fit font-black text-[7px] mb-2 ${isVideo ? 'bg-blue-500 text-white' : 'bg-[#7ede56] text-[#002f37]'}`}>{item.type}</Badge>
+                                                <p className="text-white font-black text-[9px] uppercase leading-tight line-clamp-2">{item.caption}</p>
+                                                {item.album && <p className="text-[#7ede56] font-bold text-[8px] uppercase tracking-wider mt-0.5">{item.album}</p>}
+                                            </div>
+                                        </div>
+                                        <div className="p-3">
+                                            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">{item.date}</p>
+                                            <div className="flex items-center gap-1.5">
+                                                <div className="w-4 h-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[7px] font-black">{(item.agent || 'A')[0]}</div>
+                                                <p className="text-[9px] font-black uppercase text-gray-400 truncate">{item.agent}</p>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                    )}
                 </TabsContent>
 
                 {/* TASKS TAB */}

@@ -888,22 +888,39 @@ exports.getMedia = async (req, res) => {
             .sort({ createdAt: -1 })
             .lean());
 
-        const mappedMedia = media.map(m => ({
-            id: m._id.toString(),
-            url: m.url || 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=600',
-            caption: m.name || 'Harvest Record Image',
-            type: m.type || 'Photo',
-            date: m.createdAt ? m.createdAt.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-            agent: m.agent?.name || 'Lync Agent'
-        }));
+        // Helper: attempt to make a Cloudinary URL public by switching delivery type
+        const fixCloudinaryUrl = (url) => {
+            if (!url) return null;
+            // Convert private/authenticated delivery to public
+            return url
+                .replace('/private/', '/upload/')
+                .replace('/authenticated/', '/upload/')
+                .replace('/image/private/', '/image/upload/')
+                .replace('/video/private/', '/video/upload/')
+                .replace('/raw/private/', '/raw/upload/');
+        };
 
-        const defaultMedia = [
-            { id: "med-001", url: "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=600", caption: "High quality maize harvest check", type: "Photo", date: "2026-05-18", agent: "Sarkodie Osei" },
-            { id: "med-002", url: "https://images.unsplash.com/photo-1592982537447-6f2a6a0c7c18?w=600", caption: "Yam crop health monitoring", type: "Photo", date: "2026-05-17", agent: "Mohammed Ibrahim" },
-            { id: "med-003", url: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600", caption: "Sorghum onboarding coordinates", type: "Photo", date: "2026-05-16", agent: "Kofi Mensah" }
-        ];
+        const mappedMedia = media.map(m => {
+            const rawUrl = m.url;
+            const rawThumb = m.thumbnail;
+            const isVideo = m.type === 'Video' || (rawUrl && /\.(mp4|mov|avi|webm|mkv)$/i.test(rawUrl));
 
-        res.json(mappedMedia.length > 0 ? mappedMedia : defaultMedia);
+            return {
+                id: m._id.toString(),
+                url: fixCloudinaryUrl(rawUrl),
+                thumbnail: fixCloudinaryUrl(rawThumb) || null,
+                caption: m.name || 'Field Media',
+                type: m.type || (isVideo ? 'Video' : 'Photo'),
+                isVideo,
+                album: m.album || null,
+                format: m.format || (isVideo ? 'MP4' : 'JPG'),
+                date: m.createdAt ? m.createdAt.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                agent: m.agent?.name || 'Lync Agent',
+                region: m.region || null
+            };
+        });
+
+        res.json(mappedMedia);
     } catch (err) {
         console.error('Error in getMedia:', err);
         res.json([]);
