@@ -30,12 +30,16 @@ const RegionSwitcher: React.FC<RegionSwitcherProps> = ({ className }) => {
   const queryClient = useQueryClient();
 
   const handleRegionChange = async (newRegion: string) => {
-    const assigned = (agent as any)?.assignedRegions || ['Ashanti', 'Bono', 'Northern'];
+    // Determine assigned regions accurately from auth agent object
+    const assigned = (agent as any)?.assignedRegions && (agent as any)?.assignedRegions.length > 0 
+        ? (agent as any).assignedRegions 
+        : [agent?.region || 'Ashanti'];
     
+    // Check if the agent is configured/assigned to the selected deployment zone
     if (!assigned.includes(newRegion)) {
       Swal.fire({
         title: '<span class="text-[#002f37] font-black uppercase text-xl">Access Denied</span>',
-        html: `<p class="text-gray-500 font-bold text-sm leading-relaxed">You are not currently deployed to the <span class="text-[#065f46] font-black">${newRegion.toUpperCase()}</span> zone. Please contact your supervisor for deployment access.</p>`,
+        html: `<p class="text-gray-500 font-bold text-sm leading-relaxed">You are not currently configured/deployed to the <span class="text-[#065f46] font-black">${newRegion.toUpperCase()}</span> zone. Please contact your supervisor for deployment access.</p>`,
         icon: 'error',
         confirmButtonText: 'Understood',
         confirmButtonColor: '#002f37',
@@ -54,14 +58,16 @@ const RegionSwitcher: React.FC<RegionSwitcherProps> = ({ className }) => {
       // Use updateAgent from context which handles headers and global state
       await updateAgent({ region: newRegion });
       
-      // Invalidate all relevant queries to refresh dashboard data without a full reload
+      // Invalidate all relevant queries
       await queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
-      await queryClient.invalidateQueries({ queryKey: ['farmers'] });
-      await queryClient.invalidateQueries({ queryKey: ['farms'] });
-      await queryClient.invalidateQueries({ queryKey: ['mediaItems'] });
       
-      setIsSwitching(false);
-      toast.success(`Operations context shifted to ${newRegion}.`);
+      toast.success(`Operations context shifted to ${newRegion}. Reloading dashboard...`);
+      
+      // Force an auto-reload to ensure all components explicitly fetch using the new region boundary
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
     } catch (err) {
       setIsSwitching(false);
       toast.error('Strategic switch failed.');

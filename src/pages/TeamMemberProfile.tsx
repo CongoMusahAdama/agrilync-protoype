@@ -41,17 +41,17 @@ const TeamMemberProfile = () => {
             <Navbar variant="solid" />
 
             {/* Header Section */}
-            <div className="bg-[#002F37] text-white pt-32 pb-16 px-4">
+            <div className="bg-[#7ede56] text-white pt-32 pb-16 px-4 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-300 mb-2">
-                            <Link to="/" className="hover:text-white transition-colors">Home</Link>
+                        <div className="flex items-center gap-2 text-sm text-[#002f37] mb-2 font-bold">
+                            <Link to="/" className="hover:opacity-100 transition-opacity">Home</Link>
                             <ChevronRight className="w-4 h-4" />
-                            <Link to="/team" className="hover:text-white transition-colors">Our Team</Link>
+                            <Link to="/team" className="hover:opacity-100 transition-opacity">Our Team</Link>
                             <ChevronRight className="w-4 h-4" />
-                            <span className="text-[#7ede56]">{member.name}</span>
+                            <span className="opacity-80">{member.name}</span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-bold">{member.name}</h1>
+                        <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-md">{member.name}</h1>
                     </div>
                 </div>
             </div>

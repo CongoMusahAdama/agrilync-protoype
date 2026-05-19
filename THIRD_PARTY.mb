@@ -1,0 +1,48 @@
+# AgriLync Third-Party Services & Dependencies
+
+This file lists the third-party libraries, frameworks, and external services used in the AgriLync system.
+
+## 🔑 Services Requiring API Keys / Credentials
+These services are essential for production features and require valid credentials in the `.env` file.
+
+| Service | Category | Purpose | Required Keys |
+| :--- | :--- | :--- | :--- |
+| **MongoDB Atlas** | Database | Cloud hosting for application data. | `MONGODB_URI` |
+| **AWS S3** | Storage | Secure storage for large assets and backups. | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` |
+| **Cloudinary** | Media | Dynamic image/video transformation and delivery. | `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` |
+| **Resend** | Email | Automated system notifications and verification emails. | `RESEND_API_KEY` |
+| **Supabase** | Backend | Used for extended authentication and real-time features. | `SUPABASE_URL`, `SUPABASE_ANON_KEY` |
+| **Firebase** | Analytics | Real-time monitoring and push notifications. | `FIREBASE_CONFIG` (JSON/Keys) |
+
+---
+
+## 🛠️ Core Libraries & Frameworks (No Keys Required)
+These are open-source tools that power the system's infrastructure.
+
+| Library | Purpose | Status |
+| :--- | :--- | :--- |
+| **React / Vite** | Frontend development framework. | ✅ Active |
+| **Node.js / Express** | Backend server and API layer. | ✅ Active |
+| **TanStack Query** | State management and server-state caching. | ✅ Active |
+| **Tailwind CSS** | Styling and responsive design system. | ✅ Active |
+| **Lucide React** | Scalable vector icon library. | ✅ Active |
+| **Framer Motion** | High-end UI animations and transitions. | ✅ Active |
+| **Recharts** | Data visualization for dashboard metrics. | ✅ Active |
+| **Leaflet** | Interactive mapping for regional field oversight. | ✅ Active |
+| **Tesseract.js** | Client-side OCR for ID scanning and data entry. | ✅ Active |
+| **SweetAlert2** | Interactive modal system for user alerts. | ✅ Active |
+| **Open-Meteo API** | Free weather data for field operation warnings. | ✅ Active |
+
+---
+
+## 📂 Data Export & Reporting
+| Tool | Purpose |
+| :--- | :--- |
+| **jsPDF** | Generating downloadable PDF reports. |
+| **xlsx (SheetJS)** | Exporting data to Excel format. |
+| **html2canvas** | Capturing dashboard visuals as images. |
+
+---
+
+> [!IMPORTANT]
+> Ensure that all keys marked as "Required" are properly configured in your local and production environment variables to avoid system failures.

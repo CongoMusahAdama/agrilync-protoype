@@ -1,70 +1,70 @@
 /**
- * smsService.js — Unified SMS + Email notification bridge
+ * smsService.js — mNotify SMS Integration
  * 
- * SMS:   Uses Resend (email) as the primary channel for now.
- *        If you need true SMS in future, swap in Africa's Talking or Hubtel here.
- * Email: Delegates to notificationService (Resend).
+ * SMS: Uses mNotify exclusively for critical alerts to rural farmers and agent MFA.
  */
-const { sendEmail } = require('./notificationService');
-
-// ─────────────────────────────────────────────────────────────
-// SMS — sends a formatted email receipt in lieu of actual SMS
-// This keeps the API surface identical so callers don't break
-// ─────────────────────────────────────────────────────────────
+const axios = require('axios');
 
 /**
- * Send a "SMS" notification (delivered as email via Resend)
- * @param {string} to - Recipient phone or email
+ * Send a pure SMS notification using mNotify
+ * @param {string} to - Recipient phone number
  * @param {string} body - The message text
- * @param {string} [email] - Recipient email address (for Resend delivery)
  */
-exports.sendSMS = async (to, body, email) => {
-    if (!to || !body) throw new Error('Recipient and message body are required.');
+exports.sendSMS = async (to, body) => {
+    if (!to || !body) throw new Error('Recipient phone and message body are required.');
 
-    console.log(`[SMS DISPATCH] Sending to: ${to}`);
+    const MNOTIFY_API_KEY = process.env.MNOTIFY_API_KEY;
+    const SENDER_ID = process.env.MNOTIFY_SENDER_ID || 'AgriLync';
 
-    // If an email is provided, deliver via Resend
-    if (email) {
-        try {
-            await sendEmail({
-                to: email,
-                template: 'generic',
-                data: {
-                    title: 'AgriLync Notification',
-                    recipientName: '',
-                    message: body
-                }
-            });
-            return { success: true, channel: 'email', recipient: email };
-        } catch (err) {
-            console.error('[NOTIFICATION] Email delivery failed:', err.message);
-        }
+    // Fallback if API key is missing
+    if (!MNOTIFY_API_KEY) {
+        console.warn(`[mNotify SIMULATION] To ${to} (Sender: ${SENDER_ID}): ${body} (API key missing in .env)`);
+        return {
+            success: true,
+            simulated: true,
+            channel: 'console',
+            sid: 'SIM_' + Date.now()
+        };
     }
 
-    // Fallback: log to console (dev mode or SMS-only flows)
-    console.log(`[SMS SIMULATION] To ${to}: ${body}`);
-    return {
-        success: true,
-        simulated: true,
-        channel: 'console',
-        sid: 'SIM_' + Date.now()
-    };
+    try {
+        console.log(`[mNotify] Dispatching SMS to: ${to}`);
+        const response = await axios.post(`https://api.mnotify.com/api/sms/quick?key=${MNOTIFY_API_KEY}`, {
+            recipient: [to],
+            sender: SENDER_ID,
+            message: body,
+            is_schedule: false,
+            schedule_date: ''
+        });
+
+        if (response.data?.code === '2000') {
+             console.log(`[mNotify] Delivery Successful to ${to}`);
+             return { success: true, channel: 'mnotify', data: response.data };
+        } else {
+             console.error(`[mNotify] API Error: ${response.data?.message || 'Unknown Error'}`);
+             return { success: false, error: response.data?.message };
+        }
+
+    } catch (err) {
+        console.error('[mNotify] Network/API Error:', err.response?.data || err.message);
+        return { success: false, error: err.message };
+    }
 };
 
 /**
- * Send bulk SMS (delivered as email)
- * @param {Array<{phone: string, email?: string, name: string}>} recipients
+ * Send bulk SMS using mNotify
+ * @param {Array<{phone: string, name: string}>} recipients
  * @param {string} template - Message body with {farmer_name} placeholder
  */
 exports.sendBulkSMS = async (recipients, template) => {
     if (!Array.isArray(recipients) || recipients.length === 0) return { success: false, count: 0 };
 
-    console.log(`[BULK SMS] Dispatching to ${recipients.length} recipients.`);
+    console.log(`[mNotify BULK] Dispatching to ${recipients.length} recipients.`);
 
     const results = await Promise.allSettled(
         recipients.map(async (r) => {
             const body = template.replace(/{farmer_name}/g, r.name || 'Grower');
-            return exports.sendSMS(r.phone, body, r.email);
+            return exports.sendSMS(r.phone, body);
         })
     );
 

@@ -22,7 +22,8 @@ import {
   Sprout,
   Cloud,
   RefreshCcw,
-  MapPin
+  MapPin,
+  X
 } from 'lucide-react';
 import { 
   Card, 
@@ -229,13 +230,27 @@ const MediaDashboard: React.FC = () => {
 
   const handleDelete = async (item: any) => {
     const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
+      title: 'Confirm Deletion',
+      html: `
+        <div class="space-y-4">
+          <p class="text-gray-500 font-medium">Are you sure you want to remove <span class="text-[#002f37] font-black underline decoration-[#7ede56]">${item.name}</span>?</p>
+          <div class="bg-rose-50 p-4 rounded-2xl border border-rose-100 flex items-center justify-center gap-3 text-rose-600">
+            <p class="text-[10px] font-black uppercase tracking-widest leading-none">⚠️ This action is permanent and cannot be undone</p>
+          </div>
+        </div>
+      `,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#d33',
+      confirmButtonColor: '#fb7185',
       cancelButtonColor: '#065f46',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonText: 'Yes, Purge Asset',
+      cancelButtonText: 'Keep Asset',
+      background: '#fff',
+      customClass: {
+          popup: 'rounded-none p-10',
+          confirmButton: 'rounded-2xl px-10 py-4 font-black uppercase text-xs tracking-widest order-2',
+          cancelButton: 'rounded-2xl px-10 py-4 font-black uppercase text-xs tracking-widest order-1'
+      }
     });
 
     if (result.isConfirmed) {
@@ -859,6 +874,27 @@ const MediaDashboard: React.FC = () => {
                           alt={item.name} 
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
+                      ) : itemType === 'video' ? (
+                        <div className="w-full h-full relative overflow-hidden bg-black">
+                           <video 
+                             src={item.url} 
+                             className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" 
+                             muted 
+                             loop 
+                             playsInline
+                             onMouseOver={(e) => (e.currentTarget as HTMLVideoElement).play()}
+                             onMouseOut={(e) => {
+                               const v = e.currentTarget as HTMLVideoElement;
+                               v.pause();
+                               v.currentTime = 0;
+                             }}
+                           />
+                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:opacity-0 transition-opacity">
+                             <div className="h-14 w-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
+                               <Video className="h-6 w-6 text-white" />
+                             </div>
+                           </div>
+                        </div>
                       ) : (
                         (() => {
                           let bgColorClass = "bg-gradient-to-br from-gray-50 to-gray-200";
@@ -1118,7 +1154,7 @@ const MediaDashboard: React.FC = () => {
       </div>
 
       <Dialog open={!!selectedMedia} onOpenChange={(open) => !open && setSelectedMedia(null)}>
-        <DialogContent className="max-w-5xl p-0 border-none bg-black/80 backdrop-blur-2xl overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500">
+        <DialogContent className="max-w-5xl w-[95vw] sm:w-full p-0 border-none bg-black/80 backdrop-blur-3xl overflow-hidden rounded-none shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] transition-all duration-500 z-[250]">
           <DialogTitle className="sr-only">{selectedMedia?.name || 'Media Preview'}</DialogTitle>
           <DialogDescription className="sr-only">Viewing details for {selectedMedia?.name}</DialogDescription>
           {selectedMedia && (
@@ -1200,17 +1236,28 @@ const MediaDashboard: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-4 mt-12 relative z-10">
-                  <Button className="w-full bg-[#065f46] hover:bg-[#054d39] text-white font-black text-[12px] uppercase tracking-[0.15em] py-7 rounded-2xl border-none shadow-2xl shadow-[#065f46]/20 group">
-                    <Download className="mr-3 h-4 w-4 transition-transform group-hover:translate-y-1" /> DOWNLOAD ORIGINAL
+                <div className="space-y-3 mt-8 sm:mt-12 relative z-10">
+                  <Button className="w-full bg-[#065f46] hover:bg-[#054d39] text-white font-black text-[11px] sm:text-[12px] uppercase tracking-[0.15em] py-6 sm:py-7 rounded-2xl border-none shadow-2xl shadow-[#065f46]/20 group flex items-center justify-center gap-3">
+                    <Download className="h-4 w-4 transition-transform group-hover:translate-y-1" /> 
+                    <span>Download Original</span>
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full text-rose-400 hover:text-white hover:bg-rose-500 font-extrabold text-[11px] uppercase tracking-[0.15em] py-7 rounded-2xl transition-all"
-                    onClick={() => handleDelete(selectedMedia)}
-                  >
-                    <Trash2 className="mr-3 h-4 w-4" /> DELETE ASSET
-                  </Button>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button 
+                      variant="ghost" 
+                      className="text-rose-400 hover:text-white hover:bg-rose-500 font-extrabold text-[10px] sm:text-[11px] uppercase tracking-[0.15em] py-6 sm:py-7 rounded-2xl transition-all flex items-center justify-center gap-2 border border-rose-400/20"
+                      onClick={() => handleDelete(selectedMedia)}
+                    >
+                      <Trash2 className="h-4 w-4" /> DELETE
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="text-white/50 hover:text-white hover:bg-white/10 font-extrabold text-[10px] sm:text-[11px] uppercase tracking-[0.15em] py-6 sm:py-7 rounded-2xl transition-all flex items-center justify-center gap-2 border border-white/10"
+                      onClick={() => setSelectedMedia(null)}
+                    >
+                      <X className="h-4 w-4" /> CLOSE
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1233,7 +1280,7 @@ const MediaDashboard: React.FC = () => {
           } 
         }}
       >
-        <DialogContent className="max-w-2xl border-none rounded-3xl bg-white p-0 overflow-hidden shadow-2xl">
+        <DialogContent className="max-w-2xl border-none rounded-none bg-white p-0 overflow-hidden shadow-2xl">
           <DialogTitle className="sr-only">Upload File</DialogTitle>
           <DialogDescription className="sr-only">Upload a media file to the library</DialogDescription>
           <div className="p-8">
@@ -1366,7 +1413,7 @@ const MediaDashboard: React.FC = () => {
 
       {/* ===== NEW ALBUM MODAL ===== */}
       <Dialog open={albumOpen} onOpenChange={(o) => { setAlbumOpen(o); if (!o) { setAlbumName(''); setAlbumDesc(''); } }}>
-        <DialogContent className="max-w-md border-none rounded-3xl bg-white p-0 overflow-hidden shadow-2xl">
+        <DialogContent className="max-w-md border-none rounded-none bg-white p-0 overflow-hidden shadow-2xl">
           <DialogTitle className="sr-only">New Album</DialogTitle>
           <DialogDescription className="sr-only">Create a new media album</DialogDescription>
           <div className="p-8">

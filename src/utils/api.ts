@@ -17,7 +17,19 @@ const api = axios.create({
 // Add a request interceptor to include the auth token in all requests
 api.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-        const token = localStorage.getItem('token');
+        // Do not override if a specific token was already provided in the request
+        if (config.headers && config.headers['x-auth-token']) {
+            return config;
+        }
+
+        // Determine correct token based on route
+        let token = null;
+        if (config.url && (config.url.includes('/blogs') || config.url.includes('/blog-admin'))) {
+            token = localStorage.getItem('blogAdminToken') || localStorage.getItem('token');
+        } else {
+            token = localStorage.getItem('token') || localStorage.getItem('blogAdminToken');
+        }
+
         if (token && config.headers) {
             config.headers['x-auth-token'] = token;
         }

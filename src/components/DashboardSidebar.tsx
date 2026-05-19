@@ -142,7 +142,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             section: 'Operations',
             items: [
                 { id: 'regional-performance', label: 'Regional Performance', icon: MapPin },
-                { id: 'agent-management', label: 'Agent Management', icon: Briefcase },
+                { id: 'agent-management', label: 'Admin Setup', icon: Briefcase },
                 { id: 'field-audit', label: 'Field Operations Audit', icon: Activity },
                 { id: 'farm-oversight', label: 'Farm & Farmer Oversight', icon: Sprout },
             ]

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
     Activity,
@@ -51,15 +51,28 @@ import CountUp from '@/components/CountUp';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+interface SystemLog {
+    id: string;
+    action: string;
+    user: string;
+    severity: string;
+    status: string;
+    timestamp: string;
+    ip?: string;
+    device?: string;
+    region?: string;
+    resource?: string;
+}
+
 const SystemLogs = () => {
     const { darkMode } = useDarkMode();
     const navigate = useNavigate();
-    const [logs, setLogs] = useState<any[]>([]);
+    const [logs, setLogs] = useState<SystemLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterType, setFilterType] = useState('All');
     const [filterSeverity, setFilterSeverity] = useState('All');
-    const [selectedLog, setSelectedLog] = useState<any>(null);
+    const [selectedLog, setSelectedLog] = useState<SystemLog | null>(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
 
     useEffect(() => {
@@ -69,17 +82,10 @@ const SystemLogs = () => {
     const fetchLogs = async () => {
         try {
             const res = await api.get('/super-admin/logs');
-            if (res.data && res.data.length > 0) {
+            if (res.data) {
                 setLogs(res.data);
             } else {
-                // High-fidelity Forensic Mock Data
-                setLogs([
-                    { id: 'LOG-88201', action: 'Regional Policy Override', user: 'Admin Alpha', region: 'Ashanti', resource: 'Yield Threshold', severity: 'Critical', status: 'Authorized', timestamp: '2026-04-05T14:42:10Z', ip: '192.168.1.4', device: 'MacOS / Chrome' },
-                    { id: 'LOG-88205', action: 'Bulk Agent Suspension', user: 'Security Root', region: 'Western', resource: 'User Registry', severity: 'High', status: 'Success', timestamp: '2026-04-05T12:15:22Z', ip: '10.0.0.8', device: 'Linux / Terminal' },
-                    { id: 'LOG-88209', action: 'Wallet Ledger Re-index', user: 'System Auto', region: 'Global', resource: 'Financial Node', severity: 'Medium', status: 'Success', timestamp: '2026-04-05T10:00:00Z', ip: 'localhost', device: 'Local Node' },
-                    { id: 'LOG-88212', action: 'Credential Reset Issued', user: 'Super Admin Beta', region: 'Eastern', resource: 'Agent AG-ES-001', severity: 'Low', status: 'Pending', timestamp: '2026-04-05T09:30:15Z', ip: '192.168.1.12', device: 'Windows / Edge' },
-                    { id: 'LOG-88215', action: 'Failed Auth Attempt', user: 'Unknown', region: 'Volta', resource: 'Login Portal', severity: 'Critical', status: 'Blocked', timestamp: '2026-04-05T08:12:00Z', ip: '172.16.0.5', device: 'Unknown / Bot' },
-                ]);
+                setLogs([]);
             }
         } catch (err) {
             console.error('Failed to fetch logs:', err);
@@ -98,13 +104,15 @@ const SystemLogs = () => {
         }
     };
 
-    const filteredLogs = logs.filter(log => {
-        const matchesSearch = log.action.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                              log.user.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesType = filterType === 'All' || log.action.includes(filterType);
-        const matchesSeverity = filterSeverity === 'All' || log.severity === filterSeverity;
-        return matchesSearch && matchesType && matchesSeverity;
-    });
+    const filteredLogs = useMemo(() => {
+        return logs.filter(log => {
+            const matchesSearch = log.action.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                  log.user.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesType = filterType === 'All' || log.action.includes(filterType);
+            const matchesSeverity = filterSeverity === 'All' || log.severity === filterSeverity;
+            return matchesSearch && matchesType && matchesSeverity;
+        });
+    }, [logs, searchQuery, filterType, filterSeverity]);
 
     const exportLogs = () => {
         toast.success('Forensic audit ledger exported to CSV format.');
@@ -140,10 +148,10 @@ const SystemLogs = () => {
             {/* Quick Summary Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
                 {[
-                    { label: 'Total Activity', val: '1,429', icon: History, color: 'text-[#7ede56]' },
-                    { label: 'Security Alerts', val: '42', icon: ShieldAlert, color: 'text-rose-500' },
+                    { label: 'Total Activity', val: loading ? '...' : logs.length, icon: History, color: 'text-[#7ede56]' },
+                    { label: 'Security Alerts', val: loading ? '...' : logs.filter(l => l.severity?.toLowerCase() === 'critical' || l.severity?.toLowerCase() === 'high').length, icon: ShieldAlert, color: 'text-rose-500' },
                     { label: 'System Status', val: '99.99%', icon: Activity, color: 'text-blue-500' },
-                    { label: 'Recent Logins', val: '12', icon: Key, color: 'text-amber-500' },
+                    { label: 'Recent Logins', val: loading ? '...' : logs.filter(l => l.action?.toLowerCase().includes('login') || l.action?.toLowerCase().includes('auth') || l.action?.toLowerCase().includes('session')).length, icon: Key, color: 'text-amber-500' },
                 ].map((s, i) => (
                     <Card key={i} className={`border-none shadow-premium ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
                         <CardContent className="p-5 flex items-center justify-between">
@@ -279,14 +287,12 @@ const SystemLogs = () => {
 {`{
   "event_id": "${selectedLog.id}",
   "action": "${selectedLog.action}",
-  "resource": "${selectedLog.resource}",
+  "resource": "${selectedLog.resource || 'system'}",
   "integrity": "${selectedLog.status.toLowerCase()}",
   "timestamp": "${selectedLog.timestamp}",
-  "metadata": {
-    "auth_token_verified": true,
-    "source_region": "${selectedLog.region.toLowerCase()}",
-    "checksum": "0x${Math.random().toString(16).slice(2, 10)}"
-  }
+  "auth_token_verified": true,
+  "source_region": "${selectedLog.region?.toLowerCase() || 'unknown'}",
+  "checksum": "0x${Math.random().toString(16).slice(2, 10)}"
 }`}
                                         </pre>
                                     </div>

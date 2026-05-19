@@ -133,10 +133,18 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Facebook className={`h-3.5 w-3.5 cursor-pointer hover:text-[#7ede56] transition-colors ${isTransparent ? 'text-white' : 'text-[#002f37]'}`} />
-              <Twitter className={`h-3.5 w-3.5 cursor-pointer hover:text-[#7ede56] transition-colors ${isTransparent ? 'text-white' : 'text-[#002f37]'}`} />
-              <Linkedin className={`h-3.5 w-3.5 cursor-pointer hover:text-[#7ede56] transition-colors ${isTransparent ? 'text-white' : 'text-[#002f37]'}`} />
-              <Instagram className={`h-3.5 w-3.5 cursor-pointer hover:text-[#7ede56] transition-colors ${isTransparent ? 'text-white' : 'text-[#002f37]'}`} />
+              <a href="https://www.facebook.com/share/16SkoNJAsW/" target="_blank" rel="noopener noreferrer" className={`hover:text-[#7ede56] transition-colors ${isTransparent ? 'text-white' : 'text-[#002f37]'}`}>
+                <Facebook className="h-3.5 w-3.5" />
+              </a>
+              <a href="https://x.com/agri_lync" target="_blank" rel="noopener noreferrer" className={`hover:text-[#7ede56] transition-colors ${isTransparent ? 'text-white' : 'text-[#002f37]'}`}>
+                <Twitter className="h-3.5 w-3.5" />
+              </a>
+              <a href="https://www.linkedin.com/company/agrilync/" target="_blank" rel="noopener noreferrer" className={`hover:text-[#7ede56] transition-colors ${isTransparent ? 'text-white' : 'text-[#002f37]'}`}>
+                <Linkedin className="h-3.5 w-3.5" />
+              </a>
+              <a href="https://instagram.com/agri_lync" target="_blank" rel="noopener noreferrer" className={`hover:text-[#7ede56] transition-colors ${isTransparent ? 'text-white' : 'text-[#002f37]'}`}>
+                <Instagram className="h-3.5 w-3.5" />
+              </a>
             </div>
           </div>
         </div>

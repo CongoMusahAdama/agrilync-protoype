@@ -48,10 +48,12 @@ import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import CountUp from '@/components/CountUp';
+import { useAuth } from '@/contexts/AuthContext';
 
 const SettingsRoles = () => {
     const { darkMode } = useDarkMode();
     const navigate = useNavigate();
+    const { agent, updateAgent } = useAuth();
     const [activeTab, setActiveTab] = useState('permissions');
 
     const roles = [
@@ -122,6 +124,7 @@ const SettingsRoles = () => {
             <Tabs defaultValue="permissions" className="w-full" onValueChange={setActiveTab}>
                 <TabsList className={`inline-flex h-14 items-center justify-center rounded-[20px] p-1.5 mb-10 shadow-2xl ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-gray-100/50 border border-gray-200'} backdrop-blur-xl`}>
                     {[
+                        { value: 'profile', label: 'My Profile', icon: Fingerprint },
                         { value: 'permissions', label: 'Access Matrix', icon: Shield },
                         { value: 'training', label: 'Protocol Center', icon: BookOpen },
                         { value: 'global', label: 'System Params', icon: Cpu },
@@ -136,7 +139,89 @@ const SettingsRoles = () => {
                     ))}
                 </TabsList>
 
+                <TabsContent value="profile" className="space-y-6 outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <Card className={`border-none shadow-premium overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
+                        <CardHeader className="border-b border-black/5 dark:border-white/5 p-6 md:p-8">
+                            <CardTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-3">
+                                <Fingerprint className="w-5 h-5 text-[#7ede56]" /> Personal Identity
+                            </CardTitle>
+                            <CardDescription className="text-xs font-bold uppercase tracking-widest opacity-60">Update your Super Admin avatar and basic credentials</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-6 md:p-8 space-y-8">
+                            <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
+                                <div className="relative group shrink-0">
+                                    <div className="absolute -inset-1 bg-gradient-to-tr from-[#002f37] to-[#7ede56] rounded-full opacity-40 group-hover:opacity-100 transition-opacity blur-[2px]"></div>
+                                    <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl relative overflow-hidden bg-gray-100 flex items-center justify-center">
+                                        <img src={agent?.avatar || '/lovable-uploads/profile.png'} alt="Profile" className="w-full h-full object-cover" />
+                                        <label htmlFor="avatar-upload" className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer">
+                                            <Upload className="w-6 h-6 text-white mb-1" />
+                                            <span className="text-[9px] font-black text-white uppercase tracking-widest">Update</span>
+                                            <input 
+                                                type="file" 
+                                                id="avatar-upload" 
+                                                accept="image/*" 
+                                                className="hidden" 
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+                                                    const formData = new FormData();
+                                                    formData.append('avatar', file);
+                                                    try {
+                                                        const res = await api.put('/agents/me', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+                                                        await updateAgent({ ...agent, avatar: res.data.data.avatar });
+                                                        toast.success('Avatar updated successfully!');
+                                                    } catch (err) {
+                                                        toast.error('Failed to upload avatar.');
+                                                    }
+                                                }}
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="space-y-4 flex-1 w-full">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Full Name</Label>
+                                            <Input disabled value={agent?.name || ''} className="h-12 rounded-xl bg-gray-50 dark:bg-gray-800 border-none font-bold text-[#002f37] dark:text-white" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Email Address</Label>
+                                            <Input disabled value={agent?.email || ''} className="h-12 rounded-xl bg-gray-50 dark:bg-gray-800 border-none font-bold text-[#002f37] dark:text-white" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Institutional ID</Label>
+                                            <Input disabled value={agent?.agentId || ''} className="h-12 rounded-xl bg-gray-50 dark:bg-gray-800 border-none font-bold text-[#002f37] dark:text-white" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Access Level</Label>
+                                            <Input disabled value={(agent?.role || '').replace('_', ' ').toUpperCase()} className="h-12 rounded-xl bg-gray-50 dark:bg-gray-800 border-none font-black text-[#7ede56]" />
+                                        </div>
+                                    </div>
+                                    <p className="text-[10px] font-bold text-gray-400 mt-2 italic">Note: Core identifiers cannot be modified manually. Contact system architecture for deep edits.</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
                 <TabsContent value="permissions" className="space-y-6 outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    
+                    {/* Role Capabilities Explanation */}
+                    <div className={`p-6 rounded-[24px] border ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-100'} shadow-inner flex flex-col md:flex-row gap-6 md:items-start`}>
+                        <div className="p-4 rounded-2xl bg-[#002f37] text-[#7ede56] shadow-premium flex-shrink-0">
+                            <ShieldCheck className="w-8 h-8" />
+                        </div>
+                        <div className="space-y-3 flex-1">
+                            <h3 className="text-xl font-black uppercase tracking-tight">Institutional Role Hierarchy</h3>
+                            <p className="text-xs font-bold text-gray-500 leading-relaxed max-w-4xl">
+                                System administration is tightly segregated. 
+                                <span className="text-[#002f37] dark:text-white font-black"> SUPER ADMINS</span> have root-level authority to onboard staff, override audit policies, authorize mass financial payouts, and manipulate master settings. 
+                                <span className="text-[#002f37] dark:text-white font-black"> REGIONAL LEADS</span> are restricted to their operational hubs, managing agent accountability, tracking regional harvests, and handling localized support tickets. 
+                                <span className="text-[#002f37] dark:text-white font-black"> COMPLIANCE OFFICERS</span> hold read-only god-view access to export system ledgers and monitor risk escalations without mutation permissions.
+                            </p>
+                        </div>
+                    </div>
+
                     <Card className={`border-none shadow-premium overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
                         <CardHeader className="p-0 border-b border-black/5 dark:border-white/5">
                             <div className="grid grid-cols-5 bg-[#002f37] text-white/40 text-[9px] font-black uppercase tracking-widest">

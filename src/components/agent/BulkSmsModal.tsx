@@ -5,10 +5,34 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageSquare, Users, Send, CheckCircle2, AlertCircle, Info, Trash2, Search, X, Zap, Megaphone, Smartphone, History, UserCheck, CheckSquare, Square, Eye } from 'lucide-react';
+import { 
+    MessageSquare, 
+    Users, 
+    Send, 
+    CheckCircle2, 
+    AlertCircle, 
+    Info, 
+    Trash2, 
+    Search, 
+    X, 
+    Zap, 
+    Megaphone, 
+    Smartphone, 
+    History, 
+    UserCheck, 
+    CheckSquare, 
+    Square, 
+    Eye,
+    ChevronRight,
+    Sparkles,
+    ShieldCheck,
+    Cpu,
+    ArrowRight
+} from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import Swal from 'sweetalert2';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface BulkSmsModalProps {
     open: boolean;
@@ -72,7 +96,7 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
     };
 
     const insertTag = (tag: string) => {
-        const textArea = document.querySelector('textarea');
+        const textArea = document.getElementById('bulk-sms-textarea') as HTMLTextAreaElement;
         if (!textArea) {
             setMessage(prev => prev + tag);
             return;
@@ -100,7 +124,7 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
                 title: 'Transmission Blocked',
                 text: 'Communication payload cannot be empty. Please enter a valid message.',
                 confirmButtonColor: '#002f37',
-                customClass: { popup: 'rounded-[2rem]' }
+                customClass: { popup: 'rounded-[2.5rem]' }
             });
             return;
         }
@@ -111,14 +135,21 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
                 title: 'No Recipients',
                 text: 'Please select at least one farmer to receive this broadcast.',
                 confirmButtonColor: '#002f37',
-                customClass: { popup: 'rounded-[2rem]' }
+                customClass: { popup: 'rounded-[2.5rem]' }
             });
             return;
         }
 
         const confirm = await Swal.fire({
             title: 'Confirm Operation',
-            text: `Initiate bulk transmission to ${selectedFarmerIds.length} selected farmers in your sector?`,
+            html: `
+              <div class="text-center space-y-4">
+                <p class="text-gray-500 font-medium">Initiate bulk transmission to <span class="text-[#065f46] font-black">${selectedFarmerIds.length}</span> selected farmers in your sector?</p>
+                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 italic text-sm text-gray-400">
+                  "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"
+                </div>
+              </div>
+            `,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#065f46',
@@ -127,9 +158,9 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
             cancelButtonText: 'Abort',
             background: '#fff',
             customClass: {
-                popup: 'rounded-[10.5rem] p-10',
-                confirmButton: 'rounded-xl px-20 py-4 font-black uppercase text-xs tracking-widest',
-                cancelButton: 'rounded-xl px-20 py-4 font-black uppercase text-xs tracking-widest'
+                popup: 'rounded-none p-10',
+                confirmButton: 'rounded-2xl px-10 py-4 font-black uppercase text-xs tracking-widest',
+                cancelButton: 'rounded-2xl px-10 py-4 font-black uppercase text-xs tracking-widest'
             }
         });
 
@@ -150,7 +181,7 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
                             title: 'Broadcast Finalized',
                             text: `Successfully reached ${total} farmers. Your operational records have been updated.`,
                             confirmButtonColor: '#065f46',
-                            customClass: { popup: 'rounded-[2rem]' }
+                            customClass: { popup: 'rounded-[2.5rem]' }
                         });
                         onOpenChange(false);
                         setMessage('');
@@ -165,201 +196,274 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl w-[95vw] h-[92vh] md:h-auto flex flex-col p-0 overflow-hidden border-none bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-2xl z-[200]">
-                <div className="bg-[#002f37] text-white p-6 md:p-8 relative shrink-0 overflow-hidden">
-                    {/* Animated Background Pulse */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#7ede56]/10 rounded-full -mr-32 -mt-32 blur-3xl animate-pulse" />
+            <DialogContent className="max-w-5xl w-[95vw] h-[95vh] md:h-[85vh] flex flex-col p-0 overflow-hidden border border-white/20 bg-[#FDFCFB]/80 backdrop-blur-3xl rounded-none shadow-[0_50px_100px_-20px_rgba(0,47,47,0.25)] z-[200] selection:bg-[#7ede56]/30">
+                
+                {/* Modern Header - High Contrast */}
+                <div className="bg-[#002f37] text-white p-6 md:p-10 relative shrink-0 overflow-hidden">
+                    {/* Visual Flare Elements */}
+                    <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#7ede56]/10 rounded-full -mr-48 -mt-48 blur-3xl opacity-60 animate-pulse" />
+                    <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#7ede56]/5 rounded-full -ml-32 -mb-32 blur-2xl opacity-40" />
                     
                     <div className="relative z-10 flex items-center justify-between">
-                        <div className="flex items-center gap-3 md:gap-4">
-                            <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20 shadow-inner">
-                                <Zap className="h-6 w-6 md:h-7 md:w-7 text-[#7ede56] fill-[#7ede56]/20" />
+                        <div className="flex items-center gap-4 md:gap-6">
+                            <div className="h-14 w-14 md:h-16 md:w-16 rounded-none bg-white/10 flex items-center justify-center border border-white/20 shadow-[0_15px_30px_-5px_rgba(0,0,0,0.2)] backdrop-blur-md">
+                                <Zap className="h-7 w-7 md:h-8 md:w-8 text-[#7ede56] fill-[#7ede56]/20 animate-pulse" />
                             </div>
                             <div>
-                                <DialogTitle className="text-xl md:text-2xl font-black text-white tracking-tight uppercase leading-tight">SMS Command Center</DialogTitle>
-                                <DialogDescription className="text-white/50 text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] leading-none mt-1">Global Operational Broadcast</DialogDescription>
+                                <div className="flex items-center gap-3 mb-1">
+                                   <Badge variant="outline" className="bg-[#7ede56]/20 text-[#7ede56] border-[#7ede56]/30 px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em]">
+                                      Secure Node
+                                   </Badge>
+                                   <span className="h-1 w-1 rounded-full bg-white/20"></span>
+                                   <span className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em]">Encrypted Relay</span>
+                                </div>
+                                <DialogTitle className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase leading-none">SMS Command Center</DialogTitle>
+                                <DialogDescription className="text-white/40 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.4em] leading-none mt-2">Operational Broadcast Environment</DialogDescription>
                             </div>
                         </div>
-                        <button onClick={() => onOpenChange(false)} className="h-10 w-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-all active:scale-90">
-                            <X className="h-6 w-6 text-white/40 hover:text-white" />
+                        <button 
+                            onClick={() => onOpenChange(false)} 
+                            className="h-12 w-12 rounded-none bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all active:scale-90 group"
+                        >
+                            <X className="h-6 w-6 text-white/30 group-hover:text-white transition-colors" />
                         </button>
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 md:space-y-7">
-                    {/* Metrics Summary */}
-                    <div className="grid grid-cols-2 gap-3 md:gap-4">
-                        <div className="bg-[#002f37]/5 rounded-2xl p-4 border border-[#002f37]/10 flex flex-col justify-center">
-                            <p className="text-[9px] font-black text-[#002f37]/40 uppercase tracking-widest mb-1">Target Sectors</p>
-                            <div className="flex items-center gap-2">
-                                <Users className="h-4 w-4 text-[#065f46]" />
-                                <span className="text-lg md:text-xl font-black text-[#002f37]">{selectedFarmerIds.length} <span className="text-[10px] text-gray-300 font-bold uppercase tracking-tight">Active</span></span>
-                            </div>
-                        </div>
-                        <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex flex-col justify-center">
-                            <p className="text-[9px] font-black text-emerald-800/40 uppercase tracking-widest mb-1">Authenticated</p>
-                            <div className="flex items-center gap-2 text-emerald-600">
-                                <UserCheck className="h-4 w-4" />
-                                <span className="text-[10px] md:text-[11px] font-black uppercase tracking-wider truncate">{agent?.name || 'Field Agent'}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Templates Selector */}
-                    <div className="space-y-3 md:space-y-4">
-                        <Label className="text-[10px] font-black uppercase text-[#002f37]/40 tracking-widest pl-1 leading-none">Operational Templates</Label>
-                        <div className="flex overflow-x-auto md:flex-wrap gap-2.5 pb-2 scrollbar-hide -mx-1 px-1">
-                            {TEMPLATES.map(t => (
-                                <button 
-                                    key={t.id} 
-                                    className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl transition-all border-2 text-[10px] font-black uppercase tracking-wider whitespace-nowrap ${selectedTemplate === t.id ? 'bg-[#002f37] border-[#002f37] text-white shadow-lg shadow-[#002f37]/20' : 'bg-white border-gray-100 text-[#002f37] hover:border-[#7ede56]'}`}
-                                    onClick={() => handleApplyTemplate(t.id)}
-                                >
-                                    {t.icon}
-                                    {t.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Message Area */}
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between px-1">
-                            <Label className="text-[10px] font-black uppercase text-[#002f37]/40 tracking-widest leading-none">Payload Composition</Label>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[8px] md:text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md uppercase">SMS-1: {message.length}/160</span>
-                            </div>
-                        </div>
+                <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+                    
+                    {/* Left Column - Message Composition (Wider) */}
+                    <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 md:border-r border-gray-100 bg-white/40">
                         
-                        <div className="relative group">
-                            <Textarea 
-                                placeholder="Draft your operational message... Ensure all details are accurate." 
-                                className="min-h-[140px] md:min-h-[160px] rounded-[1.5rem] md:rounded-[2rem] border-2 border-gray-100 bg-gray-50/30 p-6 md:p-8 text-sm font-bold text-[#002f37] focus:border-[#065f46] focus:ring-0 transition-all placeholder:text-gray-200"
-                                value={message}
-                                id="bulk-sms-textarea"
-                                onChange={(e) => setMessage(e.target.value)}
-                            />
-                            
-                            {message.length > 0 && (
-                                <div className="bg-emerald-50/50 rounded-2xl p-4 md:p-5 border border-emerald-100 mt-4 border-dashed animate-in fade-in slide-in-from-top-2">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <Eye className="h-3.5 w-3.5 text-emerald-600" />
-                                        <span className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Broadcast Preview (Sample #1)</span>
+                        {/* Status Cards */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-white rounded-none p-5 border border-gray-100 shadow-sm flex items-center gap-5 group hover:border-[#7ede56]/30 transition-all duration-300"
+                            >
+                                <div className="h-12 w-12 rounded-none bg-[#002f37]/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <Users className="h-6 w-6 text-[#002f37]" />
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-black text-[#002f37]/30 uppercase tracking-[0.2em] mb-0.5">Selected Farmers</p>
+                                    <div className="flex items-baseline gap-1.5">
+                                        <span className="text-2xl font-black text-[#002f37]">{selectedFarmerIds.length}</span>
+                                        <span className="text-[10px] font-black text-gray-300 uppercase">Recipients</span>
                                     </div>
-                                    <p className="text-[11px] md:text-[12px] font-medium text-[#002f37] leading-relaxed italic opacity-80">
-                                        "{message
-                                            .replace(/{farmer_name}/g, filteredFarmers[0]?.name || '[Farmer Name]')
-                                            .replace(/{agent_name}/g, agent?.name || '[My Name]')}"
-                                    </p>
                                 </div>
-                            )}
-
-                            {/* Merge Tag Tools */}
-                            <div className="absolute bottom-3 right-3 flex gap-1.5 md:gap-2">
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    onClick={() => insertTag('{farmer_name}')}
-                                    className="h-7 px-2.5 md:px-3 rounded-lg border-emerald-100 bg-white text-[8px] md:text-[9px] font-black text-[#065f46] hover:bg-emerald-50 transition-colors uppercase tracking-widest"
-                                >
-                                    + Farmer Name
-                                </Button>
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    onClick={() => insertTag('{agent_name}')}
-                                    className="h-7 px-2.5 md:px-3 rounded-lg border-emerald-100 bg-white text-[8px] md:text-[9px] font-black text-[#065f46] hover:bg-emerald-50 transition-colors uppercase tracking-widest"
-                                >
-                                    + My Name
-                                </Button>
-                            </div>
+                            </motion.div>
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 }}
+                                className="bg-white rounded-none p-5 border border-gray-100 shadow-sm flex items-center gap-5 group hover:border-emerald-300 transition-all duration-300"
+                            >
+                                <div className="h-12 w-12 rounded-none bg-emerald-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <ShieldCheck className="h-6 w-6 text-emerald-600" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-[9px] font-black text-emerald-600/40 uppercase tracking-[0.2em] mb-0.5">Authorised By</p>
+                                    <p className="text-xs font-black text-emerald-800 uppercase tracking-tight truncate">{agent?.name || 'Root Access'}</p>
+                                </div>
+                            </motion.div>
                         </div>
-                    </div>
 
-                    {/* Recipients Preview */}
-                    <div className="space-y-4">
-                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between px-2">
-                            <div className="flex items-center gap-3">
-                                <Label className="text-[10px] font-black uppercase text-[#002f37]/40 tracking-widest leading-none">Verified Recipients</Label>
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={handleToggleSelectAll}
-                                    className="h-6 px-2 text-[9px] font-black text-[#065f46] uppercase tracking-widest hover:bg-emerald-50"
-                                >
-                                    {selectedFarmerIds.length === farmers.length ? 'Deselect All' : 'Select All'}
-                                </Button>
+                        {/* Templates */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3 pl-1">
+                                <Cpu className="h-4 w-4 text-[#002f37]/20" />
+                                <Label className="text-[10px] font-black uppercase text-[#002f37]/40 tracking-[0.3em] leading-none">Operational Templates</Label>
                             </div>
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-300" />
-                                <Input 
-                                    placeholder="Filter list..." 
-                                    className="h-9 md:h-8 pl-9 pr-4 text-[10px] font-bold rounded-xl border-gray-100 bg-gray-50/50 w-full md:w-44 text-[#002f37] border-none"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                        </div>
-                        <div className="rounded-[1.5rem] border border-gray-100 overflow-hidden bg-white/50">
-                            <ScrollArea className="h-[120px] md:h-[150px]">
-                                <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    {filteredFarmers.map(f => {
-                                        const id = f.id || f._id;
-                                        const isSelected = selectedFarmerIds.includes(id);
-                                        return (
-                                            <div 
-                                                key={id} 
-                                                className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer group ${isSelected ? 'bg-emerald-50/30 border-emerald-100' : 'bg-gray-50/20 border-transparent hover:bg-gray-50'}`}
-                                                onClick={() => handleToggleFarmer(id)}
-                                            >
-                                                <div className="shrink-0">
-                                                    {isSelected ? (
-                                                        <CheckSquare className="h-4 w-4 text-[#065f46]" />
-                                                    ) : (
-                                                        <Square className="h-4 w-4 text-gray-200" />
-                                                    )}
-                                                </div>
-                                                <div className="h-8 w-8 rounded-full bg-white border border-gray-100 flex items-center justify-center text-[#065f46] font-black text-[10px] uppercase shadow-sm">
-                                                    {f.name?.[0] || 'F'}
-                                                </div>
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className={`text-[11px] font-black truncate capitalize ${isSelected ? 'text-[#002f37]' : 'text-gray-400'}`}>{f.name}</span>
-                                                    <span className="text-[9px] font-bold text-gray-300 font-mono tracking-tighter">{f.contact}</span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                    {filteredFarmers.length === 0 && (
-                                        <div className="col-span-1 sm:col-span-2 py-8 text-center flex flex-col items-center gap-2">
-                                            <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-300">
-                                                <Users className="h-5 w-5" />
-                                            </div>
-                                            <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">No matching recipients</span>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                {TEMPLATES.map(t => (
+                                    <button 
+                                        key={t.id} 
+                                        className={`flex flex-col items-start gap-3 p-4 rounded-none transition-all border-2 text-[10px] font-black uppercase tracking-wider relative overflow-hidden group ${selectedTemplate === t.id ? 'bg-[#002f37] border-[#002f37] text-white shadow-xl' : 'bg-white border-gray-100 text-[#002f37] hover:border-[#7ede56]'}`}
+                                        onClick={() => handleApplyTemplate(t.id)}
+                                    >
+                                        <div className={`h-8 w-8 rounded-none flex items-center justify-center transition-all ${selectedTemplate === t.id ? 'bg-white/20' : 'bg-gray-50 group-hover:bg-[#7ede56]/10 group-hover:text-[#065f46]'}`}>
+                                            {t.icon}
                                         </div>
-                                    )}
+                                        <span className="leading-tight">{t.label}</span>
+                                        {selectedTemplate === t.id && (
+                                            <div className="absolute top-2 right-2">
+                                                <CheckCircle2 className="h-3 w-3 text-[#7ede56]" />
+                                            </div>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Compose */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between px-1">
+                                <div className="flex items-center gap-3">
+                                    <MessageSquare className="h-4 w-4 text-[#002f37]/20" />
+                                    <Label className="text-[10px] font-black uppercase text-[#002f37]/40 tracking-[0.3em] leading-none">Payload Composition</Label>
                                 </div>
-                            </ScrollArea>
+                                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-50 font-black text-[9px] px-3 py-1 rounded-full uppercase tracking-widest">
+                                   SMS UNIT 1: {message.length}/160
+                                </Badge>
+                            </div>
+                            
+                            <div className="relative">
+                                <Textarea 
+                                    placeholder="Enter operational payload text... Use merge tags for personalisation." 
+                                    className="min-h-[220px] rounded-none border-2 border-gray-100 bg-white/80 p-8 text-base font-bold text-[#002f37] focus:border-[#065f46] focus:ring-0 transition-all placeholder:text-gray-300 shadow-inner resize-none"
+                                    value={message}
+                                    id="bulk-sms-textarea"
+                                    onChange={(e) => setMessage(e.target.value)}
+                                />
+                                
+                                {/* Floating Merge Tools */}
+                                <div className="absolute bottom-6 right-6 flex gap-2">
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={() => insertTag('{farmer_name}')}
+                                        className="h-9 px-4 rounded-xl border-emerald-100 bg-white text-[9px] font-black text-[#065f46] hover:bg-emerald-50 transition-all shadow-sm active:scale-95 uppercase tracking-widest"
+                                    >
+                                        + Farmer
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={() => insertTag('{agent_name}')}
+                                        className="h-9 px-4 rounded-xl border-emerald-100 bg-white text-[9px] font-black text-[#065f46] hover:bg-emerald-50 transition-all shadow-sm active:scale-95 uppercase tracking-widest"
+                                    >
+                                        + Agent
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <AnimatePresence>
+                                {message.length > 0 && (
+                                    <motion.div 
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        className="bg-[#002f37] rounded-none p-6 md:p-8 border border-white/5 relative overflow-hidden group"
+                                    >
+                                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                            <Sparkles className="h-10 w-10 text-[#7ede56]" />
+                                        </div>
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="h-2 w-2 rounded-full bg-[#7ede56] animate-pulse" />
+                                            <span className="text-[10px] font-black text-[#7ede56] uppercase tracking-[0.3em]">Neural Preview</span>
+                                        </div>
+                                        <p className="text-sm md:text-base font-medium text-white/90 leading-relaxed italic pr-12">
+                                            "{message
+                                                .replace(/{farmer_name}/g, filteredFarmers[0]?.name || 'John Farmer')
+                                                .replace(/{agent_name}/g, agent?.name || 'Agent Lync')}"
+                                        </p>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
 
-                    <div className="pt-2">
-                        <Button 
-                            className={`w-full h-16 rounded-[1.5rem] font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-3 active:scale-[0.98] shadow-2xl border-none ${sending ? 'bg-gray-100 text-gray-400' : 'bg-[#065f46] hover:bg-[#044e3a] text-white shadow-emerald-900/20'}`}
-                            onClick={handleSendBulkSms}
-                            disabled={sending}
-                        >
-                            {sending ? (
-                                <>
-                                    <div className="h-6 w-6 border-[3px] border-emerald-500/20 border-t-emerald-600 rounded-full animate-spin" />
-                                    <span>Transmitting payload {sentCount}/{selectedFarmerIds.length}...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <Send className="h-5 w-5" />
-                                    <span>Execute Sector Broadcast</span>
-                                </>
-                            )}
-                        </Button>
+                    {/* Right Column - Recipient Management (Narrower) */}
+                    <div className="w-full md:w-[380px] bg-gray-50/50 flex flex-col overflow-hidden">
+                        
+                        <div className="p-6 md:p-8 space-y-6 flex-1 flex flex-col min-h-0">
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between px-1">
+                                    <div className="flex items-center gap-3">
+                                        <UserCheck className="h-4 w-4 text-[#002f37]/20" />
+                                        <Label className="text-[10px] font-black uppercase text-[#002f37]/40 tracking-[0.3em] leading-none">Recipient Queue</Label>
+                                    </div>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={handleToggleSelectAll}
+                                        className="h-7 px-3 text-[9px] font-black text-[#065f46] uppercase tracking-widest hover:bg-emerald-50 rounded-full"
+                                    >
+                                        {selectedFarmerIds.length === farmers.length ? 'Reset All' : 'Select All'}
+                                    </Button>
+                                </div>
+
+                                <div className="relative group">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300 group-focus-within:text-[#065f46] transition-colors" />
+                                    <Input 
+                                        placeholder="Filter list..." 
+                                        className="h-12 pl-12 pr-4 text-xs font-bold rounded-none border-none bg-white shadow-sm focus:ring-4 focus:ring-[#002f37]/5 transition-all text-[#002f37]"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex-1 min-h-0">
+                                <ScrollArea className="h-full pr-4 -mr-4">
+                                    <div className="space-y-2.5 pb-4">
+                                        {filteredFarmers.map((f, idx) => {
+                                            const id = f.id || f._id;
+                                            const isSelected = selectedFarmerIds.includes(id);
+                                            return (
+                                                <motion.div 
+                                                    initial={{ opacity: 0, x: 20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ delay: idx * 0.02 }}
+                                                    key={id} 
+                                                    className={`flex items-center gap-4 p-4 rounded-none border-2 transition-all cursor-pointer group relative overflow-hidden ${isSelected ? 'bg-white border-[#7ede56] shadow-md' : 'bg-white border-transparent hover:border-gray-200'}`}
+                                                    onClick={() => handleToggleFarmer(id)}
+                                                >
+                                                    <div className="shrink-0 relative z-10">
+                                                        <div className={`h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-[#065f46] border-[#065f46] shadow-lg shadow-emerald-900/20' : 'bg-gray-50 border-gray-100'}`}>
+                                                            {isSelected && <CheckCircle2 className="h-4 w-4 text-white" />}
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="h-10 w-10 rounded-full bg-[#002f37]/5 flex items-center justify-center text-[#002f37] font-black text-xs uppercase shadow-inner shrink-0 relative z-10">
+                                                        {f.name?.[0] || 'F'}
+                                                    </div>
+                                                    
+                                                    <div className="flex flex-col min-w-0 relative z-10">
+                                                        <span className={`text-xs font-black truncate capitalize leading-none mb-1 ${isSelected ? 'text-[#002f37]' : 'text-gray-400'}`}>{f.name}</span>
+                                                        <span className="text-[10px] font-bold text-gray-300 font-mono tracking-tighter">{f.contact}</span>
+                                                    </div>
+
+                                                    {isSelected && (
+                                                        <div className="absolute right-0 top-0 bottom-0 w-1 bg-[#7ede56]" />
+                                                    )}
+                                                </motion.div>
+                                            );
+                                        })}
+                                        {filteredFarmers.length === 0 && (
+                                            <div className="py-20 text-center flex flex-col items-center gap-4">
+                                                <div className="h-16 w-16 rounded-none bg-gray-100 flex items-center justify-center text-gray-300 animate-pulse">
+                                                    <Users className="h-8 w-8" />
+                                                </div>
+                                                <span className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">Target Node Not Found</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </ScrollArea>
+                            </div>
+
+                            <div className="pt-6">
+                                <Button 
+                                    className={`w-full h-18 rounded-none font-black uppercase tracking-[0.25em] text-xs transition-all flex items-center justify-center gap-4 active:scale-[0.98] shadow-[0_20px_40px_-10px_rgba(0,47,55,0.3)] border-none ${sending ? 'bg-gray-100 text-gray-400 shadow-none' : 'bg-gradient-to-r from-[#065f46] to-[#044e3a] hover:from-[#044e3a] hover:to-[#065f46] text-white'}`}
+                                    onClick={handleSendBulkSms}
+                                    disabled={sending}
+                                >
+                                    {sending ? (
+                                        <>
+                                            <div className="h-7 w-7 border-[4px] border-emerald-500/20 border-t-emerald-600 rounded-full animate-spin" />
+                                            <span className="animate-pulse">Broadcasting...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Send className="h-5 w-5" />
+                                            <span>Execute Transmission</span>
+                                            <ArrowRight className="h-4 w-4 opacity-40" />
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </DialogContent>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -33,10 +33,21 @@ import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import api from '@/utils/api';
 import CountUp from '@/components/CountUp';
 
+interface Partnership {
+    id: string;
+    farm: string;
+    investor: string;
+    agent: string;
+    status: string;
+    maturity: string;
+    start: string;
+    region?: string;
+}
+
 const PartnershipsSummary = () => {
     const { darkMode } = useDarkMode();
     const navigate = useNavigate();
-    const [partnerships, setPartnerships] = useState<any[]>([]);
+    const [partnerships, setPartnerships] = useState<Partnership[]>([]);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         total: 0,
@@ -57,9 +68,9 @@ const PartnershipsSummary = () => {
                 setPartnerships(data);
                 setStats({
                     total: data.length,
-                    ongoing: data.filter((p: any) => p.status === 'Ongoing' || p.status === 'active').length,
-                    completed: data.filter((p: any) => p.status === 'Completed' || p.status === 'approved').length,
-                    escalated: data.filter((p: any) => p.status === 'Escalated' || p.status === 'Disputed').length
+                    ongoing: data.filter((p: Partnership) => p.status === 'Ongoing' || p.status === 'active').length,
+                    completed: data.filter((p: Partnership) => p.status === 'Completed' || p.status === 'approved').length,
+                    escalated: data.filter((p: Partnership) => p.status === 'Escalated' || p.status === 'Disputed').length
                 });
             } catch (err) {
                 console.error('Failed to fetch partnerships:', err);
@@ -83,7 +94,7 @@ const PartnershipsSummary = () => {
 
     const [selectedMetric, setSelectedMetric] = useState<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedPartnership, setSelectedPartnership] = useState<any>(null);
+    const [selectedPartnership, setSelectedPartnership] = useState<Partnership | null>(null);
     const [isPartnershipModalOpen, setIsPartnershipModalOpen] = useState(false);
 
     const handleCardClick = (metric: any) => {
@@ -91,10 +102,20 @@ const PartnershipsSummary = () => {
         setIsModalOpen(true);
     };
 
-    const handlePartnershipClick = (partnership: any) => {
+    const handlePartnershipClick = (partnership: Partnership) => {
         setSelectedPartnership(partnership);
         setIsPartnershipModalOpen(true);
     };
+
+    const filteredPartnerships = useMemo(() => {
+        return partnerships.filter(p => {
+            const matchesSearch = p.farm.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                p.investor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (p.agent && p.agent.toLowerCase().includes(searchQuery.toLowerCase()));
+            const matchesRegion = selectedRegion === 'All' || p.region === selectedRegion;
+            return matchesSearch && matchesRegion;
+        });
+    }, [partnerships, searchQuery, selectedRegion]);
 
     const topMetrics = [
         {
@@ -238,7 +259,7 @@ const PartnershipsSummary = () => {
 
             {/* Metric Details Modal */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent className={`w-[320px] border-none shadow-premium rounded-[32px] overflow-hidden p-0 fixed top-28 right-12 left-auto bottom-auto translate-x-0 translate-y-0 animate-in slide-in-from-top-2 duration-500 ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white'}`}>
+                <DialogContent className={`w-[320px] border-none shadow-premium rounded-none overflow-hidden p-0 fixed top-28 right-12 left-auto bottom-auto translate-x-0 translate-y-0 animate-in slide-in-from-top-2 duration-500 ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white'}`}>
                     {selectedMetric ? (
                         <div className="relative">
                             {/* Decorative Header - Compact */}
@@ -368,13 +389,7 @@ const PartnershipsSummary = () => {
                         </thead>
                         <tbody className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
 
-                            {partnerships.filter(p => {
-                                const matchesSearch = p.farm.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                    p.investor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                    (p.agent && p.agent.toLowerCase().includes(searchQuery.toLowerCase()));
-                                const matchesRegion = selectedRegion === 'All' || p.region === selectedRegion;
-                                return matchesSearch && matchesRegion;
-                            }).map((p) => (
+                            {filteredPartnerships.map((p) => (
                                 <tr key={p.id} className={`border-b group transition-colors ${darkMode ? 'border-gray-700 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'}`}>
                                     <td className={`p-4 border-r ${darkMode ? 'border-gray-700' : 'border-gray-200'} border-l-4 border-l-transparent group-hover:border-l-[#7ede56]`}>
                                         <div className="flex items-center gap-3">
@@ -445,7 +460,7 @@ const PartnershipsSummary = () => {
 
             {/* Partnership Details Modal */}
             <Dialog open={isPartnershipModalOpen} onOpenChange={setIsPartnershipModalOpen}>
-                <DialogContent className={`max-w-5xl w-full border-none shadow-premium rounded-[32px] overflow-hidden p-0 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-in fade-in zoom-in-95 duration-300 ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white'}`}>
+                <DialogContent className={`max-w-5xl w-full border-none shadow-premium rounded-none overflow-hidden p-0 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-in fade-in zoom-in-95 duration-300 ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white'}`}>
                     {selectedPartnership ? (
                         <div className="flex flex-col md:flex-row h-[85vh]">
                             {/* Sidebar / Left Panel - Core Identity */}

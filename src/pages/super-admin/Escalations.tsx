@@ -65,16 +65,8 @@ const Escalations = () => {
     const fetchTickets = async () => {
         try {
             const res = await api.get('/super-admin/escalations');
-            if (res.data && res.data.length > 0) {
+            if (res.data) {
                 setTickets(res.data);
-            } else {
-                // High-fidelity ticket mock data
-                setTickets([
-                    { id: 'TKT-10293', category: 'Disbursement', issue: 'Blocked Outbound Payment (GH₵ 12,400)', region: 'Ashanti', agent: 'Kwame Mensah', priority: 'Critical', status: 'Open', date: '2026-04-05T14:30:00Z', notes: [{ sender: 'Agent', text: 'Farmer is expecting disbursement for seedlings.', time: '1 hour ago' }] },
-                    { id: 'TKT-10298', category: 'Data Error', issue: 'Identity Verification Collision', region: 'Greater Accra', agent: 'Sister Deborah', priority: 'High', status: 'Assigned', assignee: 'Super Admin Alpha', date: '2026-04-05T10:15:00Z', notes: [] },
-                    { id: 'TKT-10302', category: 'Regional Lead', issue: 'Zone A-4 Inspection Failure', region: 'Western', agent: 'Abena Osei', priority: 'Medium', status: 'Open', date: '2026-04-04T16:00:00Z', notes: [] },
-                    { id: 'TKT-10305', category: 'Disbursement', issue: 'Invalid Wallet Matrix ID', region: 'Volta', agent: 'John Dumelo', priority: 'Critical', status: 'Resolved', date: '2026-04-03T08:20:00Z', notes: [{ sender: 'System', text: 'Resolved via Root Patch.', time: 'Yesterday' }] },
-                ]);
             }
         } catch (err) {
             console.error('Failed to fetch tickets:', err);
@@ -84,10 +76,16 @@ const Escalations = () => {
         }
     };
 
-    const handleResolve = (ticketId: string) => {
-        setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: 'Resolved' } : t));
-        setIsDetailOpen(false);
-        toast.success(`Ticket ${ticketId} marked as resolved.`);
+    const handleResolve = async (ticketId: string) => {
+        try {
+            await api.put(`/super-admin/escalations/${ticketId}/resolve`);
+            setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: 'Resolved' } : t));
+            setIsDetailOpen(false);
+            toast.success(`Ticket ${ticketId} marked as resolved.`);
+        } catch (err: any) {
+            console.error('Failed to resolve escalation:', err);
+            toast.error(err.response?.data?.msg || 'Failed to resolve ticket');
+        }
     };
 
     const handleAddNote = () => {
@@ -191,51 +189,57 @@ const Escalations = () => {
 
             {/* Ticket Feed Grid */}
             <div className="grid grid-cols-1 gap-4">
-                {filteredTickets.map(ticket => (
-                    <Card 
-                        key={ticket.id} 
-                        className={`border-none shadow-premium overflow-hidden group hover:translate-x-2 transition-all duration-300 cursor-pointer ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white'}`}
-                        onClick={() => { setSelectedTicket(ticket); setIsDetailOpen(true); }}
-                    >
-                        <div className={`absolute top-0 left-0 h-full w-1.5 ${ticket.priority === 'Critical' ? 'bg-rose-500' : (ticket.priority === 'High' ? 'bg-rose-400' : 'bg-amber-400')}`}></div>
-                        <CardContent className="p-6">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                <div className="space-y-4 flex-1">
-                                    <div className="flex items-center gap-3">
-                                        <Badge className={`px-3 py-0.5 text-[9px] font-black uppercase tracking-widest ${getPriorityStyle(ticket.priority)}`}>{ticket.priority}</Badge>
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">#{ticket.id}</span>
-                                        <span className="text-[10px] font-black text-[#7ede56] uppercase tracking-widest">{ticket.category}</span>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-black uppercase tracking-tight leading-none mb-2">{ticket.issue}</h3>
-                                        <div className="flex items-center gap-6">
-                                            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                                                <MapPin className="w-3.5 h-3.5 text-blue-500" /> {ticket.region}
-                                            </div>
-                                            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                                                <User className="w-3.5 h-3.5 text-[#7ede56]" /> {ticket.agent}
-                                            </div>
-                                            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                                <Clock className="w-3.5 h-3.5" /> {new Date(ticket.date).toLocaleDateString()}
+                {filteredTickets && filteredTickets.length > 0 ? (
+                    filteredTickets.map(ticket => (
+                        <Card 
+                            key={ticket.id} 
+                            className={`border-none shadow-premium overflow-hidden group hover:translate-x-2 transition-all duration-300 cursor-pointer ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white'}`}
+                            onClick={() => { setSelectedTicket(ticket); setIsDetailOpen(true); }}
+                        >
+                            <div className={`absolute top-0 left-0 h-full w-1.5 ${ticket.priority === 'Critical' ? 'bg-rose-500' : (ticket.priority === 'High' ? 'bg-rose-400' : 'bg-amber-400')}`}></div>
+                            <CardContent className="p-6">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                    <div className="space-y-4 flex-1">
+                                        <div className="flex items-center gap-3">
+                                            <Badge className={`px-3 py-0.5 text-[9px] font-black uppercase tracking-widest ${getPriorityStyle(ticket.priority)}`}>{ticket.priority}</Badge>
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">#{ticket.id}</span>
+                                            <span className="text-[10px] font-black text-[#7ede56] uppercase tracking-widest">{ticket.category}</span>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-black uppercase tracking-tight leading-none mb-2">{ticket.issue}</h3>
+                                            <div className="flex items-center gap-6">
+                                                <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                                    <MapPin className="w-3.5 h-3.5 text-blue-500" /> {ticket.region}
+                                                </div>
+                                                <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                                    <User className="w-3.5 h-3.5 text-[#7ede56]" /> {ticket.agent}
+                                                </div>
+                                                <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                                    <Clock className="w-3.5 h-3.5" /> {new Date(ticket.date).toLocaleDateString()}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="flex items-center gap-6">
-                                    <div className="text-right hidden sm:block">
-                                        <Badge className={`border-none rounded-lg font-black text-[9px] px-3 py-1 uppercase tracking-widest ${getStatusStyle(ticket.status)}`}>
-                                            {ticket.status}
-                                        </Badge>
-                                        {ticket.assignee && <p className="text-[8px] font-bold text-gray-400 mt-1 uppercase">BY: {ticket.assignee}</p>}
+                                    <div className="flex items-center gap-6">
+                                        <div className="text-right hidden sm:block">
+                                            <Badge className={`border-none rounded-lg font-black text-[9px] px-3 py-1 uppercase tracking-widest ${getStatusStyle(ticket.status)}`}>
+                                                {ticket.status}
+                                            </Badge>
+                                            {ticket.assignee && <p className="text-[8px] font-bold text-gray-400 mt-1 uppercase">BY: {ticket.assignee}</p>}
+                                        </div>
+                                        <Button className="h-14 w-14 rounded-2xl bg-gray-100 hover:bg-[#7ede56] hover:text-[#002f37] dark:bg-gray-800 transition-all p-0">
+                                            <ChevronDown className="w-5 h-5 -rotate-90" />
+                                        </Button>
                                     </div>
-                                    <Button className="h-14 w-14 rounded-2xl bg-gray-100 hover:bg-[#7ede56] hover:text-[#002f37] dark:bg-gray-800 transition-all p-0">
-                                        <ChevronDown className="w-5 h-5 -rotate-90" />
-                                    </Button>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+                            </CardContent>
+                        </Card>
+                    ))
+                ) : (
+                    <div className="p-12 text-center text-xs font-black uppercase text-gray-400 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl">
+                        No support tickets in queue.
+                    </div>
+                )}
             </div>
 
             {/* Ticket Detail Modal */}

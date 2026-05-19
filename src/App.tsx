@@ -9,6 +9,9 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
+import BlogAdminLogin from "./pages/BlogAdminLogin";
+import BlogAdminDashboard from "./pages/BlogAdminDashboard";
 import Contact from "./pages/Contact";
 import Gallery from "./pages/Gallery";
 import Team from "./pages/Team";
@@ -89,6 +92,9 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/who-we-are" element={<About />} />
               <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/blog/admin/login" element={<BlogAdminLogin />} />
+              <Route path="/blog/admin/dashboard" element={<BlogAdminDashboard />} />
               <Route path="/portfolio" element={<Gallery />} />
               <Route path="/team" element={<Team />} />
               <Route path="/team/:memberId" element={<TeamMemberProfile />} />

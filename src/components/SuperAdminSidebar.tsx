@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import SidebarProfileCard from '@/components/SidebarProfileCard';
 
 interface NavItem {
     icon: React.ElementType;
@@ -36,7 +37,7 @@ const navSections: NavSection[] = [
         section: 'Management',
         items: [
             { icon: Map, label: 'Regional Performance', path: '/dashboard/super-admin/regions' },
-            { icon: Users, label: 'Agent Accountability', path: '/dashboard/super-admin/agents' },
+            { icon: Users, label: 'Admin Setup', path: '/dashboard/super-admin/agents' },
             { icon: Users, label: 'User Management', path: '/dashboard/super-admin/users' },
             { icon: Activity, label: 'Farm Oversight', path: '/dashboard/super-admin/farms' },
         ]
@@ -93,6 +94,14 @@ const SuperAdminSidebar = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Profile Card */}
+            <SidebarProfileCard
+                sidebarCollapsed={false}
+                isMobile={false}
+                darkMode={false}
+                userType="super-admin"
+            />
 
             {/* Nav Sections */}
             <div className="flex-1 overflow-y-auto px-3 pb-2 custom-scrollbar">

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, Bell, Sun, Moon, Home, MapPin, BarChart3, Settings, Plus, Users, UserPlus, UserRoundPlus, LayoutGrid, ListTodo, UserCircle, Calendar, Leaf, Bot, AlertTriangle, Search, LogOut, Briefcase, Image as ImageIcon, RefreshCw, GraduationCap } from 'lucide-react';
+import { Menu, Bell, Sun, Moon, Home, MapPin, BarChart3, Settings, Plus, Users, UserPlus, UserRoundPlus, LayoutGrid, ListTodo, UserCircle, Calendar, Leaf, Bot, AlertTriangle, Search, LogOut, Briefcase, Image as ImageIcon, RefreshCw, GraduationCap, Zap } from 'lucide-react';
 import DashboardSidebar from './DashboardSidebar';
 import Preloader from './ui/Preloader';
 import AddFarmerModal from './agent/AddFarmerModal';

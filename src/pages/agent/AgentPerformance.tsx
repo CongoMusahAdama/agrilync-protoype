@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { 
   TrendingUp, 
-  Download, 
   Star, 
   Download as DownloadIcon, 
   MessageSquareText, 
@@ -18,24 +17,83 @@ import {
   CheckCircle2,
   UserCheck,
   FileText,
-  Cloud
+  Cloud,
+  Users,
+  MapPin,
+  Calendar,
+  Image as ImageIcon,
+  ShieldCheck
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MapPin } from 'lucide-react';
 import Swal from 'sweetalert2';
 import api from '@/utils/api';
 import AgentLayout from './AgentLayout';
 import CountUp from '@/components/CountUp';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 
+interface KPI {
+  label: string;
+  value: string;
+  unit: string;
+  target: string;
+  progress: number;
+  status: string;
+}
+
+interface VisitLog {
+  farmer: string;
+  farm: string;
+  region: string;
+  last: string;
+  visits: string;
+  color: string;
+  vIcon: string;
+  sync: string;
+  status: string;
+}
+
+interface AlertItem {
+  id: string | number;
+  color: string;
+  message: string;
+}
+
+interface PerformanceData {
+  trend: { value: number; month: string }[];
+  kpis: KPI[];
+  pendingSync: number | string;
+  overallScore: number | string;
+  portfolio: {
+    total: number;
+    onTrack: number;
+    atRisk: number;
+    offTrack: number;
+  };
+  supervisor: {
+    initials: string;
+    name: string;
+    rating: number;
+    comment: string;
+    nextReview: string;
+  };
+  visitLog: VisitLog[];
+  seasonOutcomes: {
+    yieldEst: string;
+    repaymentRate: string;
+    capitalDeployed: string;
+    partnerKpiMet: string;
+  };
+  activeAlerts?: AlertItem[];
+}
+
 const AgentPerformance: React.FC = () => {
   const [activeMetric, setActiveMetric] = useState('onboarding');
   const [timeRange, setTimeRange] = useState('month');
   const [visitFilter, setVisitFilter] = useState('all');
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<PerformanceData | null>(null);
   const [loading, setLoading] = useState(true);
 
   React.useEffect(() => {
@@ -53,10 +111,10 @@ const AgentPerformance: React.FC = () => {
   }, []);
   
   const metricData: Record<string, any> = {
-    onboarding: { color: 'var(--lgreen)', data: data?.trend ? data.trend.map((t:any)=>t.value) : [0,0,0,0,0,0], target: '100%' },
-    visits: { color: 'var(--teal)', data: [0, 0, 0, 0, 0, 0], target: '100%' },
-    sync: { color: '#921573', data: [0, 0, 0, 0, 0, 0], target: '95%' },
-    training: { color: 'var(--amber)', data: [0, 0, 0, 0, 0, 0], target: '100%' },
+    onboarding: { color: 'var(--lgreen)', data: data?.trend ? data.trend.map((t:any)=>t.value) : [0,0,0,0,0,0], target: '250+' },
+    visits: { color: 'var(--teal)', data: [0, 0, 0, 0, 0, 0], target: '20' },
+    training: { color: 'var(--amber)', data: [0, 0, 0, 0, 0, 0], target: '80%' },
+    gender: { color: '#921573', data: [0, 0, 0, 0, 0, 0], target: '60% F' },
   };
 
   const currentMetric = metricData[activeMetric];
@@ -108,42 +166,60 @@ const AgentPerformance: React.FC = () => {
           </div>
         </div>
 
-        {/* 2. KPI SCORECARD GRID — Deeper Details */}
+        {/* 2. KPI SCORECARD GRID — Unified Pilot Targets */}
         <div className="pt-2 mb-8">
-           <h3 className="text-[11px] font-black text-[#002f37] uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-             <div className="h-1.5 w-1.5 rounded-full bg-[#065f46]"></div>
-             Detailed KPI Scorecard
+           <h3 className="text-[11px] font-black text-[#002f37] uppercase tracking-[0.2em] mb-4 flex items-center justify-between gap-2">
+             <div className="flex items-center gap-2">
+               <div className="h-1.5 w-1.5 rounded-full bg-[#065f46]"></div>
+               Pilot KPI Scorecard
+             </div>
+             <Badge className="bg-[#7ede56]/10 text-[#065f46] border-none font-bold text-[9px] uppercase tracking-widest px-3">
+               Target Score: {data?.overallScore || '82'}%
+             </Badge>
            </h3>           
            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
             {(data?.kpis || [
-              { label: 'Onboarding Volume', value: '0', unit: 'Farmers', target: '---', progress: 0, status: 'N/A' },
-              { label: 'Onboarding Completion Rate', value: '0', unit: '%', target: '---', progress: 0, status: 'N/A' },
-              { label: 'Verification Pass Rate', value: '0', unit: '%', target: '---', progress: 0, status: 'N/A' },
-              { label: 'Monitoring Visit Frequency', value: '0.0', unit: 'Visits/Mo', target: '---', progress: 0, status: 'N/A' },
-              { label: 'Data Sync Timeliness', value: '0', unit: '%', target: '---', progress: 0, status: 'N/A' },
-              { label: 'Harvest Yield Documentation', value: '0', unit: 'Farms', target: '---', progress: 0, status: 'N/A' }
-            ]).map((kpi: any, idx: number) => {
-              const colors = ['bg-[#002f37]', 'bg-[#004d4d]', 'bg-[#006666]', 'bg-[#008080]'];
-              const bgColor = colors[idx % colors.length];
-              const icon = [Leaf, CheckCircle2, UserCheck, Clock, Activity, FileText][idx % 6] || Sprout;
-              const IconComponent = icon;
+              { label: 'Pilot Onboarding', value: '312', unit: 'Farmers', target: '500', progress: 62, status: 'Active' },
+              { label: 'Gender Balance', value: '64/36', unit: 'F/M %', target: '60/40', progress: 100, status: 'Met' },
+              { label: 'Training Rate', value: '78', unit: '%', target: '80%', progress: 97, status: 'Near' },
+              { label: 'Monthly Visits', value: '14', unit: 'Visits', target: '10-20', progress: 70, status: 'On-Track' },
+              { label: 'Group Meetings', value: '2', unit: 'Meetings', target: '2/Mo', progress: 100, status: 'Met' },
+              { label: 'Media Compliance', value: '100', unit: '%', target: '100%', progress: 100, status: 'Verified' }
+            ]).map((kpi: KPI, idx: number) => {
+              const bgColors = ['bg-[#002f37]', 'bg-[#124b53]', 'bg-[#004d4d]', 'bg-[#006666]', 'bg-[#008080]', 'bg-[#065f46]'];
+              const bgColor = bgColors[idx % bgColors.length];
+              const getKpiIcon = (label: string) => {
+                const lower = label.toLowerCase();
+                if (lower.includes('onboarding')) return UserCheck;
+                if (lower.includes('gender')) return Users;
+                if (lower.includes('training')) return GraduationCap;
+                if (lower.includes('visit') || lower.includes('monitoring')) return MapPin;
+                if (lower.includes('data sync') || lower.includes('timeliness')) return Calendar;
+                if (lower.includes('harvest') || lower.includes('yield')) return Sprout;
+                if (lower.includes('media')) return ImageIcon;
+                return Sprout;
+              };
+              const IconComponent = getKpiIcon(kpi.label);
               
               return (
               <Card
                 key={idx}
-                className={`${bgColor} rounded-2xl p-4 shadow-sm border-none text-white relative overflow-hidden flex flex-col justify-between group min-h-[110px]`}
+                className={`${bgColor} rounded-2xl p-4 shadow-sm border-none text-white relative overflow-hidden flex flex-col justify-between group min-h-[120px]`}
               >
                 <div className="absolute -right-4 -top-4 w-20 h-20 border-[12px] border-white/5 rounded-full" />
                 <div className="flex items-center justify-between mb-2 relative z-10">
                   <div className="p-2 rounded-xl bg-white/10">
                     <IconComponent className="h-4 w-4 text-white" />
                   </div>
+                  <Badge className="bg-white/10 text-[8px] font-black uppercase text-white/70 border-none">
+                    {kpi.status}
+                  </Badge>
                 </div>
 
                 <div className="relative z-10">
                   <p className="text-[9px] font-black text-white/60 uppercase tracking-widest mb-1 leading-tight">{kpi.label}</p>
                   <div className="flex items-baseline gap-1 mb-2">
-                    <h2 className="text-2xl font-black text-white tracking-tight leading-none group-hover:scale-105 transition-transform origin-left font-montserrat">
+                    <h2 className="text-xl font-black text-white tracking-tight leading-none group-hover:scale-105 transition-transform origin-left font-montserrat">
                       {kpi.value}
                     </h2>
                     <span className="text-[9px] font-bold text-white/50 uppercase">{kpi.unit}</span>
@@ -156,10 +232,121 @@ const AgentPerformance: React.FC = () => {
                         style={{ width: `${Math.min(kpi.progress, 100)}%` }} 
                       />
                     </div>
+                    <div className="flex justify-between items-center text-[7px] font-black text-white/40 uppercase tracking-widest">
+                      <span>Progress</span>
+                      <span>Target: {kpi.target}</span>
+                    </div>
                   </div>
                 </div>
               </Card>
             )})}
+           </div>
+        </div>
+
+        {/* 3. NEW: INCENTIVES & EARNINGS TRACKER */}
+        <div className="mb-8">
+           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+             {/* Main Incentive Card */}
+             <Card className="md:col-span-3 p-6 sm:p-8 border-none shadow-xl rounded-[2.5rem] bg-white relative overflow-hidden group">
+               <div className="absolute right-0 top-0 w-64 h-64 bg-[#7ede56]/5 rounded-full -mr-32 -mt-32 blur-3xl" />
+               <div className="relative z-10 flex flex-col lg:flex-row justify-between gap-8">
+                 <div className="space-y-4">
+                   <div className="flex items-center gap-3">
+                     <div className="h-10 w-10 rounded-2xl bg-[#effcea] flex items-center justify-center">
+                       <DollarSign className="h-5 w-5 text-[#065f46]" />
+                     </div>
+                     <div>
+                       <h3 className="text-xl font-black text-[#002f37] tracking-tight">Active Monthly Incentives</h3>
+                       <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Pilot Program Rewards Structure</p>
+                     </div>
+                   </div>
+                   
+                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                           <span>High Volume Onboarding</span>
+                           <span className="text-[#065f46]">GH¢300</span>
+                        </div>
+                        <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
+                           <span className="text-[12px] font-bold text-[#002f37]">312 / 250 Farmers</span>
+                           <Badge className="bg-[#065f46] text-white text-[8px] font-black uppercase">Earned</Badge>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                           <span>Training Completion</span>
+                           <span className="text-[#065f46]">GH¢200</span>
+                        </div>
+                        <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
+                           <span className="text-[12px] font-bold text-[#002f37]">78% / 80% Rate</span>
+                           <Badge className="bg-amber-100 text-amber-700 text-[8px] font-black uppercase tracking-tighter">GH¢100 Matched</Badge>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                           <span>Reporting & Media</span>
+                           <span className="text-[#065f46]">GH¢200 Total</span>
+                        </div>
+                        <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
+                           <span className="text-[12px] font-bold text-[#002f37]">All Verified</span>
+                           <Badge className="bg-[#065f46] text-white text-[8px] font-black uppercase">Earned</Badge>
+                        </div>
+                      </div>
+                   </div>
+                 </div>
+
+                 <div className="lg:w-48 p-6 rounded-[2rem] bg-[#002f37] text-white flex flex-col justify-center items-center text-center shadow-2xl relative">
+                    <div className="absolute top-4 left-4 h-1.5 w-1.5 rounded-full bg-[#7ede56] animate-pulse" />
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/50 mb-2">Est. Bonus</p>
+                    <h4 className="text-3xl font-black font-montserrat tracking-tighter">GH¢600</h4>
+                    <p className="text-[9px] font-bold text-[#7ede56] mt-1 italic">Potential: GH¢700</p>
+                    <button className="mt-4 text-[9px] font-black uppercase tracking-[0.2em] py-2 px-4 rounded-full bg-white/10 hover:bg-white/20 transition-all border border-white/10" onClick={() => Swal.fire({title:'Payout Details', text: 'Your incentives are processed on the 5th of every month following supervisor verification.', icon: 'info'})}>
+                      View Breakdown
+                    </button>
+                 </div>
+               </div>
+             </Card>
+
+             {/* Support Allowances */}
+             <Card className="p-6 border-none shadow-xl rounded-[2.5rem] bg-[#effcea] flex flex-col justify-between">
+               <div>
+                 <h4 className="text-[11px] font-black text-[#065f46] uppercase tracking-[0.2em] mb-4">Operational Support</h4>
+                 <div className="space-y-4">
+                    <div className="flex items-center justify-between group">
+                       <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-white shadow-sm transition-transform group-hover:scale-110">
+                            <MapPin className="h-3 w-3 text-[#065f46]" />
+                          </div>
+                          <div>
+                            <p className="text-[11px] font-black text-[#002f37]">Transport</p>
+                            <p className="text-[8px] font-bold text-[#065f46]/60">Verified Route</p>
+                          </div>
+                       </div>
+                       <Badge className="bg-[#065f46] text-white text-[8px] font-black uppercase">Active</Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between group">
+                       <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-white shadow-sm transition-transform group-hover:scale-110">
+                            <Cloud className="h-3 w-3 text-[#065f46]" />
+                          </div>
+                          <div>
+                            <p className="text-[11px] font-black text-[#002f37]">Data Bundle</p>
+                            <p className="text-[8px] font-bold text-[#065f46]/60">Reporting Needs</p>
+                          </div>
+                       </div>
+                       <Badge className="bg-[#065f46] text-white text-[8px] font-black uppercase">Active</Badge>
+                    </div>
+                 </div>
+               </div>
+               <div className="pt-4 border-t border-[#065f46]/10">
+                  <p className="text-[9px] font-medium text-[#065f46] italic leading-tight">
+                    "Allowances are disbursed based on approved field schedules."
+                  </p>
+               </div>
+             </Card>
            </div>
         </div>
 
@@ -369,7 +556,7 @@ const AgentPerformance: React.FC = () => {
 
           {/* MOBILE: Card Stack */}
           <div className="md:hidden divide-y divide-gray-50 bg-white">
-            {(data?.visitLog || []).filter((row: any) => {
+            {(data?.visitLog || []).filter((row: VisitLog) => {
               if (visitFilter === 'all') return true;
               if (visitFilter === 'below') return row.status === 'At Risk' || row.status === 'Off Track';
               if (visitFilter === 'on-track') return row.status === 'On Track';
@@ -379,12 +566,12 @@ const AgentPerformance: React.FC = () => {
                 <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest">No visit records match this filter</p>
               </div>
             ) : (
-              (data?.visitLog || []).filter((row: any) => {
+              (data?.visitLog || []).filter((row: VisitLog) => {
                 if (visitFilter === 'all') return true;
                 if (visitFilter === 'below') return row.status === 'At Risk' || row.status === 'Off Track';
                 if (visitFilter === 'on-track') return row.status === 'On Track';
                 return true;
-              }).map((row: any, i: number) => (
+              }).map((row: VisitLog, i: number) => (
                 <div key={i} className={`p-5 ${row.color === 'amber' ? 'bg-amber-50/30' : row.color === 'red' ? 'bg-rose-50/30' : 'bg-white'}`}>
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div>
@@ -429,12 +616,12 @@ const AgentPerformance: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#002f37]/10 font-semibold text-sm bg-white">
-                {(data?.visitLog || []).filter((row: any) => {
+                {(data?.visitLog || []).filter((row: VisitLog) => {
                   if (visitFilter === 'all') return true;
                   if (visitFilter === 'below') return row.status === 'At Risk' || row.status === 'Off Track';
                   if (visitFilter === 'on-track') return row.status === 'On Track';
                   return true;
-                }).map((row: any, i: number) => (
+                }).map((row: VisitLog, i: number) => (
                   <tr key={i} className={`group hover:bg-gray-50/80 transition-colors ${row.color === 'amber' ? 'bg-amber-50/30' : row.color === 'red' ? 'bg-rose-50/30' : 'bg-white'}`}>
                     <td className="px-8 py-2.5 font-black text-[#002f37] border-r border-[#002f37]/5">{row.farmer}</td>
                     <td className="px-6 py-2.5 border-r border-[#002f37]/5">{row.farm}</td>
@@ -469,7 +656,125 @@ const AgentPerformance: React.FC = () => {
           </div>
         </Card>
 
-        {/* 6. BOTTOM ROW */}
+        {/* 6. PILOT INCENTIVE FRAMEWORK */}
+        <div className="mb-10">
+          <h3 className="text-[11px] font-black text-[#002f37] uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+            <div className="h-1.5 w-1.5 rounded-full bg-[#7ede56]"></div>
+            Proposed Incentive Structure
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="bg-[#002f37] text-white p-6 rounded-2xl shadow-2xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                <GraduationCap className="h-16 w-16" />
+              </div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#7ede56] mb-1">Activity Allowance</p>
+              <h4 className="text-xl font-black mb-4">Training Delivery</h4>
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="text-3xl font-black text-white">GH¢200</p>
+                  <p className="text-[9px] font-bold text-white/60 uppercase mt-1">Per Manual Completion</p>
+                </div>
+                <Badge className="bg-[#7ede56] text-[#002f37] border-none font-black text-[10px]">PILOT RATE</Badge>
+              </div>
+            </Card>
+
+            <Card className="bg-white border-2 border-[#002f37]/5 p-6 rounded-2xl shadow-xl hover:border-[#065f46]/20 transition-all">
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#065f46] mb-1">Target Incentive A</p>
+              <h4 className="text-xl font-black text-[#002f37] mb-4">Monthly Goal Achievement</h4>
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="text-3xl font-black text-[#002f37]">GH¢600</p>
+                  <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">On reaching 500 farmer onboarding</p>
+                </div>
+                <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center">
+                  <TrendingUp className="h-5 w-5 text-[#065f46]" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-white border-2 border-[#7ede56]/20 p-6 rounded-2xl shadow-xl hover:border-[#7ede56]/40 transition-all">
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#065f46] mb-1">Target Incentive B</p>
+              <h4 className="text-xl font-black text-[#002f37] mb-4">Excellence Bonus</h4>
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="text-3xl font-black text-[#065f46]">GH¢700</p>
+                  <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Top tier regional performance</p>
+                </div>
+                <div className="h-10 w-10 rounded-xl bg-[#7ede56]/10 flex items-center justify-center">
+                  <Star className="h-5 w-5 text-[#065f46]" />
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* 8. COMPLIANCE & VERIFICATION TRACKERS */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+          <Card className="p-8 border-none shadow-xl rounded-2xl bg-white">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h4 className="text-[#002f37] font-black text-lg">Seasonal Compliance</h4>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Protocol adherence monitoring</p>
+              </div>
+              <ShieldCheck className="h-6 w-6 text-[#065f46]" />
+            </div>
+            <div className="space-y-6">
+              {[
+                { label: 'Soil Test Completion', value: '92%', status: 'Compliant' },
+                { label: 'GAP Training Attendance', value: '88%', status: 'Compliant' },
+                { label: 'Harvest Reporting', value: '45%', status: 'Ongoing' },
+                { label: 'Repayment Schedule Sync', value: '96%', status: 'Excellent' }
+              ].map((item, i) => (
+                <div key={i} className="flex items-center justify-between group">
+                  <div className="flex items-center gap-3">
+                    <div className="h-1 w-8 bg-gray-100 rounded-full group-hover:bg-[#7ede56] transition-colors"></div>
+                    <span className="text-[13px] font-bold text-gray-600">{item.label}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-[14px] font-black text-[#002f37]">{item.value}</span>
+                    <Badge className={`text-[8px] font-black uppercase px-2 py-0.5 border-none ${item.status === 'Ongoing' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-700'}`}>
+                      {item.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Card className="p-8 border-none shadow-xl rounded-2xl bg-[#002f37] text-white">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h4 className="text-[#7ede56] font-black text-lg">Verification Snapshots</h4>
+                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Digital identity check integrity</p>
+              </div>
+              <Activity className="h-6 w-6 text-[#7ede56]" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-3">Ghana Card OCR Accuracy</p>
+                <p className="text-2xl font-black text-[#7ede56]">94.2%</p>
+                <div className="mt-4 h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-[#7ede56]" style={{ width: '94.2%' }}></div>
+                </div>
+              </div>
+              <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-3">GPS Perimeter Validation</p>
+                <p className="text-2xl font-black text-[#7ede56]">100%</p>
+                <div className="mt-4 h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-[#7ede56]" style={{ width: '100%' }}></div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-8 pt-6 border-t border-white/10">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-white/60 uppercase tracking-widest">Quality Assurance Rating</span>
+                <span className="text-[12px] font-black text-white">ELITE AGENT STATUS</span>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* 9. BOTTOM ROW */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* LEFT — Training Delivery Progress */}
           <Card className="p-8 border-none shadow-xl rounded-2xl">
@@ -479,10 +784,10 @@ const AgentPerformance: React.FC = () => {
             </div>
             <div className="space-y-8">
               {[
-                { title: 'Financial Literacy', icon: DollarSign, desc: 'Budgeting & Saving for inputs', count: data?.trainingModules?.[0]?.count || '0/0', perc: data?.trainingModules?.[0]?.perc || '0%', color: 'var(--lgreen)', tag: 'Required' },
-                { title: 'Farm Planning & GAP', icon: Sprout, desc: 'Agronomy best practices & planning', count: data?.trainingModules?.[1]?.count || '0/0', perc: data?.trainingModules?.[1]?.perc || '0%', color: 'var(--teal)', tag: 'Required' },
-                { title: 'AI Advisory Tools', icon: Bot, desc: 'Modern data tools utilization', count: data?.trainingModules?.[2]?.count || '0/0', perc: data?.trainingModules?.[2]?.perc || '0%', color: 'var(--amber)', tag: 'Should Complete' },
-                { title: 'Climate Resilience', icon: Leaf, desc: 'Adapting to environmental changes', count: data?.trainingModules?.[3]?.count || '0/0', perc: data?.trainingModules?.[3]?.perc || '0%', color: 'var(--gray200)', tag: 'Recommended' },
+                { title: 'Climate-Smart Agriculture', icon: Leaf, desc: 'Adapting to environmental changes', count: '243/312', perc: '78%', color: 'var(--lgreen)', tag: 'Required' },
+                { title: 'Financial Literacy', icon: DollarSign, desc: 'Budgeting & Saving for inputs', count: '180/312', perc: '58%', color: 'var(--teal)', tag: 'Required' },
+                { title: 'Agricultural Management', icon: GraduationCap, desc: 'Crop lifecycle & farm governance', count: '290/312', perc: '93%', color: 'var(--amber)', tag: 'Required' },
+                { title: 'AI Advisory Tools', icon: Bot, desc: 'Modern data tools utilization', count: '112/312', perc: '36%', color: 'var(--gray200)', tag: 'Advanced' },
               ].map((m, i) => (
                 <div key={i}>
                   <div className="flex justify-between items-start mb-4">
@@ -501,7 +806,7 @@ const AgentPerformance: React.FC = () => {
                       </Badge>
                       <div className="flex items-center gap-2 justify-end">
                         <span className="text-xs font-black text-[#002f37]">{m.count}</span>
-                        <span className="text-[10px] font-bond text-gray-300">({m.perc})</span>
+                        <span className="text-[10px] font-bold text-gray-300">({m.perc})</span>
                       </div>
                     </div>
                   </div>

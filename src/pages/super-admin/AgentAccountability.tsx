@@ -30,7 +30,10 @@ import {
     Percent,
     ClipboardCheck,
     RotateCcw,
-    Calculator
+    Calculator,
+    Calendar,
+    Sprout,
+    BookOpen
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -62,16 +65,10 @@ const AgentAccountability = () => {
     const fetchAgents = async () => {
         try {
             const res = await api.get('/super-admin/agents');
-            if (res.data && res.data.length > 0) {
+            if (res.data) {
                 setAgents(res.data);
             } else {
-                // Realistic Mock Data for Accountability
-                setAgents([
-                    { id: '1', name: 'Kwame Mensah', agentId: 'AG-AS-001', region: 'Ashanti', lastSync: '2026-04-05T14:30:00Z', dataQuality: 98, visitCompliance: 95, corrections: 2, commission: 1250.50, farmers: 45, status: 'Active' },
-                    { id: '2', name: 'Abena Osei', agentId: 'AG-WS-004', region: 'Western', lastSync: '2026-04-03T10:15:00Z', dataQuality: 82, visitCompliance: 70, corrections: 12, commission: 840.00, farmers: 28, status: 'Active' },
-                    { id: '3', name: 'Sarkodie King', agentId: 'AG-ES-009', region: 'Eastern', lastSync: '2026-04-05T16:45:00Z', dataQuality: 94, visitCompliance: 88, corrections: 5, commission: 1100.25, farmers: 32, status: 'Active' },
-                    { id: '4', name: 'Ekow Blankson', agentId: 'AG-CR-102', region: 'Central', lastSync: '2026-04-04T08:20:00Z', dataQuality: 75, visitCompliance: 60, corrections: 18, commission: 450.75, farmers: 15, status: 'At Risk' },
-                ]);
+                setAgents([]);
             }
         } catch (err) {
             console.error('Failed to fetch agents:', err);
@@ -139,10 +136,10 @@ const AgentAccountability = () => {
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
                 {[
-                    { label: 'Avg Quality', value: '88%', icon: ClipboardCheck, color: 'text-[#7ede56]' },
-                    { label: 'Late Syncs', value: '5 Agents', icon: Clock, color: 'text-amber-500' },
-                    { label: 'Total Payout', value: 'GH¢14.2k', icon: Wallet, color: 'text-blue-500' },
-                    { label: 'At Risk', value: '3 Nodes', icon: ShieldAlert, color: 'text-rose-500' },
+                    { label: 'Avg Quality', value: loading ? '...' : (agents.length > 0 ? Math.round(agents.reduce((acc, a) => acc + (a.dataQuality || 0), 0) / agents.length) + '%' : '0%'), icon: ClipboardCheck, color: 'text-[#7ede56]' },
+                    { label: 'Late Syncs', value: loading ? '...' : (agents.length > 0 ? agents.filter(a => getSyncStatus(a.lastSync).label !== 'LIVE').length + ' Agents' : '0 Agents'), icon: Clock, color: 'text-amber-500' },
+                    { label: 'Total Payout', value: loading ? '...' : (agents.length > 0 ? 'GH¢' + (agents.reduce((acc, a) => acc + (a.commission || 0), 0) / 1000).toFixed(1) + 'k' : 'GH¢0.0k'), icon: Wallet, color: 'text-blue-500' },
+                    { label: 'At Risk', value: loading ? '...' : (agents.length > 0 ? agents.filter(a => (a.corrections || 0) > 10).length + ' Nodes' : '0 Nodes'), icon: ShieldAlert, color: 'text-rose-500' },
                 ].map((stat, i) => (
                     <Card key={i} className={`border-none shadow-premium ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white'}`}>
                         <CardContent className="p-5 flex items-center justify-between">
@@ -173,54 +170,62 @@ const AgentAccountability = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                            {filteredAgents.map(agent => {
-                                const sync = getSyncStatus(agent.lastSync);
-                                const SyncIcon = sync.icon;
-                                return (
-                                    <tr key={agent.id} className="hover:bg-[#7ede56]/5 transition-colors group">
-                                        <td className="p-4 border-l-4 border-transparent group-hover:border-[#7ede56]">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm bg-gray-100 dark:bg-gray-800 uppercase`}>
-                                                    {agent.name[0]}
+                            {filteredAgents.length > 0 ? (
+                                filteredAgents.map(agent => {
+                                    const sync = getSyncStatus(agent.lastSync);
+                                    const SyncIcon = sync.icon;
+                                    return (
+                                        <tr key={agent.id} className="hover:bg-[#7ede56]/5 transition-colors group">
+                                            <td className="p-4 border-l-4 border-transparent group-hover:border-[#7ede56]">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm bg-gray-100 dark:bg-gray-800 uppercase`}>
+                                                        {agent.name[0]}
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-black uppercase tracking-tight text-sm">{agent.name}</span>
+                                                        <span className="text-[9px] font-bold text-[#7ede56] uppercase tracking-widest">{agent.agentId} • {agent.region}</span>
+                                                    </div>
                                                 </div>
-                                                <div className="flex flex-col">
-                                                    <span className="font-black uppercase tracking-tight text-sm">{agent.name}</span>
-                                                    <span className="text-[9px] font-bold text-[#7ede56] uppercase tracking-widest">{agent.agentId} â€¢ {agent.region}</span>
+                                            </td>
+                                            <td className="p-4">
+                                                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${sync.color}`}>
+                                                    <SyncIcon className="w-3 h-3" />
+                                                    {sync.label}
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="p-4">
-                                            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${sync.color}`}>
-                                                <SyncIcon className="w-3 h-3" />
-                                                {sync.label}
-                                            </div>
-                                            <p className="text-[8px] font-bold text-gray-400 mt-1 uppercase">Last: {new Date(agent.lastSync).toLocaleString()}</p>
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="flex flex-col items-center gap-1">
-                                                <span className={`text-[11px] font-black ${agent.dataQuality > 90 ? 'text-[#7ede56]' : 'text-amber-500'}`}>{agent.dataQuality}%</span>
-                                                <div className="w-16 h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                                                    <div className={`h-full ${agent.dataQuality > 90 ? 'bg-[#7ede56]' : 'bg-amber-500'}`} style={{ width: `${agent.dataQuality}%` }}></div>
+                                                <p className="text-[8px] font-bold text-gray-400 mt-1 uppercase">Last: {new Date(agent.lastSync).toLocaleString()}</p>
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <span className={`text-[11px] font-black ${agent.dataQuality > 90 ? 'text-[#7ede56]' : 'text-amber-500'}`}>{agent.dataQuality}%</span>
+                                                    <div className="w-16 h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                                        <div className={`h-full ${agent.dataQuality > 90 ? 'bg-[#7ede56]' : 'bg-amber-500'}`} style={{ width: `${agent.dataQuality}%` }}></div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="p-4 text-center">
-                                            <Badge variant="outline" className={`border-none font-black text-[10px] ${agent.corrections > 10 ? 'bg-rose-500/10 text-rose-500' : 'bg-blue-500/10 text-blue-500'}`}>
-                                                {agent.corrections} REJECTS
-                                            </Badge>
-                                        </td>
-                                        <td className="p-4 text-right">
-                                            <span className="font-black text-sm">{formatCurrency(agent.commission)}</span>
-                                            <p className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Approved Submissions</p>
-                                        </td>
-                                        <td className="p-4 text-right space-x-2">
-                                            <Button size="icon" variant="ghost" className="h-9 w-9 text-blue-500 hover:bg-blue-50" onClick={() => { setSelectedAgent(agent); setIsCommissionModalOpen(true); }}><Calculator className="w-4 h-4" /></Button>
-                                            <Button size="icon" variant="ghost" className={`h-9 w-9 text-rose-500 hover:bg-rose-50`} onClick={() => { setSelectedAgent(agent); setIsFlagModalOpen(true); }}><Flag className="w-4 h-4" /></Button>
-                                            <Button size="icon" variant="ghost" className="h-9 w-9 text-gray-400"><History className="w-4 h-4" /></Button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
+                                            </td>
+                                            <td className="p-4 text-center">
+                                                <Badge variant="outline" className={`border-none font-black text-[10px] ${agent.corrections > 10 ? 'bg-rose-500/10 text-rose-500' : 'bg-blue-500/10 text-blue-500'}`}>
+                                                    {agent.corrections} REJECTS
+                                                </Badge>
+                                            </td>
+                                            <td className="p-4 text-right">
+                                                <span className="font-black text-sm">{formatCurrency(agent.commission)}</span>
+                                                <p className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Approved Submissions</p>
+                                            </td>
+                                            <td className="p-4 text-right space-x-2">
+                                                <Button size="icon" variant="ghost" className="h-9 w-9 text-blue-500 hover:bg-blue-50" onClick={() => { setSelectedAgent(agent); setIsCommissionModalOpen(true); }}><Calculator className="w-4 h-4" /></Button>
+                                                <Button size="icon" variant="ghost" className={`h-9 w-9 text-rose-500 hover:bg-rose-50`} onClick={() => { setSelectedAgent(agent); setIsFlagModalOpen(true); }}><Flag className="w-4 h-4" /></Button>
+                                                <Button size="icon" variant="ghost" className="h-9 w-9 text-gray-400"><History className="w-4 h-4" /></Button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            ) : (
+                                <tr>
+                                    <td colSpan={6} className="p-8 text-center text-xs font-black uppercase text-gray-400">
+                                        No active agent accounts registered.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </CardContent>
@@ -313,9 +318,5 @@ const AgentAccountability = () => {
         </div>
     );
 };
-
-// Generic placeholder icons not imported
-const Sprout = (props: any) => <Activity {...props} />;
-const BookOpen = (props: any) => <FileText {...props} />;
 
 export default AgentAccountability;

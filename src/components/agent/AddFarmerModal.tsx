@@ -429,7 +429,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                     <button
                                         key={s.id}
                                         onClick={() => setStep(s.id)}
-                                        className={`w-full flex items-center gap-4 py-4 px-6 rounded-2xl transition-all ${isActive ? 'bg-[#002f37]/5 text-[#002f37]' : 'text-gray-400 hover:bg-gray-50'}`}
+                                        className={`w-full flex items-center gap-4 py-4 px-6 rounded-none transition-all ${isActive ? 'bg-[#002f37]/5 text-[#002f37]' : 'text-gray-400 hover:bg-gray-50'}`}
                                     >
                                         <div className={`h-10 w-10 shrink-0 rounded-full flex items-center justify-center font-black text-sm transition-colors ${isActive ? 'bg-[#002f37] text-white shadow-md' : isDone ? 'bg-[#7ede56] text-[#002f37]' : 'bg-gray-100 text-gray-400'}`}>
                                             {isDone ? <CheckCircle2 className="h-5 w-5" /> : s.id}
@@ -497,8 +497,8 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                 {step === 1 && (
                                     <div className="step-wrapper">
                                         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-400">
-                                            <div className="bg-[#002f37] text-white px-6 py-4 rounded-t-3xl flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
+                                            <div className="bg-[#002f37] text-white px-6 py-4 rounded-none flex items-center gap-3">
+                                                <div className="h-8 w-8 rounded-none bg-white/10 flex items-center justify-center border border-white/20">
                                                     <User className="h-5 w-5 text-[#7ede56]" />
                                                 </div>
                                                 <div>
@@ -506,7 +506,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                     <p className="text-[10px] font-bold text-white/50 uppercase tracking-tighter">Bio & Personal Identification</p>
                                                 </div>
                                             </div>
-                                            <div className="bg-white border border-gray-200 border-t-0 p-6 md:p-10 rounded-b-3xl shadow-sm">
+                                            <div className="bg-white border border-gray-200 border-t-0 p-6 md:p-10 rounded-none shadow-sm">
                                                 <div className="flex flex-col items-center mb-8 pb-8 border-b border-gray-100">
                                                     <Label className="text-[11px] font-black uppercase text-[#002f37]/60 tracking-widest mb-4">Profile Photo</Label>
                                                     <label className={`relative cursor-pointer group ${!isEditable ? 'pointer-events-none' : ''}`}>
@@ -588,8 +588,8 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                 {step === 2 && (
                                     <div className="step-wrapper">
                                         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-400">
-                                            <div className="bg-[#002f37] text-white px-6 py-4 rounded-t-3xl flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
+                                            <div className="bg-[#002f37] text-white px-6 py-4 rounded-none flex items-center gap-3">
+                                                <div className="h-8 w-8 rounded-none bg-white/10 flex items-center justify-center border border-white/20">
                                                     <Sprout className="h-5 w-5 text-[#7ede56]" />
                                                 </div>
                                                 <div>
@@ -597,7 +597,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                     <p className="text-[10px] font-bold text-white/50 uppercase tracking-tighter">Asset & Farm Location Details</p>
                                                 </div>
                                             </div>
-                                            <div className="bg-white border border-gray-200 border-t-0 p-6 md:p-10 rounded-b-3xl shadow-sm space-y-8">
+                                            <div className="bg-white border border-gray-200 border-t-0 p-6 md:p-10 rounded-none shadow-sm space-y-8">
                                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
                                                     <div className="space-y-2">
                                                         <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Region</Label>
@@ -686,7 +686,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                     </div>
                                                 )}
 
-                                                <div className="relative rounded-3xl overflow-hidden border-2 border-gray-100 h-[380px]">
+                                                <div className="relative rounded-none overflow-hidden border-2 border-gray-100 h-[380px]">
                                                     <div className="absolute top-4 left-4 z-10 px-4 py-2 bg-white/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 flex items-center gap-3">
                                                         <div className="h-7 w-7 rounded-lg bg-[#002f37] flex items-center justify-center text-[#7ede56]">
                                                             <MapPin className="h-4 w-4" />
@@ -720,8 +720,8 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                 {step === 3 && (
                                     <div className="step-wrapper">
                                         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-400">
-                                            <div className="bg-[#002f37] text-white px-6 py-4 rounded-t-3xl flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
+                                            <div className="bg-[#002f37] text-white px-6 py-4 rounded-none flex items-center gap-3">
+                                                <div className="h-8 w-8 rounded-none bg-white/10 flex items-center justify-center border border-white/20">
                                                     <Coins className="h-5 w-5 text-[#7ede56]" />
                                                 </div>
                                                 <div>
@@ -729,7 +729,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                     <p className="text-[10px] font-bold text-white/50 uppercase tracking-tighter">Financial & Strategic Analysis</p>
                                                 </div>
                                             </div>
-                                            <div className="bg-white border border-gray-200 border-t-0 p-6 md:p-10 rounded-b-3xl shadow-sm space-y-10">
+                                            <div className="bg-white border border-gray-200 border-t-0 p-6 md:p-10 rounded-none shadow-sm space-y-10">
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-10">
                                                     <div className="space-y-4">
                                                         <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Investment Interest</Label>
@@ -774,7 +774,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                     </div>
                                                 </div>
 
-                                                <div className="p-8 bg-gray-50 rounded-3xl border border-gray-100">
+                                                <div className="p-8 bg-gray-50 rounded-none border border-gray-100">
                                                     <div className="flex items-center justify-between mb-6">
                                                         <div>
                                                             <h4 className="text-sm font-black text-[#002f37] uppercase tracking-tight">Market Readiness Index</h4>

@@ -8,21 +8,21 @@ const seedSuperAdmin = async () => {
         await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/agrilync');
         console.log('MongoDB Connected');
 
-        const newEmail = 'superadmin@gmail.com';
-        const newPassword = 'Superadmin12345';
+        const newEmail = 'amusahcongo@gmail.com';
+        const newPassword = 'Musah@superadmin12345';
 
         // Check if ANY super admin exists or check for the old one to update
-        let superAdmin = await Agent.findOne({ role: 'super_admin' });
+        let superAdmin = await Agent.findOne({ email: newEmail });
 
         if (superAdmin) {
-            console.log(`Found existing Super Admin (${superAdmin.email}). Updating credentials...`);
-            superAdmin.email = newEmail;
+            console.log(`Found existing user (${superAdmin.email}). Updating credentials and role...`);
             superAdmin.password = newPassword;
+            superAdmin.role = 'super_admin';
             // Mongoose will key off the modification and the pre-save hook will hash it
         } else {
             console.log('Creating new Super Admin...');
             superAdmin = new Agent({
-                name: 'Super Admin',
+                name: 'Congo Musah',
                 email: newEmail,
                 password: newPassword,
                 agentId: 'SA-001',
@@ -36,6 +36,9 @@ const seedSuperAdmin = async () => {
         }
 
         await superAdmin.save();
+
+        // Also clean up any generic 'superadmin@gmail.com' to prevent confusion
+        await Agent.deleteOne({ email: 'superadmin@gmail.com' });
 
         console.log('Super Admin Credentials Updated Successfully');
         console.log(`Email: ${newEmail}`);

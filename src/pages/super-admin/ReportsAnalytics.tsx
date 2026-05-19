@@ -26,7 +26,9 @@ import {
     Filter,
     Activity,
     LineChart as LineChartIcon,
-    Box
+    Box,
+    ShieldCheck,
+    CheckCircle2
 } from 'lucide-react';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import CountUp from '@/components/CountUp';
@@ -55,6 +57,7 @@ import {
     Pie
 } from 'recharts';
 import { toast } from 'sonner';
+import api from '@/utils/api';
 
 const ReportsAnalytics = () => {
     const { darkMode } = useDarkMode();
@@ -63,17 +66,26 @@ const ReportsAnalytics = () => {
     const [selectedReport, setSelectedReport] = useState<any>(null);
     const [generating, setGenerating] = useState(false);
 
-    const reports = [
-        { id: 'R1', name: 'Operational Pulse Report', desc: 'Real-time agent productivity and field active thresholds.', format: ['PDF', 'Excel'], lastGenerated: '2 hours ago', data: [{ date: '04/01', val: 450 }, { date: '04/02', val: 520 }, { date: '04/03', val: 480 }, { date: '04/04', val: 610 }] },
-        { id: 'R2', name: 'Regional Yield Matrix', desc: 'Deep dive into target fulfillment vs actual yields across all core hubs.', format: ['PDF', 'Excel', 'CSV'], lastGenerated: '1 day ago', data: [{ name: 'Ashanti', val: 850 }, { name: 'Western', val: 920 }, { name: 'Volta', val: 410 }, { name: 'Northern', val: 680 }] },
-        { id: 'R3', name: 'Asset Vitality Audit', desc: 'Longitudinal health forensics for all registered farm plots.', format: ['PDF', 'CSV'], lastGenerated: '3 days ago' },
-        { id: 'R4', name: 'Strategic Compliance Ledger', desc: 'Full audit logs of policy overrides and security triggers.', format: ['PDF', 'Excel'], lastGenerated: '12 hours ago' },
-    ];
+    const [reports, setReports] = React.useState<any[]>([]);
+    const [sysActivityData, setSysActivityData] = React.useState<any[]>([]);
+    const [loading, setLoading] = React.useState(true);
 
-    const sysActivityData = [
-        { time: '00:00', load: 20 }, { time: '04:00', load: 15 }, { time: '08:00', load: 65 },
-        { time: '12:00', load: 85 }, { time: '16:00', load: 95 }, { time: '20:00', load: 55 },
-    ];
+    React.useEffect(() => {
+        const fetchReports = async () => {
+            try {
+                const res = await api.get('/super-admin/reports');
+                if (res.data) {
+                    setReports(res.data.reports || []);
+                    setSysActivityData(res.data.sysActivityData || []);
+                }
+            } catch (err) {
+                console.error('Failed to fetch reports analytics:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchReports();
+    }, []);
 
     const handleGenerate = (report: any) => {
         setSelectedReport(report);
@@ -201,7 +213,7 @@ const ReportsAnalytics = () => {
                                         </div>
                                     </div>
                                     <div className="flex gap-2">
-                                        {report.format.map(f => (
+                                        {report.format?.map((f: string) => (
                                             <Button 
                                                 key={f} 
                                                 onClick={() => handleGenerate(report)}
@@ -307,9 +319,5 @@ const ReportsAnalytics = () => {
         </div>
     );
 };
-
-// Generic placeholder icons not imported correctly
-const ShieldCheck = (props: any) => <Activity {...props} />;
-const CheckCircle2 = (props: any) => <Activity {...props} />;
 
 export default ReportsAnalytics;

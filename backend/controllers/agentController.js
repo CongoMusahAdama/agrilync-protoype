@@ -311,13 +311,18 @@ exports.getPerformance = async (req, res) => {
         const atRisk = allFarmers.filter(f => f.status === 'pending').length;
         const offTrack = allFarmers.filter(f => f.status === 'inactive').length;
 
+        const femaleCount = allFarmers.filter(f => f.gender?.toLowerCase() === 'female').length;
+        const maleCount = allFarmers.filter(f => f.gender?.toLowerCase() === 'male').length;
+
         // ── KPI scorecard via service ───────────────────────────────────────
         const kpis = performanceService.calculateKpis({
             totalFarmers,
             activeFarmers,
             verifiedFarmers,
             avgVisitsPerFarmer,
-            syncRate
+            syncRate,
+            femaleCount,
+            maleCount
         });
 
         const kpisOnTarget = kpis.filter(k => k.status === 'On Track').length;

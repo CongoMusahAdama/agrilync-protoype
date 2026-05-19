@@ -176,7 +176,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl w-[95vw] p-0 overflow-hidden flex flex-col h-[75vh] border-none bg-white dark:bg-[#002f37] rounded-2xl shadow-2xl">
+            <DialogContent className="max-w-4xl w-[95vw] p-0 overflow-hidden flex flex-col h-[75vh] border-none bg-white dark:bg-[#002f37] rounded-none shadow-2xl">
                 <DialogTitle className="sr-only">Schedule Field Visit</DialogTitle>
                 <DialogDescription className="sr-only">Log a new field visit for inspection or support.</DialogDescription>
 

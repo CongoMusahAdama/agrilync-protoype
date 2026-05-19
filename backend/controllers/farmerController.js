@@ -13,15 +13,32 @@ exports.getFarmers = async (req, res) => {
         const limit = parseInt(req.query.limit) || 20;
         const skip = (page - 1) * limit;
 
+        const mongoose = require('mongoose');
+        const agentId = req.agent._id || req.agent.id;
+        const region = req.agent.region || '';
+        
+        // Normalize region for searching (e.g. "Ashanti" matches "Ashanti Region")
+        const regionRegex = new RegExp(region.replace(' Region', '').trim(), 'i');
+
+        const query = { 
+            $or: [
+                { agent: agentId },
+                { region: { $regex: regionRegex } },
+                { agent: mongoose.isValidObjectId(agentId) ? new mongoose.Types.ObjectId(agentId) : agentId }
+            ]
+        };
+
         const [farmers, total] = await Promise.all([
-            Farmer.find({ agent: req.agent.id, region: req.agent.region })
+            Farmer.find(query)
                 .select('name id status region district community farmType contact createdAt ghanaCardNumber profilePicture investmentStatus')
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
                 .lean(),
-            Farmer.countDocuments({ agent: req.agent.id, region: req.agent.region })
+            Farmer.countDocuments(query)
         ]);
+
+        console.log(`[GET_FARMERS] Agent: ${agentId}, Region: ${region}, Found: ${farmers.length}/${total}`);
 
         res.json({
             success: true,

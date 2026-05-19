@@ -7,7 +7,6 @@ import { isLocalhost } from '@/utils/env';
 const PrivateRoute = () => {
     const { agent, loading, token } = useAuth();
     const location = useLocation();
-    const isDev = isLocalhost();
 
     // Auth is required for all environments including localhost
 
@@ -19,12 +18,10 @@ const PrivateRoute = () => {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    /*
     // If agent hasn't changed their password, redirect to change password page
     if (agent && !agent.hasChangedPassword && location.pathname !== '/dashboard/agent/change-password') {
         return <Navigate to="/dashboard/agent/change-password" replace />;
     }
-    */
 
     return <Outlet />;
 };

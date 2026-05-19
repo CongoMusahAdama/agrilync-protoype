@@ -53,7 +53,19 @@ import { toast } from 'sonner';
 const Overview = () => {
     const { darkMode } = useDarkMode();
     const navigate = useNavigate();
-    const [stats, setStats] = useState<any>(null);
+    const [stats, setStats] = useState<any>({
+        totalAgents: 0,
+        totalFarmers: 0,
+        totalRegions: 0,
+        activePartnerships: 0,
+        farmersVerifiedThisWeek: 0,
+        regionalDistribution: [],
+        farmHealth: { onTrack: 0, atRisk: 0, offTrack: 0 },
+        topPerformers: [],
+        lowEngagement: [],
+        pendingKYCList: [],
+        criticalAlertsList: []
+    });
     const [loading, setLoading] = useState(true);
     const [drawerType, setDrawerType] = useState<string | null>(null);
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -67,37 +79,43 @@ const Overview = () => {
         const fetchStats = async () => {
             try {
                 const res = await api.get('/super-admin/stats');
-                setStats(res.data);
+                if (res.data) {
+                    setStats(res.data);
+                }
             } catch (err) {
                 console.error('Failed to fetch stats:', err);
-                // Fallback mock data
                 setStats({
-                    totalAgents: 58,
-                    totalFarmers: 3240,
-                    totalRegions: 12,
-                    activePartnerships: 24,
-                    farmersVerifiedThisWeek: 156,
-                    regionalDistribution: [
-                        { name: 'Greater Accra', value: 850, activeAgents: 12, status: 'on-track' },
-                        { name: 'Ashanti', value: 720, activeAgents: 15, status: 'at-risk' },
-                        { name: 'Western', value: 540, activeAgents: 8, status: 'on-track' },
-                        { name: 'Eastern', value: 480, activeAgents: 9, status: 'off-track' },
-                        { name: 'Northern', value: 390, activeAgents: 6, status: 'on-track' },
-                        { name: 'Volta', value: 260, activeAgents: 4, status: 'on-track' },
-                    ]
+                    totalAgents: 0,
+                    totalFarmers: 0,
+                    totalRegions: 0,
+                    activePartnerships: 0,
+                    farmersVerifiedThisWeek: 0,
+                    regionalDistribution: [],
+                    farmHealth: { onTrack: 0, atRisk: 0, offTrack: 0 },
+                    topPerformers: [],
+                    lowEngagement: [],
+                    pendingKYCList: [],
+                    criticalAlertsList: []
                 });
             } finally {
                 setLoading(false);
             }
         };
+
+        // Initial fetch
         fetchStats();
+
+        // Real-time synchronization polling every 10 seconds
+        const syncInterval = setInterval(fetchStats, 10000);
+
+        return () => clearInterval(syncInterval);
     }, []);
 
     const alerts = [
         {
             type: 'verifications',
             title: 'Pending Verifications',
-            count: 24,
+            count: stats?.pendingVerificationsCount || 0,
             icon: UserCheck,
             color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
             pulseColor: 'shadow-amber-500/20',
@@ -106,7 +124,7 @@ const Overview = () => {
         {
             type: 'inactive-agents',
             title: 'Inactive Agents',
-            count: 5,
+            count: stats?.inactiveAgentsCount || 0,
             icon: Wifi,
             color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400',
             pulseColor: 'shadow-orange-500/20',
@@ -115,7 +133,7 @@ const Overview = () => {
         {
             type: 'escalations',
             title: 'Critical Escalations',
-            count: 12,
+            count: stats?.criticalEscalationsCount || 0,
             icon: ShieldAlert,
             color: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
             description: 'Immediate resolution required'
@@ -123,25 +141,25 @@ const Overview = () => {
     ];
 
     const healthStats = [
-        { label: 'Active Logins', value: '428', icon: Users, color: 'text-[#7ede56]' },
-        { label: 'Failed Logins', value: '12', icon: ShieldAlert, color: 'text-rose-500' },
-        { label: 'Primary Workstation', value: 'Android / Mobile', icon: Smartphone, color: 'text-blue-500' },
-        { label: 'System Concurrency', value: '94%', icon: Activity, color: 'text-purple-500' },
+        { label: 'Active Logins', value: stats?.activeLogins || '0', icon: Users, color: 'text-[#7ede56]' },
+        { label: 'Failed Logins', value: stats?.failedLogins || '0', icon: ShieldAlert, color: 'text-rose-500' },
+        { label: 'Primary Workstation', value: stats?.primaryWorkstation || 'Android / Mobile', icon: Smartphone, color: 'text-blue-500' },
+        { label: 'System Concurrency', value: stats?.systemConcurrency || '0%', icon: Activity, color: 'text-purple-500' },
     ];
 
     const statCards = [
-        { title: 'Total Agents', value: '58', subtitle: 'Field Staff', icon: Users, color: 'bg-blue-600', path: '/dashboard/super-admin/agents' },
-        { title: 'Total Farmers', value: '3,240', subtitle: 'Active Producers', icon: Sprout, color: 'bg-[#4f46e5]', path: '/dashboard/super-admin/oversight' },
-        { title: 'Active Regions', value: '12', subtitle: 'Regions Covered', icon: Globe, color: 'bg-teal-600', path: '/dashboard/super-admin/regions' },
-        { title: 'Pending Approvals', value: '35', subtitle: 'Across verifications & escalations', icon: Clock, color: 'bg-amber-500', path: '/dashboard/super-admin/escalations' },
-        { title: 'At-Risk Farms', value: '23', subtitle: 'Require immediate follow-up', icon: AlertTriangle, color: 'bg-red-600', path: '/dashboard/super-admin/oversight' },
-        { title: 'Scheduled Training', value: '47', subtitle: 'Agent-led field sessions', icon: BookOpen, color: 'bg-[#002f37]', path: '/dashboard/super-admin/agents' },
+        { title: 'Total Agents', value: stats?.totalAgents || '0', subtitle: 'Field Staff', icon: Users, color: 'bg-blue-600', path: '/dashboard/super-admin/agents' },
+        { title: 'Total Farmers', value: stats?.totalFarmers?.toLocaleString() || '0', subtitle: 'Active Producers', icon: Sprout, color: 'bg-[#4f46e5]', path: '/dashboard/super-admin/oversight' },
+        { title: 'Active Regions', value: stats?.totalRegions || '0', subtitle: 'Regions Covered', icon: Globe, color: 'bg-teal-600', path: '/dashboard/super-admin/regions' },
+        { title: 'Pending Approvals', value: stats?.pendingApprovals || '0', subtitle: 'Across verifications & escalations', icon: Clock, color: 'bg-amber-500', path: '/dashboard/super-admin/escalations' },
+        { title: 'At-Risk Farms', value: stats?.atRiskFarms || '0', subtitle: 'Require immediate follow-up', icon: AlertTriangle, color: 'bg-red-600', path: '/dashboard/super-admin/oversight' },
+        { title: 'Scheduled Training', value: stats?.scheduledTraining || '0', subtitle: 'Agent-led field sessions', icon: BookOpen, color: 'bg-[#002f37]', path: '/dashboard/super-admin/agents' },
     ];
 
     const farmHealthData = [
-        { name: 'On Track', value: 47, color: '#7ede56' },
-        { name: 'At Risk', value: 23, color: '#f59e0b' },
-        { name: 'Off Track', value: 8, color: '#f43f5e' },
+        { name: 'On Track', value: stats?.farmHealth?.onTrack || 0, color: '#7ede56' },
+        { name: 'At Risk', value: stats?.farmHealth?.atRisk || 0, color: '#f59e0b' },
+        { name: 'Off Track', value: stats?.farmHealth?.offTrack || 0, color: '#f43f5e' },
     ];
 
     const handleQuickAction = (type: string) => {
@@ -428,40 +446,44 @@ const Overview = () => {
                         </CardHeader>
                         <CardContent className="pt-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                             <div className="space-y-6">
-                                {stats?.regionalDistribution?.slice(0, 3).map((region: any, idx: number) => (
-                                    <div key={idx} className="space-y-2 group">
+                                {stats?.regionalDistribution?.slice(0, 4).map((region: any, idx: number) => (
+                                    <div key={idx} className={`space-y-2 group ${region.status === 'inactive' ? 'opacity-50' : ''}`}>
                                         <div className="flex justify-between items-end">
                                             <div className="flex items-center gap-2">
-                                                <div className={`w-2 h-2 rounded-full ${region.status === 'on-track' ? 'bg-[#7ede56]' : region.status === 'at-risk' ? 'bg-amber-500' : 'bg-rose-500'} animate-pulse`} />
-                                                <span className="text-[11px] font-black uppercase tracking-widest text-[#002f37] dark:text-white group-hover:text-[#7ede56] transition-colors">{region.name}</span>
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter ml-2">({region.activeAgents} Agents Active)</span>
+                                                <div className={`w-2 h-2 rounded-full ${region.status === 'inactive' ? 'bg-gray-400 dark:bg-gray-600' : region.status === 'on-track' ? 'bg-[#7ede56]' : region.status === 'at-risk' ? 'bg-amber-500' : 'bg-rose-500'} ${region.status !== 'inactive' ? 'animate-pulse' : ''}`} />
+                                                <span className={`text-[11px] font-black uppercase tracking-widest ${region.status === 'inactive' ? 'text-gray-400 dark:text-gray-500' : 'text-[#002f37] dark:text-white group-hover:text-[#7ede56]'} transition-colors`}>{region.name}</span>
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter ml-2">
+                                                    {region.status === 'inactive' ? '(Non-Operational)' : `(${region.activeAgents} Agents Active)`}
+                                                </span>
                                             </div>
-                                            <span className="text-[11px] font-black text-[#002f37] dark:text-white">{region.value} UNITS</span>
+                                            <span className={`text-[11px] font-black ${region.status === 'inactive' ? 'text-gray-400 dark:text-gray-500' : 'text-[#002f37] dark:text-white'}`}>{region.status === 'inactive' ? '-' : `${region.value} UNITS`}</span>
                                         </div>
                                         <div className="h-4 w-full bg-gray-50 dark:bg-white/5 rounded-full overflow-hidden shadow-inner flex items-center p-0.5">
                                             <div 
-                                                className={`h-full rounded-full bg-gradient-to-r from-[#002f37] to-[#7ede56] transition-all duration-1000`}
-                                                style={{ width: `${Math.min((region.value / 1000) * 100, 100)}%` }}
+                                                className={`h-full rounded-full transition-all duration-1000 ${region.status === 'inactive' ? 'bg-gray-200 dark:bg-gray-800' : 'bg-gradient-to-r from-[#002f37] to-[#7ede56]'}`}
+                                                style={{ width: `${region.status === 'inactive' ? '0%' : Math.min((region.value / 1000) * 100, 100)}%` }}
                                             />
                                         </div>
                                     </div>
                                 ))}
                             </div>
                             <div className="space-y-6">
-                                {stats?.regionalDistribution?.slice(3, 6).map((region: any, idx: number) => (
-                                    <div key={idx} className="space-y-2 group">
+                                {stats?.regionalDistribution?.slice(4, 8).map((region: any, idx: number) => (
+                                    <div key={idx} className={`space-y-2 group ${region.status === 'inactive' ? 'opacity-50' : ''}`}>
                                         <div className="flex justify-between items-end">
                                             <div className="flex items-center gap-2">
-                                                <div className={`w-2 h-2 rounded-full ${region.status === 'on-track' ? 'bg-[#7ede56]' : region.status === 'at-risk' ? 'bg-amber-500' : 'bg-rose-500'} animate-pulse`} />
-                                                <span className="text-[11px] font-black uppercase tracking-widest text-[#002f37] dark:text-white group-hover:text-[#7ede56] transition-colors">{region.name}</span>
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter ml-2">({region.activeAgents} Agents Active)</span>
+                                                <div className={`w-2 h-2 rounded-full ${region.status === 'inactive' ? 'bg-gray-400 dark:bg-gray-600' : region.status === 'on-track' ? 'bg-[#7ede56]' : region.status === 'at-risk' ? 'bg-amber-500' : 'bg-rose-500'} ${region.status !== 'inactive' ? 'animate-pulse' : ''}`} />
+                                                <span className={`text-[11px] font-black uppercase tracking-widest ${region.status === 'inactive' ? 'text-gray-400 dark:text-gray-500' : 'text-[#002f37] dark:text-white group-hover:text-[#7ede56]'} transition-colors`}>{region.name}</span>
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter ml-2">
+                                                    {region.status === 'inactive' ? '(Non-Operational)' : `(${region.activeAgents} Agents Active)`}
+                                                </span>
                                             </div>
-                                            <span className="text-[11px] font-black text-[#002f37] dark:text-white">{region.value} UNITS</span>
+                                            <span className={`text-[11px] font-black ${region.status === 'inactive' ? 'text-gray-400 dark:text-gray-500' : 'text-[#002f37] dark:text-white'}`}>{region.status === 'inactive' ? '-' : `${region.value} UNITS`}</span>
                                         </div>
                                         <div className="h-4 w-full bg-gray-50 dark:bg-white/5 rounded-full overflow-hidden shadow-inner flex items-center p-0.5">
                                             <div 
-                                                className={`h-full rounded-full bg-gradient-to-r from-[#002f37] to-[#7ede56] transition-all duration-1000`}
-                                                style={{ width: `${Math.min((region.value / 1000) * 100, 100)}%` }}
+                                                className={`h-full rounded-full transition-all duration-1000 ${region.status === 'inactive' ? 'bg-gray-200 dark:bg-gray-800' : 'bg-gradient-to-r from-[#002f37] to-[#7ede56]'}`}
+                                                style={{ width: `${region.status === 'inactive' ? '0%' : Math.min((region.value / 1000) * 100, 100)}%` }}
                                             />
                                         </div>
                                     </div>
@@ -496,59 +518,65 @@ const Overview = () => {
                                     {/* Verifications Section */}
                                     <div className="space-y-4">
                                         <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] flex items-center gap-2">
-                                            <div className="h-1.5 w-1.5 rounded-full bg-amber-500"></div> Farmer KYC (5)
+                                            <div className="h-1.5 w-1.5 rounded-full bg-amber-500"></div> Farmer KYC ({stats?.pendingKYCList?.length || 0})
                                         </h4>
-                                        {[
-                                            { name: 'Kofi Owusu', region: 'Western', agent: 'Sarkodie', time: '2h ago' },
-                                            { name: 'Efua Mensah', region: 'Central', agent: 'Ekow', time: '5h ago' },
-                                        ].map((item, i) => (
-                                            <div key={i} className="bg-white dark:bg-gray-900 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 space-y-4 group hover:border-amber-500/30 transition-colors">
-                                                <div className="flex justify-between items-start">
-                                                    <div>
-                                                        <h5 className="text-sm font-black uppercase">{item.name}</h5>
-                                                        <p className="text-[9px] font-bold text-gray-500 uppercase">{item.region} • Field Agent: {item.agent}</p>
+                                        {stats?.pendingKYCList && stats.pendingKYCList.length > 0 ? (
+                                            stats.pendingKYCList.map((item: any, i: number) => (
+                                                <div key={i} className="bg-white dark:bg-gray-900 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 space-y-4 group hover:border-amber-500/30 transition-colors">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <h5 className="text-sm font-black uppercase">{item.name}</h5>
+                                                            <p className="text-[9px] font-bold text-gray-500 uppercase">{item.region} • Field Agent: {item.agent}</p>
+                                                        </div>
+                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{item.time}</span>
                                                     </div>
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{item.time}</span>
+                                                    <div className="flex gap-2">
+                                                        <Button size="sm" className="flex-1 bg-[#7ede56] text-[#002f37] hover:bg-[#6bcb4b] font-black text-[9px] h-10 rounded-xl" onClick={() => toast.success(`Farmer ${item.name} verified.`)}>Approve ✓</Button>
+                                                        <Button variant="outline" size="sm" className="flex-1 text-rose-500 border-rose-100 font-black text-[9px] h-10 rounded-xl">Reject ✗</Button>
+                                                    </div>
                                                 </div>
-                                                <div className="flex gap-2">
-                                                    <Button size="sm" className="flex-1 bg-[#7ede56] text-[#002f37] hover:bg-[#6bcb4b] font-black text-[9px] h-10 rounded-xl" onClick={() => toast.success(`Farmer ${item.name} verified.`)}>Approve ✓</Button>
-                                                    <Button variant="outline" size="sm" className="flex-1 text-rose-500 border-rose-100 font-black text-[9px] h-10 rounded-xl">Reject ✗</Button>
-                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="bg-white dark:bg-gray-900 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 text-center text-[10px] font-bold text-gray-450 uppercase tracking-wider py-8">
+                                                No pending farmer KYC approvals.
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
-
+ 
                                     {/* Escalations Section */}
                                     <div className="space-y-4">
                                         <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] flex items-center gap-2">
-                                            <div className="h-1.5 w-1.5 rounded-full bg-rose-500"></div> Critical Alerts (3)
+                                            <div className="h-1.5 w-1.5 rounded-full bg-rose-500"></div> Critical Alerts ({stats?.criticalAlertsList?.length || 0})
                                         </h4>
-                                        {[
-                                            { title: 'Payment Delay - Ashanti', priority: 'Critical', by: 'Agent Sarkodie' },
-                                            { title: 'Data Missing - Western', priority: 'High', by: 'Agent Janet' },
-                                        ].map((item, i) => (
-                                            <div key={i} className="bg-white dark:bg-gray-900 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-4 group">
-                                                <div className="flex justify-between items-start gap-4">
-                                                    <div>
-                                                        <Badge className={`${item.priority === 'Critical' ? 'bg-red-500' : 'bg-amber-500'} text-white font-black text-[7.5px] mb-2 leading-none h-4 tracking-widest`}>{item.priority.toUpperCase()}</Badge>
-                                                        <h5 className="text-sm font-black uppercase leading-tight">{item.title}</h5>
-                                                        <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Logged by {item.by}</p>
+                                        {stats?.criticalAlertsList && stats.criticalAlertsList.length > 0 ? (
+                                            stats.criticalAlertsList.map((item: any, i: number) => (
+                                                <div key={i} className="bg-white dark:bg-gray-900 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-4 group">
+                                                    <div className="flex justify-between items-start gap-4">
+                                                        <div>
+                                                            <Badge className={`${item.priority === 'Critical' ? 'bg-red-500' : 'bg-amber-500'} text-white font-black text-[7.5px] mb-2 leading-none h-4 tracking-widest`}>{item.priority.toUpperCase()}</Badge>
+                                                            <h5 className="text-sm font-black uppercase leading-tight">{item.title}</h5>
+                                                            <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Logged by {item.by}</p>
+                                                        </div>
+                                                        <Button size="icon" variant="ghost" className="h-10 w-10 text-[#002f37] dark:text-[#7ede56] border border-gray-100 dark:border-gray-800 rounded-xl"><ArrowUpRight className="w-5 h-5" /></Button>
                                                     </div>
-                                                    <Button size="icon" variant="ghost" className="h-10 w-10 text-[#002f37] dark:text-[#7ede56] border border-gray-100 dark:border-gray-800 rounded-xl"><ArrowUpRight className="w-5 h-5" /></Button>
+                                                    <Button size="sm" className="w-full bg-[#002f37] text-white font-black text-[10px] h-11 rounded-xl shadow-lg">Assign Resolution</Button>
                                                 </div>
-                                                <Button size="sm" className="w-full bg-[#002f37] text-white font-black text-[10px] h-11 rounded-xl shadow-lg">Assign Resolution</Button>
+                                            ))
+                                        ) : (
+                                            <div className="bg-white dark:bg-gray-900 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 text-center text-[10px] font-bold text-gray-450 uppercase tracking-wider py-8">
+                                                No critical alerts reported.
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
-
+ 
                                     {/* System Tasks Section */}
                                     <div className="space-y-4">
                                         <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] flex items-center gap-2">
-                                            <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div> Audit Tasks (3)
+                                            <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div> Audit Tasks ({stats?.pendingAuditCount || 0})
                                         </h4>
                                         <Card className="bg-[#002f37] text-white p-6 rounded-2xl border-none">
                                             <h4 className="text-xs font-black uppercase tracking-widest mb-4">Pending Audit Pool</h4>
-                                            <p className="text-[10px] font-medium text-white/60 mb-6 leading-relaxed uppercase">3 agents have not synced missions in the last 48 hours. Batch audit recommended.</p>
+                                            <p className="text-[10px] font-medium text-white/60 mb-6 leading-relaxed uppercase">{stats?.pendingAuditCount || 0} agents have not synced missions in the last 48 hours. Batch audit recommended.</p>
                                             <Button className="w-full bg-[#7ede56] text-[#002f37] font-black text-[10px] uppercase h-12 rounded-xl">Initialize Audit</Button>
                                         </Card>
                                     </div>
@@ -636,35 +664,37 @@ const Overview = () => {
                                                 <p className="text-[10px] font-black text-[#7ede56] uppercase tracking-[0.3em] flex items-center gap-2">
                                                     <div className="h-1 w-3 bg-[#7ede56] rounded-full"></div> Top Perforners
                                                 </p>
-                                                {[
-                                                    { name: 'Sarkodie King', val: '98%', rank: 'ELITE' },
-                                                    { name: 'Janet Osei', val: '94%', rank: 'ELITE' },
-                                                ].map((a, i) => (
-                                                    <div key={i} className="flex justify-between items-end border-b border-gray-50 dark:border-white/5 pb-2">
-                                                        <div>
-                                                            <p className="text-xs font-black uppercase leading-none">{a.name}</p>
-                                                            <p className="text-[8px] font-bold text-[#7ede56] uppercase mt-1 tracking-widest">{a.rank}</p>
+                                                {stats?.topPerformers && stats.topPerformers.length > 0 ? (
+                                                    stats.topPerformers.map((a: any, i: number) => (
+                                                        <div key={i} className="flex justify-between items-end border-b border-gray-50 dark:border-white/5 pb-2">
+                                                            <div>
+                                                                <p className="text-xs font-black uppercase leading-none">{a.name}</p>
+                                                                <p className="text-[8px] font-bold text-[#7ede56] uppercase mt-1 tracking-widest">{a.rank}</p>
+                                                            </div>
+                                                            <p className="text-lg font-black tracking-tighter text-[#7ede56]">{a.val}</p>
                                                         </div>
-                                                        <p className="text-lg font-black tracking-tighter text-[#7ede56]">{a.val}</p>
-                                                    </div>
-                                                ))}
+                                                    ))
+                                                ) : (
+                                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tight italic">No high-performing agent records registered.</p>
+                                                )}
                                             </div>
                                             <div className="space-y-6">
                                                 <p className="text-[10px] font-black text-rose-500 uppercase tracking-[0.3em] flex items-center gap-2">
                                                     <div className="h-1 w-3 bg-rose-500 rounded-full"></div> Low Engagement
                                                 </p>
-                                                {[
-                                                    { name: 'Francis Lamptey', val: '40%', status: 'INACTIVE' },
-                                                    { name: 'Adama Musah', val: '52%', status: 'LAGGING' },
-                                                ].map((a, i) => (
-                                                    <div key={i} className="flex justify-between items-end border-b border-gray-50 dark:border-white/5 pb-2">
-                                                        <div>
-                                                            <p className="text-xs font-black uppercase leading-none">{a.name}</p>
-                                                            <p className="text-[8px] font-bold text-rose-400 uppercase mt-1 tracking-widest">{a.status}</p>
+                                                {stats?.lowEngagement && stats.lowEngagement.length > 0 ? (
+                                                    stats.lowEngagement.map((a: any, i: number) => (
+                                                        <div key={i} className="flex justify-between items-end border-b border-gray-50 dark:border-white/5 pb-2">
+                                                            <div>
+                                                                <p className="text-xs font-black uppercase leading-none">{a.name}</p>
+                                                                <p className="text-[8px] font-bold text-rose-400 uppercase mt-1 tracking-widest">{a.status}</p>
+                                                            </div>
+                                                            <p className="text-lg font-black tracking-tighter text-rose-500">{a.val}</p>
                                                         </div>
-                                                        <p className="text-lg font-black tracking-tighter text-rose-500">{a.val}</p>
-                                                    </div>
-                                                ))}
+                                                    ))
+                                                ) : (
+                                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tight italic">No lagging agent activity recorded.</p>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">

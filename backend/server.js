@@ -7,6 +7,7 @@ const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('mongo-sanitize');
 const xss = require('xss');
 const cookieParser = require('cookie-parser');
+const path = require('path');
 
 const app = express();
 
@@ -78,7 +79,8 @@ app.use((req, res, next) => {
 
 // 5. Other Security Middleware
 app.use(helmet({
-    xPoweredBy: false
+    xPoweredBy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 // Rate Limiting
@@ -104,13 +106,34 @@ const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/agrilync';
 
 mongoose.connect(MONGO_URI)
-    .then(() => console.log('MongoDB Connected'))
+    .then(async () => {
+        console.log('MongoDB Connected');
+        // Auto-seed a default Blog Admin if none exists
+        try {
+            const BlogAdmin = require('./models/BlogAdmin');
+            const adminExists = await BlogAdmin.findOne({ email: 'admin@agrilync.com' });
+            if (!adminExists) {
+                const newAdmin = new BlogAdmin({
+                    username: 'BlogAdmin',
+                    email: 'admin@agrilync.com',
+                    password: 'adminpassword123'
+                });
+                await newAdmin.save();
+                console.log('✓ Default Blog Admin account seeded successfully (admin@agrilync.com / adminpassword123)');
+            }
+        } catch (seedErr) {
+            console.error('✗ Failed to seed default Blog Admin:', seedErr.message);
+        }
+    })
     .catch(err => console.error('MongoDB connection error:', err));
 
 // Basic Route
 app.get('/', (req, res) => {
     res.send('AgriLync Agent API is running...');
 });
+
+// Serve static uploaded files (like blog images)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check endpoint (no auth required)
 app.get('/api/health', (req, res) => {
@@ -192,6 +215,8 @@ try {
     console.log('✓ Opportunity routes registered');
     app.use('/api/super-admin', require('./routes/superAdminRoutes'));
     console.log('✓ Super admin routes registered');
+    app.use('/api/blogs', require('./routes/blogRoutes'));
+    console.log('✓ Blog routes registered');
     app.use('/api/scheduled-visits', require('./routes/scheduledVisitRoutes'));
     console.log('✓ Scheduled visit routes registered');
     app.use('/api/media', require('./routes/media'));

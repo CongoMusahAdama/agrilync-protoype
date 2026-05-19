@@ -128,5 +128,13 @@ exports.calculateKpis = (agentData) => {
             progress: totalFarmers > 0 ? Math.round((activeFarmers / totalFarmers) * 100) : 0,
             status: totalFarmers > 0 && activeFarmers / totalFarmers >= 0.7 ? 'On Track' : 'Needs Work',
         },
+        {
+            label: 'Gender Balance',
+            value: totalFarmers > 0 ? `${Math.round((agentData.femaleCount / totalFarmers) * 100)}/${Math.round((agentData.maleCount / totalFarmers) * 100)}` : '0/0',
+            unit: 'F/M %',
+            target: '60/40',
+            progress: totalFarmers > 0 ? Math.round(((agentData.femaleCount / totalFarmers) / 0.6) * 100) : 0,
+            status: totalFarmers > 0 && (agentData.femaleCount / totalFarmers) >= 0.55 ? 'On Track' : 'Needs Work',
+        },
     ];
 };

@@ -13,6 +13,7 @@ import {
   operationsTeam,
   TeamMember
 } from '@/data/teamData';
+import { motion } from 'framer-motion';
 
 // Brand colors
 const BRAND_TEAL = '#002F37';
@@ -22,9 +23,18 @@ const TeamMemberCard = ({ member, index = 0 }: { member: TeamMember; index?: num
   const navigate = useNavigate();
 
   return (
-    <div
-      className="group animate-fade-in-up flex flex-col items-center p-6 bg-white rounded-xl shadow-md hover:shadow-2xl hover:-translate-y-2 hover:border-[#7ede56]/30 transition-all duration-500 w-full h-full border border-gray-100"
-      style={{ animationDelay: `${index * 100}ms` }}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.85, rotateY: 15 }}
+      whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
+      viewport={{ once: true, margin: "-120px" }}
+      transition={{ 
+        duration: 0.9, 
+        delay: (index % 3) * 0.15, 
+        type: "spring",
+        stiffness: 50,
+        damping: 20
+      }}
+      className="group flex flex-col items-center p-6 bg-white rounded-xl shadow-md hover:shadow-2xl hover:-translate-y-2 hover:border-[#7ede56]/30 transition-all duration-500 w-full h-full border border-gray-100"
     >
       <div className="relative w-full aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-6 shadow-sm">
         <div className="w-full h-full" style={{ transform: member.scale ? `scale(${member.scale})` : 'none' }}>
@@ -59,7 +69,7 @@ const TeamMemberCard = ({ member, index = 0 }: { member: TeamMember; index?: num
           <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/btn:translate-x-1" />
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -91,92 +101,219 @@ const Team = () => {
     <div className="min-h-screen bg-[#f8f9fa] overflow-x-hidden">
       <Navbar />
 
-      <main className="pt-24 pb-20 px-4 sm:px-6 lg:px-8 max-w-[1400px] mx-auto">
+      <main className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-[1400px] mx-auto">
         {/* Header Section */}
-        <div ref={headerRef} className={`mb-16 sm:mb-24 transition-all duration-700 ease-out ${headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-8">
-            <Link to="/" className="hover:text-gray-900 transition-colors">Home</Link>
-            <span>/</span>
-            <span className="text-gray-900">Teams</span>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="mb-16 sm:mb-24"
+          >
+            <div className="flex items-center gap-2 text-sm text-gray-500 mb-8">
+              <Link to="/" className="hover:text-gray-900 transition-colors">Home</Link>
+              <span>/</span>
+              <span className="text-gray-900">Teams</span>
+            </div>
 
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-normal tracking-tight text-[#002F37] mb-6">
-            Meet our team
-          </h1>
-          <div className="w-24 h-1.5 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full mb-8"></div>
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-normal tracking-tight text-[#002F37] mb-6">
+              Meet our team
+            </h1>
+            <div className="w-24 h-1.5 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full mb-8"></div>
 
-          <p className="text-lg sm:text-x text-gray-500 max-w-2xl leading-relaxed">
-            Meet our exceptional team at Agrilync Nexus! Comprising diverse talents and expertise, we are dedicated to unlocking capital and knowledge for Lync Growers across Africa.
-          </p>
-        </div>
+            <p className="text-lg sm:text-x text-gray-500 max-w-2xl leading-relaxed">
+              Meet our exceptional team at Agrilync Nexus! Comprising diverse talents and expertise, we are dedicated to unlocking capital and knowledge for Lync Growers across Africa.
+            </p>
+          </motion.div>
 
         {/* CEO Section - Kept distinct as requested */}
-        <div id="leadership" ref={ceoRef} className={`mb-24 transition-all duration-700 ease-out ${ceoVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <motion.div
+          id="leadership"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="mb-24"
+        >
           <div className="max-w-[320px] mx-auto">
-            {/* Using slightly larger scale for CEO card */}
             <TeamMemberCard member={leadership} />
           </div>
-        </div>
+        </motion.div>
 
         {/* Co-Founders Section - Grid of 3 */}
         <div id="founding-team" ref={foundersRef} className="mb-24">
           <div className="mb-10 pb-4 border-b border-gray-200">
-            <h2 className={`text-2xl font-bold text-[#002F37] mb-2 transition-all duration-700 ease-out ${foundersVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>Founding Team</h2>
+            <motion.h2
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="text-2xl font-bold text-[#002F37] mb-2"
+            >
+              Co-Founders
+            </motion.h2>
             <div className="w-16 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full"></div>
           </div>
           {/* Strict 3 column grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 justify-items-center">
+          <motion.div 
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={{
+              hidden: { opacity: 0 },
+              show: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.2
+                }
+              }
+            }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 justify-items-center"
+          >
             {coFounders.map((member, index) => (
-              <div key={index} className="w-full max-w-[340px]">
+              <motion.div 
+                key={index} 
+                variants={{
+                  hidden: { opacity: 0, y: 30, scale: 0.9 },
+                  show: { opacity: 1, y: 0, scale: 1 }
+                }}
+                className="w-full max-w-[340px]"
+              >
                 <TeamMemberCard member={member} index={index} />
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
         {/* Product & Design Section - Grid of 3 */}
         <div id="product-design" ref={productRef} className="mb-24">
           <div className="mb-10 pb-4 border-b border-gray-200">
-            <h2 className={`text-2xl font-bold text-[#002F37] mb-2 transition-all duration-700 ease-out ${productVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>Product & Design Team</h2>
+            <motion.h2
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="text-2xl font-bold text-[#002F37] mb-2"
+            >
+              Product & Design Team
+            </motion.h2>
             <div className="w-16 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full"></div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 justify-items-center">
+          <motion.div 
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={{
+              hidden: { opacity: 0 },
+              show: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.2
+                }
+              }
+            }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 justify-items-center"
+          >
             {productTeam.map((member, index) => (
-              <div key={index} className="w-full max-w-[340px]">
+              <motion.div 
+                key={index}
+                variants={{
+                  hidden: { opacity: 0, y: 30, scale: 0.9 },
+                  show: { opacity: 1, y: 0, scale: 1 }
+                }}
+                className="w-full max-w-[340px]"
+              >
                 <TeamMemberCard member={member} index={index + 3} />
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
         {/* Strategy & Marketing Section - Grid of 3 */}
         <div id="marketing" ref={marketingRef} className="mb-24">
           <div className="mb-10 pb-4 border-b border-gray-200">
-            <h2 className={`text-2xl font-bold text-[#002F37] mb-2 transition-all duration-700 ease-out ${marketingVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>Strategy & Marketing Team</h2>
+            <motion.h2
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="text-2xl font-bold text-[#002F37] mb-2"
+            >
+              Strategy & Marketing Team
+            </motion.h2>
             <div className="w-16 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full"></div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 justify-items-center">
+          <motion.div 
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={{
+              hidden: { opacity: 0 },
+              show: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.2
+                }
+              }
+            }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 justify-items-center"
+          >
             {marketingTeam.map((member, index) => (
-              <div key={index} className="w-full max-w-[340px]">
+              <motion.div 
+                key={index} 
+                variants={{
+                  hidden: { opacity: 0, y: 30, scale: 0.9 },
+                  show: { opacity: 1, y: 0, scale: 1 }
+                }}
+                className="w-full max-w-[340px]"
+              >
                 <TeamMemberCard member={member} index={index + 6} />
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
         {/* Operations Section - Grid of 3 */}
         <div id="operations" ref={operationsRef} className="mb-12">
           <div className="mb-10 pb-4 border-b border-gray-200">
-            <h2 className={`text-2xl font-bold text-[#002F37] mb-2 transition-all duration-700 ease-out ${operationsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>Community & Operations</h2>
+            <motion.h2
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="text-2xl font-bold text-[#002F37] mb-2"
+            >
+              Community & Operations
+            </motion.h2>
             <div className="w-16 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full"></div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 justify-items-center">
+          <motion.div 
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={{
+              hidden: { opacity: 0 },
+              show: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.2
+                }
+              }
+            }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 justify-items-center"
+          >
             {operationsTeam.map((member, index) => (
-              <div key={index} className="w-full max-w-[340px]">
+              <motion.div 
+                key={index} 
+                variants={{
+                  hidden: { opacity: 0, y: 30, scale: 0.9 },
+                  show: { opacity: 1, y: 0, scale: 1 }
+                }}
+                className="w-full max-w-[340px]"
+              >
                 <TeamMemberCard member={member} index={index + 9} />
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
       </main>

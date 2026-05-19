@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import api from '@/utils/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
@@ -28,7 +32,10 @@ import {
   Video,
   CheckCircle2,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  X,
+  Mail,
+  Loader2
 } from 'lucide-react';
 
 // Brand colors
@@ -45,6 +52,10 @@ const Blog = () => {
     phone: '',
     organization: ''
   });
+  
+  // Newsletter Subscribe State
+  const [subscribeEmail, setSubscribeEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -77,6 +88,60 @@ const Blog = () => {
     });
   };
 
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!subscribeEmail.trim()) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+
+    try {
+      setIsSubscribing(true);
+      const res = await api.post('/blogs/subscribe', { email: subscribeEmail });
+      toast.success(res.data.msg || 'Successfully subscribed!');
+      setSubscribeEmail('');
+    } catch (err: any) {
+      toast.error(err.response?.data?.msg || 'Failed to subscribe. Please try again.');
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
+  // Scroll to articles section
+  const scrollToArticles = () => {
+    const element = document.getElementById('latest-articles');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Handle category/tab selection
+  const handleCategoryClick = (categoryId: string) => {
+    setActiveTab(categoryId);
+    // Smooth scroll if we are in the upper hero part of the page
+    if (window.scrollY < 500) {
+      setTimeout(() => {
+        scrollToArticles();
+      }, 100);
+    }
+  };
+
+  // Handle trending tag click
+  const handleTrendingClick = (tag: string) => {
+    setSearchTerm(tag);
+    if (window.scrollY < 500) {
+      setTimeout(() => {
+        scrollToArticles();
+      }, 100);
+    }
+  };
+
+  // Handle search submit / search button click
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    scrollToArticles();
+  };
+
   // Handle direct navigation to sections via hash
   useEffect(() => {
     const hash = window.location.hash;
@@ -98,8 +163,8 @@ const Blog = () => {
     }
   }, []);
 
-  // Enhanced blog posts with categories and tags
-  const blogPosts = [
+  // Static predefined blog posts
+  const staticBlogPosts = [
     {
       id: 10,
       slug: "ghana-tomato-productivity-fix",
@@ -235,6 +300,26 @@ const Blog = () => {
     }
   ];
 
+  // Dynamic blog posts fetched from the backend + existing static articles
+  const [blogPosts, setBlogPosts] = useState<any[]>(staticBlogPosts);
+  const [loadingBlogs, setLoadingBlogs] = useState(true);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoadingBlogs(true);
+        const res = await api.get('/blogs');
+        // Prepend dynamic posts (latest) to the static list
+        setBlogPosts([...res.data, ...staticBlogPosts]);
+      } catch (err) {
+        console.error('Error fetching blogs from backend:', err);
+      } finally {
+        setLoadingBlogs(false);
+      }
+    };
+    fetchPosts();
+  }, []);
+
   // Updated webinars with completed events
   const webinars = [
     {
@@ -350,71 +435,94 @@ const Blog = () => {
     const matchesCategory = activeTab === 'all' || post.category.toLowerCase().replace(' ', '-') === activeTab;
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+      (post.tags && post.tags.some((tag: string) => tag.toLowerCase().includes(searchTerm.toLowerCase())));
     return matchesCategory && matchesSearch;
   });
 
-  const featuredPosts = blogPosts.filter(post => post.featured);
+  const featuredPosts = blogPosts.slice(0, 2);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white overflow-x-hidden">
       <Navbar />
 
-      {/* Modern Hero Section with White Background */}
-      <section className="relative pt-32 pb-12 md:pt-36 md:pb-16 overflow-hidden bg-white">
-        {/* Decorative Elements - subtle on white */}
-        <div className="absolute top-20 right-10 w-72 h-72 bg-[#7ede56]/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#7ede56]/5 rounded-full blur-3xl"></div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-12 animate-fade-in-up">
-
+      {/* Simplified, Brief Hero Section */}
+      <section className="relative pt-32 pb-12 bg-[#002F37] overflow-hidden">
+        {/* Subtle abstract background element */}
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-[#7ede56] opacity-5 blur-[100px]"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-30">
+          <div className="text-center max-w-3xl mx-auto">
+            {/* Main Heading */}
             <h1
               ref={heroHeadingRef}
-              className={`text-4xl sm:text-5xl md:text-6xl font-bold mb-6 transition-all duration-700 ${heroHeadingVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
-              style={{ color: BRAND_TEAL }}
+              className={`text-3xl md:text-5xl font-bold mb-3 text-white font-montserrat tracking-tight transition-all duration-1000 ${heroHeadingVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
             >
-              Agrilync Nexus Blog & Events
+              Agri<span className="text-[#7ede56]">Insider</span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8">
-              Stay updated with the latest insights in agricultural technology, farming best practices, and upcoming events.
+            {/* Subtitle */}
+            <p className={`text-sm md:text-base text-gray-300 max-w-xl mx-auto mb-8 transition-all duration-1000 delay-200 ${heroHeadingVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+              Search the latest precision insights and agricultural breakthroughs.
             </p>
 
-            {/* Modern Search Bar */}
-            <div className="max-w-2xl mx-auto">
-              <div className="relative group">
-                <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 group-focus-within:text-[#7ede56] transition-colors" />
+            {/* Enhanced Search Experience */}
+            <div className={`transition-all duration-1000 delay-300 ${heroHeadingVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+              <form onSubmit={handleSearchSubmit} className="relative group p-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 focus-within:border-[#7ede56] transition-all max-w-lg mx-auto shadow-xl">
+                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-[#7ede56] z-10">
+                  <Search className="h-5 w-5" />
+                </div>
                 <Input
                   type="text"
-                  placeholder="Search articles, topics, or keywords..."
+                  placeholder="Search articles or topics..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-14 pr-6 py-6 text-lg border-2 border-gray-200 focus:border-[#7ede56] rounded-2xl shadow-lg hover:shadow-xl transition-all bg-white/80 backdrop-blur-sm"
+                  className="pl-12 pr-28 py-5 text-sm border-none focus-visible:ring-0 rounded-full bg-transparent text-white placeholder:text-white/60 w-full"
                 />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-28 top-1/2 -translate-y-1/2 text-white/60 hover:text-white p-1"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+                <div className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10">
+                  <Button type="submit" className="bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] rounded-full px-5 py-4 font-bold text-xs uppercase transition-all">
+                    Search
+                  </Button>
+                </div>
+              </form>
+              
+              {/* Trending Tags */}
+              <div className="mt-4 flex flex-wrap justify-center gap-4 text-[10px] font-black uppercase tracking-wider text-white/50">
+                <span className="text-white/60">Trending:</span>
+                <button type="button" onClick={() => handleTrendingClick('tomato')} className="hover:text-[#7ede56] transition-colors">#TomatoFix</button>
+                <button type="button" onClick={() => handleTrendingClick('greenhouse')} className="hover:text-[#7ede56] transition-colors">#SmartGH</button>
+                <button type="button" onClick={() => handleTrendingClick('fintech')} className="hover:text-[#7ede56] transition-colors">#AgriFintech</button>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Category Pills - Modern Design */}
-      <section className="py-8 sticky top-16 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100">
+      {/* Category Navigation - Clean Premium Editorial Design */}
+      <section className="py-4 sticky top-16 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide justify-start lg:justify-center">
             {categories.map((category) => {
               const Icon = category.icon;
               const isActive = activeTab === category.id;
               return (
                 <button
                   key={category.id}
-                  onClick={() => setActiveTab(category.id)}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${isActive
-                    ? 'bg-gradient-to-r from-[#7ede56] to-[#66cc44] text-white shadow-lg scale-105'
-                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200 hover:border-[#7ede56]'
+                  onClick={() => handleCategoryClick(category.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-wide transition-all duration-200 whitespace-nowrap ${isActive
+                    ? 'bg-[#002f37] text-white shadow-sm'
+                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-gray-200/50'
                     }`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-3.5 h-3.5" />
                   <span>{category.name}</span>
                 </button>
               );
@@ -437,15 +545,8 @@ const Blog = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {featuredPosts.slice(0, 2).map((post, index) => (
-              <a
-                key={post.id}
-                href={post.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group cursor-pointer animate-fade-in-up"
-                style={{ animationDelay: `${index * 150}ms` }}
-              >
+            {featuredPosts.slice(0, 2).map((post, index) => {
+              const content = (
                 <div className="relative overflow-hidden rounded-3xl bg-white shadow-xl hover:shadow-2xl transition-all duration-500 border border-gray-100">
                   <div className="relative h-80 overflow-hidden">
                     <img
@@ -464,7 +565,7 @@ const Blog = () => {
 
                     {/* Content Overlay */}
                     <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                      <h3 className="text-2xl font-bold mb-3 group-hover:text-[#7ede56] transition-colors">
+                      <h3 className="text-2xl font-bold mb-3 text-[#7ede56] group-hover:text-white transition-colors">
                         {post.title}
                       </h3>
                       <p className="text-gray-200 mb-4 line-clamp-2">
@@ -481,14 +582,36 @@ const Blog = () => {
                     </div>
                   </div>
                 </div>
-              </a>
-            ))}
+              );
+
+              return post._id ? (
+                <Link
+                  key={post._id || post.slug}
+                  to={`/blog/${post.slug}`}
+                  className="group cursor-pointer animate-fade-in-up"
+                  style={{ animationDelay: `${index * 150}ms` }}
+                >
+                  {content}
+                </Link>
+              ) : (
+                <a
+                  key={post.id || post.slug}
+                  href={post.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group cursor-pointer animate-fade-in-up"
+                  style={{ animationDelay: `${index * 150}ms` }}
+                >
+                  {content}
+                </a>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* Latest Articles - Modern Grid */}
-      <section className="py-16 sm:py-20 bg-gradient-to-b from-white to-gray-50">
+      <section id="latest-articles" className="py-16 sm:py-20 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 ref={latestRef} className={`text-3xl sm:text-4xl font-bold mb-4 text-[#002F37] transition-all duration-700 ${latestVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
@@ -497,83 +620,125 @@ const Blog = () => {
             <div className="w-24 h-1 bg-gradient-to-r from-[#7ede56] to-[#7ede56] rounded-full mx-auto"></div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredPosts.map((post, index) => (
-              <article
-                key={post.id}
-                id={(post as any).slug}
-                className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-[#7ede56]/30 animate-fade-in-up"
-                style={{ animationDelay: `${index * 100}ms` }}
+          {/* Simple Sleek Search Summary */}
+          {(searchTerm || activeTab !== 'all') && (
+            <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-8 text-sm">
+              <span className="text-gray-500">
+                Found <strong className="text-[#002f37] font-semibold">{filteredPosts.length}</strong> {filteredPosts.length === 1 ? 'article' : 'articles'}
+                {activeTab !== 'all' && <> in <span className="text-[#002f37] font-bold">{categories.find(c => c.id === activeTab)?.name}</span></>}
+                {searchTerm && <> for "<span className="text-[#002f37] font-bold">{searchTerm}</span>"</>}
+              </span>
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setActiveTab('all');
+                }}
+                className="text-[#002f37] hover:text-gray-500 font-bold text-xs uppercase tracking-wider transition-colors"
               >
-                <div className="relative overflow-hidden h-56">
-                  <img
-                    src={post.image}
-                    alt={post.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <Badge className="bg-gradient-to-r from-[#7ede56] to-[#66cc44] text-white border-0">
-                      {post.category}
-                    </Badge>
-                  </div>
-                </div>
+                Clear Filters
+              </button>
+            </div>
+          )}
 
-                <div className="p-6">
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {post.tags.slice(0, 2).map((tag, tagIndex) => (
-                      <Badge key={tagIndex} variant="outline" className="text-xs border-[#7ede56]/20 text-[#7ede56]">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  <h3 className="text-xl font-bold mb-3 text-[#002F37] group-hover:text-[#7ede56] transition-colors leading-tight">
-                    {post.title}
-                  </h3>
-
-                  <p className="text-gray-600 mb-4 text-sm leading-relaxed line-clamp-3">
-                    {post.excerpt}
-                  </p>
-
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <Clock className="w-3 h-3" />
-                      <span>{post.readTime}</span>
+          {loadingBlogs ? (
+            <div className="flex flex-col items-center justify-center py-20 w-full col-span-3">
+              <div className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-[#7ede56] animate-spin mb-4"></div>
+              <p className="text-sm font-semibold text-[#002f37]/60">Fetching latest dynamic publications...</p>
+            </div>
+          ) : (
+            <motion.div 
+              layout
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
+              <AnimatePresence mode="popLayout">
+                {filteredPosts.map((post, index) => (
+                  <motion.article
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.3 }}
+                    key={post._id || post.slug}
+                    id={post.slug}
+                    className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-[#7ede56]/30"
+                  >
+                    <div className="relative overflow-hidden h-56">
+                      <img
+                        src={post.image}
+                        alt={post.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                      <div className="absolute top-4 left-4">
+                        <Badge className="bg-gradient-to-r from-[#7ede56] to-[#66cc44] text-white border-0">
+                          {post.category}
+                        </Badge>
+                      </div>
                     </div>
-                    <a
-                      href={post.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-[#7ede56] hover:text-[#66cc44] font-semibold text-sm group-hover:gap-3 transition-all"
-                    >
-                      Read More
-                      <ArrowRight className="w-4 h-4" />
-                    </a>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+
+                    <div className="p-6">
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {post.tags && post.tags.slice(0, 2).map((tag: string, tagIndex: number) => (
+                          <Badge key={tagIndex} variant="outline" className="text-xs border-[#7ede56]/20 text-[#7ede56]">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+
+                      <h3 className="text-xl font-bold mb-3 text-[#002F37] group-hover:text-[#7ede56] transition-colors leading-tight">
+                        {post.title}
+                      </h3>
+
+                      <p className="text-gray-600 mb-4 text-sm leading-relaxed line-clamp-3">
+                        {post.excerpt}
+                      </p>
+
+                      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <Clock className="w-3 h-3" />
+                          <span>{post.readTime}</span>
+                        </div>
+                        {post._id ? (
+                          <Link
+                            to={`/blog/${post.slug}`}
+                            className="inline-flex items-center gap-2 text-[#7ede56] hover:text-[#66cc44] font-semibold text-sm group-hover:gap-3 transition-all"
+                          >
+                            Read More
+                            <ArrowRight className="w-4 h-4" />
+                          </Link>
+                        ) : (
+                          <a
+                            href={post.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-[#7ede56] hover:text-[#66cc44] font-semibold text-sm group-hover:gap-3 transition-all"
+                          >
+                            Read More
+                            <ArrowRight className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </motion.article>
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          )}
 
           {filteredPosts.length === 0 && (
-            <div className="text-center py-16">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                <Search className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                No articles found
-              </h3>
-              <p className="text-gray-500 mb-6">
-                Try adjusting your search or filters
+            <div className="text-center py-20 max-w-md mx-auto">
+              <Search className="w-10 h-10 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-[#002f37] mb-2">No matching articles found</h3>
+              <p className="text-gray-500 text-sm mb-8 leading-relaxed">
+                We couldn't find any articles matching "{searchTerm}". Try exploring popular topics like <button onClick={() => handleTrendingClick('tomato')} className="text-[#002f37] hover:underline font-bold">Tomato Fix</button> or <button onClick={() => handleTrendingClick('greenhouse')} className="text-[#002f37] hover:underline font-bold">Smart Greenhouse</button>.
               </p>
               <Button
                 onClick={() => {
                   setSearchTerm('');
                   setActiveTab('all');
                 }}
-                className="bg-gradient-to-r from-[#7ede56] to-[#66cc44] hover:from-[#66cc44] hover:to-[#7ede56] text-white rounded-full px-8"
+                className="bg-[#002f37] hover:bg-[#001c21] text-white rounded-full px-6 py-2 transition-all"
               >
-                Clear Filters
+                Reset Search & Filters
               </Button>
             </div>
           )}
@@ -748,6 +913,58 @@ const Blog = () => {
               </Card>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Newsletter Subscribe Section */}
+      <section className="py-20 bg-[#002f37] relative overflow-hidden">
+        {/* Abstract Background Design */}
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-[#7ede56] opacity-10 blur-[100px]"></div>
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-blue-500 opacity-10 blur-[80px]"></div>
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6 border border-white/10">
+            <Mail className="w-4 h-4 text-[#7ede56]" />
+            <span className="text-sm font-semibold text-white">Join Our Community</span>
+          </div>
+          
+          <h2 className="text-3xl sm:text-5xl font-bold mb-6 text-white font-montserrat">
+            Never Miss an <span className="text-[#7ede56]">Insight</span>
+          </h2>
+          <p className="text-lg text-gray-300 mb-10 max-w-2xl mx-auto">
+            Subscribe to our newsletter and get the latest articles on sustainable farming, ag-tech innovations, and market trends delivered straight to your inbox.
+          </p>
+
+          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
+            <div className="relative flex-1">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Input
+                type="email"
+                placeholder="Enter your email address..."
+                value={subscribeEmail}
+                onChange={(e) => setSubscribeEmail(e.target.value)}
+                required
+                className="w-full h-14 pl-12 pr-4 bg-white/5 border border-white/20 text-white placeholder:text-gray-400 rounded-full focus:bg-white/10 focus:ring-2 focus:ring-[#7ede56] transition-all text-lg"
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={isSubscribing}
+              className="h-14 px-8 bg-[#7ede56] hover:bg-[#66cc44] text-[#002f37] font-bold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-2 text-lg whitespace-nowrap"
+            >
+              {isSubscribing ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Subscribing...
+                </>
+              ) : (
+                'Subscribe Now'
+              )}
+            </Button>
+          </form>
+          <p className="text-sm text-gray-400 mt-4">
+            We respect your privacy. No spam, just value.
+          </p>
         </div>
       </section>
 

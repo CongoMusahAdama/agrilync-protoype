@@ -53,7 +53,7 @@ exports.getTasks = async (req, res) => {
 
           // Notify via SMS
           const smsBody = `⏰ AGRI-LYNC REMINDER: Your field task "${task.title}" is due on ${new Date(task.dueDate).toLocaleDateString()}. Please prepare accordingly.`;
-          await sendSMS(req.agent.phoneNumber || '+233000000000', smsBody, req.agent.email);
+          await sendSMS(req.agent.phoneNumber || '+233000000000', smsBody);
 
           // Mark as sent
           await Task.findByIdAndUpdate(task._id, { reminderSent: true });

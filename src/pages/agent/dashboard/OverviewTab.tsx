@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Activity, GraduationCap, ClipboardList, UserCheck, Info, ChevronRight, AlertTriangle, Send } from 'lucide-react';
+import { ArrowRight, Activity, GraduationCap, ClipboardList, UserCheck, Info, ChevronRight, AlertTriangle, Send, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
@@ -183,52 +183,82 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             </CardContent>
           </Card>
 
-          {/* Performance Snapshot */}
-          <Card className="border-none bg-emerald-50 shadow-sm rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-black text-[#002f37] uppercase tracking-widest">Performance Insights</h3>
-              <GraduationCap className="h-5 w-5 text-[#065f46]" />
-            </div>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-[11px] font-bold text-gray-500 mb-1">
-                  <span>Training Impact</span>
-                  <span>{stats.trainingCompletionRate || 85}%</span>
-                </div>
-                <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#065f46] rounded-full" style={{ width: `${stats.trainingCompletionRate || 85}%` }} />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-[11px] font-bold text-gray-500 mb-1">
-                  <span>Verification Accuracy</span>
-                  <span>{stats.verificationAccuracy || 98}%</span>
-                </div>
-                <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${stats.verificationAccuracy || 98}%` }} />
-                </div>
+          {/* New Pilot Incentive Snapshot */}
+          <Card className="border-none bg-emerald-50 shadow-sm rounded-[2rem] p-6 relative overflow-hidden group">
+            <div className="absolute -right-8 -top-8 h-24 w-24 bg-[#065f46]/5 rounded-full blur-2xl group-hover:scale-150 transition-transform" />
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <h3 className="text-[11px] font-black text-[#002f37] uppercase tracking-widest">Incentive Status</h3>
+              <div className="h-8 w-8 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                <DollarSign className="h-4 w-4 text-[#065f46]" />
               </div>
             </div>
-          </Card>
+            
+            <div className="mb-4">
+              <p className="text-[9px] font-black text-[#065f46]/60 uppercase tracking-widest mb-1">Estimated Monthly Bonus</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-[#002f37]">GH¢600</span>
+                <span className="text-[10px] font-bold text-[#065f46]">/ GH¢700</span>
+              </div>
+            </div>
 
-          {/* Tasks Summary */}
-          <Card className="border-none bg-amber-50 shadow-sm rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-black text-[#002f37] uppercase tracking-widest">Task Queue</h3>
-              <ClipboardList className="h-5 w-5 text-amber-600" />
+            <div className="space-y-2">
+               <div className="flex items-center justify-between">
+                 <span className="text-[10px] font-bold text-gray-500">Vol. Onboarding</span>
+                 <Badge className="bg-[#065f46] text-white text-[7px] font-black uppercase tracking-widest">+GH¢300</Badge>
+               </div>
+               <div className="flex items-center justify-between">
+                 <span className="text-[10px] font-bold text-gray-500">Media & Reports</span>
+                 <Badge className="bg-[#065f46] text-white text-[7px] font-black uppercase tracking-widest">+GH¢200</Badge>
+               </div>
+               <div className="flex items-center justify-between opacity-50">
+                 <span className="text-[10px] font-bold text-gray-500">Training (78%)</span>
+                 <Badge variant="outline" className="border-gray-300 text-gray-500 text-[7px] font-black uppercase tracking-widest">Target: 80%</Badge>
+               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-3xl font-black text-[#002f37]">{tasks.filter(t => t.status !== 'done').length}</div>
-              <div className="text-[10px] font-bold text-[#002f37]/60 uppercase leading-tight">Pending Tasks<br/>Requires Action</div>
-            </div>
+
             <Button 
                 variant="ghost" 
                 size="sm" 
-                className="mt-4 w-full justify-between h-9 text-[10px] font-black uppercase text-amber-900 bg-amber-200/30 hover:bg-amber-200/50 rounded-xl px-4"
-                onClick={() => navigate('/dashboard/agent?tab=tasks')}
+                className="mt-6 w-full justify-between h-9 text-[10px] font-black uppercase text-[#065f46] bg-white hover:bg-white/50 rounded-xl px-4 shadow-sm border border-[#065f46]/10"
+                onClick={() => navigate('/dashboard/agent?tab=performance')}
             >
-              View Full Registry <ArrowRight className="h-3.5 w-3.5" />
+              Breakdown <ArrowRight className="h-3.5 w-3.5" />
             </Button>
+          </Card>
+
+          {/* Pilot Compliance Tracker */}
+          <Card className="border-none bg-[#002f37] shadow-xl rounded-[2rem] p-6 text-white relative overflow-hidden group">
+            <div className="absolute right-[-10px] top-[-10px] opacity-10 group-hover:rotate-12 transition-transform">
+              <Activity className="h-20 w-20" />
+            </div>
+            <div className="flex items-center justify-between mb-6 relative z-10">
+              <h3 className="text-[11px] font-black uppercase tracking-widest text-[#7ede56]">Pilot Compliance</h3>
+              <UserCheck className="h-4 w-4 text-[#7ede56]" />
+            </div>
+
+            <div className="space-y-5 relative z-10">
+              <div>
+                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
+                  <span className="text-white/60">Gender Balance (F/M)</span>
+                  <span className="text-[#7ede56]">64 / 36 %</span>
+                </div>
+                <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-[#7ede56]" style={{ width: '64%' }} />
+                </div>
+                <p className="text-[8px] font-bold text-white/40 mt-1 uppercase tracking-tighter">Pilot Target: 60% Women Minimum</p>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
+                  <span className="text-white/60">Monthly visits</span>
+                  <span className="text-white">14 / 20</span>
+                </div>
+                <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-white/40" style={{ width: '70%' }} />
+                </div>
+                <p className="text-[8px] font-bold text-white/40 mt-1 uppercase tracking-tighter">Range required: 10 - 20 Visits</p>
+              </div>
+            </div>
           </Card>
         </div>
       </div>

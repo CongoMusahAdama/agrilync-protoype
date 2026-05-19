@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,66 +8,11 @@ import {
 } from 'recharts';
 import {
     Users, TrendingUp, AlertTriangle, Briefcase, ChevronDown, LayoutGrid, LayoutList,
-    Download, TrendingDown, MapPin, Activity, Sprout, Coins, X, CheckCircle2, Navigation
+    Download, TrendingDown, MapPin, Activity, Sprout, Coins, X, CheckCircle2, Navigation,
+    AlertCircle, ChevronUp
 } from 'lucide-react';
 import { useDarkMode } from '@/contexts/DarkModeContext';
-
-// Mock Data
-const SUMMARY_STATS = [
-    { label: 'Total Farmers', value: '4,500', trend: '+12%', icon: Users, color: 'text-blue-500' },
-    { label: 'Capital Deployed', value: 'GH₵ 2.4M', trend: '+5%', icon: Coins, color: 'text-amber-500' },
-    { label: 'Avg On-Track Rate', value: '84%', trend: '+2%', icon: Activity, color: 'text-[#7ede56]' },
-    { label: 'Active Agents', value: '120', trend: 'Steady', icon: Briefcase, color: 'text-purple-500' }
-];
-
-const REGIONS_MOCK = [
-    {
-        id: '1', name: 'Ashanti', onTrackRate: 92, farmersOnboarded: 1250, target: 1500,
-        capitalDeployed: 850000, agents: 45, atRiskFarms: 0, seasonTrend: 'up', lastUpdated: '2 hrs ago',
-        farmers: [{ name: 'Kofi Asare', status: 'On Track' }, { name: 'Adwoa Mensah', status: 'On Track' }],
-        agentsList: [{ name: 'Sarkodie', lastSync: '10 mins ago', kpi: '98%' }, { name: 'Ekow', lastSync: '1 hour ago', kpi: '92%' }],
-        fundedFarms: { onTrack: 120, atRisk: 0, offTrack: 0 },
-        capitalFlow: { disbursed: 850000, pending: 150000, settled: 400000 }
-    },
-    {
-        id: '2', name: 'Western', onTrackRate: 88, farmersOnboarded: 950, target: 1000,
-        capitalDeployed: 620000, agents: 28, atRiskFarms: 2, seasonTrend: 'up', lastUpdated: '5 hrs ago',
-        farmers: [{ name: 'Kwesi Appiah', status: 'At Risk' }, { name: 'Ama Osei', status: 'On Track' }],
-        agentsList: [{ name: 'Janet', lastSync: '30 mins ago', kpi: '95%' }, { name: 'Francis', lastSync: '2 days ago', kpi: '60%' }],
-        fundedFarms: { onTrack: 85, atRisk: 2, offTrack: 0 },
-        capitalFlow: { disbursed: 620000, pending: 80000, settled: 300000 }
-    },
-    {
-        id: '3', name: 'Volta', onTrackRate: 55, farmersOnboarded: 600, target: 1200,
-        capitalDeployed: 250000, agents: 18, atRiskFarms: 15, seasonTrend: 'down', lastUpdated: '1 day ago',
-        farmers: [{ name: 'Efo Kodjo', status: 'Off Track' }, { name: 'Abla', status: 'At Risk' }],
-        agentsList: [{ name: 'Godwin', lastSync: '5 hours ago', kpi: '70%' }],
-        fundedFarms: { onTrack: 40, atRisk: 10, offTrack: 5 },
-        capitalFlow: { disbursed: 250000, pending: 300000, settled: 50000 }
-    },
-    {
-        id: '4', name: 'Northern', onTrackRate: 75, farmersOnboarded: 2100, target: 2500,
-        capitalDeployed: 1100000, agents: 85, atRiskFarms: 5, seasonTrend: 'up', lastUpdated: '10 mins ago',
-        farmers: [{ name: 'Iddrisu', status: 'On Track' }],
-        agentsList: [{ name: 'Musah', lastSync: 'Just now', kpi: '88%' }],
-        fundedFarms: { onTrack: 200, atRisk: 5, offTrack: 1 },
-        capitalFlow: { disbursed: 1100000, pending: 200000, settled: 800000 }
-    },
-    {
-        id: '5', name: 'Bono', onTrackRate: 40, farmersOnboarded: 300, target: 800,
-        capitalDeployed: 0, agents: 12, atRiskFarms: 20, seasonTrend: 'down', lastUpdated: '2 days ago',
-        farmers: [{ name: 'Agya Koo', status: 'Off Track' }],
-        agentsList: [{ name: 'Kwame', lastSync: '3 days ago', kpi: '45%' }],
-        fundedFarms: { onTrack: 10, atRisk: 15, offTrack: 5 },
-        capitalFlow: { disbursed: 0, pending: 500000, settled: 0 }
-    }
-];
-
-const ALERTS_MOCK = [
-    { region: 'Northern Region', text: '3 agents inactive for over 48 hours', severity: 'amber', action: '/dashboard/super-admin/agents' },
-    { region: 'Volta Region', text: '2 farms Off Track for 7+ days', severity: 'red', action: '/dashboard/super-admin/oversight' },
-    { region: 'Bono Region', text: 'Capital deployment 0% this active season', severity: 'red', action: '/dashboard/super-admin/capital' }
-];
+import api from '@/utils/api';
 
 export default function RegionalPerformance() {
     const { darkMode } = useDarkMode();
@@ -76,28 +21,55 @@ export default function RegionalPerformance() {
     const [season, setSeason] = useState('Current Season');
     const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
 
-    const getStatusInfo = (rate: number, atRiskCount: number) => {
+    const [summaryStats, setSummaryStats] = useState<any[]>([]);
+    const [regions, setRegions] = useState<any[]>([]);
+    const [alerts, setAlerts] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchRegionalData = async () => {
+            try {
+                const res = await api.get('/super-admin/regional-performance');
+                if (res.data) {
+                    setSummaryStats(res.data.summaryStats || []);
+                    setRegions(res.data.regions || []);
+                    setAlerts(res.data.alerts || []);
+                }
+            } catch (err) {
+                console.error('Failed to fetch regional performance:', err);
+                setSummaryStats([]);
+                setRegions([]);
+                setAlerts([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchRegionalData();
+    }, []);
+
+    const getStatusInfo = (rate: number, atRiskCount: number, isOperational?: boolean) => {
+        if (isOperational === false) return { color: 'bg-gray-400 dark:bg-gray-600', text: 'text-gray-500 dark:text-gray-400', borderColor: 'border-l-4 border-l-gray-300 dark:border-l-gray-800', label: 'Non-Operational' };
         if (rate >= 80 && atRiskCount === 0) return { color: 'bg-[#7ede56]', text: 'text-[#002f37]', borderColor: 'border-l-4 border-l-[#7ede56]', label: 'On Track' };
         if (rate < 60 || atRiskCount > 10) return { color: 'bg-red-500', text: 'text-white', borderColor: 'border-l-4 border-l-red-500', label: 'Underperforming' };
         return { color: 'bg-amber-500', text: 'text-[#002f37]', borderColor: 'border-l-4 border-l-amber-500', label: 'At Risk' };
     };
 
-    const filteredRegions = REGIONS_MOCK.filter(r => {
+    const filteredRegions = regions.filter(r => {
         if (filterTab === 'all') return true;
-        const status = getStatusInfo(r.onTrackRate, r.atRiskFarms).label;
+        const status = getStatusInfo(r.onTrackRate, r.atRiskFarms, r.isOperational).label;
         if (filterTab === 'on-track' && status === 'On Track') return true;
         if (filterTab === 'at-risk' && status === 'At Risk') return true;
         if (filterTab === 'underperforming' && status === 'Underperforming') return true;
         return false;
     });
 
-    const chartData = [...REGIONS_MOCK].sort((a, b) => b.onTrackRate - a.onTrackRate).map(r => ({
+    const chartData = [...regions].sort((a, b) => b.onTrackRate - a.onTrackRate).map(r => ({
         name: r.name,
         rate: r.onTrackRate,
-        fill: r.onTrackRate >= 80 ? '#7ede56' : r.onTrackRate >= 60 ? '#f59e0b' : '#ef4444'
+        fill: r.isOperational === false ? '#6b7280' : r.onTrackRate >= 80 ? '#7ede56' : r.onTrackRate >= 60 ? '#f59e0b' : '#ef4444'
     }));
 
-    const selectedRegion = REGIONS_MOCK.find(r => r.id === selectedRegionId);
+    const selectedRegion = regions.find(r => r.id === selectedRegionId);
 
     return (
         <div className="space-y-8 pb-12 animate-in fade-in duration-300">
@@ -106,23 +78,37 @@ export default function RegionalPerformance() {
                 <div className="absolute inset-0 bg-gradient-to-r from-[#7ede56]/10 via-transparent to-transparent opacity-50 pointer-events-none"></div>
                 <CardContent className="p-0">
                     <div className={`grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x ${darkMode ? 'divide-white/5' : 'divide-white/10'}`}>
-                        {SUMMARY_STATS.map((stat, idx) => (
-                            <div key={idx} className={`p-6 flex flex-col justify-center relative group/item transition-colors ${darkMode ? 'hover:bg-white/[0.02]' : 'hover:bg-white/5'}`}>
-                                <div className="flex items-center gap-2 mb-2">
-                                    <div className={`p-1.5 rounded-lg bg-white/5`}>
-                                        <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                        {summaryStats && summaryStats.length > 0 ? (
+                            summaryStats.map((stat, idx) => {
+                                const IconComp = stat.label?.toLowerCase()?.includes('farmer') ? Users :
+                                                 stat.label?.toLowerCase()?.includes('capital') ? Coins :
+                                                 stat.label?.toLowerCase()?.includes('track') ? Activity : Briefcase;
+                                const colorClass = stat.label?.toLowerCase()?.includes('farmer') ? 'text-blue-500' :
+                                                   stat.label?.toLowerCase()?.includes('capital') ? 'text-amber-500' :
+                                                   stat.label?.toLowerCase()?.includes('track') ? 'text-[#7ede56]' : 'text-purple-500';
+                                return (
+                                    <div key={idx} className={`p-6 flex flex-col justify-center relative group/item transition-colors ${darkMode ? 'hover:bg-white/[0.02]' : 'hover:bg-white/5'}`}>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <div className={`p-1.5 rounded-lg bg-white/5`}>
+                                                <IconComp className={`w-4 h-4 ${colorClass}`} />
+                                            </div>
+                                            <span className={`text-[9px] font-black uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-300'}`}>{stat.label}</span>
+                                        </div>
+                                        <div className="flex items-baseline justify-between mt-1">
+                                            <span className="text-2xl font-black text-white tracking-tighter tabular-nums">{stat.value}</span>
+                                            <div className={`flex items-center gap-1 ${stat.trend?.includes('-') ? 'text-rose-500' : (stat.trend === 'Steady' ? 'text-blue-400' : 'text-[#7ede56]')}`}>
+                                                {stat.trend?.includes('-') ? <TrendingDown className="w-3 h-3" /> : (stat.trend === 'Steady' ? <Activity className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />)}
+                                                <span className="text-[9px] font-black uppercase tracking-wider">{stat.trend}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <span className={`text-[9px] font-black uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-300'}`}>{stat.label}</span>
-                                </div>
-                                <div className="flex items-baseline justify-between mt-1">
-                                    <span className="text-2xl font-black text-white tracking-tighter tabular-nums">{stat.value}</span>
-                                    <div className={`flex items-center gap-1 ${stat.trend.includes('-') ? 'text-rose-500' : (stat.trend === 'Steady' ? 'text-blue-400' : 'text-[#7ede56]')}`}>
-                                        {stat.trend.includes('-') ? <TrendingDown className="w-3 h-3" /> : (stat.trend === 'Steady' ? <Activity className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />)}
-                                        <span className="text-[9px] font-black uppercase tracking-wider">{stat.trend}</span>
-                                    </div>
-                                </div>
+                                );
+                            })
+                        ) : (
+                            <div className="p-8 text-center text-[10px] font-black uppercase tracking-widest text-white/40 col-span-4">
+                                No regional performance stats available.
                             </div>
-                        ))}
+                        )}
                     </div>
                 </CardContent>
             </Card>
@@ -186,7 +172,7 @@ export default function RegionalPerformance() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                             <div className="space-y-4">
                                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-gray-100 dark:border-gray-800 pb-2">Active Field Agents</h4>
-                                {selectedRegion.agentsList.map((ag, i) => (
+                                {selectedRegion.agentsList.map((ag: any, i: number) => (
                                     <div key={i} className="flex justify-between items-center bg-gray-50 dark:bg-white/5 p-3 rounded-xl">
                                         <div>
                                             <p className="text-xs font-black uppercase">{ag.name}</p>
@@ -217,7 +203,7 @@ export default function RegionalPerformance() {
 
                             <div className="space-y-4">
                                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-gray-100 dark:border-gray-800 pb-2">Recent Farmer Updates</h4>
-                                {selectedRegion.farmers.slice(0, 3).map((f, i) => (
+                                {selectedRegion.farmers.slice(0, 3).map((f: any, i: number) => (
                                     <div key={i} className="flex justify-between items-center">
                                         <p className="text-xs font-black uppercase">{f.name}</p>
                                         <Badge className={`text-[8px] font-black uppercase ${f.status === 'On Track' ? 'bg-[#7ede56]/20 text-[#7ede56]' : f.status === 'At Risk' ? 'bg-amber-500/20 text-amber-500' : 'bg-red-500/20 text-red-500'} border-none`}>{f.status}</Badge>
@@ -236,17 +222,20 @@ export default function RegionalPerformance() {
             {viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredRegions.map(region => {
-                        const status = getStatusInfo(region.onTrackRate, region.atRiskFarms);
+                        const status = getStatusInfo(region.onTrackRate, region.atRiskFarms, region.isOperational);
                         const progressPercent = Math.min((region.farmersOnboarded / region.target) * 100, 100);
                         return (
-                            <Card key={region.id} className={`border-none shadow-premium ${status.borderColor} overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-white'} hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col`}>
+                            <Card key={region.id} className={`border-none shadow-premium ${status.borderColor} overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-white'} hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col ${region.isOperational === false ? 'opacity-65 grayscale-[60%]' : ''}`}>
                                 <CardHeader className="p-5 pb-4 border-b border-black/5 dark:border-white/5 flex flex-row items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-2.5 h-2.5 rounded-full ${status.color} shadow-sm animate-pulse`}></div>
+                                        <div className={`w-2.5 h-2.5 rounded-full ${status.color} shadow-sm ${region.isOperational !== false ? 'animate-pulse' : ''}`}></div>
                                         <div>
                                             <CardTitle className="text-lg font-black uppercase tracking-tight">{region.name}</CardTitle>
                                         </div>
                                     </div>
+                                    {region.isOperational === false && (
+                                        <Badge variant="outline" className="text-[8px] font-black uppercase border-gray-300 text-gray-400 bg-gray-100 dark:bg-gray-800 dark:border-gray-700">INACTIVE</Badge>
+                                    )}
                                 </CardHeader>
                                 <CardContent className="p-5 flex-1 flex flex-col gap-6">
                                     <div className="space-y-1.5">
@@ -294,12 +283,13 @@ export default function RegionalPerformance() {
                                     <Button 
                                         variant="outline" 
                                         className="w-full font-black text-[10px] uppercase tracking-widest h-10 rounded-xl"
+                                        disabled={region.isOperational === false}
                                         onClick={() => {
                                             setSelectedRegionId(region.id);
                                             window.scrollTo({ top: 0, behavior: 'smooth' });
                                         }}
                                     >
-                                        View Details
+                                        {region.isOperational === false ? 'Non-Operational' : 'View Details'}
                                     </Button>
                                 </div>
                             </Card>
@@ -322,10 +312,10 @@ export default function RegionalPerformance() {
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-800 text-sm">
                                 {filteredRegions.map(region => (
-                                    <tr key={region.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                                    <tr key={region.id} className={`hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group ${region.isOperational === false ? 'opacity-50 grayscale' : ''}`}>
                                         <td className="p-5">
                                             <div className="flex items-center gap-3">
-                                                <div className={`w-2 h-2 rounded-full ${getStatusInfo(region.onTrackRate, region.atRiskFarms).color}`}></div>
+                                                <div className={`w-2 h-2 rounded-full ${getStatusInfo(region.onTrackRate, region.atRiskFarms, region.isOperational).color}`}></div>
                                                 <span className="font-black uppercase">{region.name}</span>
                                             </div>
                                         </td>
@@ -354,14 +344,18 @@ export default function RegionalPerformance() {
                                                 <span className="text-[9px] font-bold text-gray-500 uppercase">{region.agents} Agents</span>
                                                 {region.atRiskFarms > 0 ? (
                                                     <span className="text-[9px] font-black text-amber-500 uppercase">{region.atRiskFarms} At Risk</span>
-                                                ) : null}
+                                                ) : region.isOperational === false ? (
+                                                    <span className="text-[9px] font-black text-gray-400 uppercase">Inactive</span>
+                                                ) : (
+                                                    <span className="text-[9px] font-black text-[#7ede56] uppercase">Active</span>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="p-5 text-right space-x-2">
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10" onClick={() => { setSelectedRegionId(region.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10" disabled={region.isOperational === false} onClick={() => { setSelectedRegionId(region.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
                                                 <Navigation className="w-4 h-4" />
                                             </Button>
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-400 hover:text-gray-900 dark:hover:text-white" disabled={region.isOperational === false}>
                                                 <Download className="w-4 h-4" />
                                             </Button>
                                         </td>
@@ -409,20 +403,26 @@ export default function RegionalPerformance() {
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                            {ALERTS_MOCK.map((alert, idx) => (
-                                <div key={idx} className="p-5 flex items-start gap-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
-                                    <div className={`mt-0.5 p-2 rounded-xl ${alert.severity === 'red' ? 'bg-red-500/10 text-red-500' : 'bg-amber-500/10 text-amber-500'}`}>
-                                        <AlertTriangle className="w-4 h-4" />
+                            {alerts && alerts.length > 0 ? (
+                                alerts.map((alert: any, idx: number) => (
+                                    <div key={idx} className="p-5 flex items-start gap-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                                        <div className={`mt-0.5 p-2 rounded-xl ${alert.severity === 'red' ? 'bg-red-500/10 text-red-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                            <AlertTriangle className="w-4 h-4" />
+                                        </div>
+                                        <div className="flex-1 space-y-2">
+                                            <h4 className="text-sm font-black uppercase leading-tight">{alert.region}</h4>
+                                            <p className="text-[10px] font-bold text-gray-500 uppercase">{alert.text}</p>
+                                            <button className={`text-[9px] font-black uppercase tracking-widest ${alert.severity === 'red' ? 'text-red-500' : 'text-amber-500'} opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 hover:underline`}>
+                                                Take Action <ChevronUp className="w-3 h-3 rotate-90" />
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="flex-1 space-y-2">
-                                        <h4 className="text-sm font-black uppercase leading-tight">{alert.region}</h4>
-                                        <p className="text-[10px] font-bold text-gray-500 uppercase">{alert.text}</p>
-                                        <button className={`text-[9px] font-black uppercase tracking-widest ${alert.severity === 'red' ? 'text-red-500' : 'text-amber-500'} opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 hover:underline`}>
-                                            Take Action <ChevronUp className="w-3 h-3 rotate-90" />
-                                        </button>
-                                    </div>
+                                ))
+                            ) : (
+                                <div className="p-8 text-center text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                    No executive alerts active.
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </CardContent>
                 </Card>

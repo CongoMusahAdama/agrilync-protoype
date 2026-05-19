@@ -157,7 +157,7 @@ const AgentDashboard: React.FC = () => {
 
   // Sync tab with URL if it changes with whitelisting for security
   useEffect(() => {
-    const allowedTabs = ['overview', 'farms', 'visits', 'media', 'quick-reports', 'operational-map', 'performance'];
+    const allowedTabs = ['overview', 'farms', 'visits', 'media', 'quick-reports', 'operational-map', 'performance', 'tasks'];
     const tabFromUrl = queryParams.get('tab');
     if (tabFromUrl && allowedTabs.includes(tabFromUrl) && tabFromUrl !== activeTab) {
       setActiveTab(tabFromUrl);
@@ -1017,43 +1017,7 @@ const AgentDashboard: React.FC = () => {
               <ReportsTab sectionCardClass={sectionCardClass} />
             </TabsContent>
             <TabsContent value="tasks">
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card className="p-8 border-none shadow-xl rounded-2xl bg-white space-y-6">
-                  <div className="flex items-center gap-4">
-                    <div className="h-14 w-14 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-600 shadow-sm border border-amber-200">
-                      <ClipboardList className="h-7 w-7" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-black text-[#002f37] tracking-tight">Active Operations</h3>
-                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Task Sync Status</p>
-                    </div>
-                  </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-black text-[#002f37]">{tasksData.filter((t: any) => t.status !== 'done').length}</span>
-                    <span className="text-sm font-bold text-gray-400 uppercase">Pending Actions</span>
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 italic text-[13px] text-gray-500 font-medium">
-                    "Ensure all field tasks are synced and completed to maintain optimal KPI rankings."
-                  </div>
-                  <Button onClick={() => setActiveTab('overview')} variant="outline" className="w-full h-12 rounded-xl border-gray-200 text-[#002f37] font-black uppercase text-[11px] tracking-widest hover:bg-gray-50">
-                    Back to Overview
-                  </Button>
-                </Card>
-                <div className="space-y-4">
-                   {tasksData.filter((t: any) => t.status !== 'done').slice(0, 3).map((task: any, idx: number) => (
-                     <div key={idx} className="p-5 bg-white rounded-2xl border border-gray-50 shadow-sm flex items-center justify-between group hover:border-[#065f46]/30 transition-all">
-                       <div className="flex items-center gap-4">
-                         <div className="h-2 w-2 rounded-full bg-amber-500" />
-                         <div>
-                            <p className="text-sm font-bold text-[#002f37]">{task.title}</p>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{task.farmer || 'General Operation'}</p>
-                         </div>
-                       </div>
-                       <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-[#065f46] transition-colors" />
-                     </div>
-                   ))}
-                </div>
-              </div>
+              <TasksDashboardContent />
             </TabsContent>
             <TabsContent value="performance">
               <div className="grid md:grid-cols-2 gap-6">

@@ -68,17 +68,10 @@ const FarmFarmerOversight = () => {
     const fetchFarmers = async () => {
         try {
             const res = await api.get('/super-admin/farmers');
-            if (res.data && res.data.length > 0) {
+            if (res.data) {
                 setFarmers(res.data);
             } else {
-                // Fallback realistic mock data
-                setFarmers([
-                    { id: '1', name: 'Kofi Annan', farmName: 'Green Gold Farms', crop: 'Cocoa', acreage: 12, region: 'Ashanti', phone: '+233 24 100 1122', email: 'k.annan@farmer.gh', status: 'On Track', agentName: 'Kwame Mensah', submissionDate: '2026-03-15', kycScore: 92, hasInvestor: true, investorName: 'Impact Capital GH', matchDate: '2026-03-20' },
-                    { id: '2', name: 'Efua Sutherland', farmName: 'Efua Organic Hub', crop: 'Cassava', acreage: 5, region: 'Eastern', phone: '+233 27 200 3344', email: 'e.sutherland@farmer.gh', status: 'Pending Verification', agentName: 'Sarkodie King', submissionDate: '2026-04-01', kycScore: 85, hasInvestor: false },
-                    { id: '3', name: 'Nii Lamptey', farmName: 'Coastal Harvest', crop: 'Maize', acreage: 20, region: 'Greater Accra', phone: '+233 20 300 5566', email: 'n.lamptey@farmer.gh', status: 'At Risk', agentName: 'Sister Deborah', submissionDate: '2026-02-28', kycScore: 88, hasInvestor: true, investorName: 'AgroVentures', matchDate: '2026-03-05' },
-                    { id: '4', name: 'Ama K. Abebrese', farmName: 'Abebrese Plantation', crop: 'Mango', acreage: 8, region: 'Volta', phone: '+233 55 400 7788', email: 'ama.k@farmer.gh', status: 'Pending Verification', agentName: 'John Dumelo', submissionDate: '2026-04-03', kycScore: 78, hasInvestor: false },
-                    { id: '5', name: 'Sarkodie Addo', farmName: 'Highest Farms', crop: 'Pineapple', acreage: 15, region: 'Central', phone: '+233 24 500 9900', email: 'sark.a@farmer.gh', status: 'Off Track', agentName: 'Abena Osei', submissionDate: '2026-03-10', kycScore: 94, hasInvestor: true, investorName: 'Global Agro Fund', matchDate: '2026-03-12' },
-                ]);
+                setFarmers([]);
             }
         } catch (err) {
             console.error('Failed to fetch farmers:', err);
@@ -96,10 +89,16 @@ const FarmFarmerOversight = () => {
             showCancelButton: true,
             confirmButtonColor: '#7ede56',
             confirmButtonText: 'Approve & Verify'
-        }).then((result) => {
+        }).then(async (result) => {
             if (result.isConfirmed) {
-                setFarmers(prev => prev.map(f => f.id === farmer.id ? { ...f, status: 'On Track' } : f));
-                toast.success(`${farmer.name} verified successfully.`);
+                try {
+                    await api.put(`/super-admin/farmers/${farmer.id}/status`, { status: 'On Track', note: 'KYC Approval' });
+                    setFarmers(prev => prev.map(f => f.id === farmer.id ? { ...f, status: 'On Track' } : f));
+                    toast.success(`${farmer.name} verified successfully.`);
+                } catch (err: any) {
+                    console.error('Approve failed:', err);
+                    toast.error(err.response?.data?.msg || 'Verification failed');
+                }
             }
         });
     };
@@ -113,22 +112,34 @@ const FarmFarmerOversight = () => {
             showCancelButton: true,
             confirmButtonColor: '#d33',
             confirmButtonText: 'Reject'
-        }).then((result) => {
+        }).then(async (result) => {
             if (result.isConfirmed && result.value) {
-                setFarmers(prev => prev.filter(f => f.id !== farmer.id));
-                toast.error(`${farmer.name} submission rejected. Agent notified.`);
+                try {
+                    await api.put(`/super-admin/farmers/${farmer.id}/status`, { status: 'Inactive', note: result.value });
+                    setFarmers(prev => prev.filter(f => f.id !== farmer.id));
+                    toast.error(`${farmer.name} submission rejected. Agent notified.`);
+                } catch (err: any) {
+                    console.error('Reject failed:', err);
+                    toast.error(err.response?.data?.msg || 'Rejection failed');
+                }
             }
         });
     };
 
-    const handleOverride = () => {
+    const handleOverride = async () => {
         if (!overrideData.status || !overrideData.note) {
             toast.error('Status and mandatory audit note required.');
             return;
         }
-        setFarmers(prev => prev.map(f => f.id === selectedFarmer.id ? { ...f, status: overrideData.status } : f));
-        setIsOverrideOpen(false);
-        toast.success(`Farm status overridden to ${overrideData.status}. Logged in System Registry.`);
+        try {
+            await api.put(`/super-admin/farmers/${selectedFarmer.id}/status`, { status: overrideData.status, note: overrideData.note });
+            setFarmers(prev => prev.map(f => f.id === selectedFarmer.id ? { ...f, status: overrideData.status } : f));
+            setIsOverrideOpen(false);
+            toast.success(`Farm status overridden to ${overrideData.status}. Logged in System Registry.`);
+        } catch (err: any) {
+            console.error('Override failed:', err);
+            toast.error(err.response?.data?.msg || 'Override failed');
+        }
     };
 
     const getStatusColor = (status: string) => {
@@ -206,49 +217,57 @@ const FarmFarmerOversight = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                                    {allRegisteredFarmers.map(farmer => (
-                                        <tr key={farmer.id} className="hover:bg-[#7ede56]/5 transition-colors group">
-                                            <td className="p-4 border-l-4 border-transparent group-hover:border-[#7ede56]">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm bg-[#7ede56]/10 text-[#7ede56] uppercase`}>
-                                                        {farmer.name[0]}
+                                    {allRegisteredFarmers.length > 0 ? (
+                                        allRegisteredFarmers.map(farmer => (
+                                            <tr key={farmer.id} className="hover:bg-[#7ede56]/5 transition-colors group">
+                                                <td className="p-4 border-l-4 border-transparent group-hover:border-[#7ede56]">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm bg-[#7ede56]/10 text-[#7ede56] uppercase`}>
+                                                            {farmer.name[0]}
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <span className="font-black uppercase tracking-tight text-sm">{farmer.name}</span>
+                                                            <span className="text-[10px] font-bold text-gray-400 lowercase">{farmer.email}</span>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="font-black uppercase tracking-tight text-sm">{farmer.name}</span>
-                                                        <span className="text-[10px] font-bold text-gray-400 lowercase">{farmer.email}</span>
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="text-[11px] font-black uppercase tracking-tight">{farmer.crop}</span>
+                                                        <span className="text-[9px] font-bold text-gray-400 uppercase">{farmer.acreage} AC • ID: FM-{farmer.id}</span>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="flex flex-col gap-0.5">
-                                                    <span className="text-[11px] font-black uppercase tracking-tight">{farmer.crop}</span>
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase">{farmer.acreage} AC • ID: FM-{farmer.id}</span>
-                                                </div>
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="flex items-center gap-2">
-                                                    <MapPin className="w-3.5 h-3.5 text-blue-500/60" />
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{farmer.region}</span>
-                                                </div>
-                                            </td>
-                                            <td className="p-4">
-                                                {farmer.hasInvestor ? (
-                                                    <Badge className="bg-[#7ede56]/10 text-[#7ede56] border-none text-[8px] font-black">{farmer.investorName}</Badge>
-                                                ) : (
-                                                    <span className="text-[9px] font-black text-gray-400 uppercase">UNMATCHED</span>
-                                                )}
-                                            </td>
-                                            <td className="p-4">
-                                                <div className={`inline-flex items-center px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${getStatusColor(farmer.status)}`}>
-                                                    {farmer.status}
-                                                </div>
-                                            </td>
-                                            <td className="p-4 text-right space-x-2">
-                                                <Button size="icon" variant="ghost" className="h-9 w-9 text-blue-500" onClick={() => { setSelectedFarmer(farmer); setIsProfileOpen(true); }}><Eye className="w-4 h-4" /></Button>
-                                                <Button size="icon" variant="ghost" className="h-9 w-9 text-[#7ede56]" onClick={() => { setSelectedFarmer(farmer); setIsOverrideOpen(true); }}><Shield className="w-4 h-4" /></Button>
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <MapPin className="w-3.5 h-3.5 text-blue-500/60" />
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{farmer.region}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4">
+                                                    {farmer.hasInvestor ? (
+                                                        <Badge className="bg-[#7ede56]/10 text-[#7ede56] border-none text-[8px] font-black">{farmer.investorName}</Badge>
+                                                    ) : (
+                                                        <span className="text-[9px] font-black text-gray-400 uppercase">UNMATCHED</span>
+                                                    )}
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className={`inline-flex items-center px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${getStatusColor(farmer.status)}`}>
+                                                        {farmer.status}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-right space-x-2">
+                                                    <Button size="icon" variant="ghost" className="h-9 w-9 text-blue-500" onClick={() => { setSelectedFarmer(farmer); setIsProfileOpen(true); }}><Eye className="w-4 h-4" /></Button>
+                                                    <Button size="icon" variant="ghost" className="h-9 w-9 text-[#7ede56]" onClick={() => { setSelectedFarmer(farmer); setIsOverrideOpen(true); }}><Shield className="w-4 h-4" /></Button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={6} className="p-8 text-center text-xs font-black uppercase text-gray-400">
+                                                No verified farmer records in directory.
                                             </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </CardContent>

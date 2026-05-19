@@ -25,7 +25,10 @@ import {
     Activity,
     Info,
     LayoutGrid,
-    LayoutList
+    LayoutList,
+    Compass,
+    Smartphone,
+    Check
 } from 'lucide-react';
 import api from '@/utils/api';
 import { useDarkMode } from '@/contexts/DarkModeContext';
@@ -44,31 +47,33 @@ const FieldOperationsAudit = () => {
     const [selectedItem, setSelectedItem] = useState<any>(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-    // Mock Data for Audit
-    const visits = [
-        { id: '1', date: '2026-04-05', agent: 'Kwame Mensah', farmer: 'Kofi Annan', region: 'Ashanti', purpose: 'Soil Testing', status: 'Completed', notes: 'Soil nitrogen levels low. Recommended organic fertilizer.', photo: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=2070&auto=format&fit=crop' },
-        { id: '2', date: '2026-04-04', agent: 'Abena Osei', farmer: 'Efua Sutherland', region: 'Western', purpose: 'Pest Inspection', status: 'Issue Found', notes: 'Found aphids on lower leaves of cocoa plants.', photo: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=2040&auto=format&fit=crop' },
-        { id: '3', date: '2026-04-03', agent: 'Sarkodie King', farmer: 'Nii Lamptey', region: 'Eastern', purpose: 'Harvest Prep', status: 'Completed', notes: 'Maize moisture content at 14%. Ready for harvest in 5 days.', photo: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=2070&auto=format&fit=crop' },
-    ];
+    const [visits, setVisits] = useState<any[]>([]);
+    const [media, setMedia] = useState<any[]>([]);
+    const [training, setTraining] = useState<any[]>([]);
+    const [tasks, setTasks] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const media = [
-        { id: '1', url: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=2070&auto=format&fit=crop', caption: 'Farm Entrance - Kofi Annan', type: 'Site Photo', agent: 'Kwame Mensah', date: '2026-04-05' },
-        { id: '2', url: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=2040&auto=format&fit=crop', caption: 'Crop Health - Ashanti North', type: 'Detail', agent: 'Kwame Mensah', date: '2026-04-05' },
-        { id: '3', url: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=2070&auto=format&fit=crop', caption: ' Irrigation Setup', type: 'Infra', agent: 'Abena Osei', date: '2026-04-04' },
-        { id: '4', url: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=2070&auto=format&fit=crop', caption: 'Seedling Progress', type: 'Growth', agent: 'Sarkodie King', date: '2026-04-03' },
-    ];
-
-    const training = [
-        { id: '1', trainee: 'Kofi Annan', course: 'Smart Irrigation', agent: 'Kwame Mensah', date: '2026-03-28', score: 95, status: 'Passed' },
-        { id: '2', trainee: 'Efua Sutherland', course: 'Soil Fertility', agent: 'Abena Osei', date: '2026-04-02', score: 88, status: 'Passed' },
-        { id: '3', trainee: 'Nii Lamptey', course: 'Pest Management', agent: 'Sarkodie King', date: '2026-04-01', score: 45, status: 'Failed' },
-    ];
-
-    const tasks = [
-        { id: '1', title: 'Onboard 10 Farmers', agent: 'Kwame Mensah', region: 'Ashanti', progress: 80, dueDate: '2026-04-10', priority: 'High' },
-        { id: '2', title: 'Verify Volta Yields', agent: 'John Dumelo', region: 'Volta', progress: 30, dueDate: '2026-04-15', priority: 'Medium' },
-        { id: '3', title: 'Upload Site Photos', agent: 'Abena Osei', region: 'Western', progress: 100, dueDate: '2026-04-04', priority: 'High' },
-    ];
+    useEffect(() => {
+        const fetchAuditData = async () => {
+            try {
+                const [visitsRes, mediaRes, trainingRes, tasksRes] = await Promise.all([
+                    api.get('/super-admin/visits').catch(() => ({ data: [] })),
+                    api.get('/super-admin/media').catch(() => ({ data: [] })),
+                    api.get('/super-admin/training').catch(() => ({ data: [] })),
+                    api.get('/super-admin/tasks').catch(() => ({ data: [] }))
+                ]);
+                setVisits(visitsRes.data || []);
+                setMedia(mediaRes.data || []);
+                setTraining(trainingRes.data || []);
+                setTasks(tasksRes.data || []);
+            } catch (err) {
+                console.error('Failed to fetch field operations audit data:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchAuditData();
+    }, []);
 
     return (
         <div className="space-y-8 pb-12 animate-in fade-in duration-300">
@@ -97,7 +102,7 @@ const FieldOperationsAudit = () => {
                             className={`pl-12 h-12 text-sm border-none shadow-inner ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}
                         />
                     </div>
-                    <Button className="bg-[#002f37] text-[#7ede56] border border-[#7ede56]/20 font-black uppercase text-[10px] tracking-widest h-12 px-6 rounded-xl shadow-premium">
+                    <Button className="bg-[#002f37] text-[#7ede56] border border-[#7ede56]/20 font-black uppercase text-[10px] tracking-widest h-12 px-6 rounded-none shadow-premium">
                         <Download className="w-4 h-4 mr-2" /> Global Export
                     </Button>
                 </div>
@@ -121,7 +126,7 @@ const FieldOperationsAudit = () => {
 
                 {/* VISITS TAB */}
                 <TabsContent value="visits" className="mt-0 space-y-4">
-                    <Card className={`border-none shadow-premium overflow-hidden ${darkMode ? 'bg-gray-950' : 'bg-white'}`}>
+                    <Card className={`border-none shadow-premium overflow-hidden rounded-none ${darkMode ? 'bg-gray-955' : 'bg-white'}`}>
                         <CardContent className="p-0 overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead>
@@ -143,7 +148,7 @@ const FieldOperationsAudit = () => {
                                             <td className="p-4 border-l-4 border-transparent group-hover:border-[#7ede56]">
                                                 <div className="flex flex-col">
                                                     <span className="font-black uppercase tracking-tight text-sm">{visit.agent}</span>
-                                                    <span className="text-[9px] font-bold text-[#7ede56] uppercase tracking-widest leading-none">For {visit.farmer} ({visit.region})</span>
+                                                    <span className="text-[9px] font-bold text-[#7ede56] uppercase tracking-widest leading-none mt-1">For {visit.farmer} ({visit.region})</span>
                                                 </div>
                                             </td>
                                             <td className="p-4">
@@ -173,7 +178,7 @@ const FieldOperationsAudit = () => {
                 <TabsContent value="media" className="mt-0">
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                         {media.map(item => (
-                            <Card key={item.id} className={`border-none shadow-premium overflow-hidden group cursor-pointer ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
+                            <Card key={item.id} className={`border-none shadow-premium overflow-hidden group cursor-pointer rounded-none ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
                                 <div className="aspect-square relative overflow-hidden">
                                     <img src={item.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={item.caption} />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
@@ -197,7 +202,7 @@ const FieldOperationsAudit = () => {
                 <TabsContent value="tasks" className="mt-0">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {tasks.map(task => (
-                            <Card key={task.id} className={`border-none shadow-premium overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
+                            <Card key={task.id} className={`border-none shadow-premium overflow-hidden rounded-none ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
                                 <CardHeader className="p-5 border-b border-black/5 dark:border-white/5 bg-gray-50/50 dark:bg-gray-800/50">
                                     <div className="flex justify-between items-start">
                                         <Badge className={`font-black text-[8px] tracking-widest ${task.priority === 'High' ? 'bg-rose-500/10 text-rose-500' : 'bg-blue-500/10 text-blue-500'} border-none px-3`}>
@@ -232,7 +237,7 @@ const FieldOperationsAudit = () => {
 
                 {/* TRAINING TAB */}
                 <TabsContent value="training" className="mt-0">
-                    <Card className={`border-none shadow-premium overflow-hidden ${darkMode ? 'bg-gray-950' : 'bg-white'}`}>
+                    <Card className={`border-none shadow-premium overflow-hidden rounded-none ${darkMode ? 'bg-gray-955' : 'bg-white'}`}>
                         <CardContent className="p-0 overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead>
@@ -280,59 +285,128 @@ const FieldOperationsAudit = () => {
                 </TabsContent>
             </Tabs>
 
-            {/* Visit Details Overlay */}
+            {/* ========================================================
+                SPACIOUS & BEAUTIFUL VISIT DETAILS OVERLAY - MD:MAX-W-[1100PX]
+                ======================================================== */}
             <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-                <DialogContent className={`sm:max-w-[700px] border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+                <DialogContent className={`md:max-w-[1100px] p-0 border-none rounded-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'} max-h-[96vh] overflow-y-auto [&>button]:text-white [&>button]:opacity-85 [&>button:hover]:opacity-100 [&>button]:top-5 [&>button]:right-6 [&>button]:z-50 [&>button]:scale-110`}>
                     {selectedItem && (
                         <div className="flex flex-col">
-                            <div className="bg-[#002f37] p-8 text-white relative">
-                                <Badge className="absolute top-4 right-4 bg-[#7ede56] text-[#002f37] font-black tracking-widest border-none">MISSION RECAP</Badge>
+                            
+                            {/* Deep Pine Header Banner with White/Green Branding */}
+                            <div className="bg-[#002f37] px-8 py-6.5 text-white relative border-b border-white/10 flex items-center justify-between">
                                 <div className="flex items-center gap-6">
-                                    <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-                                        <MapPin className="w-8 h-8 text-[#7ede56]" />
+                                    <div className="w-14 h-14 rounded-none bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
+                                        <MapPin className="w-7 h-7 text-[#7ede56]" />
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl font-black uppercase tracking-tighter">{selectedItem.purpose}</h2>
-                                        <p className="text-[10px] font-black text-[#7ede56] uppercase tracking-[0.2em]">{selectedItem.farmer} • {selectedItem.region}</p>
+                                        <h2 className="text-xl font-black uppercase tracking-tighter">{selectedItem.purpose} Details Log</h2>
+                                        <p className="text-[10px] font-black text-[#7ede56] uppercase tracking-[0.2em] mt-1">
+                                            Farmer: {selectedItem.farmer} • Territory: {selectedItem.region} Region
+                                        </p>
                                     </div>
                                 </div>
+                                <Badge className="bg-[#7ede56] text-[#002f37] font-black text-[9px] px-3 py-1 rounded-none mr-8 uppercase">
+                                    MISSION RECAP
+                                </Badge>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-0 overflow-y-auto">
-                                <div className="p-8 space-y-6 border-r border-black/5 dark:border-white/5">
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-0 overflow-y-auto">
+                                
+                                {/* LEFT COLUMN: Details Grid (7-Cols) */}
+                                <div className="md:col-span-7 p-10 space-y-8 border-r border-gray-100 dark:border-gray-800">
+                                    
+                                    {/* Personnel Involved */}
                                     <div className="space-y-4">
-                                        <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400"><User className="w-4 h-4" /> Personnel Involved</h4>
-                                        <div className="space-y-3">
-                                            <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-black/5">
-                                                <div className="w-8 h-8 rounded-full bg-[#002f37] text-[#7ede56] flex items-center justify-center font-black text-xs">A</div>
+                                        <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-450">
+                                            <User className="w-4 h-4 text-[#7ede56]" /> Personnel Assigned & Beneficiary
+                                        </h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="flex items-center gap-3.5 p-4 bg-gray-50 dark:bg-gray-900 border border-gray-150 dark:border-gray-800 rounded-none shadow-inner">
+                                                <div className="w-9 h-9 rounded-none bg-[#002f37] text-[#7ede56] flex items-center justify-center font-black text-xs border border-white/10">
+                                                    A
+                                                </div>
                                                 <div>
                                                     <p className="text-[8px] font-black text-gray-400 uppercase mb-0.5">Assigned Agent</p>
-                                                    <p className="text-[10px] font-black uppercase leading-tight">{selectedItem.agent}</p>
+                                                    <p className="text-[11px] font-black uppercase tracking-wide text-gray-850 dark:text-white leading-tight">
+                                                        {selectedItem.agent}
+                                                    </p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-black/5">
-                                                <div className="w-8 h-8 rounded-full bg-[#7ede56]/10 text-[#7ede56] flex items-center justify-center font-black text-xs text-emerald-500">F</div>
+                                            
+                                            <div className="flex items-center gap-3.5 p-4 bg-gray-50 dark:bg-gray-900 border border-gray-150 dark:border-gray-800 rounded-none shadow-inner">
+                                                <div className="w-9 h-9 rounded-none bg-[#7ede56]/15 text-[#7ede56] flex items-center justify-center font-black text-xs">
+                                                    F
+                                                </div>
                                                 <div>
                                                     <p className="text-[8px] font-black text-gray-400 uppercase mb-0.5">Beneficiary Farmer</p>
-                                                    <p className="text-[10px] font-black uppercase leading-tight">{selectedItem.farmer}</p>
+                                                    <p className="text-[11px] font-black uppercase tracking-wide text-gray-850 dark:text-white leading-tight">
+                                                        {selectedItem.farmer}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Audit Observations */}
                                     <div className="space-y-4">
-                                        <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400"><FileText className="w-4 h-4" /> Field Observations</h4>
-                                        <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-black/5">
-                                            <p className="text-xs font-medium leading-relaxed italic">"{selectedItem.notes}"</p>
+                                        <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-450">
+                                            <FileText className="w-4 h-4 text-[#7ede56]" /> Logged Observations
+                                        </h4>
+                                        <div className="p-5 bg-gray-50 dark:bg-gray-900 border border-gray-150 dark:border-gray-800 rounded-none relative">
+                                            <div className="absolute top-4 right-4 flex items-center gap-1.5">
+                                                <div className={`w-2 h-2 rounded-full ${selectedItem.status === 'Completed' ? 'bg-[#7ede56]' : 'bg-rose-500'}`}></div>
+                                                <span className="text-[9px] font-black uppercase text-gray-500">{selectedItem.status}</span>
+                                            </div>
+                                            <p className="text-xs font-semibold leading-relaxed text-gray-700 dark:text-gray-300 italic pt-2">
+                                                "{selectedItem.notes}"
+                                            </p>
                                         </div>
                                     </div>
+
+
                                 </div>
-                                <div className="p-8 space-y-6">
-                                    <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400"><Camera className="w-4 h-4" /> Operational Evidence</h4>
-                                    <div className="aspect-video w-full rounded-2xl overflow-hidden border-2 border-[#7ede56]/20 shadow-lg">
-                                        <img src={selectedItem.photo} className="w-full h-full object-cover" alt="Audit Evidence" />
+                                
+                                {/* RIGHT COLUMN: Operational Evidence & Verification Actions (5-Cols) */}
+                                <div className="md:col-span-5 p-10 flex flex-col justify-between space-y-6">
+                                    <div className="space-y-4">
+                                        <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-450">
+                                            <Camera className="w-4 h-4 text-[#7ede56]" /> Crop / Field Photo Evidence
+                                        </h4>
+                                        <div className="aspect-video w-full rounded-none overflow-hidden border-2 border-[#7ede56] shadow-xl">
+                                            <img src={selectedItem.photo} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" alt="Audit Evidence" />
+                                        </div>
+                                        <p className="text-[9px] font-bold text-gray-400 uppercase text-center tracking-wider">
+                                            High-definition timestamped field imagery uploaded by {selectedItem.agent}
+                                        </p>
                                     </div>
-                                    <div className="pt-4 space-y-3">
-                                        <Button className="w-full h-12 bg-[#7ede56] text-[#002f37] hover:bg-[#6bcb4b] font-black uppercase text-[10px] tracking-widest rounded-xl">Verify Observation</Button>
-                                        <Button variant="ghost" className="w-full h-12 text-rose-500 font-black uppercase text-[10px] tracking-widest rounded-xl" onClick={() => setIsDetailsOpen(false)}>Close Audit</Button>
+                                    
+                                    <div className="space-y-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+                                        <Button 
+                                            onClick={() => {
+                                                toast.success(`Observation verified successfully!`);
+                                                setIsDetailsOpen(false);
+                                            }}
+                                            className="w-full h-12 bg-[#7ede56] text-[#002f37] hover:bg-[#6bcb4b] font-black uppercase text-[10px] tracking-widest rounded-none shadow-md flex items-center justify-center gap-2"
+                                        >
+                                            <Check className="w-4 h-4" /> Verify Observation
+                                        </Button>
+                                        
+                                        <Button 
+                                            variant="outline"
+                                            className="w-full h-12 text-rose-500 border-2 border-rose-500/20 hover:bg-rose-500/10 font-black uppercase text-[10px] tracking-widest rounded-none" 
+                                            onClick={() => setIsDetailsOpen(false)}
+                                        >
+                                            Flag for Review
+                                        </Button>
+                                        
+                                        <Button 
+                                            variant="ghost" 
+                                            className="w-full h-12 text-gray-500 font-black uppercase text-[10px] tracking-widest rounded-none" 
+                                            onClick={() => setIsDetailsOpen(false)}
+                                        >
+                                            Close Audit View
+                                        </Button>
                                     </div>
                                 </div>
                             </div>

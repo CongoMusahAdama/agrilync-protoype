@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Eye, EyeOff, MessageCircle, Construction, Star, Quote } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, MessageCircle, Construction, Star, Quote, ShieldCheck } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import api from '@/utils/api';
 import { useAuth } from '@/contexts/AuthContext';

@@ -28,6 +28,7 @@ interface ProfileData {
   id?: string | null;
   title?: string;
   avatar?: string;
+  email?: string;
 }
 
 const profileMapping: Record<string, ProfileData> = {
@@ -35,14 +36,21 @@ const profileMapping: Record<string, ProfileData> = {
   investor: { name: 'Maria Investment', location: 'Accra HQ', title: 'Investor' },
   farmer: { name: 'Kwame Mensah', location: 'Kumasi Cluster', title: 'Farmer' },
   agent: { name: 'Agent Adams', location: 'Lokoja Region', id: 'AGN-4512', title: 'Field Agent' },
-  'super-admin': { name: 'Super Admin', location: 'Global Ops', title: 'Executive' },
+  'super-admin': {
+    name: 'Adama Musah',
+    location: 'Global Ops',
+    title: 'Super Administrator',
+    id: 'SA-0001',
+    email: 'a.musah@agrilync.com',
+  },
 };
 
 const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({ sidebarCollapsed, isMobile, userType }) => {
   const { agent } = useAuth();
 
   const isSuperAdmin = userType === 'super-admin';
-  const isLoading = !agent && (['agent', 'super-admin', 'farmer', 'grower', 'investor'].includes(userType || ''));
+  // Only show loading skeleton when there's no agent AND no static fallback profile available
+  const isLoading = !agent && !profileMapping[userType ?? 'grower'];
 
   // Use dynamic agent/user data if available, otherwise fallback to mapping
   const a = agent as any;
@@ -110,7 +118,7 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({ sidebarCollapse
             </h3>
             
             <p className="text-gray-400 text-[11px] font-medium tracking-wide lowercase">
-              {agent?.email || 'nexus.field.ops@agrilync.com'}
+              {agent?.email || profile.email || 'nexus.field.ops@agrilync.com'}
             </p>
 
             {profile.id && (
