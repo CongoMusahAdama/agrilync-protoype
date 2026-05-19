@@ -135,7 +135,7 @@ const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({ sidebarCollapse
                 </span>
               </div>
               
-              {userType === 'agent' ? (
+              {userType === 'agent' || userType === 'super-admin' ? (
                 <div className="mt-2 w-full flex flex-col items-center">
                   <RegionSwitcher className="w-full" />
                 </div>

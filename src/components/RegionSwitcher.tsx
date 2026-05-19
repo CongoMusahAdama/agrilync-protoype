@@ -35,8 +35,10 @@ const RegionSwitcher: React.FC<RegionSwitcherProps> = ({ className }) => {
         ? (agent as any).assignedRegions 
         : [agent?.region || 'Ashanti'];
     
+    const isSuperAdmin = agent?.role === 'super_admin';
+
     // Check if the agent is configured/assigned to the selected deployment zone
-    if (!assigned.includes(newRegion)) {
+    if (!isSuperAdmin && !assigned.includes(newRegion)) {
       Swal.fire({
         title: '<span class="text-[#002f37] font-black uppercase text-xl">Access Denied</span>',
         html: `<p class="text-gray-500 font-bold text-sm leading-relaxed">You are not currently configured/deployed to the <span class="text-[#065f46] font-black">${newRegion.toUpperCase()}</span> zone. Please contact your supervisor for deployment access.</p>`,
