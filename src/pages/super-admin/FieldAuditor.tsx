@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
@@ -42,7 +43,9 @@ import {
 
 const FieldOperationsAudit = () => {
     const { darkMode } = useDarkMode();
-    const [activeTab, setActiveTab] = useState('visits');
+    const [searchParams] = useSearchParams();
+    const initialTab = searchParams.get('tab') || 'visits';
+    const [activeTab, setActiveTab] = useState(initialTab);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedItem, setSelectedItem] = useState<any>(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -108,7 +111,7 @@ const FieldOperationsAudit = () => {
                 </div>
             </div>
 
-            <Tabs defaultValue="visits" onValueChange={setActiveTab} className="w-full">
+            <Tabs defaultValue={initialTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl h-14 mb-8">
                     <TabsTrigger value="visits" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-8 h-full data-[state=active]:bg-[#002f37] data-[state=active]:text-[#7ede56] shadow-sm transition-all flex gap-2">
                         <MapPin className="w-4 h-4" /> Visit Logs

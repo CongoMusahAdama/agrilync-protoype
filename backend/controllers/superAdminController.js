@@ -48,7 +48,8 @@ exports.getDashboardStats = async (req, res) => {
             criticalEscalationsListRaw,
             topAgentsRaw,
             bottomAgentsRaw,
-            regionalPerformanceRaw
+            regionalPerformanceRaw,
+            inactiveAgentsListRaw
         ] = await withTimeout(Promise.all([
             Agent.distinct('region'),
             Agent.countDocuments({ role: 'supervisor' }),
@@ -80,7 +81,8 @@ exports.getDashboardStats = async (req, res) => {
                         farmers: { $sum: "$stats.farmersOnboarded" }
                     }
                 }
-            ])
+            ]),
+            Agent.find({ role: 'agent', status: 'inactive' }).select('name region updatedAt').limit(5).lean()
         ]));
 
         // Calculate average session duration for today (optimized for limited log set)
@@ -114,6 +116,7 @@ exports.getDashboardStats = async (req, res) => {
 
         // Map list outputs for dashboard compliance
         const pendingKYCList = pendingKYCListRaw.map(f => ({
+            id: f._id.toString(),
             name: f.name,
             region: f.region,
             agent: f.agent?.name || 'Unassigned',
@@ -123,9 +126,10 @@ exports.getDashboardStats = async (req, res) => {
         const criticalAlertsList = criticalEscalationsListRaw.map(e => ({
             id: e._id.toString(),
             type: e.category || 'Dispute',
-            title: e.title || 'Escalated dispute logged',
+            title: e.message || 'Escalated dispute logged',
             description: e.description || 'Agronomic investigation needed',
             priority: e.priority || 'high',
+            by: e.source || 'Lync Agent',
             date: e.createdAt ? e.createdAt.toISOString().split('T')[0] : today.toISOString().split('T')[0]
         }));
 
@@ -165,6 +169,18 @@ exports.getDashboardStats = async (req, res) => {
         const pendingKYCCount = await Farmer.countDocuments({ status: 'pending' });
         const inactiveAgentsCount = await Agent.countDocuments({ role: 'agent', status: 'inactive' });
 
+        const inactiveAgentsList = (inactiveAgentsListRaw || []).map(a => {
+            const diffMs = Date.now() - new Date(a.updatedAt).getTime();
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const lastSync = diffHours > 24 ? `${Math.floor(diffHours / 24)} days ago` : `${diffHours} hours ago`;
+            return {
+                id: a._id.toString(),
+                name: a.name,
+                region: a.region,
+                lastSync
+            };
+        });
+
         res.json({
             totalRegions: totalRegions.length || 1,
             totalSupervisors: totalSupervisors,
@@ -196,6 +212,7 @@ exports.getDashboardStats = async (req, res) => {
             lowEngagement,
             pendingKYCList,
             criticalAlertsList,
+            inactiveAgentsList,
             regionalDistribution
         });
         console.timeEnd(timerLabel);

@@ -153,7 +153,7 @@ const Overview = () => {
         { title: 'Active Regions', value: stats?.totalRegions || '0', subtitle: 'Regions Covered', icon: Globe, color: 'bg-teal-600', path: '/dashboard/super-admin/regions' },
         { title: 'Pending Approvals', value: stats?.pendingApprovals || '0', subtitle: 'Across verifications & escalations', icon: Clock, color: 'bg-amber-500', path: '/dashboard/super-admin/escalations' },
         { title: 'At-Risk Farms', value: stats?.atRiskFarms || '0', subtitle: 'Require immediate follow-up', icon: AlertTriangle, color: 'bg-red-600', path: '/dashboard/super-admin/oversight' },
-        { title: 'Scheduled Training', value: stats?.scheduledTraining || '0', subtitle: 'Agent-led field sessions', icon: BookOpen, color: 'bg-[#002f37]', path: '/dashboard/super-admin/agents' },
+        { title: 'Scheduled Training', value: stats?.scheduledTraining || '0', subtitle: 'Agent-led field sessions', icon: BookOpen, color: 'bg-[#002f37]', path: '/dashboard/super-admin/audit?tab=training' },
     ];
 
     const farmHealthData = [
@@ -161,6 +161,29 @@ const Overview = () => {
         { name: 'At Risk', value: stats?.farmHealth?.atRisk || 0, color: '#f59e0b' },
         { name: 'Off Track', value: stats?.farmHealth?.offTrack || 0, color: '#f43f5e' },
     ];
+
+    const handleVerifyFarmer = async (farmerId: string, status: 'Active' | 'Inactive', name: string) => {
+        try {
+            await api.put(`/super-admin/farmers/${farmerId}/status`, {
+                status,
+                note: `Approved via Super Admin dashboard Overview panel`
+            });
+            setStats((prev: any) => {
+                const newList = (prev.pendingKYCList || []).filter((f: any) => f.id !== farmerId);
+                return {
+                    ...prev,
+                    pendingKYCList: newList,
+                    pendingVerificationsCount: Math.max(0, (prev.pendingVerificationsCount || 1) - 1),
+                    pendingApprovals: Math.max(0, (prev.pendingApprovals || 1) - 1),
+                    totalFarmers: status === 'Active' ? (prev.totalFarmers || 0) + 1 : prev.totalFarmers
+                };
+            });
+            toast.success(`Farmer ${name} has been ${status === 'Active' ? 'approved' : 'rejected'}.`);
+        } catch (err: any) {
+            console.error('Failed to verify farmer:', err);
+            toast.error(err.response?.data?.msg || 'Failed to update farmer status');
+        }
+    };
 
     const handleQuickAction = (type: string) => {
         setDrawerType(type);
@@ -171,28 +194,43 @@ const Overview = () => {
             case 'verifications':
                 return (
                     <div className="space-y-6 pt-6">
-                        {[
-                            { name: 'Kwesi Appiah', region: 'Western', agent: 'Sarkodie', kyc: 85 },
-                            { name: 'Amba Osei', region: 'Ashanti', agent: 'Mensah', kyc: 92 },
-                            { name: 'Ekow Botchwey', region: 'Central', agent: 'Ekow', kyc: 70 },
-                        ].map((f, i) => (
-                            <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-black/5">
-                                <div>
-                                    <h4 className="text-sm font-black uppercase tracking-tight">{f.name}</h4>
-                                    <p className="text-[10px] font-bold text-gray-500 uppercase">{f.region} • Agent: {f.agent}</p>
-                                    <div className="mt-2 flex items-center gap-2">
-                                        <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden w-24">
-                                            <div className="h-full bg-[#7ede56]" style={{ width: `${f.kyc}%` }}></div>
+                        {stats?.pendingKYCList && stats.pendingKYCList.length > 0 ? (
+                            stats.pendingKYCList.map((f: any, i: number) => (
+                                <div key={f.id || i} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-black/5">
+                                    <div className="flex-1 mr-4 min-w-0">
+                                        <h4 className="text-sm font-black uppercase tracking-tight truncate">{f.name}</h4>
+                                        <p className="text-[10px] font-bold text-gray-500 uppercase truncate">{f.region} • Agent: {f.agent}</p>
+                                        <div className="mt-2 flex items-center gap-2">
+                                            <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden w-24">
+                                                <div className="h-full bg-[#7ede56]" style={{ width: `${f.kyc}%` }}></div>
+                                            </div>
+                                            <span className="text-[8px] font-black">{f.kyc}% KYC</span>
                                         </div>
-                                        <span className="text-[8px] font-black">{f.kyc}% KYC</span>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <Button 
+                                            size="sm" 
+                                            className="bg-[#7ede56] text-[#002f37] hover:bg-[#6bcb4b] font-black text-[9px] h-8 px-4 rounded-xl"
+                                            onClick={() => handleVerifyFarmer(f.id, 'Active', f.name)}
+                                        >
+                                            APPROVE
+                                        </Button>
+                                        <Button 
+                                            size="sm" 
+                                            variant="outline" 
+                                            className="text-rose-500 border-rose-500/20 hover:bg-rose-50 font-black text-[9px] h-8 px-4 rounded-xl"
+                                            onClick={() => handleVerifyFarmer(f.id, 'Inactive', f.name)}
+                                        >
+                                            REJECT
+                                        </Button>
                                     </div>
                                 </div>
-                                <div className="flex flex-col gap-2">
-                                    <Button size="sm" className="bg-[#7ede56] text-[#002f37] hover:bg-[#6bcb4b] font-black text-[9px] h-8 px-4 rounded-xl">APPROVE</Button>
-                                    <Button size="sm" variant="outline" className="text-rose-500 border-rose-500/20 hover:bg-rose-50 font-black text-[9px] h-8 px-4 rounded-xl">REJECT</Button>
-                                </div>
+                            ))
+                        ) : (
+                            <div className="py-12 text-center text-xs font-black uppercase text-gray-400 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl">
+                                No pending verifications.
                             </div>
-                        ))}
+                        )}
                     </div>
                 );
             case 'disbursements':
@@ -221,47 +259,57 @@ const Overview = () => {
             case 'inactive-agents':
                 return (
                     <div className="space-y-6 pt-6">
-                        {[
-                            { name: 'Francis Kojo', region: 'Northern', lastSync: '3 days ago' },
-                            { name: 'Janet Adama', region: 'Eastern', lastSync: '52 hours ago' },
-                        ].map((a, i) => (
-                            <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-black/5">
-                                <div>
-                                    <h4 className="text-sm font-black uppercase tracking-tight">{a.name}</h4>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase">{a.region}</p>
-                                    <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest mt-1 block">LAST SYNC: {a.lastSync}</span>
+                        {stats?.inactiveAgentsList && stats.inactiveAgentsList.length > 0 ? (
+                            stats.inactiveAgentsList.map((a: any, i: number) => (
+                                <div key={a.id || i} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-black/5">
+                                    <div>
+                                        <h4 className="text-sm font-black uppercase tracking-tight">{a.name}</h4>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase">{a.region}</p>
+                                        <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest mt-1 block">LAST SYNC: {a.lastSync}</span>
+                                    </div>
+                                    <Button 
+                                        size="sm" 
+                                        className="bg-[#002f37] text-white hover:bg-black font-black text-[9px] h-9 px-4 rounded-xl flex gap-2"
+                                        onClick={() => toast.success(`Reminder sent to ${a.name}.`)}
+                                    >
+                                        <Zap className="w-3 h-3 text-[#7ede56]" /> SEND REMINDER
+                                    </Button>
                                 </div>
-                                <Button size="sm" className="bg-[#002f37] text-white hover:bg-black font-black text-[9px] h-9 px-4 rounded-xl flex gap-2">
-                                    <Zap className="w-3 h-3 text-[#7ede56]" /> SEND REMINDER
-                                </Button>
+                            ))
+                        ) : (
+                            <div className="py-12 text-center text-xs font-black uppercase text-gray-400 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl">
+                                No inactive agents.
                             </div>
-                        ))}
+                        )}
                     </div>
                 );
             case 'escalations':
                 return (
                     <div className="space-y-6 pt-6">
-                        {[
-                            { title: 'Payment Delay - Ashanti', category: 'Financial', by: 'Agent Sarkodie' },
-                            { title: 'Pest Outbreak Alert', category: 'Operational', by: 'Supervisor Mensah' },
-                        ].map((e, i) => (
-                            <div key={i} className="p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-black/5 space-y-4">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <Badge className="bg-red-500/10 text-red-500 font-black text-[8px] mb-2">CRITICAL</Badge>
-                                        <h4 className="text-sm font-black uppercase tracking-tight leading-tight">{e.title}</h4>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">Submitted by {e.by}</p>
+                        {stats?.criticalAlertsList && stats.criticalAlertsList.length > 0 ? (
+                            stats.criticalAlertsList.map((e: any, i: number) => (
+                                <div key={e.id || i} className="p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-black/5 space-y-4 group">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <Badge className={`${e.priority === 'Critical' ? 'bg-red-500' : 'bg-amber-500'} text-white font-black text-[8px] mb-2`}>{e.priority.toUpperCase()}</Badge>
+                                            <h4 className="text-sm font-black uppercase tracking-tight leading-tight">{e.title}</h4>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">Submitted by {e.by}</p>
+                                        </div>
+                                        <div className="p-2 rounded-lg bg-gray-100 dark:bg-white/10 group-hover:bg-[#7ede56]/20 transition-colors cursor-pointer" onClick={() => navigate('/dashboard/super-admin/escalations')}>
+                                            <ChevronRight className="w-4 h-4 text-gray-400" />
+                                        </div>
                                     </div>
-                                    <div className="p-2 rounded-lg bg-gray-100 dark:bg-white/10 group-hover:bg-[#7ede56]/20 transition-colors">
-                                        <ChevronRight className="w-4 h-4 text-gray-400" />
+                                    <div className="flex gap-2">
+                                        <Button className="flex-1 bg-[#002f37] text-white font-black text-[9px] h-9 rounded-xl" onClick={() => navigate('/dashboard/super-admin/escalations')}>RESOLVE</Button>
+                                        <Button variant="outline" className="flex-1 font-black text-[9px] h-9 rounded-xl" onClick={() => navigate('/dashboard/super-admin/escalations')}>VIEW DETAILS</Button>
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <Button className="flex-1 bg-[#002f37] text-white font-black text-[9px] h-9 rounded-xl">ASSIGN</Button>
-                                    <Button variant="outline" className="flex-1 font-black text-[9px] h-9 rounded-xl">VIEW DETAILS</Button>
-                                </div>
+                            ))
+                        ) : (
+                            <div className="py-12 text-center text-xs font-black uppercase text-gray-400 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl">
+                                No critical escalations.
                             </div>
-                        ))}
+                        )}
                     </div>
                 );
             default:
@@ -531,8 +579,21 @@ const Overview = () => {
                                                         <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{item.time}</span>
                                                     </div>
                                                     <div className="flex gap-2">
-                                                        <Button size="sm" className="flex-1 bg-[#7ede56] text-[#002f37] hover:bg-[#6bcb4b] font-black text-[9px] h-10 rounded-xl" onClick={() => toast.success(`Farmer ${item.name} verified.`)}>Approve ✓</Button>
-                                                        <Button variant="outline" size="sm" className="flex-1 text-rose-500 border-rose-100 font-black text-[9px] h-10 rounded-xl">Reject ✗</Button>
+                                                        <Button 
+                                                            size="sm" 
+                                                            className="flex-1 bg-[#7ede56] text-[#002f37] hover:bg-[#6bcb4b] font-black text-[9px] h-10 rounded-xl" 
+                                                            onClick={() => handleVerifyFarmer(item.id, 'Active', item.name)}
+                                                        >
+                                                            Approve ✓
+                                                        </Button>
+                                                        <Button 
+                                                            variant="outline" 
+                                                            size="sm" 
+                                                            className="flex-1 text-rose-500 border-rose-100 font-black text-[9px] h-10 rounded-xl"
+                                                            onClick={() => handleVerifyFarmer(item.id, 'Inactive', item.name)}
+                                                        >
+                                                            Reject ✗
+                                                        </Button>
                                                     </div>
                                                 </div>
                                             ))
