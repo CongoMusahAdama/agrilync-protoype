@@ -155,7 +155,7 @@ const FieldOperationsAudit = () => {
                                                 </div>
                                             </td>
                                             <td className="p-4">
-                                                <Badge className="bg-blue-500/10 text-blue-500 border-none font-black text-[9px] px-3">{visit.purpose.toUpperCase()}</Badge>
+                                                <Badge className="bg-blue-500/10 text-blue-500 border-none font-black text-[9px] px-3">{(visit.purpose || '').toUpperCase()}</Badge>
                                             </td>
                                             <td className="p-4">
                                                 <div className="flex flex-col gap-1">
@@ -266,10 +266,10 @@ const FieldOperationsAudit = () => {
                                 </CardHeader>
                                 <CardContent className="p-5 space-y-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-[#002f37] text-[#7ede56] flex items-center justify-center font-black text-xs">{task.agent[0]}</div>
+                                        <div className="w-8 h-8 rounded-full bg-[#002f37] text-[#7ede56] flex items-center justify-center font-black text-xs">{(task.agent || 'A')[0]}</div>
                                         <div>
                                             <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">ASSIGNED TO</p>
-                                            <p className="text-[10px] font-black uppercase">{task.agent} ({task.region})</p>
+                                            <p className="text-[10px] font-black uppercase">{task.agent || 'Unknown'} ({task.region || 'Unknown'})</p>
                                         </div>
                                     </div>
                                     <div className="space-y-2">
@@ -339,14 +339,14 @@ const FieldOperationsAudit = () => {
                                                         </div>
                                                     </td>
                                                     <td className="p-4">
-                                                        <div className="flex flex-col gap-1">
-                                                            {t.category && <Badge className="bg-purple-500/10 text-purple-500 border-none font-black text-[8px] w-fit px-2">{t.category.toUpperCase()}</Badge>}
+                                                    <div className="flex flex-col gap-1">
+                                                            {t.category && <Badge className="bg-purple-500/10 text-purple-500 border-none font-black text-[8px] w-fit px-2">{String(t.category).toUpperCase()}</Badge>}
                                                             {t.mode && <span className="text-[9px] font-bold text-gray-400 uppercase">{t.mode}</span>}
                                                         </div>
                                                     </td>
                                                     <td className="p-4 text-center">
                                                         <Badge className={`text-[7px] font-black border-none px-3 py-0 h-5 ${statusColor}`}>
-                                                            {(t.status || 'Registered').toUpperCase()}
+                                                            {String(t.status || 'Registered').toUpperCase()}
                                                         </Badge>
                                                     </td>
                                                     <td className="p-4 text-right">

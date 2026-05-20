@@ -280,6 +280,14 @@ const BlogAdminDashboard = () => {
       return;
     }
 
+    const token = localStorage.getItem('blogAdminToken');
+    if (!token) {
+      toast.error('Session expired. Please log in again.');
+      navigate('/blog/admin/login');
+      return;
+    }
+    const authHeaders = { 'x-auth-token': token };
+
     try {
       setPublishing(true);
 
@@ -291,11 +299,10 @@ const BlogAdminDashboard = () => {
       } else if (imageType === 'upload' && uploadFile) {
         const formData = new FormData();
         formData.append('image', uploadFile);
-        const token = localStorage.getItem('blogAdminToken');
         const uploadRes = await api.post('/blogs/upload', formData, {
           headers: { 
             'Content-Type': 'multipart/form-data',
-            'x-auth-token': token
+            ...authHeaders
           }
         });
         const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -319,7 +326,7 @@ const BlogAdminDashboard = () => {
           image: finalImage,
           tags: tagsStr.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean),
           author: adminUser?.username || 'AgriLync Team'
-        });
+        }, { headers: authHeaders });
         toast.success('Blog post updated successfully!');
       } else {
         await api.post('/blogs', {
@@ -332,8 +339,8 @@ const BlogAdminDashboard = () => {
           tags: tagsStr.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean),
           author: adminUser?.username || 'AgriLync Team',
           sendBlast
-        });
-        toast.success(sendBlast ? 'Blog post published and email blast initiated successfully!' : 'Blog post successfully published to the main page!');
+        }, { headers: authHeaders });
+        toast.success(sendBlast ? 'Blog post published and email blast initiated!' : 'Blog post published successfully!');
       }
       
       // Clear form
@@ -352,6 +359,11 @@ const BlogAdminDashboard = () => {
       setActiveTab('manage');
     } catch (err: any) {
       console.error('Publishing error:', err);
+      if (err.response?.status === 401) {
+        toast.error('Session expired. Please log in again.');
+        navigate('/blog/admin/login');
+        return;
+      }
       const errMsg = err.response?.data?.msg || 'Failed to publish blog post.';
       toast.error(errMsg);
     } finally {
@@ -364,12 +376,18 @@ const BlogAdminDashboard = () => {
       return;
     }
 
+    const token = localStorage.getItem('blogAdminToken');
     try {
-      await api.delete(`/blogs/${id}`);
+      await api.delete(`/blogs/${id}`, { headers: { 'x-auth-token': token } });
       toast.success('Blog post deleted successfully.');
       fetchBlogs();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Deletion error:', err);
+      if (err.response?.status === 401) {
+        toast.error('Session expired. Please log in again.');
+        navigate('/blog/admin/login');
+        return;
+      }
       toast.error('Failed to delete the blog post.');
     }
   };

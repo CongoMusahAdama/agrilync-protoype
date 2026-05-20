@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const BlogAdmin = require('./models/BlogAdmin');
 require('dotenv').config();
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://agrilync:1234@agrilync.w0r8t.mongodb.net/agrilync_db?retryWrites=true&w=majority&appName=AgriLync";
+const MONGO_URI = process.env.MONGO_URI;
 
 async function seedBlogger() {
     try {
