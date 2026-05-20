@@ -7,7 +7,7 @@ const Farmer = require('../models/Farmer');
 const Agent = require('../models/Agent');
 const Subscriber = require('../models/Subscriber');
 const multer = require('multer');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const path = require('path');
 const fs = require('fs');
 
@@ -50,63 +50,75 @@ const generateSlug = (title) => {
         .replace(/(^-|-$)+/g, '');
 };
 
-// Async function to broadcast new blog to subscribers
+// Async function to broadcast new blog to subscribers via Resend
 async function broadcastBlogEmail(blog) {
+    const RESEND_API_KEY = process.env.RESEND_API_KEY;
+    if (!RESEND_API_KEY) {
+        console.warn('✗ Blog broadcast skipped: RESEND_API_KEY not set in .env');
+        return;
+    }
+
     try {
+        const resend = new Resend(RESEND_API_KEY);
+
         const farmers = await Farmer.find({ email: { $exists: true, $ne: '' } }).select('email');
         const agents = await Agent.find({ email: { $exists: true, $ne: '' } }).select('email');
         const subscribers = await Subscriber.find({ email: { $exists: true, $ne: '' } }).select('email');
-        
+
         const allEmails = [
             ...farmers.map(f => f.email),
             ...agents.map(a => a.email),
             ...subscribers.map(s => s.email)
         ].filter(Boolean);
 
-        if (allEmails.length === 0) return;
+        if (allEmails.length === 0) {
+            console.log('✗ Blog broadcast: no recipients found.');
+            return;
+        }
 
         const uniqueEmails = [...new Set(allEmails)];
-
-        // Configure standard transporter (Using ENV or fallback for dev)
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.ethereal.email',
-            port: process.env.SMTP_PORT || 587,
-            auth: {
-                user: process.env.SMTP_USER || 'ethereal_user',
-                pass: process.env.SMTP_PASS || 'ethereal_pass'
-            }
-        });
-
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const frontendUrl = process.env.FRONTEND_URL || 'https://agri-lync.netlify.app';
         const articleLink = `${frontendUrl}/blog/${blog.slug}`;
-        const imageSrc = blog.image.startsWith('http') ? blog.image : `${frontendUrl}${blog.image}`;
+        const imageSrc = blog.image && blog.image.startsWith('http') ? blog.image : `${frontendUrl}${blog.image}`;
+        const fromEmail = process.env.RESEND_FROM_EMAIL || 'AgriLync Insights <noreply@agrilync.com>';
 
-        const batchSize = 50;
-        for (let i = 0; i < uniqueEmails.length; i += batchSize) {
-            const bccEmails = uniqueEmails.slice(i, i + batchSize);
-            
-            await transporter.sendMail({
-                from: '"AgriLync Insights" <noreply@agrilync.com>',
-                bcc: bccEmails,
-                subject: `New Article: ${blog.title}`,
-                html: `
-                    <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
-                        <img src="${imageSrc}" alt="Article Banner" style="width: 100%; height: 250px; object-fit: cover;" />
-                        <div style="padding: 30px;">
-                            <h2 style="color: #002f37; margin-top: 0; font-size: 24px;">${blog.title}</h2>
-                            <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">${blog.excerpt}</p>
-                            <div style="margin-top: 30px; text-align: center;">
-                                <a href="${articleLink}" style="background-color: #7ede56; color: #002f37; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">Read Full Article</a>
-                            </div>
-                        </div>
-                        <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
-                            <p style="margin: 0; font-size: 12px; color: #9ca3af;">You received this because you are subscribed to AgriLync Insights. <a href="${frontendUrl}" style="color: #7ede56;">Unsubscribe</a></p>
-                        </div>
+        const htmlBody = `
+            <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
+                <img src="${imageSrc}" alt="Article Banner" style="width: 100%; height: 250px; object-fit: cover;" />
+                <div style="padding: 30px;">
+                    <p style="margin: 0 0 8px; font-size: 12px; font-weight: bold; color: #7ede56; text-transform: uppercase; letter-spacing: 0.1em;">AgriLync Insights</p>
+                    <h2 style="color: #002f37; margin-top: 0; font-size: 24px; line-height: 1.3;">${blog.title}</h2>
+                    <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">${blog.excerpt}</p>
+                    <div style="margin-top: 30px; text-align: center;">
+                        <a href="${articleLink}" style="background-color: #7ede56; color: #002f37; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">Read Full Article</a>
                     </div>
-                `
+                </div>
+                <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0; font-size: 12px; color: #9ca3af;">You received this because you are subscribed to AgriLync Insights.</p>
+                </div>
+            </div>
+        `;
+
+        // Resend supports up to 50 recipients per call via bcc
+        const batchSize = 50;
+        let successCount = 0;
+        for (let i = 0; i < uniqueEmails.length; i += batchSize) {
+            const batch = uniqueEmails.slice(i, i + batchSize);
+            const result = await resend.emails.send({
+                from: fromEmail,
+                to: [fromEmail], // Required "to" field; actual delivery via bcc
+                bcc: batch,
+                subject: `New Article: ${blog.title}`,
+                html: htmlBody
             });
-            console.log(`✓ Sent blog broadcast to ${bccEmails.length} subscribers.`);
+            if (result.error) {
+                console.error(`✗ Blog broadcast batch failed:`, result.error);
+            } else {
+                successCount += batch.length;
+                console.log(`✓ Blog broadcast sent to ${batch.length} recipients (batch ${Math.floor(i/batchSize)+1}).`);
+            }
         }
+        console.log(`✓ Blog broadcast complete. Total delivered: ${successCount}/${uniqueEmails.length}`);
     } catch (err) {
         console.error('✗ Email broadcast failed:', err.message);
     }
