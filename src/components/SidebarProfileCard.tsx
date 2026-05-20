@@ -31,38 +31,23 @@ interface ProfileData {
   email?: string;
 }
 
-const profileMapping: Record<string, ProfileData> = {
-  grower: { name: 'John Doe', location: 'Ejisu District', title: 'Grower' },
-  investor: { name: 'Maria Investment', location: 'Accra HQ', title: 'Investor' },
-  farmer: { name: 'Kwame Mensah', location: 'Kumasi Cluster', title: 'Farmer' },
-  agent: { name: 'Agent Adams', location: 'Lokoja Region', id: 'AGN-4512', title: 'Field Agent' },
-  'super-admin': {
-    name: 'Adama Musah',
-    location: 'Global Ops',
-    title: 'Super Administrator',
-    id: 'SA-0001',
-    email: 'a.musah@agrilync.com',
-  },
-};
-
 const SidebarProfileCard: React.FC<SidebarProfileCardProps> = ({ sidebarCollapsed, isMobile, userType }) => {
   const { agent } = useAuth();
 
   const isSuperAdmin = userType === 'super-admin';
-  // Only show loading skeleton when there's no agent AND no static fallback profile available
-  const isLoading = !agent && !profileMapping[userType ?? 'grower'];
+  // Show loading skeleton when there's no agent loaded yet
+  const isLoading = !agent;
 
-  // Use dynamic agent/user data if available, otherwise fallback to mapping
+  // Use dynamic agent/user data
   const a = agent as any;
-  const profile: ProfileData = agent 
-    ? {
-        name: a.name,
-        location: a.region || a.district || 'Operational Hub',
-        id: a.agentId || a.farmerId || a.id?.substring(0, 8),
-        title: a.role?.replace('_', ' ').replace('-', ' ').toUpperCase() || userType?.toUpperCase() || 'Member',
-        avatar: a.avatar || a.profilePicture
-      }
-    : profileMapping[userType ?? 'grower'] ?? profileMapping['grower'];
+  const profile: ProfileData = {
+    name: a?.name || 'User Profile',
+    location: a?.region || a?.district || 'Operational Hub',
+    id: a?.agentId || a?.farmerId || a?.id?.substring(0, 8) || null,
+    title: a?.role?.replace('_', ' ').replace('-', ' ').toUpperCase() || userType?.toUpperCase() || 'MEMBER',
+    avatar: a?.avatar || a?.profilePicture || '',
+    email: a?.email || ''
+  };
 
   const initials = profile.name
     ? profile.name.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase()
