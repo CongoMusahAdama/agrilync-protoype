@@ -352,7 +352,9 @@ const AgentManagement = () => {
                     region: formValues.region,
                     communities: formValues.communities,
                     disabled: formValues.isDisabled ? 'Yes' : 'No',
-                    resetPassword: formValues.resetPassword
+                    resetPassword: formValues.resetPassword,
+                    enableMultipleLogin: formValues.enableMultipleLogin,
+                    avatar: formValues.avatar
                 });
                 setUsers(prev => prev.map(u => u.id === selectedUser.id ? res.data : u));
                 toast.success(`Profile update for "${formValues.name}" saved!`);
@@ -369,7 +371,9 @@ const AgentManagement = () => {
                     contact: formValues.phone,
                     role: formValues.role,
                     region: formValues.region,
-                    communities: formValues.communities
+                    communities: formValues.communities,
+                    enableMultipleLogin: formValues.enableMultipleLogin,
+                    avatar: formValues.avatar
                 });
                 setUsers(prev => [res.data, ...prev]);
                 Swal.fire({
@@ -403,15 +407,21 @@ const AgentManagement = () => {
     };
 
     const handleAvatarUpload = () => {
-        const pics = [
-            'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
-            'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150',
-            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-            'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150'
-        ];
-        const randomPic = pics[Math.floor(Math.random() * pics.length)];
-        setFormValues(prev => ({ ...prev, avatar: randomPic }));
-        toast.success("Profile photo attached!");
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e: any) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setFormValues(prev => ({ ...prev, avatar: reader.result as string }));
+                    toast.success("Profile photo attached!");
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        input.click();
     };
 
     // Filter Directory listing

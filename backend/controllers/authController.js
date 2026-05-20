@@ -28,6 +28,11 @@ exports.login = async (req, res) => {
             });
         }
 
+        // Prevent multiple device logins if not explicitly allowed
+        if (agent.isLoggedIn && !agent.enableMultipleLogin) {
+            return res.status(403).json({ msg: 'Account is already logged in on another device. Please contact an Administrator to reset your session.' });
+        }
+
         // Mark as logged in and generate secure session ID
         const sessionId = crypto.randomBytes(32).toString('hex');
         agent.isLoggedIn = true;

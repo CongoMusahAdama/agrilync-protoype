@@ -336,7 +336,7 @@ exports.getAgentAccountability = async (req, res) => {
 // @route   POST api/super-admin/users
 // @desc    Create a new Supervisor or Agent
 exports.createUser = async (req, res) => {
-    const { name, email, password, role, region, contact, communities } = req.body;
+    const { name, email, password, role, region, contact, communities, enableMultipleLogin, avatar } = req.body;
 
     try {
         let user = await Agent.findOne({ email });
@@ -370,7 +370,9 @@ exports.createUser = async (req, res) => {
             agentId,
             createdBy: req.agent.id,
             status: 'active',
-            hasChangedPassword: false
+            hasChangedPassword: false,
+            enableMultipleLogin: enableMultipleLogin || false,
+            avatar: avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
         });
 
         // Password hashing is handled in pre-save middleware
@@ -397,8 +399,8 @@ exports.createUser = async (req, res) => {
             passwordChanged: 'No',
             disabled: 'No',
             staffAccountNumber: user.agentId,
-            avatar: user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-            enableMultipleLogin: false,
+            avatar: user.avatar,
+            enableMultipleLogin: user.enableMultipleLogin,
             authorised: true
         });
     } catch (err) {
@@ -679,7 +681,7 @@ exports.sendNotification = async (req, res) => {
 // @route   PUT api/super-admin/users/:id
 // @desc    Update Supervisor or Agent
 exports.updateUser = async (req, res) => {
-    const { name, email, phone, role, region, communities, disabled, resetPassword } = req.body;
+    const { name, email, phone, role, region, communities, disabled, resetPassword, enableMultipleLogin, avatar } = req.body;
     try {
         let user = await Agent.findById(req.params.id);
         if (!user) {
@@ -694,9 +696,20 @@ exports.updateUser = async (req, res) => {
         user.districts = communities || user.districts;
         user.status = disabled === 'Yes' ? 'inactive' : 'active';
         
+        if (enableMultipleLogin !== undefined) {
+            user.enableMultipleLogin = enableMultipleLogin;
+        }
+
+        if (avatar) {
+            user.avatar = avatar;
+        }
+
         if (resetPassword) {
             user.password = 'Default@123';
             user.hasChangedPassword = false;
+            // Clear current session to force a fresh login
+            user.isLoggedIn = false;
+            user.currentSessionId = null;
         }
 
         await user.save();
@@ -722,8 +735,8 @@ exports.updateUser = async (req, res) => {
             passwordChanged: user.hasChangedPassword ? 'Yes' : 'No',
             disabled: (user.status === 'inactive' || user.status === 'suspended') ? 'Yes' : 'No',
             staffAccountNumber: user.agentId,
-            avatar: user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-            enableMultipleLogin: false,
+            avatar: user.avatar,
+            enableMultipleLogin: user.enableMultipleLogin,
             authorised: true
         });
     } catch (err) {

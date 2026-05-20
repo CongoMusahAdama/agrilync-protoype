@@ -45,6 +45,7 @@ const agentSchema = new mongoose.Schema({
     },
     isLoggedIn: { type: Boolean, default: false },
     currentSessionId: { type: String, default: null },
+    enableMultipleLogin: { type: Boolean, default: false },
     notificationPreferences: {
         email: { type: Boolean, default: true },
         sms: { type: Boolean, default: true },
