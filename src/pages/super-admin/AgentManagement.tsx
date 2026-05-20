@@ -379,9 +379,12 @@ const AgentManagement = () => {
                 setUsers(prev => [res.data, ...prev]);
                 Swal.fire({
                     title: 'Personnel Onboarded!',
-                    html: `<b>${formValues.name}</b> has been successfully provisioned.<br/><br/>Default password: <b>Default@123</b><br/><br/><i>The user must update their password on first login.</i>`,
+                    html: `<b>${formValues.name}</b> has been successfully provisioned.<br/><br/>Default password: <b>Default@123</b><br/><br/><i>An SMS has been sent to the user's phone. They must update their password on first login.</i>`,
                     icon: 'success',
-                    confirmButtonColor: '#7ede56'
+                    confirmButtonColor: '#7ede56',
+                    timer: 3000,
+                    timerProgressBar: true,
+                    showConfirmButton: false
                 });
                 setIsModalOpen(false);
             } catch (err: any) {

@@ -744,22 +744,26 @@ exports.createUser = async (req, res) => {
             targetId: user.id
         });
 
-        // Send mNotify SMS
+        // Send mNotify SMS (using native fetch — no axios dependency needed)
         try {
-            const axios = require('axios');
             const message = `Hello ${name}, your AgriLync account has been created! Login at ${process.env.FRONTEND_URL || 'https://agrilync.com'}/login with email: ${email} and password: Default@123`;
             const mnotifyKey = process.env.MNOTIFY_API_KEY;
             const senderId = process.env.MNOTIFY_SENDER_ID || 'AgriLync';
             
             if (mnotifyKey && phone) {
-                await axios.post(`https://api.mnotify.com/api/sms/quick?key=${mnotifyKey}`, {
-                    recipient: [phone],
-                    sender: senderId,
-                    message: message,
-                    is_schedule: false,
-                    schedule_date: ''
+                const smsRes = await fetch(`https://api.mnotify.com/api/sms/quick?key=${mnotifyKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        recipient: [phone],
+                        sender: senderId,
+                        message: message,
+                        is_schedule: false,
+                        schedule_date: ''
+                    })
                 });
-                console.log(`[mNotify] SMS sent to ${phone}`);
+                const smsData = await smsRes.json();
+                console.log(`[mNotify] SMS sent to ${phone}:`, smsData);
             }
         } catch (smsError) {
             console.error('[mNotify] Failed to send SMS:', smsError.message);
