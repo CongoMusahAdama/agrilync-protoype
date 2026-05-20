@@ -159,6 +159,7 @@ exports.getDashboardStats = async (req, res) => {
         const activeFarmsCount = await Farm.countDocuments({ status: { $in: ['active', 'Active'] } });
         const atRiskFarmsCount = await Farm.countDocuments({ status: { $in: ['at-risk', 'At Risk', 'At-Risk'] } });
         const offTrackFarmsCount = await Farm.countDocuments({ status: { $in: ['suspended', 'Suspended', 'inactive', 'Inactive'] } });
+        const scheduledTrainingCount = await AgentTraining.countDocuments();
 
         const farmHealth = {
             onTrack: activeFarmsCount || Math.floor(totalFarms * 0.8) || 15,
@@ -205,7 +206,7 @@ exports.getDashboardStats = async (req, res) => {
             systemConcurrency: '94.2%',
             pendingApprovals: pendingKYCCount + criticalAlerts,
             atRiskFarms: atRiskFarmsCount || 2,
-            scheduledTraining: Math.floor(totalAgents * 1.5) || 4,
+            scheduledTraining: scheduledTrainingCount,
             farmersVerifiedThisWeek: await Farmer.countDocuments({ status: 'active', createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } }),
             farmHealth,
             topPerformers,
@@ -742,6 +743,28 @@ exports.createUser = async (req, res) => {
             targetResource: 'Agent',
             targetId: user.id
         });
+
+        // Send mNotify SMS
+        try {
+            const axios = require('axios');
+            const message = `Hello ${name}, your AgriLync account has been created! Login at ${process.env.FRONTEND_URL || 'https://agrilync.com'}/login with email: ${email} and password: Default@123`;
+            const mnotifyKey = process.env.MNOTIFY_API_KEY;
+            const senderId = process.env.MNOTIFY_SENDER_ID || 'AgriLync';
+            
+            if (mnotifyKey && phone) {
+                await axios.post(`https://api.mnotify.com/api/sms/quick?key=${mnotifyKey}`, {
+                    recipient: [phone],
+                    sender: senderId,
+                    message: message,
+                    is_schedule: false,
+                    schedule_date: ''
+                });
+                console.log(`[mNotify] SMS sent to ${phone}`);
+            }
+        } catch (smsError) {
+            console.error('[mNotify] Failed to send SMS:', smsError.message);
+        }
+
 
         res.json({
             id: user._id.toString(),

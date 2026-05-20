@@ -1,9 +1,8 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 export const HeroSection: React.FC = () => {
-  const navigate = useNavigate();
 
   return (
     <section className="relative min-h-[75svh] md:h-[80vh] md:min-h-[600px] overflow-hidden bg-black flex flex-col md:flex-row md:items-start md:justify-start pt-28 md:pt-48 pb-12 md:pb-0">

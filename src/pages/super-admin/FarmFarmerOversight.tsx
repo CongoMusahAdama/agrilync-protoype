@@ -30,7 +30,8 @@ import {
     Shield,
     MoreHorizontal,
     Navigation,
-    BookOpen
+    BookOpen,
+    User
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
@@ -378,7 +379,8 @@ const FarmFarmerOversight = () => {
 
             {/* Profile View Modal */}
             <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
-                <DialogContent className={`sm:max-w-[800px] border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+                <DialogContent className={`sm:max-w-[1000px] border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+                    <DialogTitle className="sr-only">Farmer Profile View</DialogTitle>
                     {selectedFarmer && (
                         <div className="flex flex-col">
                             <div className="bg-[#002f37] p-8 text-white relative">
@@ -392,10 +394,14 @@ const FarmFarmerOversight = () => {
                                         <div className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center font-black text-3xl border border-white/20">{selectedFarmer.name ? selectedFarmer.name[0] : '?'}</div>
                                     )}
                                     <div>
-                                        <h2 className="text-3xl font-black uppercase tracking-tighter">{selectedFarmer.name}</h2>
+                                        <div className="flex items-center gap-3">
+                                            <h2 className="text-3xl font-black uppercase tracking-tighter">{selectedFarmer.name}</h2>
+                                            <span className="text-[10px] bg-white/20 px-2 py-1 rounded font-mono uppercase">ID: {selectedFarmer.id?.slice(-6) || 'UNKNOWN'}</span>
+                                        </div>
                                         <div className="flex items-center gap-4 mt-2">
                                             <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#7ede56] uppercase tracking-widest"><Phone className="w-3 h-3" /> {selectedFarmer.phone}</span>
                                             <span className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest"><MapPin className="w-3 h-3" /> {selectedFarmer.region}</span>
+                                            <span className="flex items-center gap-1.5 text-[10px] font-bold text-blue-300 uppercase tracking-widest"><User className="w-3 h-3" /> Agent: {selectedFarmer.agentName || 'Unassigned'}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -447,7 +453,15 @@ const FarmFarmerOversight = () => {
                                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Farm Location</h4>
                                                 <div className="aspect-video w-full rounded-2xl bg-gray-100 dark:bg-gray-800 relative overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700">
                                                     {deepFarmerDetails?.farmer?.gpsLocation?.lat && deepFarmerDetails?.farmer?.gpsLocation?.lng ? (
-                                                        <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${deepFarmerDetails.farmer.gpsLocation.lat},${deepFarmerDetails.farmer.gpsLocation.lng}&zoom=14&size=600x300&maptype=satellite&key=YOUR_API_KEY`} alt="Map preview" className="absolute inset-0 w-full h-full object-cover opacity-50" />
+                                                        <iframe 
+                                                            title="Farm Location Map"
+                                                            width="100%" 
+                                                            height="100%" 
+                                                            frameBorder="0" 
+                                                            scrolling="no" 
+                                                            src={`https://www.openstreetmap.org/export/embed.html?bbox=${deepFarmerDetails.farmer.gpsLocation.lng - 0.005}%2C${deepFarmerDetails.farmer.gpsLocation.lat - 0.005}%2C${deepFarmerDetails.farmer.gpsLocation.lng + 0.005}%2C${deepFarmerDetails.farmer.gpsLocation.lat + 0.005}&layer=mapnik&marker=${deepFarmerDetails.farmer.gpsLocation.lat}%2C${deepFarmerDetails.farmer.gpsLocation.lng}`}
+                                                            className="absolute inset-0 w-full h-full object-cover"
+                                                        ></iframe>
                                                     ) : (
                                                         <Navigation className="w-10 h-10 text-gray-300 animate-pulse" />
                                                     )}
@@ -458,11 +472,11 @@ const FarmFarmerOversight = () => {
                                                             } else {
                                                                 toast.error('GPS Location not available for this farmer');
                                                             }
-                                                        }}>View on Map</Button>
+                                                        }}>View on Google Maps</Button>
                                                     </div>
-                                                    <div className="absolute bottom-3 left-3 flex gap-1">
-                                                        <Badge className="bg-black/80 text-white border-none text-[8px] px-2 py-0.5">LAT: {deepFarmerDetails?.farmer?.gpsLocation?.lat?.toFixed(4) || 'N/A'}</Badge>
-                                                        <Badge className="bg-black/80 text-white border-none text-[8px] px-2 py-0.5">LON: {deepFarmerDetails?.farmer?.gpsLocation?.lng?.toFixed(4) || 'N/A'}</Badge>
+                                                    <div className="absolute bottom-3 left-3 flex gap-1 z-10 pointer-events-none">
+                                                        <Badge className="bg-black/80 text-white border-none text-[8px] px-2 py-0.5 shadow">LAT: {deepFarmerDetails?.farmer?.gpsLocation?.lat?.toFixed(4) || 'N/A'}</Badge>
+                                                        <Badge className="bg-black/80 text-white border-none text-[8px] px-2 py-0.5 shadow">LON: {deepFarmerDetails?.farmer?.gpsLocation?.lng?.toFixed(4) || 'N/A'}</Badge>
                                                     </div>
                                                 </div>
                                             </div>

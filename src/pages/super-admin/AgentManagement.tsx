@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import {
     UserPlus,
     Users,
@@ -903,6 +903,7 @@ const AgentManagement = () => {
                 ======================================================== */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogContent className={`md:max-w-[1150px] p-0 border-none rounded-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'} max-h-[96vh] overflow-y-auto [&>button]:text-white [&>button]:opacity-85 [&>button:hover]:opacity-100 [&>button]:top-5 [&>button]:right-6 [&>button]:z-50 [&>button]:scale-110`}>
+                    <DialogTitle className="sr-only">User Account Management</DialogTitle>
                     
                     {/* Header bar in deep pine brand color - with taller py-6.5 for premium spacing */}
                     <div className="px-8 py-6 flex items-center justify-between relative border-b border-white/10" style={{ backgroundColor: '#002f37' }}>
@@ -1168,7 +1169,11 @@ const AgentManagement = () => {
                                                 showCancelButton: true,
                                                 confirmButtonColor: '#ef4444',
                                                 cancelButtonColor: '#6b7280',
-                                                confirmButtonText: 'Yes, Delete'
+                                                confirmButtonText: 'Yes, Delete',
+                                                target: '[role="dialog"]',
+                                                customClass: {
+                                                    container: 'z-[99999]'
+                                                }
                                             }).then(async (result) => {
                                                 if (result.isConfirmed) {
                                                     try {
