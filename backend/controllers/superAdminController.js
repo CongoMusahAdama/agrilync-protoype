@@ -932,28 +932,26 @@ exports.getMedia = async (req, res) => {
 exports.getTraining = async (req, res) => {
     try {
         const trainings = await withTimeout(AgentTraining.find()
-            .populate('agent', 'name')
-            .populate('training', 'title category date')
+            .populate('agent', 'name region')
+            .populate('training', 'title category date mode trainer description')
             .sort({ createdAt: -1 })
             .lean());
 
         const mappedTrainings = trainings.map(t => ({
             id: t._id.toString(),
-            date: t.training?.date || 'May 2026',
+            date: t.training?.date || t.createdAt?.toISOString().split('T')[0] || 'Unknown',
             trainee: t.agent?.name || 'Lync Agent',
+            region: t.agent?.region || null,
             agent: t.agent?.name || 'Lync Agent',
-            course: t.training?.title || 'Agritech Platform 101',
-            score: Math.floor(Math.random() * (98 - 75 + 1) + 75),
-            status: t.status || 'Passed'
+            course: t.training?.title || 'General Training',
+            category: t.training?.category || 'General',
+            mode: t.training?.mode || 'In-Person',
+            trainer: t.training?.trainer || 'Facilitator',
+            status: t.status || 'Registered',
+            certificate: t.certificate || false
         }));
 
-        const defaultTraining = [
-            { id: "trn-001", date: "15 May 2026", trainee: "Sarkodie Osei", agent: "Sarkodie Osei", course: "Agronomic Pest Control", score: 92, status: "Passed" },
-            { id: "trn-002", date: "12 May 2026", trainee: "Abdul-Rahman Ali", agent: "Abdul-Rahman Ali", course: "Climate-Resilient Farming", score: 88, status: "Passed" },
-            { id: "trn-003", date: "10 May 2026", trainee: "Mohammed Ibrahim", agent: "Mohammed Ibrahim", course: "Agritech Platform 101", score: 76, status: "Passed" }
-        ];
-
-        res.json(mappedTrainings.length > 0 ? mappedTrainings : defaultTraining);
+        res.json(mappedTrainings);
     } catch (err) {
         console.error('Error in getTraining:', err);
         res.json([]);

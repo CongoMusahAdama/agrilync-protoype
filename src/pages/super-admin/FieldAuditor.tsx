@@ -291,47 +291,82 @@ const FieldOperationsAudit = () => {
                 <TabsContent value="training" className="mt-0">
                     <Card className={`border-none shadow-premium overflow-hidden rounded-none ${darkMode ? 'bg-gray-955' : 'bg-white'}`}>
                         <CardContent className="p-0 overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead>
-                                    <tr className="bg-[#002f37] text-white text-[10px] font-black uppercase tracking-widest">
-                                        <th className="p-4">Completion Date</th>
-                                        <th className="p-4">Farmer (Learner)</th>
-                                        <th className="p-4">Module / Course</th>
-                                        <th className="p-4 text-center">Score / Performance</th>
-                                        <th className="p-4 text-right">Certificate Audit</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                                    {training.map(t => (
-                                        <tr key={t.id} className="hover:bg-[#7ede56]/5 transition-colors">
-                                            <td className="p-4">
-                                                <p className="font-black text-xs uppercase">{t.date}</p>
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="flex flex-col">
-                                                    <span className="font-black uppercase tracking-tight text-sm">{t.trainee}</span>
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none">Via Agent {t.agent}</span>
-                                                </div>
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="flex items-center gap-2">
-                                                    <GraduationCap className="w-4 h-4 text-[#7ede56]" />
-                                                    <span className="text-[10px] font-black uppercase">{t.course}</span>
-                                                </div>
-                                            </td>
-                                            <td className="p-4 text-center">
-                                                <div className="flex flex-col items-center">
-                                                    <span className={`text-[11px] font-black ${t.score >= 80 ? 'text-[#7ede56]' : 'text-rose-500'}`}>{t.score}%</span>
-                                                    <Badge className={`text-[7px] font-black border-none px-2 py-0 h-4 mt-1 ${t.status === 'Passed' ? 'bg-[#7ede56]/10 text-[#7ede56]' : 'bg-rose-500/10 text-rose-500'}`}>{t.status.toUpperCase()}</Badge>
-                                                </div>
-                                            </td>
-                                            <td className="p-4 text-right">
-                                                <Button size="icon" variant="ghost" className="h-9 w-9 text-blue-500"><Download className="w-4 h-4" /></Button>
-                                            </td>
+                            {training.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-20 text-center">
+                                    <GraduationCap className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
+                                    <p className="text-sm font-black uppercase tracking-widest text-gray-400">No training sessions recorded yet</p>
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-300 mt-1">
+                                        Training records will appear here once agents enrol and complete sessions
+                                    </p>
+                                </div>
+                            ) : (
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="bg-[#002f37] text-white text-[10px] font-black uppercase tracking-widest">
+                                            <th className="p-4">Date</th>
+                                            <th className="p-4">Agent</th>
+                                            <th className="p-4">Course / Module</th>
+                                            <th className="p-4">Category & Mode</th>
+                                            <th className="p-4 text-center">Status</th>
+                                            <th className="p-4 text-right">Certificate</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                        {training.map((t: any) => {
+                                            const statusColor = {
+                                                Completed: 'bg-[#7ede56]/10 text-[#7ede56]',
+                                                Ongoing: 'bg-blue-500/10 text-blue-500',
+                                                Registered: 'bg-amber-500/10 text-amber-500',
+                                                Missed: 'bg-rose-500/10 text-rose-500',
+                                            }[t.status] || 'bg-gray-100 text-gray-500';
+
+                                            return (
+                                                <tr key={t.id} className="hover:bg-[#7ede56]/5 transition-colors group">
+                                                    <td className="p-4">
+                                                        <p className="font-black text-xs uppercase">{t.date}</p>
+                                                        {t.region && <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{t.region}</p>}
+                                                    </td>
+                                                    <td className="p-4 border-l-4 border-transparent group-hover:border-[#7ede56]">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-black uppercase tracking-tight text-sm">{t.trainee}</span>
+                                                            {t.trainer && <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mt-0.5">Trainer: {t.trainer}</span>}
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <GraduationCap className="w-4 h-4 text-[#7ede56] shrink-0" />
+                                                            <span className="text-[10px] font-black uppercase">{t.course}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="flex flex-col gap-1">
+                                                            {t.category && <Badge className="bg-purple-500/10 text-purple-500 border-none font-black text-[8px] w-fit px-2">{t.category.toUpperCase()}</Badge>}
+                                                            {t.mode && <span className="text-[9px] font-bold text-gray-400 uppercase">{t.mode}</span>}
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4 text-center">
+                                                        <Badge className={`text-[7px] font-black border-none px-3 py-0 h-5 ${statusColor}`}>
+                                                            {(t.status || 'Registered').toUpperCase()}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="p-4 text-right">
+                                                        {t.certificate ? (
+                                                            <div className="flex items-center justify-end gap-1.5">
+                                                                <Badge className="bg-[#7ede56] text-[#002f37] font-black text-[7px] px-2 py-0 h-5">ISSUED</Badge>
+                                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-500">
+                                                                    <Download className="w-3.5 h-3.5" />
+                                                                </Button>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">— Pending</span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>
