@@ -594,7 +594,7 @@ exports.getAllFarmers = async (req, res) => {
     try {
         const farmers = await withTimeout(
             Farmer.find()
-                .select('name email contact region farmSize cropsGrown status investmentInterest investmentStatus')
+                .select('name email contact region farmSize cropsGrown status investmentInterest investmentStatus avatar')
                 .populate('agent', 'name')
                 .sort({ createdAt: -1 })
                 .lean()
@@ -616,13 +616,39 @@ exports.getAllFarmers = async (req, res) => {
             hasInvestor: farmer.investmentStatus === 'Matched' || farmer.investmentStatus === 'Active',
             investorName: farmer.investmentStatus === 'Matched' || farmer.investmentStatus === 'Active' ? 'Investment Partner' : null,
             matchDate: farmer.investmentStatus === 'Matched' || farmer.investmentStatus === 'Active' ? new Date(farmer.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : null,
-            agentName: farmer.agent?.name || 'Unassigned'
+            agentName: farmer.agent?.name || 'Unassigned',
+            avatar: farmer.avatar || null
         }));
 
         res.json(transformedFarmers);
     } catch (err) {
         console.error('Error in getAllFarmers:', err);
         res.json([]);
+    }
+};
+
+// @route   GET api/super-admin/farmers/:id
+// @desc    Get detailed farmer profile, visits, and KYC
+exports.getFarmerDetails = async (req, res) => {
+    try {
+        const farmer = await Farmer.findById(req.params.id)
+            .populate('agent', 'name agentId contact')
+            .lean();
+
+        if (!farmer) return res.status(404).json({ msg: 'Farmer not found' });
+
+        const fieldVisits = await FieldVisit.find({ farmer: farmer._id })
+            .sort({ date: -1 })
+            .limit(10)
+            .lean();
+
+        res.json({
+            farmer,
+            fieldVisits,
+        });
+    } catch (err) {
+        console.error('Error in getFarmerDetails:', err);
+        res.status(500).send('Server Error');
     }
 };
 
@@ -678,6 +704,66 @@ exports.sendNotification = async (req, res) => {
     }
 };
 
+// @route   POST api/super-admin/users
+// @desc    Create Supervisor or Agent
+exports.createUser = async (req, res) => {
+    const { name, email, phone, role, region, communities, disabled, staffAccountNumber, enableMultipleLogin, avatar } = req.body;
+    try {
+        let user = await Agent.findOne({ email });
+        if (user) {
+            return res.status(400).json({ msg: 'User already exists' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('Default@123', salt);
+
+        user = new Agent({
+            name,
+            email,
+            contact: phone,
+            role: role === 'super_admin' ? 'super_admin' : role === 'supervisor' ? 'supervisor' : 'agent',
+            region,
+            districts: communities,
+            status: disabled === 'Yes' ? 'inactive' : 'active',
+            password: hashedPassword,
+            agentId: staffAccountNumber,
+            enableMultipleLogin: enableMultipleLogin || false,
+            avatar: avatar || '/lovable-uploads/profile.png'
+        });
+
+        await user.save();
+
+        // Create Audit Log
+        await AuditLog.create({
+            action: 'CREATE_USER',
+            user: req.agent.id,
+            userRole: req.agent.role,
+            details: `Created ${user.role}: ${user.name}`,
+            targetResource: 'Agent',
+            targetId: user.id
+        });
+
+        res.json({
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            phone: user.contact || '',
+            role: user.role === 'supervisor' ? 'Supervisor' : user.role === 'super_admin' ? 'Super Admin' : 'Lync Agent',
+            region: user.region,
+            communities: user.districts || [],
+            passwordChanged: 'No',
+            disabled: user.status === 'inactive' ? 'Yes' : 'No',
+            staffAccountNumber: user.agentId,
+            avatar: user.avatar,
+            enableMultipleLogin: user.enableMultipleLogin,
+            authorised: true
+        });
+    } catch (err) {
+        console.error('createUser error:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
 // @route   PUT api/super-admin/users/:id
 // @desc    Update Supervisor or Agent
 exports.updateUser = async (req, res) => {
@@ -691,7 +777,7 @@ exports.updateUser = async (req, res) => {
         user.name = name || user.name;
         user.email = email || user.email;
         user.contact = phone || user.contact;
-        user.role = role === 'Supervisor' ? 'supervisor' : 'agent';
+        user.role = role === 'supervisor' ? 'supervisor' : role === 'super_admin' ? 'super_admin' : 'agent';
         user.region = region || user.region;
         user.districts = communities || user.districts;
         user.status = disabled === 'Yes' ? 'inactive' : 'active';

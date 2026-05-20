@@ -13,6 +13,7 @@ const {
     getPartnershipsSummary,
     getUsersList,
     getAllFarmers,
+    getFarmerDetails,
     updateFarmerStatus,
     resolveEscalation,
     getVisits,
@@ -55,6 +56,7 @@ router.get('/logs', getSystemLogs); // Added alias for frontend
 router.get('/farms', getFarmsOversight);
 router.get('/partnerships', getPartnershipsSummary);
 router.get('/farmers', getAllFarmers); // New route for farmers
+router.get('/farmers/:id', getFarmerDetails); // Get deep details
 router.put('/farmers/:id/status', updateFarmerStatus); // Override status route
 router.get('/visits', getVisits); // Field visits route
 router.get('/media', getMedia); // Media route

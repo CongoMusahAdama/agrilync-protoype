@@ -58,6 +58,8 @@ const FarmFarmerOversight = () => {
     const [loading, setLoading] = useState(true);
     const [selectedFarmer, setSelectedFarmer] = useState<any>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [deepFarmerDetails, setDeepFarmerDetails] = useState<any>(null);
+    const [loadingDetails, setLoadingDetails] = useState(false);
     const [isOverrideOpen, setIsOverrideOpen] = useState(false);
     const [overrideData, setOverrideData] = useState({ status: '', note: '' });
 
@@ -78,6 +80,24 @@ const FarmFarmerOversight = () => {
             setFarmers([]);
         } finally {
             setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isProfileOpen && selectedFarmer) {
+            fetchDeepDetails();
+        }
+    }, [isProfileOpen, selectedFarmer]);
+
+    const fetchDeepDetails = async () => {
+        setLoadingDetails(true);
+        try {
+            const res = await api.get(`/super-admin/farmers/${selectedFarmer.id}`);
+            setDeepFarmerDetails(res.data);
+        } catch (err) {
+            console.error('Failed to fetch deep details', err);
+        } finally {
+            setLoadingDetails(false);
         }
     };
 
@@ -211,6 +231,7 @@ const FarmFarmerOversight = () => {
                                         <th className="p-4">Farmer Name</th>
                                         <th className="p-4">Farm Details</th>
                                         <th className="p-4">Location</th>
+                                        <th className="p-4">Assigned Agent</th>
                                         <th className="p-4">Match Status</th>
                                         <th className="p-4">Status</th>
                                         <th className="p-4 text-right">Actions</th>
@@ -222,9 +243,13 @@ const FarmFarmerOversight = () => {
                                             <tr key={farmer.id} className="hover:bg-[#7ede56]/5 transition-colors group">
                                                 <td className="p-4 border-l-4 border-transparent group-hover:border-[#7ede56]">
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm bg-[#7ede56]/10 text-[#7ede56] uppercase`}>
-                                                            {farmer.name[0]}
-                                                        </div>
+                                                        {farmer.avatar && !farmer.avatar.includes('lovable-uploads/profile.png') ? (
+                                                            <img src={farmer.avatar} alt={farmer.name} className="w-10 h-10 rounded-xl object-cover border border-[#7ede56]/20" />
+                                                        ) : (
+                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm bg-[#7ede56]/10 text-[#7ede56] uppercase`}>
+                                                                {farmer.name ? farmer.name[0] : '?'}
+                                                            </div>
+                                                        )}
                                                         <div className="flex flex-col">
                                                             <span className="font-black uppercase tracking-tight text-sm">{farmer.name}</span>
                                                             <span className="text-[10px] font-bold text-gray-400 lowercase">{farmer.email}</span>
@@ -241,6 +266,14 @@ const FarmFarmerOversight = () => {
                                                     <div className="flex items-center gap-2">
                                                         <MapPin className="w-3.5 h-3.5 text-blue-500/60" />
                                                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{farmer.region}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="p-1.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500">
+                                                            <Users className="w-3 h-3" />
+                                                        </div>
+                                                        <span className="text-[10px] font-black uppercase tracking-tight">{farmer.agentName || 'Unassigned'}</span>
                                                     </div>
                                                 </td>
                                                 <td className="p-4">
@@ -288,7 +321,11 @@ const FarmFarmerOversight = () => {
                                 </CardHeader>
                                 <CardContent className="p-6 space-y-6">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center font-black text-lg">{farmer.name[0]}</div>
+                                        {farmer.avatar && !farmer.avatar.includes('lovable-uploads/profile.png') ? (
+                                            <img src={farmer.avatar} alt={farmer.name} className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" />
+                                        ) : (
+                                            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center font-black text-lg">{farmer.name ? farmer.name[0] : '?'}</div>
+                                        )}
                                         <div>
                                             <h3 className="text-lg font-black uppercase tracking-tight">{farmer.name}</h3>
                                             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{farmer.region} REGION</p>
@@ -349,7 +386,11 @@ const FarmFarmerOversight = () => {
                                     <Badge className={`${getStatusColor(selectedFarmer.status)} border-none text-[10px] px-3 font-black`}>{selectedFarmer.status}</Badge>
                                 </div>
                                 <div className="flex items-center gap-6">
-                                    <div className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center font-black text-3xl border border-white/20">{selectedFarmer.name[0]}</div>
+                                    {selectedFarmer.avatar && !selectedFarmer.avatar.includes('lovable-uploads/profile.png') ? (
+                                        <img src={selectedFarmer.avatar} alt={selectedFarmer.name} className="w-20 h-20 rounded-2xl object-cover border-4 border-white/20 shadow-lg" />
+                                    ) : (
+                                        <div className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center font-black text-3xl border border-white/20">{selectedFarmer.name ? selectedFarmer.name[0] : '?'}</div>
+                                    )}
                                     <div>
                                         <h2 className="text-3xl font-black uppercase tracking-tighter">{selectedFarmer.name}</h2>
                                         <div className="flex items-center gap-4 mt-2">
@@ -365,9 +406,25 @@ const FarmFarmerOversight = () => {
                                     <div className="space-y-4">
                                         <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400"><History className="w-4 h-4" /> Identity Details</h4>
                                         <div className={`p-4 rounded-xl space-y-3 ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-50'} border`}>
-                                            <div><p className="text-[8px] font-black text-gray-400 uppercase">National ID (GhanaCard)</p><p className="text-[10px] font-black">GHA-72635489-0</p></div>
-                                            <div><p className="text-[8px] font-black text-gray-400 uppercase">Registered Mobile Money</p><p className="text-[10px] font-black">{selectedFarmer.phone}</p></div>
-                                            <div><p className="text-[8px] font-black text-gray-400 uppercase">Residence Verified By</p><p className="text-[10px] font-black">{selectedFarmer.agentName}</p></div>
+                                            <div><p className="text-[8px] font-black text-gray-400 uppercase">National ID (GhanaCard)</p><p className="text-[10px] font-black">{deepFarmerDetails?.farmer?.ghanaCardNumber || 'GHA-00000000-0'}</p></div>
+                                            <div><p className="text-[8px] font-black text-gray-400 uppercase">Registered Mobile Money</p><p className="text-[10px] font-black">{deepFarmerDetails?.farmer?.contact || selectedFarmer.phone}</p></div>
+                                            <div><p className="text-[8px] font-black text-gray-400 uppercase">Residence Verified By</p><p className="text-[10px] font-black">{deepFarmerDetails?.farmer?.agent?.name || selectedFarmer.agentName}</p></div>
+                                            
+                                            {/* Show ID Cards if available */}
+                                            {(deepFarmerDetails?.farmer?.idCardFront || deepFarmerDetails?.farmer?.idCardBack) && (
+                                                <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-800 flex gap-2">
+                                                    {deepFarmerDetails.farmer.idCardFront && (
+                                                        <a href={deepFarmerDetails.farmer.idCardFront} target="_blank" rel="noreferrer" className="flex-1">
+                                                            <img src={deepFarmerDetails.farmer.idCardFront} alt="ID Front" className="w-full h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:opacity-80 transition-opacity" />
+                                                        </a>
+                                                    )}
+                                                    {deepFarmerDetails.farmer.idCardBack && (
+                                                        <a href={deepFarmerDetails.farmer.idCardBack} target="_blank" rel="noreferrer" className="flex-1">
+                                                            <img src={deepFarmerDetails.farmer.idCardBack} alt="ID Back" className="w-full h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:opacity-80 transition-opacity" />
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="space-y-4">
@@ -389,28 +446,73 @@ const FarmFarmerOversight = () => {
                                             <div className="space-y-2">
                                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Farm Location</h4>
                                                 <div className="aspect-video w-full rounded-2xl bg-gray-100 dark:bg-gray-800 relative overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700">
-                                                    <Navigation className="w-10 h-10 text-gray-300 animate-pulse" />
+                                                    {deepFarmerDetails?.farmer?.gpsLocation?.lat && deepFarmerDetails?.farmer?.gpsLocation?.lng ? (
+                                                        <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${deepFarmerDetails.farmer.gpsLocation.lat},${deepFarmerDetails.farmer.gpsLocation.lng}&zoom=14&size=600x300&maptype=satellite&key=YOUR_API_KEY`} alt="Map preview" className="absolute inset-0 w-full h-full object-cover opacity-50" />
+                                                    ) : (
+                                                        <Navigation className="w-10 h-10 text-gray-300 animate-pulse" />
+                                                    )}
                                                     <div className="absolute inset-0 flex items-center justify-center bg-gray-100/50 backdrop-blur-sm opacity-0 hover:opacity-100 transition-opacity">
-                                                        <Button className="bg-[#002f37] text-white font-black text-[10px] uppercase rounded-xl">View on Map</Button>
+                                                        <Button className="bg-[#002f37] text-white font-black text-[10px] uppercase rounded-xl" onClick={() => {
+                                                            if (deepFarmerDetails?.farmer?.gpsLocation?.lat && deepFarmerDetails?.farmer?.gpsLocation?.lng) {
+                                                                window.open(`https://www.google.com/maps?q=${deepFarmerDetails.farmer.gpsLocation.lat},${deepFarmerDetails.farmer.gpsLocation.lng}`, '_blank');
+                                                            } else {
+                                                                toast.error('GPS Location not available for this farmer');
+                                                            }
+                                                        }}>View on Map</Button>
                                                     </div>
                                                     <div className="absolute bottom-3 left-3 flex gap-1">
-                                                        <Badge className="bg-black/80 text-white border-none text-[8px] px-2 py-0.5">LAT: 5.6037</Badge>
-                                                        <Badge className="bg-black/80 text-white border-none text-[8px] px-2 py-0.5">LON: -0.1870</Badge>
+                                                        <Badge className="bg-black/80 text-white border-none text-[8px] px-2 py-0.5">LAT: {deepFarmerDetails?.farmer?.gpsLocation?.lat?.toFixed(4) || 'N/A'}</Badge>
+                                                        <Badge className="bg-black/80 text-white border-none text-[8px] px-2 py-0.5">LON: {deepFarmerDetails?.farmer?.gpsLocation?.lng?.toFixed(4) || 'N/A'}</Badge>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="space-y-4">
                                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Recent Visits</h4>
                                                 <div className="space-y-3">
-                                                    {[1, 2, 3].map(i => (
-                                                        <div key={i} className="flex gap-3">
-                                                            <div className="w-1 bg-[#7ede56] rounded-full"></div>
-                                                            <div>
-                                                                <p className="text-[10px] font-black uppercase">Field Inspection #{4-i}</p>
-                                                                <p className="text-[8px] font-bold text-gray-400 uppercase">March {10+i}, 2026</p>
+                                                    {loadingDetails ? (
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase">Loading visits...</p>
+                                                    ) : deepFarmerDetails?.fieldVisits?.length > 0 ? (
+                                                        deepFarmerDetails.fieldVisits.map((v: any) => (
+                                                            <div key={v._id} className="flex gap-3">
+                                                                <div className="w-1 bg-[#7ede56] rounded-full"></div>
+                                                                <div>
+                                                                    <p className="text-[10px] font-black uppercase">Field Inspection</p>
+                                                                    <p className="text-[8px] font-bold text-gray-400 uppercase">{new Date(v.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    ))}
+                                                        ))
+                                                    ) : (
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase">No visits recorded</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Farm Journey Section */}
+                                        <div className="space-y-4 pt-6 border-t border-gray-100 dark:border-gray-800">
+                                            <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                                <Sprout className="w-4 h-4" /> Seasonal Farm Journey
+                                            </h4>
+                                            <div className="relative pt-2">
+                                                <div className="absolute top-7 left-6 right-6 h-0.5 bg-gray-100 dark:bg-gray-800 hidden md:block"></div>
+                                                <div className="flex flex-col md:flex-row justify-between relative z-10 gap-6 md:gap-4 overflow-x-auto pb-2 hide-scrollbar">
+                                                    {['planning', 'planting', 'growing', 'harvesting', 'maintenance'].map((stage, idx) => {
+                                                        const stageData = deepFarmerDetails?.farmer?.stageDetails?.[stage];
+                                                        const isCompleted = stageData?.status === 'completed';
+                                                        const isCurrent = deepFarmerDetails?.farmer?.currentStage === stage;
+                                                        
+                                                        return (
+                                                            <div key={stage} className="flex md:flex-col items-center gap-4 md:gap-3 min-w-[120px] flex-shrink-0">
+                                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-4 border-white dark:border-gray-950 transition-colors z-10 shadow-sm ${isCompleted ? 'bg-[#7ede56] text-[#002f37]' : isCurrent ? 'bg-amber-400 text-white shadow-amber-400/50' : 'bg-gray-100 dark:bg-gray-800 text-gray-300'}`}>
+                                                                    {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <div className="w-2.5 h-2.5 rounded-full bg-current" />}
+                                                                </div>
+                                                                <div className="md:text-center flex-1 md:flex-none">
+                                                                    <p className={`text-[10px] font-black uppercase tracking-widest ${isCompleted ? 'text-[#7ede56]' : isCurrent ? 'text-amber-500' : 'text-gray-400'}`}>{stage}</p>
+                                                                    <p className="text-[8px] font-bold text-gray-400 uppercase">{stageData?.date ? new Date(stageData.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Pending'}</p>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         </div>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -131,6 +132,13 @@ const FieldOperationsAudit = () => {
                 <TabsContent value="visits" className="mt-0 space-y-4">
                     <Card className={`border-none shadow-premium overflow-hidden rounded-none ${darkMode ? 'bg-gray-955' : 'bg-white'}`}>
                         <CardContent className="p-0 overflow-x-auto">
+                            {visits.length === 0 && !loading ? (
+                                <div className="flex flex-col items-center justify-center py-20 text-center">
+                                    <MapPin className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
+                                    <p className="text-sm font-black uppercase tracking-widest text-gray-400">No field visits recorded yet</p>
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-300 mt-1">Visits logged by agents will appear here</p>
+                                </div>
+                            ) : (
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="bg-[#002f37] text-white text-[10px] font-black uppercase tracking-widest">
@@ -173,6 +181,7 @@ const FieldOperationsAudit = () => {
                                     ))}
                                 </tbody>
                             </table>
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -318,7 +327,7 @@ const FieldOperationsAudit = () => {
                                                 Ongoing: 'bg-blue-500/10 text-blue-500',
                                                 Registered: 'bg-amber-500/10 text-amber-500',
                                                 Missed: 'bg-rose-500/10 text-rose-500',
-                                            }[t.status] || 'bg-gray-100 text-gray-500';
+                                            }[t.status as 'Completed' | 'Ongoing' | 'Registered' | 'Missed'] || 'bg-gray-100 text-gray-500';
 
                                             return (
                                                 <tr key={t.id} className="hover:bg-[#7ede56]/5 transition-colors group">
@@ -381,7 +390,7 @@ const FieldOperationsAudit = () => {
                         <div className="flex flex-col">
                             
                             {/* Deep Pine Header Banner with White/Green Branding */}
-                            <div className="bg-[#002f37] px-8 py-6.5 text-white relative border-b border-white/10 flex items-center justify-between">
+                            <div className="bg-[#002f37] px-8 py-6 text-white relative border-b border-white/10 flex items-center justify-between">
                                 <div className="flex items-center gap-6">
                                     <div className="w-14 h-14 rounded-none bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
                                         <MapPin className="w-7 h-7 text-[#7ede56]" />
@@ -461,7 +470,7 @@ const FieldOperationsAudit = () => {
                                             <Camera className="w-4 h-4 text-[#7ede56]" /> Crop / Field Photo Evidence
                                         </h4>
                                         <div className="aspect-video w-full rounded-none overflow-hidden border-2 border-[#7ede56] shadow-xl">
-                                            <img src={selectedItem.photo} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" alt="Audit Evidence" />
+                                            <img src={selectedItem.images?.[0] || selectedItem.photo || 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=600'} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" alt="Audit Evidence" />
                                         </div>
                                         <p className="text-[9px] font-bold text-gray-400 uppercase text-center tracking-wider">
                                             High-definition timestamped field imagery uploaded by {selectedItem.agent}

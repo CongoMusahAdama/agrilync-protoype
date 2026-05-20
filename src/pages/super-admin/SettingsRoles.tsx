@@ -54,7 +54,14 @@ const SettingsRoles = () => {
     const { darkMode } = useDarkMode();
     const navigate = useNavigate();
     const { agent, updateAgent } = useAuth();
-    const [activeTab, setActiveTab] = useState('permissions');
+    const [activeTab, setActiveTab] = useState('profile');
+    
+    // Profile Edit State
+    const [profileData, setProfileData] = useState({
+        name: agent?.name || '',
+        email: agent?.email || '',
+    });
+    const [isSaving, setIsSaving] = useState(false);
 
     const roles = [
         { id: '1', name: 'Super Admin', desc: 'Full system access and control.', level: 'Full Access' },
@@ -95,6 +102,22 @@ const SettingsRoles = () => {
             }
         });
         toast.info(`Permission matrix updated for ${roles.find(r => r.id === roleId)?.name}`);
+    };
+
+    const handleSaveProfile = async () => {
+        try {
+            setIsSaving(true);
+            const res = await api.put('/agents/profile', {
+                name: profileData.name,
+                email: profileData.email
+            });
+            await updateAgent({ ...agent, ...res.data });
+            toast.success('Profile updated successfully!');
+        } catch (error) {
+            toast.error('Failed to update profile');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -152,7 +175,11 @@ const SettingsRoles = () => {
                                 <div className="relative group shrink-0">
                                     <div className="absolute -inset-1 bg-gradient-to-tr from-[#002f37] to-[#7ede56] rounded-full opacity-40 group-hover:opacity-100 transition-opacity blur-[2px]"></div>
                                     <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl relative overflow-hidden bg-gray-100 flex items-center justify-center">
-                                        <img src={agent?.avatar || '/lovable-uploads/profile.png'} alt="Profile" className="w-full h-full object-cover" />
+                                        {(agent?.avatar && !agent.avatar.includes('lovable-uploads/profile.png')) ? (
+                                            <img src={agent.avatar} alt="Profile" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <Fingerprint className="w-16 h-16 text-gray-300" />
+                                        )}
                                         <label htmlFor="avatar-upload" className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer">
                                             <Upload className="w-6 h-6 text-white mb-1" />
                                             <span className="text-[9px] font-black text-white uppercase tracking-widest">Update</span>
@@ -164,15 +191,19 @@ const SettingsRoles = () => {
                                                 onChange={async (e) => {
                                                     const file = e.target.files?.[0];
                                                     if (!file) return;
-                                                    const formData = new FormData();
-                                                    formData.append('avatar', file);
-                                                    try {
-                                                        const res = await api.put('/agents/me', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-                                                        await updateAgent({ ...agent, avatar: res.data.data.avatar });
-                                                        toast.success('Avatar updated successfully!');
-                                                    } catch (err) {
-                                                        toast.error('Failed to upload avatar.');
-                                                    }
+                                                    
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = async () => {
+                                                        try {
+                                                            const base64String = reader.result;
+                                                            const res = await api.put('/agents/profile', { avatar: base64String });
+                                                            await updateAgent({ ...agent, avatar: res.data.avatar });
+                                                            toast.success('Avatar updated successfully!');
+                                                        } catch (err) {
+                                                            toast.error('Failed to upload avatar.');
+                                                        }
+                                                    };
+                                                    reader.readAsDataURL(file);
                                                 }}
                                             />
                                         </label>
@@ -182,11 +213,19 @@ const SettingsRoles = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Full Name</Label>
-                                            <Input disabled value={agent?.name || ''} className="h-12 rounded-xl bg-gray-50 dark:bg-gray-800 border-none font-bold text-[#002f37] dark:text-white" />
+                                            <Input 
+                                                value={profileData.name} 
+                                                onChange={(e) => setProfileData({...profileData, name: e.target.value})}
+                                                className="h-12 rounded-xl bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 font-bold text-[#002f37] dark:text-white" 
+                                            />
                                         </div>
                                         <div className="space-y-2">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Email Address</Label>
-                                            <Input disabled value={agent?.email || ''} className="h-12 rounded-xl bg-gray-50 dark:bg-gray-800 border-none font-bold text-[#002f37] dark:text-white" />
+                                            <Input 
+                                                value={profileData.email} 
+                                                onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+                                                className="h-12 rounded-xl bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 font-bold text-[#002f37] dark:text-white" 
+                                            />
                                         </div>
                                         <div className="space-y-2">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Institutional ID</Label>
@@ -198,6 +237,15 @@ const SettingsRoles = () => {
                                         </div>
                                     </div>
                                     <p className="text-[10px] font-bold text-gray-400 mt-2 italic">Note: Core identifiers cannot be modified manually. Contact system architecture for deep edits.</p>
+                                    <div className="flex justify-end pt-2">
+                                        <Button 
+                                            onClick={handleSaveProfile}
+                                            disabled={isSaving}
+                                            className="h-10 px-8 bg-[#eab308] hover:bg-[#ca8a04] text-black font-black uppercase text-[11px] tracking-widest rounded-xl transition-all shadow-md flex items-center gap-2"
+                                        >
+                                            <CheckCircle2 className="w-4 h-4" /> {isSaving ? 'Saving...' : 'Save Profile'}
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>

@@ -25,7 +25,8 @@ import {
     Layers,
     FileText,
     TrendingUp,
-    Sliders
+    Sliders,
+    Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
@@ -1011,9 +1012,9 @@ const AgentManagement = () => {
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent className="rounded-none border-none shadow-2xl">
-                                                <SelectItem value="Lync Agent">Lync Agent</SelectItem>
-                                                <SelectItem value="Supervisor">Supervisor</SelectItem>
-                                                <SelectItem value="Administrator">Administrator</SelectItem>
+                                                <SelectItem value="agent">Lync Agent</SelectItem>
+                                                <SelectItem value="supervisor">Supervisor</SelectItem>
+                                                <SelectItem value="super_admin">Super Admin</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -1111,19 +1112,6 @@ const AgentManagement = () => {
                                         </Label>
                                     </div>
 
-                                    {selectedUser && (
-                                        <div className="flex items-center space-x-2">
-                                            <Checkbox 
-                                                id="modalDeleteUser" 
-                                                checked={formValues.deleteUser}
-                                                onCheckedChange={(checked) => setFormValues(prev => ({ ...prev, deleteUser: !!checked }))}
-                                                className="h-4 w-4 border-2 border-red-500 rounded-none data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
-                                            />
-                                            <Label htmlFor="modalDeleteUser" className="text-xs font-black uppercase tracking-wider text-red-500 cursor-pointer hover:text-red-650">
-                                                Delete User
-                                            </Label>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
 
@@ -1131,7 +1119,7 @@ const AgentManagement = () => {
                             <div className="lg:col-span-3 flex flex-col items-center justify-center p-6 border-l border-gray-150 dark:border-l-gray-800 space-y-4">
                                 <div className="relative group">
                                     <div className="w-28 h-28 rounded-none overflow-hidden border-4 border-[#7ede56] shadow-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative">
-                                        {formValues.avatar ? (
+                                        {formValues.avatar && !formValues.avatar.includes('lovable-uploads/profile.png') ? (
                                             <img 
                                                 src={formValues.avatar} 
                                                 alt="Preview avatar" 
@@ -1165,21 +1153,56 @@ const AgentManagement = () => {
                             </div>
                         </div>
 
-                        {/* Modal Action buttons: Styled exactly matching the second image */}
-                        <div className="flex justify-end gap-4 mt-10 pt-8 border-t border-gray-100 dark:border-gray-800">
-                            <Button 
-                                type="button"
-                                onClick={handleResetForm}
-                                className="h-11 px-6 bg-gray-450 hover:bg-gray-500 text-white font-black uppercase text-[11px] tracking-widest rounded-none transition-all shadow-md"
-                            >
-                                Reset Form
-                            </Button>
+                        {/* Modal Action buttons */}
+                        <div className="flex items-center justify-between gap-4 mt-10 pt-8 border-t border-gray-100 dark:border-gray-800">
+                            {/* Left group: Delete + Reset */}
+                            <div className="flex items-center gap-3">
+                                {selectedUser && (
+                                    <Button 
+                                        type="button"
+                                        onClick={() => {
+                                            Swal.fire({
+                                                title: 'Delete User?',
+                                                text: `This will permanently remove ${selectedUser.name}'s account. This cannot be undone.`,
+                                                icon: 'warning',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#ef4444',
+                                                cancelButtonColor: '#6b7280',
+                                                confirmButtonText: 'Yes, Delete'
+                                            }).then(async (result) => {
+                                                if (result.isConfirmed) {
+                                                    try {
+                                                        await api.delete(`/super-admin/users/${selectedUser.id}`);
+                                                        setUsers(prev => prev.filter(u => u.id !== selectedUser.id));
+                                                        setIsModalOpen(false);
+                                                        toast.success('User deleted successfully');
+                                                    } catch (error) {
+                                                        toast.error('Failed to delete user');
+                                                    }
+                                                }
+                                            });
+                                        }}
+                                        className="h-11 px-6 bg-red-500 hover:bg-red-600 text-white font-black uppercase text-[11px] tracking-widest rounded-none transition-all shadow-md flex items-center gap-2"
+                                    >
+                                        <Trash2 className="w-4 h-4" /> Delete
+                                    </Button>
+                                )}
+                                <Button 
+                                    type="button"
+                                    onClick={handleResetForm}
+                                    className="h-11 px-6 bg-slate-500 hover:bg-slate-600 text-white font-black uppercase text-[11px] tracking-widest rounded-none transition-all shadow-md"
+                                >
+                                    Reset Form
+                                </Button>
+                            </div>
+
+                            {/* Right: Save / Update */}
                             <Button 
                                 type="button"
                                 onClick={handleSaveRecord}
                                 className="h-11 px-8 bg-[#eab308] hover:bg-[#ca8a04] text-black font-black uppercase text-[11px] tracking-widest rounded-none transition-all shadow-md flex items-center gap-2"
                             >
-                                <Check className="w-4 h-4" /> Save Record
+                                <Check className="w-4 h-4" /> {selectedUser ? 'Update Record' : 'Save Record'}
                             </Button>
                         </div>
                     </div>
