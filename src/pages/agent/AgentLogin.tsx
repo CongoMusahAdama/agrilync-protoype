@@ -53,6 +53,7 @@ const AgentLogin = () => {
     password: '',
     region: ''
   });
+  const [assignedRegion, setAssignedRegion] = useState<string | null>(null);
 
   const currentDate = new Date().toLocaleDateString('en-US', {
     month: 'long',
@@ -67,14 +68,9 @@ const AgentLogin = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.region) {
-      toast.error('Please select your operational region');
-      return;
-    }
-
     setLoading(true);
     try {
-      // Step 1: Normal Login to verify credentials
+      // Authenticate credentials first
       const res = await api.post('/auth/login', {
         email: formData.email,
         password: formData.password
@@ -82,18 +78,28 @@ const AgentLogin = () => {
 
       const { token, agent } = res.data;
 
-      // Step 2: Immediate Region Verification Logic
-      const normalizedSelected = formData.region.toLowerCase().replace(' region', '').trim();
-      const normalizedAssigned = (agent.region || '').toLowerCase().replace(' region', '').trim();
-      
-      if (normalizedSelected === normalizedAssigned || normalizedAssigned.includes(normalizedSelected)) {
-        // Success
-        setSession(token, { ...agent, region: formData.region });
-        toast.success(`Welcome back, Agent ${agent.name.split(' ')[0]}!`);
-        navigate('/dashboard/agent');
-      } else {
-        toast.error(`Access Denied: You are not assigned to the ${formData.region}`);
+      // Lock to the agent's assigned region — no free selection allowed
+      const agentRegion = agent.region || '';
+
+      if (!agentRegion) {
+        toast.error('Your account has no assigned operational region. Contact your Administrator.');
+        return;
       }
+
+      if (formData.region) {
+        // If they selected a region on the dropdown, enforce it must match their assigned one
+        const normalizedSelected = formData.region.toLowerCase().replace(' region', '').trim();
+        const normalizedAssigned = agentRegion.toLowerCase().replace(' region', '').trim();
+        if (normalizedSelected !== normalizedAssigned && !normalizedAssigned.includes(normalizedSelected)) {
+          toast.error(`Access Denied: You are not assigned to ${formData.region}. Your zone is ${agentRegion}.`);
+          return;
+        }
+      }
+
+      setAssignedRegion(agentRegion);
+      setSession(token, { ...agent, region: agentRegion });
+      toast.success(`Welcome back, ${agent.name.split(' ')[0]}!`);
+      navigate('/dashboard/agent');
     } catch (error: any) {
       console.error('Login error:', error);
       const msg = error.response?.data?.msg || 'Authentication failed. Please check your credentials.';
@@ -257,33 +263,18 @@ const AgentLogin = () => {
               </div>
             </div>
 
-            {/* Region Field */}
+            {/* Deployment Region - Auto-assigned, not selectable */}
             <div className="space-y-2.5">
-              <Label htmlFor="region" className="text-[10px] font-black uppercase text-gray-500 tracking-[0.15em] pl-1">Deployment Region</Label>
+              <Label className="text-[10px] font-black uppercase text-gray-500 tracking-[0.15em] pl-1">Deployment Region</Label>
               <div className="relative group">
-                <div className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 transition-colors group-focus-within:text-[#002f37] z-10 pointer-events-none">
+                <div className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#7ede56] z-10 pointer-events-none">
                   <MapPin className="h-full w-full" />
                 </div>
-                <Select onValueChange={(val) => handleInputChange('region', val)}>
-                  <SelectTrigger className="pl-14 h-12 bg-white border-gray-100 focus:border-[#002f37] focus:ring-4 focus:ring-[#002f37]/5 transition-all text-[14px] font-bold rounded-3xl shadow-sm outline-none">
-                    <SelectValue placeholder="SELECT OPERATIONAL REGION" className="text-gray-300" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-gray-100 shadow-2xl p-2 bg-white ring-1 ring-black/5">
-                    {regions.map((region) => (
-                      <SelectItem 
-                        key={region.value} 
-                        value={region.value}
-                        className="rounded-xl py-4 focus:bg-[#002f37] focus:text-white font-black uppercase text-[11px] tracking-tight cursor-pointer my-1 transition-colors"
-                      >
-                        <div className="flex flex-col gap-0.5">
-                          <span className="font-extrabold">{region.label}</span>
-                          <span className="text-[9px] opacity-60 font-bold uppercase tracking-widest">{region.desc}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="pl-14 h-12 bg-gray-50 border border-gray-100 rounded-3xl shadow-sm flex items-center text-[13px] font-black text-[#002f37] uppercase tracking-wider">
+                  Auto-Assigned From Your Account
+                </div>
               </div>
+              <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest pl-1">Your operational zone is determined by your account credentials</p>
             </div>
             
             <div className="flex justify-end pr-1">
