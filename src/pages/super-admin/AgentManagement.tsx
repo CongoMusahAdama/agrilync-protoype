@@ -999,12 +999,14 @@ const AgentManagement = () => {
                                             onValueChange={(val) => {
                                                 let updatedAC = formValues.staffAccountNumber;
                                                 if (!selectedUser) { // only autogenerate for new user creation
-                                                    if (val === 'Lync Agent') {
+                                                    if (val === 'agent') {
                                                         updatedAC = 'LYC' + Math.floor(10000 + Math.random() * 90000);
-                                                    } else if (val === 'Supervisor') {
+                                                    } else if (val === 'supervisor') {
                                                         updatedAC = 'SUP-' + Math.floor(1000 + Math.random() * 9000);
+                                                    } else if (val === 'super_admin') {
+                                                        updatedAC = 'SA-' + Math.floor(100 + Math.random() * 900);
                                                     } else {
-                                                        updatedAC = 'AC-' + Math.floor(100000 + Math.random() * 900000);
+                                                        updatedAC = 'LYC' + Math.floor(10000 + Math.random() * 90000);
                                                     }
                                                 }
                                                 setFormValues(prev => ({ 
@@ -1032,9 +1034,9 @@ const AgentManagement = () => {
                                         </Label>
                                         <Input 
                                             value={formValues.staffAccountNumber}
-                                            onChange={(e) => setFormValues(prev => ({ ...prev, staffAccountNumber: e.target.value }))}
-                                            placeholder="Generate automatically"
-                                            className={`h-11 rounded-none text-sm border-none shadow-inner ${darkMode ? 'bg-gray-855' : 'bg-gray-50'} font-mono text-[#7ede56]`}
+                                            readOnly
+                                            placeholder="Auto-generated ID"
+                                            className={`h-11 rounded-none text-sm border-none shadow-inner ${darkMode ? 'bg-gray-855' : 'bg-gray-50'} font-mono text-[#7ede56] cursor-not-allowed`}
                                         />
                                     </div>
                                 </div>
