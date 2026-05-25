@@ -719,9 +719,6 @@ exports.createUser = async (req, res) => {
         const crypto = require('crypto');
         const generatedPassword = crypto.randomBytes(4).toString('hex');
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(generatedPassword, salt);
-
         user = new Agent({
             name,
             email,
@@ -730,7 +727,7 @@ exports.createUser = async (req, res) => {
             region,
             districts: communities,
             status: disabled === 'Yes' ? 'inactive' : 'active',
-            password: hashedPassword,
+            password: generatedPassword,
             hasChangedPassword: false, // Force password update on first login
             agentId: staffAccountNumber,
             enableMultipleLogin: enableMultipleLogin || false,
