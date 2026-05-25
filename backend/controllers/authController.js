@@ -9,7 +9,9 @@ exports.login = async (req, res) => {
     const { email, password, region } = req.body;
 
     try {
-        let agent = await Agent.findOne({ email });
+        let agent = await Agent.findOne({ 
+            $or: [{ email: email }, { contact: email }] 
+        });
         if (!agent) {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
@@ -63,6 +65,14 @@ exports.login = async (req, res) => {
 
         // Set cookies and respond
         setTokenCookies(res, accessToken, refreshToken);
+
+        // Send Login Security SMS
+        if (agent.contact) {
+            const smsService = require('../utils/smsService');
+            const timeStr = new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const message = `Security Alert: Your AgriLync account was successfully logged into on ${timeStr}. If this wasn't you, please contact an Administrator immediately.`;
+            smsService.sendSMS(agent.contact, message).catch(err => console.error('Login SMS failed:', err.message));
+        }
 
         res.json({
             token: accessToken,

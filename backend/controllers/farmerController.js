@@ -134,6 +134,13 @@ exports.registerFarmerPublic = async (req, res) => {
             await Notification.insertMany(notifications);
         }
 
+        // Send Welcome SMS
+        if (contact) {
+            const smsService = require('../utils/smsService');
+            const message = `Welcome ${name} to AgriLync! Your grower profile has been successfully created and is pending verification. We will keep you updated.`;
+            smsService.sendSMS(contact, message).catch(err => console.error('Welcome SMS failed:', err.message));
+        }
+
         res.json({ success: true, farmerId: farmer._id });
     } catch (err) {
         if (err.name === 'ValidationError') {
@@ -237,6 +244,13 @@ exports.addFarmer = async (req, res) => {
 
         // Invalidate dashboard cache for this agent
         dashboardService.invalidateCache(req.agent.id);
+
+        // Send Welcome SMS
+        if (contact) {
+            const smsService = require('../utils/smsService');
+            const message = `Welcome ${name} to AgriLync! Your grower profile has been successfully onboarded by your field agent. You will now receive important updates here.`;
+            smsService.sendSMS(contact, message).catch(err => console.error('Welcome SMS failed:', err.message));
+        }
 
         res.status(201).json(farmer);
     } catch (err) {

@@ -21,7 +21,7 @@ const validate = (req, res, next) => {
  * Auth validation rules
  */
 const loginRules = [
-    body('email').isEmail().withMessage('Please include a valid email'),
+    body('email').notEmpty().withMessage('Please include a valid email or phone number'),
     body('password').exists().withMessage('Password is required'),
 ];
 

@@ -715,8 +715,12 @@ exports.createUser = async (req, res) => {
             return res.status(400).json({ msg: 'User already exists' });
         }
 
+        // Generate a random 8-character password
+        const crypto = require('crypto');
+        const generatedPassword = crypto.randomBytes(4).toString('hex');
+
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash('Default@123', salt);
+        const hashedPassword = await bcrypt.hash(generatedPassword, salt);
 
         user = new Agent({
             name,
@@ -727,6 +731,7 @@ exports.createUser = async (req, res) => {
             districts: communities,
             status: disabled === 'Yes' ? 'inactive' : 'active',
             password: hashedPassword,
+            hasChangedPassword: false, // Force password update on first login
             agentId: staffAccountNumber,
             enableMultipleLogin: enableMultipleLogin || false,
             avatar: avatar || '/lovable-uploads/profile.png'
@@ -744,29 +749,12 @@ exports.createUser = async (req, res) => {
             targetId: user.id
         });
 
-        // Send mNotify SMS (using native fetch — no axios dependency needed)
-        try {
-            const message = `Hello ${name}, your AgriLync account has been created! Login at ${process.env.FRONTEND_URL || 'https://agrilync.com'}/login with email: ${email} and password: Default@123`;
-            const mnotifyKey = process.env.MNOTIFY_API_KEY;
-            const senderId = process.env.MNOTIFY_SENDER_ID || 'AgriLync';
-            
-            if (mnotifyKey && phone) {
-                const smsRes = await fetch(`https://api.mnotify.com/api/sms/quick?key=${mnotifyKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        recipient: [phone],
-                        sender: senderId,
-                        message: message,
-                        is_schedule: false,
-                        schedule_date: ''
-                    })
-                });
-                const smsData = await smsRes.json();
-                console.log(`[mNotify] SMS sent to ${phone}:`, smsData);
-            }
-        } catch (smsError) {
-            console.error('[mNotify] Failed to send SMS:', smsError.message);
+        // Send SMS via smsService
+        if (phone) {
+            const smsService = require('../utils/smsService');
+            const frontendUrl = process.env.FRONTEND_URL || 'https://agrilync.com';
+            const message = `Hello ${name}, your AgriLync account has been successfully created by an Admin. Login at ${frontendUrl}/login using your email or phone number and password: ${generatedPassword}. You will be required to update your password upon first login.`;
+            smsService.sendSMS(phone, message).catch(err => console.error('Account creation SMS failed:', err.message));
         }
 
 

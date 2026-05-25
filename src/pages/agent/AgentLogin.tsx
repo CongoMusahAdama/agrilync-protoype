@@ -116,11 +116,11 @@ const AgentLogin = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="w-full max-w-[1250px] min-h-screen md:min-h-[520px] bg-[#FDFCFB] md:bg-white md:rounded-[2.5rem] md:shadow-[0_50px_100px_-20px_rgba(0,47,55,0.15)] flex flex-col md:flex-row overflow-hidden relative z-10 md:border md:border-white my-0 md:my-8"
+        className="w-full max-w-[950px] min-h-screen md:min-h-[480px] bg-[#FDFCFB] md:bg-white md:rounded-[2.5rem] md:shadow-[0_50px_100px_-20px_rgba(0,47,55,0.15)] flex flex-col md:flex-row overflow-hidden relative z-10 md:border md:border-white my-0 md:my-8"
       >
         
         {/* Left Panel - Brand Identity (Hidden on Mobile) */}
-        <div className="hidden md:flex md:w-[50%] bg-[#002f37] relative flex-col justify-between p-10 md:p-14 overflow-hidden min-h-0 rounded-none">
+        <div className="hidden md:flex md:w-[45%] bg-[#002f37] relative flex-col justify-between p-8 md:p-10 overflow-hidden min-h-0 rounded-none">
           {/* Visual Background */}
           <div className="absolute inset-0 z-0">
             <img 
@@ -146,7 +146,7 @@ const AgentLogin = () => {
               className="space-y-6"
             >
               <div>
-                <h1 className="text-[2.75rem] md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-3">
+                <h1 className="text-[2.25rem] md:text-4xl font-black text-white leading-[1.05] tracking-tight mb-3">
                   <span className="md:hidden block">Welcome <br /> Back</span>
                   <span className="hidden md:block">AgriLync Nexus <br /> <span className="text-[#7ede56]">Operations</span></span>
                 </h1>
@@ -181,7 +181,7 @@ const AgentLogin = () => {
         </div>
 
         {/* Right Panel - Login Form (Focus on Mobile) */}
-        <div className="w-full md:w-[50%] flex flex-col p-8 md:p-8 lg:p-10 relative bg-white overflow-y-auto scrollbar-hide md:bg-white md:rounded-none z-20">
+        <div className="w-full md:w-[55%] flex flex-col p-6 md:p-8 relative bg-white overflow-y-auto scrollbar-hide md:bg-white md:rounded-none z-20">
           
           {/* Header/Badge Section */}
           <div className="flex flex-col items-center text-center mb-6">
@@ -212,18 +212,18 @@ const AgentLogin = () => {
 
           <form onSubmit={handleLogin} className="space-y-6 flex-1">
             
-            {/* Email Field */}
+            {/* Email / Phone Field */}
             <div className="space-y-2.5">
-              <Label htmlFor="email" className="text-[10px] font-black uppercase text-gray-500 tracking-[0.15em] pl-1">Operational ID / Email</Label>
+              <Label htmlFor="email" className="text-[10px] font-black uppercase text-gray-500 tracking-[0.15em] pl-1">Operational ID / Email / Phone</Label>
               <div className="relative group">
                 <div className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 transition-colors group-focus-within:text-[#002f37]">
                   <Mail className="h-full w-full" />
                 </div>
                 <Input 
                   id="email"
-                  type="email"
-                  placeholder="agent@agrilync.com"
-                  className="pl-14 h-14 bg-white border-gray-100 focus:border-[#002f37] focus:ring-4 focus:ring-[#002f37]/5 transition-all text-[15px] font-bold rounded-3xl shadow-sm"
+                  type="text"
+                  placeholder="Email or Phone Number"
+                  className="pl-14 h-12 bg-white border-gray-100 focus:border-[#002f37] focus:ring-4 focus:ring-[#002f37]/5 transition-all text-[14px] font-bold rounded-3xl shadow-sm"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   required
@@ -242,7 +242,7 @@ const AgentLogin = () => {
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••••••"
-                  className="pl-14 pr-16 h-14 bg-white border-gray-100 focus:border-[#002f37] focus:ring-4 focus:ring-[#002f37]/5 transition-all text-[15px] font-bold rounded-3xl shadow-sm"
+                  className="pl-14 pr-16 h-12 bg-white border-gray-100 focus:border-[#002f37] focus:ring-4 focus:ring-[#002f37]/5 transition-all text-[14px] font-bold rounded-3xl shadow-sm"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   required
@@ -265,7 +265,7 @@ const AgentLogin = () => {
                   <MapPin className="h-full w-full" />
                 </div>
                 <Select onValueChange={(val) => handleInputChange('region', val)}>
-                  <SelectTrigger className="pl-14 h-14 bg-white border-gray-100 focus:border-[#002f37] focus:ring-4 focus:ring-[#002f37]/5 transition-all text-[15px] font-bold rounded-3xl shadow-sm outline-none">
+                  <SelectTrigger className="pl-14 h-12 bg-white border-gray-100 focus:border-[#002f37] focus:ring-4 focus:ring-[#002f37]/5 transition-all text-[14px] font-bold rounded-3xl shadow-sm outline-none">
                     <SelectValue placeholder="SELECT OPERATIONAL REGION" className="text-gray-300" />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-gray-100 shadow-2xl p-2 bg-white ring-1 ring-black/5">
@@ -295,7 +295,7 @@ const AgentLogin = () => {
             <Button 
               type="submit"
               disabled={loading}
-              className="w-full h-15 bg-gradient-to-r from-[#002f37] to-[#00454f] hover:from-[#001e23] hover:to-[#002f37] text-white font-black text-xs uppercase tracking-[0.3em] rounded-3xl shadow-[0_20px_40px_-10px_rgba(0,47,55,0.3)] transition-all active:scale-[0.98] disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none mt-4 border-none"
+              className="w-full h-12 bg-gradient-to-r from-[#002f37] to-[#00454f] hover:from-[#001e23] hover:to-[#002f37] text-white font-black text-xs uppercase tracking-[0.3em] rounded-3xl shadow-[0_20px_40px_-10px_rgba(0,47,55,0.3)] transition-all active:scale-[0.98] disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none mt-4 border-none"
             >
               {loading ? (
                 <div className="flex items-center gap-3">
