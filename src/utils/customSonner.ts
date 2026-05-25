@@ -22,6 +22,9 @@ export const toast = {
       text: text,
       icon: 'success',
       iconColor: '#7ede56',
+      timer: 3000,
+      timerProgressBar: true,
+      showConfirmButton: false
     });
     return 'swal-id';
   },
@@ -32,6 +35,9 @@ export const toast = {
       text: text,
       icon: 'error',
       iconColor: '#ef4444',
+      timer: 3000,
+      timerProgressBar: true,
+      showConfirmButton: false
     });
     return 'swal-id';
   },
@@ -42,6 +48,9 @@ export const toast = {
       text: text,
       icon: 'info',
       iconColor: '#002f37',
+      timer: 3000,
+      timerProgressBar: true,
+      showConfirmButton: false
     });
     return 'swal-id';
   },
@@ -52,6 +61,9 @@ export const toast = {
       text: text,
       icon: 'warning',
       iconColor: '#f59e0b',
+      timer: 3000,
+      timerProgressBar: true,
+      showConfirmButton: false
     });
     return 'swal-id';
   },

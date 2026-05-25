@@ -354,6 +354,7 @@ const AgentManagement = () => {
                     communities: formValues.communities,
                     disabled: formValues.isDisabled ? 'Yes' : 'No',
                     resetPassword: formValues.resetPassword,
+                    staffAccountNumber: formValues.staffAccountNumber,
                     enableMultipleLogin: formValues.enableMultipleLogin,
                     avatar: formValues.avatar
                 });
@@ -369,10 +370,11 @@ const AgentManagement = () => {
                 const res = await api.post('/super-admin/users', {
                     name: formValues.name,
                     email: formValues.email,
-                    contact: formValues.phone,
+                    phone: formValues.phone,
                     role: formValues.role,
                     region: formValues.region,
                     communities: formValues.communities,
+                    staffAccountNumber: formValues.staffAccountNumber,
                     enableMultipleLogin: formValues.enableMultipleLogin,
                     avatar: formValues.avatar
                 });
