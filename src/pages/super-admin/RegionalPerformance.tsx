@@ -299,7 +299,7 @@ export default function RegionalPerformance() {
             ) : (
                 <Card className={`border-none shadow-premium overflow-hidden ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white'}`}>
                     <div className="overflow-x-auto custom-scrollbar">
-                        <table className="w-full text-left">
+                        <table className="w-full text-left whitespace-nowrap">
                             <thead>
                                 <tr className="bg-[#002f37] text-white text-[9px] font-black uppercase tracking-widest">
                                     <th className="p-5">Region</th>

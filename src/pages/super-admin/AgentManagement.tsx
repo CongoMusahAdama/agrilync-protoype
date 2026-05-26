@@ -579,7 +579,7 @@ const AgentManagement = () => {
                     {/* Clean Directory Table */}
                     <Card className={`border-none shadow-premium overflow-hidden rounded-none ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white'}`}>
                         <div className="p-0 overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
+                            <table className="w-full text-left border-collapse whitespace-nowrap">
                                 <thead>
                                     <tr className="text-[12px] md:text-[13px] font-black uppercase tracking-wider text-white bg-[#002f37]">
                                         <th className="px-6 py-6 w-10">#</th>
@@ -835,7 +835,7 @@ const AgentManagement = () => {
 
                         <Card className="border-none shadow-md overflow-hidden rounded-none">
                             <div className="p-0 overflow-x-auto">
-                                <table className="w-full text-left border-collapse">
+                                <table className="w-full text-left border-collapse whitespace-nowrap">
                                     <thead>
                                         <tr className="text-[12px] md:text-[13px] font-black uppercase tracking-wider text-white bg-[#002f37]">
                                             <th className="px-6 py-5.5 w-12 text-center">#</th>

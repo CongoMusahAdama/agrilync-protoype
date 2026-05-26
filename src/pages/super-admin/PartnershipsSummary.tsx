@@ -376,7 +376,7 @@ const PartnershipsSummary = () => {
                     </div>
                 </CardHeader>
                 <CardContent className="p-0 overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse whitespace-nowrap">
                         <thead>
                             <tr className="bg-[#002f37] text-white text-[10px] font-bold uppercase tracking-widest">
                                 <th className="p-4 border-r border-[#ffffff20]">Partnership Entity</th>

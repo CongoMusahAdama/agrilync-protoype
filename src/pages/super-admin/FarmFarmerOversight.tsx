@@ -226,7 +226,7 @@ const FarmFarmerOversight = () => {
                 <TabsContent value="all" className="mt-0">
                     <Card className={`border-none shadow-premium overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
                         <CardContent className="p-0 overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
+                            <table className="w-full text-left border-collapse whitespace-nowrap">
                                 <thead>
                                     <tr className="bg-[#002f37] text-white text-[10px] font-bold uppercase tracking-widest">
                                         <th className="p-4">Farmer Name</th>

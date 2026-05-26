@@ -276,7 +276,7 @@ const ReportsAnalytics = () => {
                                 <div className="space-y-4">
                                     <h4 className="text-[10px] font-black uppercase tracking-widest text-[#7ede56]">Dataset Mockup (Top 4 Nodes)</h4>
                                     <div className={`overflow-hidden rounded-xl border ${darkMode ? 'border-gray-800' : 'border-gray-200'}`}>
-                                        <table className="w-full text-left text-[10px] font-bold uppercase tracking-tight">
+                                        <table className="w-full text-left text-[10px] font-bold uppercase tracking-tight whitespace-nowrap">
                                             <thead>
                                                 <tr className={`${darkMode ? 'bg-gray-900 text-gray-400' : 'bg-gray-50 text-gray-500'}`}>
                                                     <th className="p-4">Reference Node</th>

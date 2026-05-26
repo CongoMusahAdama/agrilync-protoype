@@ -209,7 +209,7 @@ const SystemLogs = () => {
                     </div>
                 </CardHeader>
                 <CardContent className="p-0 overflow-x-auto">
-                    <table className="w-full text-left">
+                    <table className="w-full text-left whitespace-nowrap">
                         <thead>
                             <tr className="bg-[#002f37] text-white text-[10px] font-black uppercase tracking-widest">
                                 <th className="p-5">Action Taken</th>

@@ -139,7 +139,7 @@ const FieldOperationsAudit = () => {
                                     <p className="text-[10px] font-bold uppercase tracking-wider text-gray-300 mt-1">Visits logged by agents will appear here</p>
                                 </div>
                             ) : (
-                            <table className="w-full text-left">
+                            <table className="w-full text-left whitespace-nowrap">
                                 <thead>
                                     <tr className="bg-[#002f37] text-white text-[10px] font-black uppercase tracking-widest">
                                         <th className="p-4">Visit Date</th>
@@ -309,7 +309,7 @@ const FieldOperationsAudit = () => {
                                     </p>
                                 </div>
                             ) : (
-                                <table className="w-full text-left">
+                                <table className="w-full text-left whitespace-nowrap">
                                     <thead>
                                         <tr className="bg-[#002f37] text-white text-[10px] font-black uppercase tracking-widest">
                                             <th className="p-4">Date</th>
