@@ -396,20 +396,41 @@ const AgentManagement = () => {
         }
     };
 
-    const handleResetForm = () => {
-        setFormValues(prev => ({
-            ...prev,
-            name: '',
-            email: '',
-            phone: '',
-            communities: [],
-            isDisabled: false,
-            enableMultipleLogin: false,
-            resetPassword: false,
-            deleteUser: false,
-            avatar: ''
-        }));
-        toast.info("Form values reset");
+    const handleResetSession = async () => {
+        if (!selectedUser) {
+            setFormValues(prev => ({
+                ...prev,
+                name: '',
+                email: '',
+                phone: '',
+                communities: [],
+                isDisabled: false,
+                enableMultipleLogin: false,
+                resetPassword: false,
+                deleteUser: false,
+                avatar: ''
+            }));
+            toast.info("Form values reset");
+            return;
+        }
+
+        try {
+            await api.put(`/super-admin/users/${selectedUser.id}`, {
+                name: formValues.name,
+                email: formValues.email,
+                phone: formValues.phone,
+                role: formValues.role,
+                region: formValues.region,
+                communities: formValues.communities,
+                disabled: formValues.isDisabled ? 'Yes' : 'No',
+                staffAccountNumber: formValues.staffAccountNumber,
+                resetSession: true
+            });
+            toast.success(`Active sessions for ${selectedUser.name} have been cleared. They can now log in again.`);
+        } catch (err: any) {
+            console.error('Session reset failed:', err);
+            toast.error(err.response?.data?.msg || 'Failed to clear user sessions');
+        }
     };
 
     const handleAvatarUpload = () => {
@@ -1201,10 +1222,10 @@ const AgentManagement = () => {
                                 )}
                                 <Button 
                                     type="button"
-                                    onClick={handleResetForm}
+                                    onClick={handleResetSession}
                                     className="h-11 px-6 bg-slate-500 hover:bg-slate-600 text-white font-black uppercase text-[11px] tracking-widest rounded-none transition-all shadow-md"
                                 >
-                                    Reset Form
+                                    {selectedUser ? 'Reset Session' : 'Reset Form'}
                                 </Button>
                             </div>
 

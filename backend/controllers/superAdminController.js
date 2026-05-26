@@ -779,7 +779,7 @@ exports.createUser = async (req, res) => {
 // @route   PUT api/super-admin/users/:id
 // @desc    Update Supervisor or Agent
 exports.updateUser = async (req, res) => {
-    const { name, email, phone, role, region, communities, disabled, resetPassword, enableMultipleLogin, avatar } = req.body;
+    const { name, email, phone, role, region, communities, disabled, resetPassword, resetSession, enableMultipleLogin, avatar } = req.body;
     try {
         let user = await Agent.findById(req.params.id);
         if (!user) {
@@ -800,6 +800,11 @@ exports.updateUser = async (req, res) => {
 
         if (avatar) {
             user.avatar = avatar;
+        }
+
+        if (resetSession) {
+            user.isLoggedIn = false;
+            user.currentSessionId = null;
         }
 
         if (resetPassword) {

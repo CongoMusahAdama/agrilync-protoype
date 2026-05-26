@@ -68,6 +68,11 @@ const AgentLogin = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!formData.region) {
+      toast.error('Please select your operational region');
+      return;
+    }
+
     setLoading(true);
     try {
       // Authenticate credentials first
@@ -263,18 +268,33 @@ const AgentLogin = () => {
               </div>
             </div>
 
-            {/* Deployment Region - Auto-assigned, not selectable */}
+            {/* Region Field */}
             <div className="space-y-2.5">
-              <Label className="text-[10px] font-black uppercase text-gray-500 tracking-[0.15em] pl-1">Deployment Region</Label>
+              <Label htmlFor="region" className="text-[10px] font-black uppercase text-gray-500 tracking-[0.15em] pl-1">Deployment Region</Label>
               <div className="relative group">
-                <div className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#7ede56] z-10 pointer-events-none">
+                <div className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 transition-colors group-focus-within:text-[#002f37] z-10 pointer-events-none">
                   <MapPin className="h-full w-full" />
                 </div>
-                <div className="pl-14 h-12 bg-gray-50 border border-gray-100 rounded-3xl shadow-sm flex items-center text-[13px] font-black text-[#002f37] uppercase tracking-wider">
-                  Auto-Assigned From Your Account
-                </div>
+                <Select onValueChange={(val) => handleInputChange('region', val)}>
+                  <SelectTrigger className="pl-14 h-12 bg-white border-gray-100 focus:border-[#002f37] focus:ring-4 focus:ring-[#002f37]/5 transition-all text-[14px] font-bold rounded-3xl shadow-sm outline-none">
+                    <SelectValue placeholder="SELECT OPERATIONAL REGION" className="text-gray-300" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-gray-100 shadow-2xl p-2 bg-white ring-1 ring-black/5">
+                    {regions.map((region) => (
+                      <SelectItem 
+                        key={region.value} 
+                        value={region.value}
+                        className="rounded-xl py-4 focus:bg-[#002f37] focus:text-white font-black uppercase text-[11px] tracking-tight cursor-pointer my-1 transition-colors"
+                      >
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-extrabold">{region.label}</span>
+                          <span className="text-[9px] opacity-60 font-bold uppercase tracking-widest">{region.desc}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest pl-1">Your operational zone is determined by your account credentials</p>
             </div>
             
             <div className="flex justify-end pr-1">
