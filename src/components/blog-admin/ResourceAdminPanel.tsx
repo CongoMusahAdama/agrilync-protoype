@@ -23,6 +23,7 @@ import {
   updateResource,
   getApiErrorMessage,
 } from '@/services/blogAdminService';
+import { resolvePublicAssetUrl } from '@/lib/resolveAssetUrl';
 import {
   RESOURCE_CATEGORY_OPTIONS,
   DEFAULT_TYPE_BY_CATEGORY,
@@ -180,7 +181,7 @@ const ResourceAdminPanel: React.FC<ResourceAdminPanelProps> = ({
     setTagsStr(resource.tags?.join(', ') || '');
     setStats(resource.stats || '');
     setCoverImageUrl(resource.coverImage);
-    setCoverPreview(resource.coverImage);
+    setCoverPreview(resolvePublicAssetUrl(resource.coverImage));
     setCoverFile(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -232,7 +233,7 @@ const ResourceAdminPanel: React.FC<ResourceAdminPanelProps> = ({
                 >
                   <div className="flex gap-4 min-w-0">
                     <img
-                      src={resource.coverImage}
+                      src={resolvePublicAssetUrl(resource.coverImage)}
                       alt=""
                       className="w-20 h-14 rounded-lg object-cover border border-gray-100 flex-shrink-0"
                     />

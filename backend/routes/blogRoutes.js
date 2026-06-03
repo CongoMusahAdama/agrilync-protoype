@@ -41,6 +41,7 @@ const upload = multer({
     }
 });
 const blogAuth = require('../middleware/blogAuth');
+const { uploadFileToCloudinary, isCloudinaryConfigured } = require('../utils/cloudinary');
 
 // Generate unique slug from title
 const generateSlug = (title) => {
@@ -481,18 +482,25 @@ router.delete('/:id', blogAuth, async (req, res) => {
 
 // @route   POST api/blogs/upload
 // @desc    Upload an image for the blog post
-router.post('/upload', blogAuth, upload.single('image'), (req, res) => {
+router.post('/upload', blogAuth, upload.single('image'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ msg: 'No file uploaded' });
         }
-        // Return the path that the frontend can use to access the image
+
+        // Render/ephemeral hosts lose disk uploads on restart — prefer Cloudinary
+        if (isCloudinaryConfigured()) {
+            const secureUrl = await uploadFileToCloudinary(req.file.path, 'agrilync/blogs');
+            fs.unlink(req.file.path, () => {});
+            return res.json({ imageUrl: secureUrl });
+        }
+
         res.json({
-            imageUrl: `/uploads/blogs/${req.file.filename}`
+            imageUrl: `/uploads/blogs/${req.file.filename}`,
         });
     } catch (err) {
         console.error('Image upload error:', err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({ msg: 'Image upload failed. Check Cloudinary env vars on the server.' });
     }
 });
 

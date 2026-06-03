@@ -75,6 +75,7 @@ const Resources: React.FC = () => {
   const [subscribing, setSubscribing] = useState(false);
   const [apiResources, setApiResources] = useState<DisplayResource[]>([]);
   const [resourcesLoading, setResourcesLoading] = useState(true);
+  const [resourcesLoadError, setResourcesLoadError] = useState<string | null>(null);
 
   const [accessModalOpen, setAccessModalOpen] = useState(false);
   const [selectedResource, setSelectedResource] = useState<DisplayResource | null>(null);
@@ -92,13 +93,17 @@ const Resources: React.FC = () => {
 
   useEffect(() => {
     setResourcesLoading(true);
+    setResourcesLoadError(null);
     api
-      .get('/resources')
+      .get('/resources', { timeout: 15000 })
       .then(res => {
         setApiResources(res.data.map(mapApiResourceToDisplay));
       })
       .catch(err => {
         console.error('Failed to load resources from API:', err);
+        const msg =
+          err instanceof Error ? err.message : 'Could not load resources. Please try again shortly.';
+        setResourcesLoadError(msg);
       })
       .finally(() => setResourcesLoading(false));
   }, []);
@@ -437,12 +442,16 @@ const Resources: React.FC = () => {
               >
                 <Search className="w-12 h-12 text-gray-200 mx-auto mb-4" />
                 <h3 className="text-xl font-black text-[#002f37] mb-2">
-                  {allResources.length === 0 && !searchTerm && activeCategory === 'all'
+                  {resourcesLoadError
+                    ? 'Unable to load resources'
+                    : allResources.length === 0 && !searchTerm && activeCategory === 'all'
                     ? 'No resources yet'
                     : 'No resources found'}
                 </h3>
                 <p className="text-gray-400 text-sm mb-6 max-w-md mx-auto">
-                  {allResources.length === 0 && !searchTerm && activeCategory === 'all'
+                  {resourcesLoadError
+                    ? resourcesLoadError
+                    : allResources.length === 0 && !searchTerm && activeCategory === 'all'
                     ? 'New tools, guides, and reports will appear here once published from the blog dashboard.'
                     : 'Try a different keyword or browse all categories.'}
                 </p>

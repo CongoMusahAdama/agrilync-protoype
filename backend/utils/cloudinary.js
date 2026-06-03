@@ -45,8 +45,27 @@ const deleteFromCloudinary = async (publicId) => {
   }
 };
 
+/**
+ * Upload a local file (e.g. from Multer) to Cloudinary — use on Render instead of disk.
+ * @param {string} filePath
+ * @param {string} folder
+ * @returns {Promise<string>} secure_url
+ */
+const uploadFileToCloudinary = async (filePath, folder = 'agrilync/blogs') => {
+  const result = await cloudinary.uploader.upload(filePath, {
+    folder,
+    resource_type: 'image',
+  });
+  return result.secure_url;
+};
+
+const isCloudinaryConfigured = () =>
+  !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
+
 module.exports = {
   cloudinary,
   uploadBase64ToCloudinary,
+  uploadFileToCloudinary,
+  isCloudinaryConfigured,
   deleteFromCloudinary
 };

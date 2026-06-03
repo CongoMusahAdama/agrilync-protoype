@@ -3,15 +3,11 @@ import {
   DEFAULT_TYPE_BY_CATEGORY,
   type ResourceCategoryId,
 } from '@/lib/resourceCategories';
-import { getApiBaseUrl } from '@/utils/api';
+import { resolvePublicAssetUrl } from '@/lib/resolveAssetUrl';
 import type { LucideIcon } from 'lucide-react';
 import { FileText } from 'lucide-react';
 
-export function resolvePublicAssetUrl(url: string): string {
-  if (!url || url.startsWith('http')) return url;
-  const origin = getApiBaseUrl().replace(/\/api\/?$/, '');
-  return `${origin}${url.startsWith('/') ? url : `/${url}`}`;
-}
+export { resolvePublicAssetUrl };
 
 export type ApiResourceRecord = {
   _id: string;

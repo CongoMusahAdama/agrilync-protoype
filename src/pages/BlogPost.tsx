@@ -4,6 +4,7 @@ import { ArrowLeft, Calendar, Clock, User, Share2, Tag, BookOpen } from 'lucide-
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import api from '@/utils/api';
+import { resolvePublicAssetUrl, rewriteHtmlAssetUrls } from '@/lib/resolveAssetUrl';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import 'react-quill/dist/quill.snow.css';
@@ -155,7 +156,7 @@ const BlogPost = () => {
           </Link>
           <div className="w-full h-[400px] md:h-[500px] rounded-[2rem] overflow-hidden shadow-2xl shadow-gray-200/50">
             <img 
-              src={post.image} 
+              src={resolvePublicAssetUrl(post.image)} 
               alt={post.title} 
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000"
             />
@@ -205,7 +206,7 @@ const BlogPost = () => {
             {/* Main Body Content rendered with pristine spacing */}
             <div 
               className="blog-content-area ql-editor"
-              dangerouslySetInnerHTML={{ __html: post.content }}
+              dangerouslySetInnerHTML={{ __html: rewriteHtmlAssetUrls(post.content) }}
             />
           </div>
 

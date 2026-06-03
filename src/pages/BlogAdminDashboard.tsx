@@ -31,8 +31,10 @@ import {
   getApiErrorMessage,
   clearBlogAdminSession,
   assertApiConfiguredForProduction,
+  resolvePublicAssetUrl,
   type BlogAdminUser,
 } from '@/services/blogAdminService';
+import { normalizeBlogContent, normalizeStoredAssetUrl } from '@/lib/resolveAssetUrl';
 import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './quill-setup';
@@ -177,13 +179,14 @@ const BlogAdminDashboard = () => {
       formData.append('image', file);
 
       try {
-        const imageUrl = await uploadBlogImage(file);
+        const storedPath = await uploadBlogImage(file);
+        const displayUrl = resolvePublicAssetUrl(storedPath);
 
         const quill = quillRef.current?.getEditor();
         if (quill) {
           const range = quill.getSelection(true);
           const index = range ? range.index : quill.getLength();
-          quill.insertEmbed(index, 'image', imageUrl);
+          quill.insertEmbed(index, 'image', displayUrl);
           quill.setSelection(index + 1, 0);
         }
       } catch (err) {
@@ -360,8 +363,8 @@ const BlogAdminDashboard = () => {
         category,
         readTime,
         excerpt,
-        content,
-        image: finalImage,
+        content: normalizeBlogContent(content),
+        image: normalizeStoredAssetUrl(finalImage),
         tags: tagsStr.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean),
         author: adminUser?.username || adminUser?.email || 'AgriLync Team',
       };

@@ -1,4 +1,11 @@
-import api, { getApiBaseUrl } from '@/utils/api';
+import api from '@/utils/api';
+import {
+  getBackendOrigin,
+  normalizeStoredAssetUrl,
+  resolvePublicAssetUrl,
+} from '@/lib/resolveAssetUrl';
+
+export { getBackendOrigin, resolvePublicAssetUrl };
 
 export type BlogAdminUser = {
   id: string;
@@ -16,10 +23,6 @@ export function getBlogAdminHeaders(): Record<string, string> {
   return token ? { 'x-auth-token': token } : {};
 }
 
-export function getBackendOrigin(): string {
-  return getApiBaseUrl().replace(/\/api\/?$/, '');
-}
-
 /** Call on dashboard mount in production to surface misconfiguration early. */
 export function assertApiConfiguredForProduction(): void {
   if (import.meta.env.PROD && !import.meta.env.VITE_API_URL?.trim()) {
@@ -30,9 +33,7 @@ export function assertApiConfiguredForProduction(): void {
 }
 
 export function resolveUploadedImageUrl(imageUrl: string): string {
-  if (!imageUrl) return '';
-  if (imageUrl.startsWith('http')) return imageUrl;
-  return `${getBackendOrigin()}${imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`}`;
+  return resolvePublicAssetUrl(imageUrl);
 }
 
 export function getApiErrorMessage(err: unknown, fallback = 'Request failed.'): string {
@@ -89,7 +90,7 @@ export async function uploadBlogImage(file: File): Promise<string> {
   const { data } = await api.post<{ imageUrl: string }>('/blogs/upload', formData, {
     headers: getBlogAdminHeaders(),
   });
-  return resolveUploadedImageUrl(data.imageUrl);
+  return normalizeStoredAssetUrl(data.imageUrl);
 }
 
 export type BlogPostPayload = {

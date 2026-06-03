@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '@/utils/api';
+import { resolvePublicAssetUrl } from '@/lib/resolveAssetUrl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -454,7 +455,7 @@ const Blog = () => {
                 <div className="relative overflow-hidden rounded-3xl bg-white shadow-xl hover:shadow-2xl transition-all duration-500 border border-gray-100">
                   <div className="relative h-80 overflow-hidden">
                     <img
-                      src={post.image}
+                      src={resolvePublicAssetUrl(post.image)}
                       alt={post.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
@@ -568,7 +569,7 @@ const Blog = () => {
                   >
                     <div className="relative overflow-hidden h-56">
                       <img
-                        src={post.image}
+                        src={resolvePublicAssetUrl(post.image)}
                         alt={post.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                       />
