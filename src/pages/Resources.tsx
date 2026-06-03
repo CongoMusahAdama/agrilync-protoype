@@ -21,6 +21,9 @@ import {
   Calendar,
   MapPin,
   Loader2,
+  MessageCircle,
+  Phone,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,7 +35,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import api from '@/utils/api';
@@ -41,6 +43,8 @@ import {
   getSubscribeErrorMessage,
 } from '@/services/subscriberService';
 import { mapApiResourceToDisplay, type DisplayResource } from '@/lib/mapApiResource';
+import { WHATSAPP_COMMUNITY_URL } from '@/lib/communityLinks';
+import { WEBINARS, type WebinarItem } from '@/data/webinars';
 
 /** Shared Google Drive folder for PDFs/tools (set VITE_RESOURCES_DRIVE_URL in .env) */
 const DEFAULT_RESOURCES_DRIVE =
@@ -57,25 +61,7 @@ const getResourceDriveUrl = (resource: DisplayResource): string => {
   return DEFAULT_RESOURCES_DRIVE;
 };
 
-type WebinarItem = {
-  id: number;
-  title: string;
-  date: string;
-  time: string;
-  location: string;
-  spots: number;
-  registered: number;
-  image: string;
-  description: string;
-  speaker: string;
-  status: 'upcoming' | 'completed';
-  recordingLink?: string;
-  registrationLink?: string;
-  pdfLink?: string;
-};
-
-/** Webinars/events — managed separately; no placeholder data */
-const webinars: WebinarItem[] = [];
+const webinars = WEBINARS;
 
 const formatDate = (dateString: string) =>
   new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -202,7 +188,12 @@ const Resources: React.FC = () => {
 
       const downloadUrl = getResourceDriveUrl(selectedResource);
       window.open(downloadUrl, '_blank', 'noopener,noreferrer');
-      toast.success(result.msg || 'Access granted! Opening your resource…');
+      toast.success(
+        result.msg ||
+          (result.smsSent
+            ? 'Access granted! Check your phone for our welcome SMS.'
+            : 'Access granted! Opening your resource…')
+      );
       setAccessModalOpen(false);
       setSelectedResource(null);
       setAccessEmail('');
@@ -538,13 +529,7 @@ const Resources: React.FC = () => {
                   </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {webinars.filter(w => w.status === 'completed').length === 0 ? (
-                    <div className="col-span-2 text-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
-                      <Video className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                      <h4 className="text-lg font-bold text-[#002f37] mb-2">No Recordings Yet</h4>
-                      <p className="text-gray-400 text-sm">Completed webinar recordings will appear here.</p>
-                    </div>
-                  ) : webinars.filter(w => w.status === 'completed').map((webinar) => (
+                  {webinars.filter((w: WebinarItem) => w.status === 'completed').map((webinar: WebinarItem) => (
                     <Card key={webinar.id} className="group hover:shadow-2xl transition-all duration-500 overflow-hidden border-2 hover:border-[#7ede56]/30 rounded-2xl">
                       <div className="relative overflow-hidden h-64">
                         <img src={webinar.image} alt={webinar.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
@@ -654,70 +639,115 @@ const Resources: React.FC = () => {
 
       {/* ── Resource Access Modal ─────────────────────────────────────── */}
       <Dialog open={accessModalOpen} onOpenChange={setAccessModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-2xl border-gray-100 p-0 overflow-hidden">
-          <div className="bg-gradient-to-br from-[#002F37] to-[#004555] px-6 py-8 text-white">
-            <DialogHeader className="text-left space-y-2">
-              <DialogTitle className="text-xl font-black font-montserrat text-white">
-                Get Free Access
+        <DialogContent className="sm:max-w-[420px] rounded-3xl border border-gray-100 p-0 overflow-hidden shadow-2xl gap-0">
+          <div className="px-6 pt-7 pb-5 bg-[#f8faf9] border-b border-gray-100">
+            <DialogHeader className="text-left space-y-3">
+              <div className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#7ede56]">
+                <Sparkles className="w-3.5 h-3.5" />
+                Free download
+              </div>
+              <DialogTitle className="text-2xl font-bold font-montserrat text-[#002f37] leading-tight pr-6">
+                Get free access
               </DialogTitle>
-              <DialogDescription className="text-gray-300 text-sm leading-relaxed">
-                {selectedResource
-                  ? `Enter your details to download "${selectedResource.title}" and receive new blogs & resources from AgriLync.`
-                  : 'Enter your details to unlock this resource.'}
+              {selectedResource && (
+                <p className="text-sm font-semibold text-[#002f37]/80 line-clamp-2">
+                  {selectedResource.title}
+                </p>
+              )}
+              <DialogDescription className="text-gray-500 text-sm leading-relaxed">
+                Share your email and phone — we&apos;ll open your download and send a short welcome SMS.
               </DialogDescription>
             </DialogHeader>
           </div>
 
-          <form onSubmit={handleAccessProceed} className="px-6 py-6 space-y-4 bg-white">
-            <div>
-              <label htmlFor="access-email" className="block text-xs font-bold uppercase tracking-wider text-[#002f37] mb-2">
-                Email address *
-              </label>
-              <Input
-                id="access-email"
-                type="email"
-                placeholder="you@example.com"
-                value={accessEmail}
-                onChange={e => setAccessEmail(e.target.value)}
-                required
-                className="h-12 rounded-xl border-gray-200 focus-visible:ring-[#7ede56]"
-              />
+          <form onSubmit={handleAccessProceed} className="px-6 py-5 space-y-4 bg-white">
+            <div className="space-y-3">
+              <div>
+                <label htmlFor="access-email" className="block text-sm font-medium text-[#002f37] mb-1.5">
+                  Email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    id="access-email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={accessEmail}
+                    onChange={e => setAccessEmail(e.target.value)}
+                    required
+                    className="h-11 pl-10 rounded-xl border-gray-200 bg-gray-50/50 focus-visible:ring-[#7ede56] focus-visible:border-[#7ede56]"
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="access-phone" className="block text-sm font-medium text-[#002f37] mb-1.5">
+                  Phone
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    id="access-phone"
+                    type="tel"
+                    placeholder="050 000 0000"
+                    value={accessPhone}
+                    onChange={e => setAccessPhone(e.target.value)}
+                    required
+                    className="h-11 pl-10 rounded-xl border-gray-200 bg-gray-50/50 focus-visible:ring-[#7ede56] focus-visible:border-[#7ede56]"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <label htmlFor="access-phone" className="block text-xs font-bold uppercase tracking-wider text-[#002f37] mb-2">
-                Phone number *
-              </label>
-              <Input
-                id="access-phone"
-                type="tel"
-                placeholder="+233 XX XXX XXXX"
-                value={accessPhone}
-                onChange={e => setAccessPhone(e.target.value)}
-                required
-                className="h-12 rounded-xl border-gray-200 focus-visible:ring-[#7ede56]"
-              />
-            </div>
-            <p className="text-xs text-gray-500 leading-relaxed">
-              We&apos;ll add you to our subscriber list so you get notified when we publish new blogs and resources.
+
+            <p className="text-xs text-gray-400 leading-relaxed">
+              You&apos;ll receive updates on new blogs and resources. No spam.
             </p>
-            <DialogFooter className="flex flex-col-reverse sm:flex-row gap-3 pt-2 sm:justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setAccessModalOpen(false)}
-                className="rounded-full border-gray-200"
-                disabled={accessSubmitting}
-              >
-                Cancel
-              </Button>
+
+            <a
+              href={WHATSAPP_COMMUNITY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-3 rounded-2xl border border-[#7ede56]/25 bg-[#f4ffee] px-4 py-3.5 transition-colors hover:bg-[#eafcd9] hover:border-[#7ede56]/40"
+              onClick={e => e.stopPropagation()}
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
+                <MessageCircle className="h-4 w-4" />
+              </span>
+              <span className="min-w-0 text-left">
+                <span className="block text-sm font-bold text-[#002f37]">Join AgriLync Nexus on WhatsApp</span>
+                <span className="block text-xs text-gray-500 mt-0.5 leading-snug">
+                  Same community as our Contact page — tips, updates, and support.
+                </span>
+              </span>
+            </a>
+
+            <div className="flex flex-col gap-2.5 pt-1">
               <Button
                 type="submit"
                 disabled={accessSubmitting}
-                className="rounded-full bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] font-black uppercase tracking-wider px-8"
+                className="w-full h-12 rounded-xl bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] font-bold text-sm shadow-sm"
               >
-                {accessSubmitting ? 'Please wait…' : 'Proceed'}
+                {accessSubmitting ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Opening your resource…
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-2">
+                    <Download className="w-4 h-4" />
+                    Get free access
+                  </span>
+                )}
               </Button>
-            </DialogFooter>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setAccessModalOpen(false)}
+                className="w-full h-10 rounded-xl text-gray-500 hover:text-[#002f37] text-sm"
+                disabled={accessSubmitting}
+              >
+                Not now
+              </Button>
+            </div>
           </form>
         </DialogContent>
       </Dialog>

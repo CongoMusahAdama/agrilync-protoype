@@ -368,13 +368,20 @@ const BlogAdminDashboard = () => {
 
       if (editingId) {
         await updateBlogPost(editingId, blogPayload);
-        toast.success('Blog post updated successfully!');
+        await toast.success('Your changes are live on the public blog page.', {
+          title: 'Blog Updated!',
+        });
       } else {
         await createBlogPost({ ...blogPayload, sendBlast });
-        toast.success(sendBlast ? 'Blog post published and email blast initiated!' : 'Blog post published successfully!');
+        await toast.success(
+          sendBlast
+            ? 'Your blog is live and the email blast has been initiated.'
+            : 'Your blog is now live on the public blog page.',
+          { title: 'Blog Published!' }
+        );
       }
-      
-      // Clear form
+
+      // Clear form after success alert
       setEditingId(null);
       setTitle('');
       setExcerpt('');
@@ -384,7 +391,7 @@ const BlogAdminDashboard = () => {
       setUploadFile(null);
       setUploadPreview(null);
       setSendBlast(false);
-      
+
       await syncDashboardData();
       setActiveSection('manage-blogs');
     } catch (err: unknown) {
@@ -411,7 +418,9 @@ const BlogAdminDashboard = () => {
 
     try {
       await api.delete(`/blogs/${id}`, { headers: getBlogAdminHeaders() });
-      toast.success('Blog post deleted successfully.');
+      await toast.success('The blog post has been removed from the site.', {
+        title: 'Blog Deleted',
+      });
       await syncDashboardData();
     } catch (err: unknown) {
       const axiosErr = err as { response?: { status?: number } };
@@ -1024,7 +1033,9 @@ const BlogAdminDashboard = () => {
                     quill.setSelection(index + 1, 0);
                   }
                   setIsGalleryModalOpen(false);
-                  toast.success('Gallery row inserted successfully!');
+                  await toast.success('The gallery row was added to your blog content.', {
+                    title: 'Gallery Added!',
+                  });
                 } catch (err) {
                   console.error('Gallery creation failed:', err);
                   toast.error('Failed to create gallery row.');

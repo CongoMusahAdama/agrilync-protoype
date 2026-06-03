@@ -9,6 +9,8 @@ export type ResourceAccessPayload = {
 export type SubscribeResponse = {
   success: boolean;
   msg: string;
+  smsSent?: boolean;
+  whatsappCommunityUrl?: string;
   subscriber?: {
     email: string;
     phone?: string;

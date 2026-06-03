@@ -241,6 +241,31 @@ router.get('/auth/me', blogAuth, async (req, res) => {
     });
 });
 
+const { sendSMS } = require('../utils/smsService');
+
+const WHATSAPP_COMMUNITY_URL =
+    process.env.WHATSAPP_COMMUNITY_URL || 'https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe';
+
+function buildResourceAccessSms(resourceTitle) {
+    const title = resourceTitle || 'your resource';
+    return (
+        `Hello from AgriLync Nexus! Thank you for requesting "${title}". ` +
+        `We hope it supports your farming journey. ` +
+        `Join our WhatsApp community for tips and new resources: ${WHATSAPP_COMMUNITY_URL}`
+    );
+}
+
+async function notifyResourceAccessSms(phone, resourceTitle) {
+    if (!phone) return { sent: false };
+    try {
+        const result = await sendSMS(phone, buildResourceAccessSms(resourceTitle));
+        return { sent: Boolean(result?.success) };
+    } catch (err) {
+        console.error('[Resource Access SMS]', err.message);
+        return { sent: false };
+    }
+}
+
 // @route   POST api/blogs/subscribe
 // @desc    Subscribe from blog, resources modal, or newsletter forms
 router.post('/subscribe', async (req, res) => {
@@ -260,14 +285,26 @@ router.post('/subscribe', async (req, res) => {
 
     try {
         const existingSub = await Subscriber.findOne({ email: normalizedEmail });
+        let smsSent = false;
+        const shouldSendResourceSms =
+            normalizedSource === 'resources-access' && normalizedPhone;
+
         if (existingSub) {
             if (normalizedPhone) existingSub.phone = normalizedPhone;
             if (normalizedResource) existingSub.lastResource = normalizedResource;
             existingSub.source = normalizedSource;
             await existingSub.save();
+            if (shouldSendResourceSms) {
+                const sms = await notifyResourceAccessSms(normalizedPhone, normalizedResource);
+                smsSent = sms.sent;
+            }
             return res.json({
                 success: true,
-                msg: 'Welcome back! Your details have been updated.',
+                msg: smsSent
+                    ? 'Welcome back! Check your phone — we sent your download link details by SMS.'
+                    : 'Welcome back! Your details have been updated.',
+                smsSent,
+                whatsappCommunityUrl: WHATSAPP_COMMUNITY_URL,
                 subscriber: {
                     email: existingSub.email,
                     phone: existingSub.phone,
@@ -284,9 +321,17 @@ router.post('/subscribe', async (req, res) => {
             source: normalizedSource,
         });
         await newSubscriber.save();
+        if (shouldSendResourceSms) {
+            const sms = await notifyResourceAccessSms(normalizedPhone, normalizedResource);
+            smsSent = sms.sent;
+        }
         res.status(201).json({
             success: true,
-            msg: 'Successfully subscribed to AgriLync updates!',
+            msg: smsSent
+                ? 'Thank you! Check your phone for a welcome SMS with our WhatsApp community link.'
+                : 'Successfully subscribed to AgriLync updates!',
+            smsSent,
+            whatsappCommunityUrl: WHATSAPP_COMMUNITY_URL,
             subscriber: {
                 email: newSubscriber.email,
                 phone: newSubscriber.phone,

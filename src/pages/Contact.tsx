@@ -7,6 +7,7 @@ import { Send, Mail, Phone, MapPin, Clock, Facebook, Twitter, Instagram, Linkedi
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { WHATSAPP_COMMUNITY_URL } from '@/lib/communityLinks';
 
 const BRAND_TEAL = '#002F37';
 const BRAND_GREEN = '#7ede56';
@@ -325,7 +326,7 @@ ${formData.message}`;
             </a>
 
             <a
-              href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe"
+              href={WHATSAPP_COMMUNITY_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center bg-white border-2 border-green-500 text-green-600 hover:bg-green-50 px-6 py-3 rounded-lg font-semibold text-base transition-all duration-300 transform hover:scale-105 shadow-md"

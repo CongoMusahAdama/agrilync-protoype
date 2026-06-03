@@ -149,10 +149,14 @@ const ResourceAdminPanel: React.FC<ResourceAdminPanelProps> = ({
 
       if (editingId) {
         await updateResource(editingId, payload);
-        toast.success('Resource updated successfully!');
+        await toast.success('Your changes are visible on the Resources page.', {
+          title: 'Resource Updated!',
+        });
       } else {
         await createResource(payload);
-        toast.success('Resource published to the Resources page!');
+        await toast.success('Your resource is now live on the public Resources page.', {
+          title: 'Resource Published!',
+        });
       }
 
       resetForm();
@@ -190,7 +194,9 @@ const ResourceAdminPanel: React.FC<ResourceAdminPanelProps> = ({
     if (!confirmed) return;
     try {
       await api.delete(`/resources/${id}`);
-      toast.success('Resource deleted.');
+      await toast.success('The resource has been removed from the Resources page.', {
+        title: 'Resource Deleted',
+      });
       if (editingId === id) resetForm();
       fetchResources();
     } catch {

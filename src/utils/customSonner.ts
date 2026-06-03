@@ -14,32 +14,39 @@ const customSwal = Swal.mixin({
   confirmButtonText: 'Understood'
 });
 
+type AlertOptions = {
+  title?: string;
+  timer?: number;
+  showConfirmButton?: boolean;
+  confirmButtonText?: string;
+};
+
 export const toast = {
-  success: (message: string | React.ReactNode, options?: any) => {
+  success: (message: string | React.ReactNode, options?: AlertOptions) => {
     const text = typeof message === 'string' ? message : '';
-    customSwal.fire({
-      title: 'Success!',
-      text: text,
+    return customSwal.fire({
+      title: options?.title ?? 'Success!',
+      text,
       icon: 'success',
       iconColor: '#7ede56',
-      timer: 3000,
+      timer: options?.timer ?? 3000,
       timerProgressBar: true,
-      showConfirmButton: false
+      showConfirmButton: options?.showConfirmButton ?? false,
+      confirmButtonText: options?.confirmButtonText ?? 'Great',
     });
-    return 'swal-id';
   },
-  error: (message: string | React.ReactNode, options?: any) => {
+  error: (message: string | React.ReactNode, options?: AlertOptions) => {
     const text = typeof message === 'string' ? message : '';
-    customSwal.fire({
-      title: 'Action Failed',
-      text: text,
+    return customSwal.fire({
+      title: options?.title ?? 'Action Failed',
+      text,
       icon: 'error',
       iconColor: '#ef4444',
-      timer: 3000,
+      timer: options?.timer ?? 3000,
       timerProgressBar: true,
-      showConfirmButton: false
+      showConfirmButton: options?.showConfirmButton ?? false,
+      confirmButtonText: options?.confirmButtonText ?? 'OK',
     });
-    return 'swal-id';
   },
   info: (message: string | React.ReactNode, options?: any) => {
     const text = typeof message === 'string' ? message : '';
