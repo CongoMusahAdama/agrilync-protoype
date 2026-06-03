@@ -29,7 +29,23 @@ app.use(cors({
         // Broaden localhost support for development (handles 5173, 8080, 4200, etc.)
         const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1');
 
-        if (isLocalhost || allowedOrigins.indexOf(origin) !== -1) {
+        let hostname = '';
+        try {
+            hostname = new URL(origin).hostname;
+        } catch {
+            hostname = '';
+        }
+
+        const isNetlify =
+            hostname.endsWith('.netlify.app') || hostname === 'netlify.app';
+        const isAgrilyncDomain = hostname.includes('agrilync');
+
+        if (
+            isLocalhost ||
+            allowedOrigins.indexOf(origin) !== -1 ||
+            isNetlify ||
+            isAgrilyncDomain
+        ) {
             return callback(null, true);
         }
 
@@ -57,16 +73,18 @@ app.use((req, res, next) => {
 
 // 4. XSS sanitization on body only (xss-clean & hpp are incompatible with Express 5)
 // They mutate req.query which is a read-only getter in Express 5
-const sanitizeObject = (obj) => {
+// Quill blog HTML must not be passed through xss() or publishing breaks
+const XSS_SKIP_KEYS = new Set(['content']);
+
+const sanitizeObject = (obj, parentKey = '') => {
     if (!obj || typeof obj !== 'object') return obj;
     for (const key of Object.keys(obj)) {
+        if (XSS_SKIP_KEYS.has(key)) continue;
         if (typeof obj[key] === 'string') {
-            // Skip XSS sanitization for base64 / large binary strings (e.g. uploaded images/videos)
-            // XSS is irrelevant for binary data and extremely slow on large strings
             if (obj[key].length > 1_000_000 || obj[key].startsWith('data:')) continue;
             obj[key] = xss(obj[key]);
-        } else if (typeof obj[key] === 'object') {
-            sanitizeObject(obj[key]);
+        } else if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+            sanitizeObject(obj[key], key);
         }
     }
     return obj;
@@ -217,6 +235,8 @@ try {
     console.log('✓ Super admin routes registered');
     app.use('/api/blogs', require('./routes/blogRoutes'));
     console.log('✓ Blog routes registered');
+    app.use('/api/resources', require('./routes/resourceRoutes'));
+    console.log('✓ Resource routes registered');
     app.use('/api/scheduled-visits', require('./routes/scheduledVisitRoutes'));
     console.log('✓ Scheduled visit routes registered');
     app.use('/api/media', require('./routes/media'));

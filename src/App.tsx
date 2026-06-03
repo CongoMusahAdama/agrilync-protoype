@@ -14,6 +14,7 @@ import BlogAdminLogin from "./pages/BlogAdminLogin";
 import BlogAdminDashboard from "./pages/BlogAdminDashboard";
 import Contact from "./pages/Contact";
 import Gallery from "./pages/Gallery";
+import Resources from "./pages/Resources";
 import Team from "./pages/Team";
 import TeamMemberProfile from "./pages/TeamMemberProfile";
 import Signup from "./pages/Signup";
@@ -96,6 +97,7 @@ const App = () => (
               <Route path="/blog/admin/login" element={<BlogAdminLogin />} />
               <Route path="/blog/admin/dashboard" element={<BlogAdminDashboard />} />
               <Route path="/portfolio" element={<Gallery />} />
+              <Route path="/resources" element={<Resources />} />
               <Route path="/team" element={<Team />} />
               <Route path="/team/:memberId" element={<TeamMemberProfile />} />
               <Route path="/contact" element={<Contact />} />

@@ -26,7 +26,7 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
 
   const isHomePage = location.pathname === '/';
   const isTransparentPage = location.pathname === '/' || location.pathname === '/who-we-are';
-  const isTealPage = ['/team', '/blog', '/portfolio', '/contact'].includes(location.pathname);
+  const isTealPage = ['/team', '/blog', '/portfolio', '/contact', '/resources'].includes(location.pathname);
   const isTransparent = isTransparentPage && !isScrolled && !isHovered;
 
   // Background state
@@ -79,6 +79,17 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
         { label: 'Success Stories', path: '/blog#success-stories' },
         { label: 'Industry Insights', path: '/blog#insights' },
         { label: 'Events & Webinars', path: '/blog#events' },
+      ]
+    },
+    {
+      label: 'Resources',
+      path: '/resources',
+      dropdown: [
+        { label: 'Tools & Calculators', path: '/resources#resource-grid' },
+        { label: 'Guides & eBooks', path: '/resources#resource-grid' },
+        { label: 'Templates', path: '/resources#resource-grid' },
+        { label: 'Video Recordings', path: '/resources#resource-grid' },
+        { label: 'Market Reports', path: '/resources#resource-grid' },
       ]
     },
     {

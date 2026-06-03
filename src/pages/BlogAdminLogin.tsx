@@ -4,8 +4,9 @@ import { Mail, Lock, ShieldCheck, ArrowLeft, Loader2, Sparkles } from 'lucide-re
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { toast } from 'sonner';
+import { toast } from '@/utils/customSonner';
 import api from '@/utils/api';
+import { validateBlogAdminSession, clearBlogAdminSession } from '@/services/blogAdminService';
 
 const BlogAdminLogin = () => {
   const navigate = useNavigate();
@@ -17,16 +18,21 @@ const BlogAdminLogin = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // If already logged in, redirect to dashboard
+  // If already logged in, verify with backend then redirect
   useEffect(() => {
-    const token = localStorage.getItem('blogAdminToken');
-    const userJson = localStorage.getItem('blogAdminUser');
-    if (token && userJson) {
-      const user = JSON.parse(userJson);
-      if (!user.requiresPasswordChange) {
-        navigate('/blog/admin/dashboard');
+    const checkSession = async () => {
+      const token = localStorage.getItem('blogAdminToken');
+      if (!token) return;
+      try {
+        const admin = await validateBlogAdminSession();
+        if (!admin.requiresPasswordChange) {
+          navigate('/blog/admin/dashboard');
+        }
+      } catch {
+        clearBlogAdminSession();
       }
-    }
+    };
+    checkSession();
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -94,14 +100,14 @@ const BlogAdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#002f37] flex flex-col justify-center items-center relative px-4 overflow-hidden">
+    <div className="min-h-[100dvh] bg-[#002f37] flex flex-col justify-center items-center relative px-4 sm:px-6 overflow-hidden py-8">
       {/* Background Visual Enhancers */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-[#7ede56]/10 blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-[#7ede56]/5 blur-[120px] pointer-events-none"></div>
 
       <Link 
         to="/blog" 
-        className="absolute top-6 left-6 inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm font-semibold uppercase tracking-wider"
+        className="absolute top-[max(1rem,env(safe-area-inset-top))] left-4 sm:left-6 inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors text-xs sm:text-sm font-semibold uppercase tracking-wider"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Blog

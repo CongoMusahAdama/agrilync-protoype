@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
@@ -33,9 +32,7 @@ import {
   CheckCircle2,
   Sparkles,
   ArrowRight,
-  X,
-  Mail,
-  Loader2
+  X
 } from 'lucide-react';
 
 // Brand colors
@@ -52,10 +49,6 @@ const Blog = () => {
     phone: '',
     organization: ''
   });
-  
-  // Newsletter Subscribe State
-  const [subscribeEmail, setSubscribeEmail] = useState('');
-  const [isSubscribing, setIsSubscribing] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -86,25 +79,6 @@ const Blog = () => {
       top: 0,
       behavior: 'smooth'
     });
-  };
-
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!subscribeEmail.trim()) {
-      toast.error('Please enter a valid email address.');
-      return;
-    }
-
-    try {
-      setIsSubscribing(true);
-      const res = await api.post('/blogs/subscribe', { email: subscribeEmail });
-      toast.success(res.data.msg || 'Successfully subscribed!');
-      setSubscribeEmail('');
-    } catch (err: any) {
-      toast.error(err.response?.data?.msg || 'Failed to subscribe. Please try again.');
-    } finally {
-      setIsSubscribing(false);
-    }
   };
 
   // Scroll to articles section
@@ -913,58 +887,6 @@ const Blog = () => {
               </Card>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Newsletter Subscribe Section */}
-      <section className="py-20 bg-[#002f37] relative overflow-hidden">
-        {/* Abstract Background Design */}
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-[#7ede56] opacity-10 blur-[100px]"></div>
-        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-blue-500 opacity-10 blur-[80px]"></div>
-
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6 border border-white/10">
-            <Mail className="w-4 h-4 text-[#7ede56]" />
-            <span className="text-sm font-semibold text-white">Join Our Community</span>
-          </div>
-          
-          <h2 className="text-3xl sm:text-5xl font-bold mb-6 text-white font-montserrat">
-            Never Miss an <span className="text-[#7ede56]">Insight</span>
-          </h2>
-          <p className="text-lg text-gray-300 mb-10 max-w-2xl mx-auto">
-            Subscribe to our newsletter and get the latest articles on sustainable farming, ag-tech innovations, and market trends delivered straight to your inbox.
-          </p>
-
-          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
-            <div className="relative flex-1">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <Input
-                type="email"
-                placeholder="Enter your email address..."
-                value={subscribeEmail}
-                onChange={(e) => setSubscribeEmail(e.target.value)}
-                required
-                className="w-full h-14 pl-12 pr-4 bg-white/5 border border-white/20 text-white placeholder:text-gray-400 rounded-full focus:bg-white/10 focus:ring-2 focus:ring-[#7ede56] transition-all text-lg"
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={isSubscribing}
-              className="h-14 px-8 bg-[#7ede56] hover:bg-[#66cc44] text-[#002f37] font-bold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-2 text-lg whitespace-nowrap"
-            >
-              {isSubscribing ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Subscribing...
-                </>
-              ) : (
-                'Subscribe Now'
-              )}
-            </Button>
-          </form>
-          <p className="text-sm text-gray-400 mt-4">
-            We respect your privacy. No spam, just value.
-          </p>
         </div>
       </section>
 

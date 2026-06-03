@@ -1,18 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  LogOut, PlusCircle, BookOpen, Trash2, 
+  BookOpen, Trash2, 
   Sparkles, Tag, Clock, AlignLeft, FileText, 
-  Image as ImageIcon, Loader2, Globe, Shield, Send, UploadCloud, Images, Edit
+  Image as ImageIcon, Loader2, Send, UploadCloud, Images, Edit
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { toast } from 'sonner';
+import { toast } from '@/utils/customSonner';
 import api from '@/utils/api';
+import BlogAdminSidebar, {
+  type BlogAdminSection,
+  BLOG_ADMIN_SECTION_LABELS,
+} from '@/components/blog-admin/BlogAdminSidebar';
+import { Menu } from 'lucide-react';
+import ResourceAdminPanel from '@/components/blog-admin/ResourceAdminPanel';
+import SubscribersAdminPanel from '@/components/blog-admin/SubscribersAdminPanel';
+import {
+  validateBlogAdminSession,
+  fetchAdminBlogs,
+  fetchAdminResources,
+  fetchAdminSubscribers,
+  uploadBlogImage,
+  createBlogPost,
+  updateBlogPost,
+  getBlogAdminHeaders,
+  getApiErrorMessage,
+  clearBlogAdminSession,
+  assertApiConfiguredForProduction,
+  type BlogAdminUser,
+} from '@/services/blogAdminService';
 import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './quill-setup';
@@ -96,7 +116,8 @@ const PRESET_IMAGES = [
 
 const BlogAdminDashboard = () => {
   const navigate = useNavigate();
-  const [adminUser, setAdminUser] = useState<any>(null);
+  const [adminUser, setAdminUser] = useState<BlogAdminUser | null>(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
   
   // Form states
   const [title, setTitle] = useState('');
@@ -113,7 +134,21 @@ const BlogAdminDashboard = () => {
   const [tagsStr, setTagsStr] = useState('');
   
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('add');
+  const [activeSection, setActiveSection] = useState<BlogAdminSection>('write-blog');
+  const [resourcesCount, setResourcesCount] = useState(0);
+  const [subscribersCount, setSubscribersCount] = useState(0);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    if (mobileNavOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileNavOpen]);
   
   const [publishing, setPublishing] = useState(false);
   const [blogsList, setBlogsList] = useState<BlogType[]>([]);
@@ -142,17 +177,7 @@ const BlogAdminDashboard = () => {
       formData.append('image', file);
 
       try {
-        const token = localStorage.getItem('blogAdminToken');
-        const res = await api.post('/blogs/upload', formData, {
-          headers: { 
-            'Content-Type': 'multipart/form-data',
-            'x-auth-token': token
-          }
-        });
-        
-        const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        const backendOrigin = baseURL.replace(/\/api\/?$/, '');
-        const imageUrl = backendOrigin + res.data.imageUrl;
+        const imageUrl = await uploadBlogImage(file);
 
         const quill = quillRef.current?.getEditor();
         if (quill) {
@@ -204,34 +229,61 @@ const BlogAdminDashboard = () => {
       modules: ['Resize', 'DisplaySize']
     }
   }), [imageHandler, insertDivider, galleryHandler]);
-  // Authentication validation
-  useEffect(() => {
-    const token = localStorage.getItem('blogAdminToken');
-    const userStr = localStorage.getItem('blogAdminUser');
-    if (!token || !userStr) {
-      toast.error('Session expired or access denied.');
-      navigate('/blog/admin/login');
-      return;
-    }
-    setAdminUser(JSON.parse(userStr));
-    fetchBlogs();
-  }, [navigate]);
-
   const fetchBlogs = async () => {
     try {
       setLoadingBlogs(true);
-      const res = await api.get('/blogs');
-      setBlogsList(res.data);
+      const data = await fetchAdminBlogs();
+      setBlogsList(data);
     } catch (err) {
-      console.error('Error fetching blogs:', err);
+      toast.error(getApiErrorMessage(err, 'Failed to load blogs from server.'));
     } finally {
       setLoadingBlogs(false);
     }
   };
 
+  const syncDashboardData = async () => {
+    await Promise.all([
+      fetchBlogs(),
+      fetchAdminResources()
+        .then((data: unknown[]) => setResourcesCount(data.length))
+        .catch(err => toast.error(getApiErrorMessage(err, 'Failed to sync resources.'))),
+      fetchAdminSubscribers()
+        .then(data => setSubscribersCount(data.length))
+        .catch(err => toast.error(getApiErrorMessage(err, 'Failed to sync subscribers.'))),
+    ]);
+  };
+
+  // Validate session with backend and load all dashboard data
+  useEffect(() => {
+    const init = async () => {
+      const token = localStorage.getItem('blogAdminToken');
+      if (!token) {
+        navigate('/blog/admin/login');
+        return;
+      }
+      try {
+        setSessionLoading(true);
+        assertApiConfiguredForProduction();
+        const admin = await validateBlogAdminSession();
+        setAdminUser(admin);
+        await syncDashboardData();
+      } catch (err) {
+        if (err instanceof Error && err.message.includes('VITE_API_URL')) {
+          toast.error(err.message);
+          return;
+        }
+        clearBlogAdminSession();
+        toast.error(getApiErrorMessage(err, 'Could not connect to the backend. Please log in again.'));
+        navigate('/blog/admin/login');
+      } finally {
+        setSessionLoading(false);
+      }
+    };
+    init();
+  }, [navigate]);
+
   const handleLogout = () => {
-    localStorage.removeItem('blogAdminToken');
-    localStorage.removeItem('blogAdminUser');
+    clearBlogAdminSession();
     toast.success('Logged out successfully.');
     navigate('/blog/admin/login');
   };
@@ -255,7 +307,7 @@ const BlogAdminDashboard = () => {
     }
     
     setEditingId(blog._id);
-    setActiveTab('add');
+    setActiveSection('write-blog');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -269,7 +321,7 @@ const BlogAdminDashboard = () => {
     setUploadFile(null);
     setUploadPreview(null);
     setSendBlast(false);
-    setActiveTab('manage');
+    setActiveSection('manage-blogs');
   };
 
   const handlePublish = async (e: React.FormEvent) => {
@@ -280,14 +332,11 @@ const BlogAdminDashboard = () => {
       return;
     }
 
-    const token = localStorage.getItem('blogAdminToken');
-    if (!token) {
+    if (!getBlogAdminHeaders()['x-auth-token']) {
       toast.error('Session expired. Please log in again.');
       navigate('/blog/admin/login');
       return;
     }
-    const authHeaders = { 'x-auth-token': token };
-
     try {
       setPublishing(true);
 
@@ -297,17 +346,7 @@ const BlogAdminDashboard = () => {
       } else if (imageType === 'custom') {
         finalImage = customImageUrl.trim();
       } else if (imageType === 'upload' && uploadFile) {
-        const formData = new FormData();
-        formData.append('image', uploadFile);
-        const uploadRes = await api.post('/blogs/upload', formData, {
-          headers: { 
-            'Content-Type': 'multipart/form-data',
-            ...authHeaders
-          }
-        });
-        const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        const backendOrigin = baseURL.replace(/\/api\/?$/, '');
-        finalImage = backendOrigin + uploadRes.data.imageUrl;
+        finalImage = await uploadBlogImage(uploadFile);
       }
 
       if (!finalImage) {
@@ -316,30 +355,22 @@ const BlogAdminDashboard = () => {
         return;
       }
       
+      const blogPayload = {
+        title,
+        category,
+        readTime,
+        excerpt,
+        content,
+        image: finalImage,
+        tags: tagsStr.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean),
+        author: adminUser?.username || adminUser?.email || 'AgriLync Team',
+      };
+
       if (editingId) {
-        await api.put(`/blogs/${editingId}`, {
-          title,
-          category,
-          readTime,
-          excerpt,
-          content,
-          image: finalImage,
-          tags: tagsStr.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean),
-          author: adminUser?.username || 'AgriLync Team'
-        }, { headers: authHeaders });
+        await updateBlogPost(editingId, blogPayload);
         toast.success('Blog post updated successfully!');
       } else {
-        await api.post('/blogs', {
-          title,
-          category,
-          readTime,
-          excerpt,
-          content,
-          image: finalImage,
-          tags: tagsStr.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean),
-          author: adminUser?.username || 'AgriLync Team',
-          sendBlast
-        }, { headers: authHeaders });
+        await createBlogPost({ ...blogPayload, sendBlast });
         toast.success(sendBlast ? 'Blog post published and email blast initiated!' : 'Blog post published successfully!');
       }
       
@@ -354,112 +385,119 @@ const BlogAdminDashboard = () => {
       setUploadPreview(null);
       setSendBlast(false);
       
-      // Refresh list
-      fetchBlogs();
-      setActiveTab('manage');
-    } catch (err: any) {
-      console.error('Publishing error:', err);
-      if (err.response?.status === 401) {
+      await syncDashboardData();
+      setActiveSection('manage-blogs');
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { status?: number } };
+      if (axiosErr.response?.status === 401) {
+        clearBlogAdminSession();
         toast.error('Session expired. Please log in again.');
         navigate('/blog/admin/login');
         return;
       }
-      const errMsg = err.response?.data?.msg || 'Failed to publish blog post.';
-      toast.error(errMsg);
+      toast.error(getApiErrorMessage(err, 'Failed to publish blog post.'));
     } finally {
       setPublishing(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you absolutely sure you want to delete this blog post? This action cannot be undone.')) {
-      return;
-    }
+    const confirmed = await toast.confirm({
+      title: 'Delete blog post?',
+      text: 'This action cannot be undone.',
+      confirmText: 'Yes, delete',
+    });
+    if (!confirmed) return;
 
-    const token = localStorage.getItem('blogAdminToken');
     try {
-      await api.delete(`/blogs/${id}`, { headers: { 'x-auth-token': token } });
+      await api.delete(`/blogs/${id}`, { headers: getBlogAdminHeaders() });
       toast.success('Blog post deleted successfully.');
-      fetchBlogs();
-    } catch (err: any) {
-      console.error('Deletion error:', err);
-      if (err.response?.status === 401) {
-        toast.error('Session expired. Please log in again.');
+      await syncDashboardData();
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { status?: number } };
+      if (axiosErr.response?.status === 401) {
+        clearBlogAdminSession();
         navigate('/blog/admin/login');
         return;
       }
-      toast.error('Failed to delete the blog post.');
+      toast.error(getApiErrorMessage(err, 'Failed to delete the blog post.'));
     }
   };
 
+  if (sessionLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-10 h-10 animate-spin text-[#002f37] mx-auto" />
+          <p className="text-sm font-bold text-gray-500 mt-4">Connecting to AgriLync backend…</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 text-[#002f37] pb-12">
-      {/* Top Glass Header */}
-      <header className="bg-[#002f37] text-white py-6 px-4 sm:px-8 flex flex-wrap justify-between items-center gap-4 shadow-md sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#7ede56]/20 border border-[#7ede56]/30 flex items-center justify-center">
-            <Shield className="w-5 h-5 text-[#7ede56]" />
-          </div>
-          <div>
-            <h1 className="font-montserrat font-bold text-lg leading-tight flex items-center gap-2">
-              AgriLync Hub Console <Sparkles className="w-4 h-4 text-[#7ede56]" />
-            </h1>
-            <p className="text-white/60 text-xs">Logged in as {adminUser?.email || 'Publisher'}</p>
-          </div>
-        </div>
+    <div className="min-h-[100dvh] bg-gray-50 text-[#002f37] flex flex-col lg:flex-row">
+      <BlogAdminSidebar
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+        adminEmail={adminUser?.email}
+        blogsCount={blogsList.length}
+        resourcesCount={resourcesCount}
+        subscribersCount={subscribersCount}
+        onLogout={handleLogout}
+        mobileOpen={mobileNavOpen}
+        onMobileClose={() => setMobileNavOpen(false)}
+      />
 
-        <div className="flex items-center gap-4">
-          <Button 
-            onClick={() => navigate('/blog')}
-            className="bg-[#1b4349] hover:bg-[#25555c] border border-white/20 text-white font-bold rounded-xl shadow-md transition-all h-10 px-5 text-xs tracking-wider"
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
+        {/* Mobile / tablet top bar */}
+        <header className="lg:hidden sticky top-0 z-30 flex items-center gap-3 px-4 py-3 bg-[#002f37] text-white border-b border-white/10 shadow-md pt-[max(0.75rem,env(safe-area-inset-top))]">
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(true)}
+            className="p-2.5 -ml-1 rounded-xl bg-white/10 hover:bg-white/15 active:bg-white/20 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Open navigation menu"
           >
-            <Globe className="w-4 h-4 mr-2" />
-            VIEW LIVE BLOG
-          </Button>
-          <Button 
-            onClick={handleLogout}
-            className="bg-[#f24747] hover:bg-[#ff5555] text-white font-bold rounded-xl shadow-md gap-2 transition-all h-10 px-5 text-xs tracking-wider"
-          >
-            <LogOut className="w-4 h-4" />
-            LOGOUT
-          </Button>
-        </div>
-      </header>
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">AgriLync Hub</p>
+            <p className="text-sm font-bold truncate">{BLOG_ADMIN_SECTION_LABELS[activeSection]}</p>
+          </div>
+        </header>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-          <TabsList className="bg-white p-1 rounded-2xl border border-gray-200/80 shadow-sm w-full grid grid-cols-2 gap-2 h-auto sm:h-14">
-            <TabsTrigger 
-              value="add" 
-              className="rounded-xl font-bold text-xs sm:text-sm data-[state=active]:bg-[#002f37] data-[state=active]:text-white h-11"
-            >
-              <PlusCircle className="w-4 h-4 mr-1 sm:mr-2" />
-              {editingId ? 'Edit Blog' : 'Write New Blog'}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="manage" 
-              className="rounded-xl font-bold text-sm data-[state=active]:bg-[#002f37] data-[state=active]:text-white h-11"
-            >
-              <BookOpen className="w-4 h-4 mr-2" />
-              Manage Blogs ({blogsList.length})
-            </TabsTrigger>
-          </TabsList>
-
-          {/* WRITE BLOG TAB */}
-          <TabsContent value="add">
-            <Card className="rounded-3xl border-gray-100 shadow-xl overflow-hidden bg-white">
-              <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100/80 p-6 sm:p-8">
-                <CardTitle className="text-xl sm:text-2xl font-montserrat font-bold flex items-center gap-2">
-                  {editingId ? 'Update Existing Blog Post' : 'Compose Dynamic Blog Post'} <Sparkles className="w-5 h-5 text-[#7ede56]" />
+      <main className="flex-1 min-w-0 p-3 sm:p-6 lg:p-8 lg:max-h-screen lg:overflow-y-auto overflow-x-hidden pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="max-w-4xl mx-auto w-full space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            {[
+              { label: 'Blogs', value: blogsList.length },
+              { label: 'Resources', value: resourcesCount },
+              { label: 'Subscribers', value: subscribersCount },
+            ].map(stat => (
+              <div
+                key={stat.label}
+                className="bg-white rounded-xl sm:rounded-2xl border border-gray-100 px-2 sm:px-4 py-2.5 sm:py-3 shadow-sm text-center"
+              >
+                <p className="text-lg sm:text-2xl font-black text-[#002f37]">{stat.value}</p>
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-gray-400 leading-tight">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+          {activeSection === 'write-blog' && (
+            <Card className="rounded-2xl sm:rounded-3xl border-gray-100 shadow-xl overflow-hidden bg-white">
+              <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100/80 p-4 sm:p-6 lg:p-8">
+                <CardTitle className="text-lg sm:text-xl md:text-2xl font-montserrat font-bold flex flex-wrap items-center gap-2">
+                  <span>{editingId ? 'Update Blog Post' : 'Compose Blog Post'}</span>
+                  <Sparkles className="w-5 h-5 text-[#7ede56] flex-shrink-0" />
                 </CardTitle>
                 <CardDescription>
                   Write articles that instantly reflect on the live AgriLync Insights Hub page.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-6 sm:p-8">
-                <form onSubmit={handlePublish} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
+              <CardContent className="p-4 sm:p-6 lg:p-8">
+                <form onSubmit={handlePublish} className="space-y-5 sm:space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="space-y-2 md:col-span-2">
                       <label className="text-xs font-bold uppercase tracking-wider text-[#002f37]/80 flex items-center gap-1">
                         <FileText className="w-3.5 h-3.5 text-[#7ede56]" />
                         Article Title
@@ -667,8 +705,12 @@ const BlogAdminDashboard = () => {
                     <p className="text-xs text-gray-400 mb-2">
                       💡 Pro-tip: Use the rich text editor to easily format headings, bullet points, and paragraphs!
                     </p>
-                    <div className="bg-white rounded-xl overflow-hidden border border-gray-200 focus-within:ring-2 focus-within:ring-[#002f37] focus-within:border-transparent transition-all shadow-sm">
+                    <div className="bg-white rounded-xl overflow-hidden border border-gray-200 focus-within:ring-2 focus-within:ring-[#002f37] focus-within:border-transparent transition-all shadow-sm [&_.ql-toolbar]:flex-wrap">
                       <style>{`
+                        @media (max-width: 640px) {
+                          .blog-admin-quill .ql-editor { min-height: 220px; }
+                          .blog-admin-quill .ql-toolbar { padding: 6px; }
+                        }
                         .ql-snow .ql-toolbar button.ql-divider,
                         .ql-snow .ql-toolbar button.ql-gallery {
                           width: 28px;
@@ -694,7 +736,7 @@ const BlogAdminDashboard = () => {
                         theme="snow" 
                         value={content} 
                         onChange={setContent} 
-                        className="min-h-[350px] text-sm text-[#002f37]"
+                        className="blog-admin-quill min-h-[280px] sm:min-h-[350px] text-sm text-[#002f37]"
                         modules={modules}
                       />
                     </div>
@@ -724,13 +766,13 @@ const BlogAdminDashboard = () => {
                     </div>
                   )}
 
-                  <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                  <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 pt-2 sm:pt-4">
                     {editingId && (
                       <Button
                         type="button"
                         onClick={handleCancelEdit}
                         disabled={publishing}
-                        className="bg-white hover:bg-gray-50 text-gray-600 border border-gray-200 font-bold h-14 px-8 rounded-xl flex-1 sm:flex-none"
+                        className="bg-white hover:bg-gray-50 text-gray-600 border border-gray-200 font-bold h-12 sm:h-14 px-6 rounded-xl w-full sm:w-auto sm:flex-none"
                       >
                         Cancel Edit
                       </Button>
@@ -738,7 +780,7 @@ const BlogAdminDashboard = () => {
                     <Button
                       type="submit"
                       disabled={publishing}
-                      className="bg-[#002f37] hover:bg-[#001f24] text-[#7ede56] border border-[#7ede56]/30 font-bold h-14 px-8 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all hover:scale-[1.01] w-full"
+                      className="bg-[#002f37] hover:bg-[#001f24] text-[#7ede56] border border-[#7ede56]/30 font-bold h-12 sm:h-14 px-6 sm:px-8 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all w-full sm:flex-1"
                     >
                       {publishing ? (
                         <>
@@ -753,20 +795,19 @@ const BlogAdminDashboard = () => {
                 </form>
               </CardContent>
             </Card>
-          </TabsContent>
+          )}
 
-          {/* MANAGE BLOGS TAB */}
-          <TabsContent value="manage">
-            <Card className="rounded-3xl border-gray-100 shadow-xl overflow-hidden bg-white">
-              <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100/80 p-6 sm:p-8">
-                <CardTitle className="text-2xl font-montserrat font-bold">
+          {activeSection === 'manage-blogs' && (
+            <Card className="rounded-2xl sm:rounded-3xl border-gray-100 shadow-xl overflow-hidden bg-white">
+              <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100/80 p-4 sm:p-6 lg:p-8">
+                <CardTitle className="text-lg sm:text-2xl font-montserrat font-bold">
                   Published Registry
                 </CardTitle>
                 <CardDescription>
                   Below is the registry of all published blogs retrieved dynamically from the database.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-6 sm:p-8">
+              <CardContent className="p-4 sm:p-6 lg:p-8">
                 {loadingBlogs ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <Loader2 className="w-8 h-8 text-[#002f37] animate-spin" />
@@ -786,20 +827,20 @@ const BlogAdminDashboard = () => {
                       {blogsList.map((blog) => (
                         <div 
                           key={blog._id} 
-                          className="p-5 flex justify-between items-center hover:bg-gray-50 transition-colors gap-4"
+                          className="p-4 sm:p-5 flex flex-col sm:flex-row sm:justify-between sm:items-center hover:bg-gray-50 transition-colors gap-3 sm:gap-4"
                         >
-                          <div>
-                            <h4 className="font-semibold text-[#002f37] text-md">{blog.title}</h4>
-                            <div className="flex items-center gap-3 text-xs text-gray-400 mt-2">
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-semibold text-[#002f37] text-sm sm:text-base line-clamp-2">{blog.title}</h4>
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-gray-400 mt-2">
                               <span className="bg-gray-100 text-[#002f37] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider text-[10px]">
                                 {blog.category}
                               </span>
-                              <span>•</span>
-                              <span>Published {new Date(blog.createdAt).toLocaleDateString()}</span>
+                              <span className="hidden sm:inline">•</span>
+                              <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-shrink-0 self-end sm:self-center">
                             <Button
                               onClick={() => handleEdit(blog)}
                               variant="outline"
@@ -824,13 +865,29 @@ const BlogAdminDashboard = () => {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          )}
+
+          {(activeSection === 'add-resource' || activeSection === 'manage-resources') && (
+            <ResourceAdminPanel
+              viewMode={activeSection === 'add-resource' ? 'form' : 'list'}
+              onResourcesChange={count => {
+                setResourcesCount(count);
+                fetchAdminSubscribers().then(d => setSubscribersCount(d.length)).catch(() => {});
+              }}
+              onRequestFormView={() => setActiveSection('add-resource')}
+            />
+          )}
+
+          {activeSection === 'subscribers' && (
+            <SubscribersAdminPanel onCountChange={setSubscribersCount} />
+          )}
+        </div>
+      </main>
       </div>
 
       {/* Gallery Creation Modal */}
       <Dialog open={isGalleryModalOpen} onOpenChange={setIsGalleryModalOpen}>
-        <DialogContent className="sm:max-w-[600px] bg-white rounded-3xl border border-gray-100 shadow-2xl">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-[600px] max-h-[90dvh] overflow-y-auto bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-2xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-2xl font-montserrat font-bold text-[#002f37] flex items-center gap-2">
               <Images className="w-6 h-6 text-[#7ede56]" />
@@ -841,7 +898,7 @@ const BlogAdminDashboard = () => {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 my-4 sm:my-6">
             {[0, 1, 2].map((idx) => (
               <Card key={idx} className="border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-gray-50/50">
                 <CardHeader className="p-3 bg-gray-100/50 border-b border-gray-100 flex flex-row items-center justify-between">
@@ -951,21 +1008,9 @@ const BlogAdminDashboard = () => {
                 setGalleryLoading(true);
                 try {
                   const finalUrls: string[] = [];
-                  const token = localStorage.getItem('blogAdminToken');
-                  const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-                  const backendOrigin = baseURL.replace(/\/api\/?$/, '');
-
                   for (let i = 0; i < 3; i++) {
                     if (activeFiles[i]) {
-                      const formData = new FormData();
-                      formData.append('image', activeFiles[i]!);
-                      const res = await api.post('/blogs/upload', formData, {
-                        headers: {
-                          'Content-Type': 'multipart/form-data',
-                          'x-auth-token': token
-                        }
-                      });
-                      finalUrls.push(backendOrigin + res.data.imageUrl);
+                      finalUrls.push(await uploadBlogImage(activeFiles[i]!));
                     } else if (activeUrls[i]) {
                       finalUrls.push(activeUrls[i]);
                     }

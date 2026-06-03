@@ -88,7 +88,28 @@ export const toast = {
   },
   dismiss: (id?: string) => {
     Swal.close();
-  }
+  },
+  /** Confirmation dialog (e.g. delete). Returns true if user confirms. */
+  confirm: async (options: {
+    title: string;
+    text: string;
+    confirmText?: string;
+    cancelText?: string;
+    icon?: 'warning' | 'question';
+  }): Promise<boolean> => {
+    const result = await customSwal.fire({
+      title: options.title,
+      text: options.text,
+      icon: options.icon ?? 'warning',
+      iconColor: '#f59e0b',
+      showCancelButton: true,
+      confirmButtonText: options.confirmText ?? 'Yes, proceed',
+      cancelButtonText: options.cancelText ?? 'Cancel',
+      reverseButtons: true,
+      focusCancel: true,
+    });
+    return result.isConfirmed;
+  },
 };
 
 // Ensure we export a valid dummy Toaster component for layout components that import it

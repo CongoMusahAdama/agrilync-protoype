@@ -118,11 +118,22 @@ const BlogPost = () => {
 
     try {
       setSubscribing(true);
-      const res = await api.post('/blogs/subscribe', { email });
+      const res = await api.post<{ success: boolean; msg: string }>('/blogs/subscribe', {
+        email: email.trim(),
+        source: 'blog-post',
+      });
+      if (!res.data.success) {
+        toast.error(res.data.msg || 'Failed to subscribe. Please try again.');
+        return;
+      }
       toast.success(res.data.msg || 'Successfully subscribed!');
       setEmail('');
-    } catch (err: any) {
-      toast.error(err.response?.data?.msg || 'Failed to subscribe. Please try again.');
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : (err as { response?: { data?: { msg?: string } } })?.response?.data?.msg;
+      toast.error(msg || 'Failed to subscribe. Please try again.');
     } finally {
       setSubscribing(false);
     }

@@ -241,6 +241,65 @@ router.get('/auth/me', blogAuth, async (req, res) => {
     });
 });
 
+// @route   POST api/blogs/subscribe
+// @desc    Subscribe from blog, resources modal, or newsletter forms
+router.post('/subscribe', async (req, res) => {
+    const { email, phone, resourceTitle, source } = req.body;
+    if (!email || !String(email).trim()) {
+        return res.status(400).json({ success: false, msg: 'Please provide a valid email address.' });
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const normalizedPhone = phone ? String(phone).trim() : '';
+    const normalizedSource = source ? String(source).trim() : 'website';
+    const normalizedResource = resourceTitle ? String(resourceTitle).trim() : '';
+
+    if (normalizedSource === 'resources-access' && !normalizedPhone) {
+        return res.status(400).json({ success: false, msg: 'Please provide a valid phone number.' });
+    }
+
+    try {
+        const existingSub = await Subscriber.findOne({ email: normalizedEmail });
+        if (existingSub) {
+            if (normalizedPhone) existingSub.phone = normalizedPhone;
+            if (normalizedResource) existingSub.lastResource = normalizedResource;
+            existingSub.source = normalizedSource;
+            await existingSub.save();
+            return res.json({
+                success: true,
+                msg: 'Welcome back! Your details have been updated.',
+                subscriber: {
+                    email: existingSub.email,
+                    phone: existingSub.phone,
+                    lastResource: existingSub.lastResource,
+                    source: existingSub.source,
+                },
+            });
+        }
+
+        const newSubscriber = new Subscriber({
+            email: normalizedEmail,
+            phone: normalizedPhone,
+            lastResource: normalizedResource,
+            source: normalizedSource,
+        });
+        await newSubscriber.save();
+        res.status(201).json({
+            success: true,
+            msg: 'Successfully subscribed to AgriLync updates!',
+            subscriber: {
+                email: newSubscriber.email,
+                phone: newSubscriber.phone,
+                lastResource: newSubscriber.lastResource,
+                source: newSubscriber.source,
+            },
+        });
+    } catch (err) {
+        console.error('Subscription error:', err.message);
+        res.status(500).json({ success: false, msg: 'Could not save your details. Please try again.' });
+    }
+});
+
 // @route   GET api/blogs
 // @desc    Fetch all blog posts
 router.get('/', async (req, res) => {
@@ -249,7 +308,19 @@ router.get('/', async (req, res) => {
         res.json(blogs);
     } catch (err) {
         console.error('Fetch blogs error:', err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({ msg: 'Server error' });
+    }
+});
+
+// @route   GET api/blogs/subscribers
+// @desc    List newsletter / resource subscribers (blog admin)
+router.get('/subscribers', blogAuth, async (req, res) => {
+    try {
+        const subscribers = await Subscriber.find().sort({ createdAt: -1 });
+        res.json(subscribers);
+    } catch (err) {
+        console.error('Fetch subscribers error:', err.message);
+        res.status(500).json({ msg: 'Server error' });
     }
 });
 
@@ -307,7 +378,7 @@ router.post('/', blogAuth, async (req, res) => {
         res.json(newBlog);
     } catch (err) {
         console.error('Create blog error:', err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({ msg: err.message || 'Failed to create blog post.' });
     }
 });
 
@@ -376,29 +447,6 @@ router.post('/upload', blogAuth, upload.single('image'), (req, res) => {
         });
     } catch (err) {
         console.error('Image upload error:', err.message);
-        res.status(500).send('Server error');
-    }
-});
-
-// @route   POST api/blogs/subscribe
-// @desc    Subscribe to the blog newsletter
-router.post('/subscribe', async (req, res) => {
-    const { email } = req.body;
-    if (!email) {
-        return res.status(400).json({ msg: 'Please provide a valid email address.' });
-    }
-
-    try {
-        const existingSub = await Subscriber.findOne({ email });
-        if (existingSub) {
-            return res.status(400).json({ msg: 'You are already subscribed!' });
-        }
-
-        const newSubscriber = new Subscriber({ email });
-        await newSubscriber.save();
-        res.json({ msg: 'Successfully subscribed to the AgriLync Insights newsletter!' });
-    } catch (err) {
-        console.error('Subscription error:', err.message);
         res.status(500).send('Server error');
     }
 });
