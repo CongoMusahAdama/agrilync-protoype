@@ -1,14 +1,11 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+
+# Public marketing pages only — keep dashboards out of search results
+Disallow: /dashboard/
+Disallow: /login
+Disallow: /agent/login
+Disallow: /signup
+Disallow: /blog/admin/
+
+Sitemap: https://www.agrilyncnexus.com/sitemap.xml
