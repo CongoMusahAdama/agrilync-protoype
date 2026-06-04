@@ -1,1 +1,7 @@
-/*    /index.html   200 
+# Force canonical secure URL (processed at Netlify edge)
+http://agrilyncnexus.com/*       https://www.agrilyncnexus.com/:splat  301!
+https://agrilyncnexus.com/*      https://www.agrilyncnexus.com/:splat  301!
+http://www.agrilyncnexus.com/*   https://www.agrilyncnexus.com/:splat  301!
+
+# SPA fallback
+/*    /index.html   200

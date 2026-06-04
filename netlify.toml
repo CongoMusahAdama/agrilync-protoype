@@ -1,0 +1,31 @@
+# Canonical host: always serve https://www.agrilyncnexus.com
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# HTTP and non-www apex → secure www (301, forced)
+[[redirects]]
+  from = "http://agrilyncnexus.com/*"
+  to = "https://www.agrilyncnexus.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://agrilyncnexus.com/*"
+  to = "https://www.agrilyncnexus.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.agrilyncnexus.com/*"
+  to = "https://www.agrilyncnexus.com/:splat"
+  status = 301
+  force = true
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"

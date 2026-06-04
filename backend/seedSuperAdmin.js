@@ -18,7 +18,11 @@ const seedSuperAdmin = async () => {
             console.log(`Found existing user (${superAdmin.email}). Updating credentials and role...`);
             superAdmin.password = newPassword;
             superAdmin.role = 'super_admin';
-            // Mongoose will key off the modification and the pre-save hook will hash it
+            superAdmin.status = 'active';
+            superAdmin.isLoggedIn = false;
+            superAdmin.currentSessionId = null;
+            superAdmin.refreshToken = null;
+            superAdmin.enableMultipleLogin = true;
         } else {
             console.log('Creating new Super Admin...');
             superAdmin = new Agent({
@@ -31,9 +35,14 @@ const seedSuperAdmin = async () => {
                 region: 'Headquarters',
                 contact: '0000000000',
                 isVerified: true,
-                verificationStatus: 'verified'
+                verificationStatus: 'verified',
+                enableMultipleLogin: true,
             });
         }
+
+        superAdmin.isLoggedIn = false;
+        superAdmin.currentSessionId = null;
+        superAdmin.refreshToken = null;
 
         await superAdmin.save();
 
@@ -41,6 +50,7 @@ const seedSuperAdmin = async () => {
         await Agent.deleteOne({ email: 'superadmin@gmail.com' });
 
         console.log('Super Admin Credentials Updated Successfully');
+        console.log('Session lock cleared — you can log in again.');
         console.log(`Email: ${newEmail}`);
         console.log(`Password: ${newPassword}`);
 
