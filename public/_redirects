@@ -1,3 +1,6 @@
+# Netlify subdomain → canonical site (must be before SPA fallback)
+https://agri-lync.netlify.app/*   https://www.agrilyncnexus.com/:splat  301!
+
 # Force canonical secure URL (processed at Netlify edge)
 http://agrilyncnexus.com/*       https://www.agrilyncnexus.com/:splat  301!
 https://agrilyncnexus.com/*      https://www.agrilyncnexus.com/:splat  301!

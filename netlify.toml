@@ -22,6 +22,14 @@
   status = 301
   force = true
 
+# Netlify default URL → canonical custom domain (fixes Google showing netlify.app)
+[[redirects]]
+  from = "/*"
+  to = "https://www.agrilyncnexus.com/:splat"
+  status = 301
+  force = true
+  conditions = {Host = ["agri-lync.netlify.app"]}
+
 [[headers]]
   for = "/*"
   [headers.values]

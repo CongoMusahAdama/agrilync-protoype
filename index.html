@@ -43,15 +43,21 @@
     <script>
       (function () {
         var host = window.location.hostname;
+        var path = window.location.pathname + window.location.search + window.location.hash;
+        var canonical = "https://www.agrilyncnexus.com";
+
+        // Redirect Netlify preview/default URL to custom domain
+        if (host.endsWith(".netlify.app")) {
+          window.location.replace(canonical + path);
+          return;
+        }
+
         var isProdHost =
-          host === 'agrilyncnexus.com' || host === 'www.agrilyncnexus.com';
+          host === "agrilyncnexus.com" || host === "www.agrilyncnexus.com";
         if (!isProdHost) return;
-        var target =
-          'https://www.agrilyncnexus.com' +
-          window.location.pathname +
-          window.location.search +
-          window.location.hash;
-        if (window.location.protocol === 'http:' || host === 'agrilyncnexus.com') {
+
+        var target = canonical + path;
+        if (window.location.protocol === "http:" || host === "agrilyncnexus.com") {
           window.location.replace(target);
         }
       })();
