@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowUp, ArrowRight, Linkedin, Twitter } from 'lucide-react';
+import { ArrowUp, ArrowRight } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-import { leadership, coFounders } from '@/data/teamData';
-import { motion } from 'framer-motion';
 
 // ── Section Components ─────────────────────────────────────────────────────────
 import { HeroSection } from '@/components/home/HeroSection';
@@ -14,6 +12,7 @@ import { PartnersSection } from '@/components/home/PartnersSection';
 import { ImpactSection } from '@/components/home/ImpactSection';
 import { InvestmentPackagesSection } from '@/components/home/InvestmentPackagesSection';
 import { SuccessStoriesSection } from '@/components/home/SuccessStoriesSection';
+import { TeamSection } from '@/components/home/TeamSection';
 import { FAQSection } from '@/components/home/FAQSection';
 
 // ── Module-level static data (allocated once, not per-render) ──────────────────
@@ -192,112 +191,8 @@ const Index = () => {
       {/* ── 8. SUCCESS STORIES ── */}
       <SuccessStoriesSection />
 
-      {/* ── 9. LEADERSHIP TEAM ── */}
-      <section className="py-12 md:py-16 bg-[#002f37] relative overflow-hidden">
-        {/* Background texture */}
-        <div className="absolute inset-0 opacity-[0.04] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#7ede56]/5 rounded-full translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#7ede56]/5 rounded-full -translate-x-1/2 translate-y-1/2 blur-3xl pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-6 lg:px-24 relative z-10">
-
-          {/* Section Header */}
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="mb-6 md:mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-[2px] bg-[#7ede56]" />
-              <span className="text-[#7ede56] font-bold text-xs uppercase tracking-[0.3em]">The People</span>
-            </div>
-            <h2 className="text-3xl md:text-5xl font-bold font-montserrat text-white leading-[0.95]">
-              Executive <span className="italic text-[#7ede56]">Leadership</span>
-            </h2>
-          </motion.div>
-
-          {/* 4-Column Flat Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
-
-            {/* CEO Spotlight Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
-              className="group relative bg-white/5 border border-[#7ede56]/30 backdrop-blur-sm rounded-none overflow-hidden hover:border-[#7ede56]/80 transition-all duration-500 cursor-pointer flex flex-col"
-              onClick={() => navigate(`/team/${leadership.id}`)}
-            >
-              {/* Image */}
-              <div className="relative h-44 overflow-hidden">
-                <img src={leadership.image} alt={leadership.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" style={{ objectPosition: leadership.imagePosition || 'center' }} />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#001f25] via-[#001f25]/45 to-transparent" />
-                <div className="absolute top-3 left-3">
-                  <span className="bg-[#7ede56] text-[#002f37] text-[8px] font-black uppercase tracking-[0.2em] px-2 py-1">Founder & CEO</span>
-                </div>
-              </div>
-              {/* Info */}
-              <div className="p-4 flex-1 flex flex-col">
-                <h3 className="text-base font-black text-white font-montserrat mb-0.5 group-hover:text-[#7ede56] transition-colors leading-tight">{leadership.name}</h3>
-                <p className="text-[#7ede56] text-[9px] font-black uppercase tracking-widest mb-2.5">{leadership.role}</p>
-                <p className="text-white/50 text-[11px] leading-relaxed line-clamp-2 font-sans mb-3">{leadership.description}</p>
-                {/* Expertise */}
-                <div className="flex flex-wrap gap-1 mt-auto">
-                  {(leadership.expertise || []).slice(0, 2).map(skill => (
-                    <span key={skill} className="text-[7.5px] font-black uppercase tracking-wider text-white/40 border border-white/10 px-2 py-0.5">{skill}</span>
-                  ))}
-                </div>
-                {/* Socials */}
-                <div className="flex items-center gap-3 mt-4 pt-3 border-t border-white/10">
-                  {leadership.socials?.linkedin && <a href={leadership.socials.linkedin} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-white/30 hover:text-[#0077b1] transition-colors"><Linkedin className="w-3.5 h-3.5" /></a>}
-                  {leadership.socials?.twitter && <a href={leadership.socials.twitter} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-white/30 hover:text-[#1da1f2] transition-colors"><Twitter className="w-3.5 h-3.5" /></a>}
-                  <span className="ml-auto text-[8px] font-black uppercase tracking-widest text-white/20 group-hover:text-[#7ede56] transition-colors">Profile →</span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Co-founders */}
-            {coFounders.map((member, idx) => (
-              <motion.div
-                key={member.id}
-                initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: idx * 0.1 }}
-                className="group relative bg-white/5 border border-white/10 backdrop-blur-sm overflow-hidden hover:border-[#7ede56]/40 transition-all duration-500 cursor-pointer flex flex-col"
-                onClick={() => navigate(`/team/${member.id}`)}
-              >
-                {/* Image */}
-                <div className="relative h-44 overflow-hidden">
-                  <img src={member.image} alt={member.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" style={{ objectPosition: member.imagePosition || 'center top' }} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#001f25]/90 to-transparent" />
-                </div>
-                {/* Info */}
-                <div className="p-4 flex-1 flex flex-col">
-                  <h4 className="text-base font-black text-white font-montserrat mb-0.5 group-hover:text-[#7ede56] transition-colors leading-tight">{member.name}</h4>
-                  <p className="text-[#7ede56] text-[9px] font-black uppercase tracking-widest mb-2.5">{member.role.split('(')[0].trim()}</p>
-                  <p className="text-white/50 text-[11px] leading-relaxed line-clamp-2 font-sans mb-3">{member.description}</p>
-                  {/* Expertise pills */}
-                  <div className="flex flex-wrap gap-1.5 mt-auto">
-                    {(member.expertise || []).slice(0, 2).map(skill => (
-                      <span key={skill} className="text-[7.5px] font-black uppercase tracking-wider text-white/40 border border-white/10 px-2 py-0.5">{skill}</span>
-                    ))}
-                  </div>
-                  {/* Socials */}
-                  <div className="flex items-center gap-3 mt-4 pt-3 border-t border-white/10">
-                    {member.socials?.linkedin && <a href={member.socials.linkedin} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-white/30 hover:text-[#0077b1] transition-colors"><Linkedin className="w-3.5 h-3.5" /></a>}
-                    {member.socials?.twitter && <a href={member.socials.twitter} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-white/30 hover:text-[#1da1f2] transition-colors"><Twitter className="w-3.5 h-3.5" /></a>}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* View Full Team CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.4 }}
-            className="mt-6 border border-dashed border-white/15 p-4 flex flex-col sm:flex-row items-center justify-between gap-4 hover:border-[#7ede56]/40 transition-all duration-500 group"
-          >
-            <div>
-              <p className="text-white/40 text-[9px] font-black uppercase tracking-widest mb-1">The Full Ecosystem</p>
-              <p className="text-white font-bold text-sm font-montserrat">Meet the full team driving AgriLync forward</p>
-            </div>
-            <Button onClick={() => navigate('/team')} className="shrink-0 bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] font-black text-[10px] uppercase tracking-widest px-5 py-3 rounded-none shadow-none h-auto">
-              View Full Team <ArrowRight className="ml-2 w-3.5 h-3.5" />
-            </Button>
-          </motion.div>
-        </div>
-      </section>
+      {/* ── 9. TEAM ── */}
+      <TeamSection />
 
 
       {/* ── 10. FAQ ── */}

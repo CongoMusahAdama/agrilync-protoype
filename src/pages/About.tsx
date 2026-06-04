@@ -675,17 +675,17 @@ const About = () => {
 
               {/* Back Left Mockup */}
               <div className="absolute left-[5%] md:left-[10%] transform -rotate-y-12 -rotate-12 translate-z-[-100px] scale-[0.85] md:scale-95 opacity-60 hover:opacity-100 hover:scale-100 hover:z-30 transition-all duration-500 rounded-[2.5rem] border-[6px] border-gray-800 shadow-2xl overflow-hidden w-[180px] sm:w-[220px] md:w-[260px] bg-black">
-                <img src="/lovable-uploads/app-menu.png" alt="App Menu" className="w-full h-auto object-cover" />
+                <img src="/lovable-uploads/app-menu.png" alt="Agent dashboard navigation menu" className="w-full h-auto object-cover" />
               </div>
 
               {/* Front Center Mockup */}
               <div className="absolute z-20 transform hover:-translate-y-4 hover:scale-105 transition-all duration-500 rounded-[2.5rem] border-[8px] border-gray-900 shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden w-[220px] sm:w-[260px] md:w-[300px] bg-white ring-4 ring-[#7ede56]/30">
-                <img src="/lovable-uploads/app-dashboard.png" alt="App Dashboard" className="w-full h-auto object-cover" />
+                <img src="/lovable-uploads/app-dashboard.png" alt="Agent dashboard home screen" className="w-full h-auto object-cover" />
               </div>
 
               {/* Back Right Mockup */}
               <div className="absolute right-[5%] md:right-[10%] transform rotate-y-12 rotate-12 translate-z-[-100px] scale-[0.85] md:scale-95 opacity-60 hover:opacity-100 hover:scale-100 hover:z-30 transition-all duration-500 rounded-[2.5rem] border-[6px] border-gray-800 shadow-2xl overflow-hidden w-[180px] sm:w-[220px] md:w-[260px] bg-black">
-                <img src="/lovable-uploads/app-grower-directory.png" alt="Grower Directory" className="w-full h-auto object-cover" />
+                <img src="/lovable-uploads/app-grower-directory.png" alt="Agent grower directory" className="w-full h-auto object-cover" />
               </div>
             </div>
 

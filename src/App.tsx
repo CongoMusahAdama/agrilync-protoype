@@ -47,6 +47,7 @@ import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 import GrowerProfile from "./pages/grower/GrowerProfile";
 import NotFound from "./pages/NotFound";
+import AgentMobilePreview from "./pages/AgentMobilePreview";
 import SuperAdminDashboard from "@/pages/super-admin/SuperAdminDashboard";
 import Overview from "@/pages/super-admin/Overview";
 import AgentManagement from "@/pages/super-admin/AgentManagement";
@@ -101,6 +102,7 @@ const App = () => (
               <Route path="/team" element={<Team />} />
               <Route path="/team/:memberId" element={<TeamMemberProfile />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/agent-mobile-preview" element={<AgentMobilePreview />} />
               <Route path="/login" element={<Login />} />
               <Route path="/agent/login" element={<AgentLogin />} />
               <Route path="/signup" element={<Signup />} />
