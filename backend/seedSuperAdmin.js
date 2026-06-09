@@ -1,17 +1,20 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const Agent = require('./models/Agent');
 require('dotenv').config();
 
 const seedSuperAdmin = async () => {
     try {
+        const newPassword = process.env.SUPER_ADMIN_PASSWORD?.trim();
+        if (!newPassword || newPassword.length < 8) {
+            console.error('❌ Set SUPER_ADMIN_PASSWORD (min 8 chars) in backend/.env before running this script.');
+            process.exit(1);
+        }
+
+        const newEmail = process.env.SUPER_ADMIN_EMAIL?.trim() || 'amusahcongo@gmail.com';
+
         await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/agrilync');
         console.log('MongoDB Connected');
 
-        const newEmail = 'amusahcongo@gmail.com';
-        const newPassword = 'Musah@superadmin12345';
-
-        // Check if ANY super admin exists or check for the old one to update
         let superAdmin = await Agent.findOne({ email: newEmail });
 
         if (superAdmin) {
@@ -45,14 +48,12 @@ const seedSuperAdmin = async () => {
         superAdmin.refreshToken = null;
 
         await superAdmin.save();
-
-        // Also clean up any generic 'superadmin@gmail.com' to prevent confusion
         await Agent.deleteOne({ email: 'superadmin@gmail.com' });
 
-        console.log('Super Admin Credentials Updated Successfully');
+        console.log('Super Admin credentials updated successfully.');
         console.log('Session lock cleared — you can log in again.');
         console.log(`Email: ${newEmail}`);
-        console.log(`Password: ${newPassword}`);
+        console.log('Password was set from SUPER_ADMIN_PASSWORD env var (not logged).');
 
         process.exit();
     } catch (err) {

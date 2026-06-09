@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+# Internal docs (do not publish)
+SYSTEM_ARCHITECTURE.md
+
 # Security & Configuration
 .env
 .env.*

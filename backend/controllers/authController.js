@@ -93,7 +93,10 @@ exports.login = async (req, res) => {
         });
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server error');
+        if (err.message?.includes('JWT_SECRET') || err.message?.includes('REFRESH_TOKEN_SECRET')) {
+            return res.status(500).json({ msg: 'Server auth is not configured. Contact your administrator.' });
+        }
+        res.status(500).json({ msg: 'Server error. Please try again.' });
     }
 };
 
@@ -156,7 +159,10 @@ exports.refreshToken = async (req, res) => {
 
     try {
         const jwt = require('jsonwebtoken');
-        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET || 'refresh_secret_fallback_123');
+        if (!process.env.REFRESH_TOKEN_SECRET) {
+            return res.status(500).json({ msg: 'Server configuration error' });
+        }
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
         const agent = await Agent.findById(decoded.id);
 
         if (!agent || agent.refreshToken !== refreshToken) {

@@ -126,22 +126,6 @@ const MONGO_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/agrilync
 mongoose.connect(MONGO_URI)
     .then(async () => {
         console.log('MongoDB Connected');
-        // Auto-seed a default Blog Admin if none exists
-        try {
-            const BlogAdmin = require('./models/BlogAdmin');
-            const adminExists = await BlogAdmin.findOne({ email: 'admin@agrilync.com' });
-            if (!adminExists) {
-                const newAdmin = new BlogAdmin({
-                    username: 'BlogAdmin',
-                    email: 'admin@agrilync.com',
-                    password: 'adminpassword123'
-                });
-                await newAdmin.save();
-                console.log('✓ Default Blog Admin account seeded successfully (admin@agrilync.com / adminpassword123)');
-            }
-        } catch (seedErr) {
-            console.error('✗ Failed to seed default Blog Admin:', seedErr.message);
-        }
     })
     .catch(err => console.error('MongoDB connection error:', err));
 

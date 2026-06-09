@@ -5,7 +5,8 @@ const blogAdminSchema = new mongoose.Schema({
     username: { type: String, required: true, default: 'BlogAdmin' },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    requiresPasswordChange: { type: Boolean, default: false }
+    requiresPasswordChange: { type: Boolean, default: true },
+    isActive: { type: Boolean, default: true }
 }, { timestamps: true });
 
 blogAdminSchema.pre('save', async function () {

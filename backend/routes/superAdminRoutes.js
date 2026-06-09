@@ -21,7 +21,11 @@ const {
     getTraining,
     getTasks,
     getReports,
-    sendNotification
+    sendNotification,
+    getBlogAuthors,
+    createBlogAuthor,
+    updateBlogAuthor,
+    deleteBlogAuthor
 } = require('../controllers/superAdminController');
 const auth = require('../middleware/auth');
 
@@ -64,6 +68,11 @@ router.get('/training', getTraining); // Training audit route
 router.get('/tasks', getTasks); // Tasks route
 router.get('/reports', getReports); // Analytics reports route
 router.post('/notifications', sendNotification); // New route to send notifications
+
+router.get('/blog-authors', getBlogAuthors);
+router.post('/blog-authors', createBlogAuthor);
+router.put('/blog-authors/:id', updateBlogAuthor);
+router.delete('/blog-authors/:id', deleteBlogAuthor);
 
 module.exports = router;
 

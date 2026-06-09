@@ -1,9 +1,7 @@
 const mongoose = require('mongoose');
 const Agent = require('../models/Agent');
-const path = require('path');
 require('dotenv').config();
 
-// Connect to MongoDB
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/agrilync');
@@ -14,16 +12,24 @@ const connectDB = async () => {
     }
 };
 
-// Create or Update Field Agents
+const requireSeedPassword = () => {
+    const password = process.env.FIELD_AGENT_SEED_PASSWORD?.trim();
+    if (!password || password.length < 8) {
+        console.error('❌ Set FIELD_AGENT_SEED_PASSWORD (min 8 chars) in backend/.env before running this script.');
+        process.exit(1);
+    }
+    return password;
+};
+
 const syncFieldAgents = async () => {
     try {
         await connectDB();
+        const seedPassword = requireSeedPassword();
 
         const agentsToSync = [
             {
                 name: 'Osei Prince',
                 email: 'oseiprince@agrilync.com',
-                password: 'princeagrilync12345',
                 role: 'agent',
                 region: 'Ashanti',
                 contact: '+233 000 000 000'
@@ -31,7 +37,6 @@ const syncFieldAgents = async () => {
             {
                 name: 'Prince Sedem',
                 email: 'psedem@agrilync.com',
-                password: 'princeagrilync12345',
                 role: 'agent',
                 region: 'Central',
                 contact: '+233 000 000 000'
@@ -43,18 +48,19 @@ const syncFieldAgents = async () => {
 
             if (user) {
                 console.log(`🔄 Updating existing user: ${agentData.email}`);
-                user.password = agentData.password; // Middleware will hash this
+                user.password = seedPassword;
                 user.name = agentData.name;
                 user.role = agentData.role;
                 user.region = agentData.region;
                 user.status = 'active';
                 await user.save();
-                console.log(`✅ Updated password and details for ${agentData.email}`);
+                console.log(`✅ Updated details for ${agentData.email}`);
             } else {
                 console.log(`➕ Creating new user: ${agentData.email}`);
                 const agentId = `AGT-${Math.floor(1000 + Math.random() * 9000)}`;
                 user = new Agent({
                     ...agentData,
+                    password: seedPassword,
                     agentId,
                     status: 'active'
                 });
@@ -63,7 +69,7 @@ const syncFieldAgents = async () => {
             }
         }
 
-        console.log('\n🎉 Synchronization complete!');
+        console.log('\n🎉 Synchronization complete. Share FIELD_AGENT_SEED_PASSWORD securely with agents, then ask them to change it on first login.');
         process.exit(0);
     } catch (err) {
         console.error('❌ Error synchronizing field agents:', err.message);

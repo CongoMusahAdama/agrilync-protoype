@@ -5,7 +5,18 @@ const jwt = require('jsonwebtoken');
  * @param {Object} payload 
  * @returns {Object} { accessToken, refreshToken }
  */
+const requireAuthSecrets = () => {
+    if (!process.env.JWT_SECRET) {
+        throw new Error('JWT_SECRET is not configured');
+    }
+    if (!process.env.REFRESH_TOKEN_SECRET) {
+        throw new Error('REFRESH_TOKEN_SECRET is not configured');
+    }
+};
+
 const generateTokens = (payload) => {
+    requireAuthSecrets();
+
     const accessToken = jwt.sign(
         payload,
         process.env.JWT_SECRET,
@@ -14,7 +25,7 @@ const generateTokens = (payload) => {
 
     const refreshToken = jwt.sign(
         { id: payload.agent.id },
-        process.env.REFRESH_TOKEN_SECRET || 'refresh_secret_fallback_123',
+        process.env.REFRESH_TOKEN_SECRET,
         { expiresIn: '7d' }
     );
 

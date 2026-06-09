@@ -38,7 +38,8 @@ import {
     CheckCircle2,
     XCircle,
     ChevronRight,
-    MoreVertical
+    MoreVertical,
+    PenLine
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +50,7 @@ import Swal from 'sweetalert2';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import CountUp from '@/components/CountUp';
 import { useAuth } from '@/contexts/AuthContext';
+import BlogAuthorsPanel from '@/components/super-admin/BlogAuthorsPanel';
 
 const SettingsRoles = () => {
     const { darkMode } = useDarkMode();
@@ -148,6 +150,7 @@ const SettingsRoles = () => {
                 <TabsList className={`inline-flex h-14 items-center justify-center rounded-[20px] p-1.5 mb-10 shadow-2xl ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-gray-100/50 border border-gray-200'} backdrop-blur-xl`}>
                     {[
                         { value: 'profile', label: 'My Profile', icon: Fingerprint },
+                        { value: 'blog-authors', label: 'Blog Authors', icon: PenLine },
                         { value: 'permissions', label: 'Access Matrix', icon: Shield },
                         { value: 'training', label: 'Protocol Center', icon: BookOpen },
                         { value: 'global', label: 'System Params', icon: Cpu },
@@ -250,6 +253,10 @@ const SettingsRoles = () => {
                             </div>
                         </CardContent>
                     </Card>
+                </TabsContent>
+
+                <TabsContent value="blog-authors" className="outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <BlogAuthorsPanel />
                 </TabsContent>
 
                 <TabsContent value="permissions" className="space-y-6 outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">

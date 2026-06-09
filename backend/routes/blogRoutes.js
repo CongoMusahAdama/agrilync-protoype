@@ -136,6 +136,10 @@ router.post('/auth/login', async (req, res) => {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
+        if (admin.isActive === false) {
+            return res.status(403).json({ msg: 'This account has been deactivated. Contact your administrator.' });
+        }
+
         const isMatch = await admin.comparePassword(password);
         if (!isMatch) {
             return res.status(400).json({ msg: 'Invalid Credentials' });
@@ -145,9 +149,14 @@ router.post('/auth/login', async (req, res) => {
             admin: { id: admin.id }
         };
 
+        if (!process.env.JWT_SECRET) {
+            console.error('[BLOG-AUTH] JWT_SECRET is not configured');
+            return res.status(500).json({ msg: 'Server configuration error' });
+        }
+
         const token = jwt.sign(
             payload,
-            process.env.JWT_SECRET || 'jwt_secret_fallback_123',
+            process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
 
@@ -163,41 +172,6 @@ router.post('/auth/login', async (req, res) => {
     } catch (err) {
         console.error('Blog login error:', err.message);
         res.status(500).send('Server error');
-    }
-});
-
-// @route   GET api/blogs/auth/force-reset
-// @desc    Emergency force reset for admin credentials
-router.get('/auth/force-reset', async (req, res) => {
-    try {
-        let admin = await BlogAdmin.findOne({ email: 'admin@agrilync.com' });
-        if (!admin) {
-            admin = new BlogAdmin({
-                username: 'BlogAdmin',
-                email: 'admin@agrilync.com'
-            });
-        }
-        admin.password = 'adminpassword123';
-        await admin.save();
-
-        let blogger = await BlogAdmin.findOne({ email: 'raphmawuli.agrilync@gmail.com' });
-        if (!blogger) {
-            blogger = new BlogAdmin({
-                username: 'Raph Mawuli',
-                email: 'raphmawuli.agrilync@gmail.com',
-                password: 'password123',
-                requiresPasswordChange: true
-            });
-            await blogger.save();
-        } else {
-            blogger.password = 'password123';
-            blogger.requiresPasswordChange = true;
-            await blogger.save();
-        }
-
-        res.json({ msg: 'Admin and Blogger credentials forcefully reset.' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
     }
 });
 

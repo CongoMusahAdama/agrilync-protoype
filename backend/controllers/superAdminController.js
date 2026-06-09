@@ -1,4 +1,6 @@
+const crypto = require('crypto');
 const Agent = require('../models/Agent');
+const BlogAdmin = require('../models/BlogAdmin');
 const Farm = require('../models/Farm');
 const Farmer = require('../models/Farmer');
 const Match = require('../models/Match');
@@ -1126,5 +1128,156 @@ exports.getReports = async (req, res) => {
     } catch (err) {
         console.error('Error in getReports:', err);
         res.json({ reports: [], sysActivityData: [] });
+    }
+};
+
+const mapBlogAuthor = (author) => ({
+    id: author._id.toString(),
+    username: author.username,
+    email: author.email,
+    requiresPasswordChange: author.requiresPasswordChange,
+    isActive: author.isActive !== false,
+    createdAt: author.createdAt
+});
+
+const generateTempPassword = () => crypto.randomBytes(4).toString('hex');
+
+// @route   GET api/super-admin/blog-authors
+exports.getBlogAuthors = async (req, res) => {
+    try {
+        const authors = await BlogAdmin.find()
+            .select('username email requiresPasswordChange isActive createdAt')
+            .sort({ createdAt: -1 });
+        res.json(authors.map(mapBlogAuthor));
+    } catch (err) {
+        console.error('getBlogAuthors error:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// @route   POST api/super-admin/blog-authors
+exports.createBlogAuthor = async (req, res) => {
+    const { username, email, password } = req.body;
+
+    if (!username?.trim() || !email?.trim()) {
+        return res.status(400).json({ msg: 'Display name and email are required.' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    try {
+        const existing = await BlogAdmin.findOne({ email: normalizedEmail });
+        if (existing) {
+            return res.status(400).json({ msg: 'A blog author with this email already exists.' });
+        }
+
+        const tempPassword = password?.trim() || generateTempPassword();
+        if (tempPassword.length < 8) {
+            return res.status(400).json({ msg: 'Password must be at least 8 characters.' });
+        }
+
+        const author = new BlogAdmin({
+            username: username.trim(),
+            email: normalizedEmail,
+            password: tempPassword,
+            requiresPasswordChange: true,
+            isActive: true
+        });
+
+        await author.save();
+
+        await AuditLog.create({
+            action: 'CREATE_BLOG_AUTHOR',
+            user: req.agent.id,
+            userRole: req.agent.role,
+            details: `Created blog author: ${author.username} (${author.email})`,
+            targetResource: 'BlogAdmin',
+            targetId: author.id
+        });
+
+        res.status(201).json({
+            author: mapBlogAuthor(author),
+            temporaryPassword: password?.trim() ? undefined : tempPassword,
+            loginUrl: '/blog/admin/login'
+        });
+    } catch (err) {
+        console.error('createBlogAuthor error:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// @route   PUT api/super-admin/blog-authors/:id
+exports.updateBlogAuthor = async (req, res) => {
+    const { username, email, resetPassword, isActive } = req.body;
+
+    try {
+        const author = await BlogAdmin.findById(req.params.id);
+        if (!author) {
+            return res.status(404).json({ msg: 'Blog author not found.' });
+        }
+
+        if (username?.trim()) author.username = username.trim();
+        if (email?.trim()) {
+            const normalizedEmail = email.trim().toLowerCase();
+            const duplicate = await BlogAdmin.findOne({ email: normalizedEmail, _id: { $ne: author._id } });
+            if (duplicate) {
+                return res.status(400).json({ msg: 'Another blog author already uses this email.' });
+            }
+            author.email = normalizedEmail;
+        }
+        if (typeof isActive === 'boolean') author.isActive = isActive;
+
+        let temporaryPassword;
+        if (resetPassword) {
+            temporaryPassword = generateTempPassword();
+            author.password = temporaryPassword;
+            author.requiresPasswordChange = true;
+        }
+
+        await author.save();
+
+        await AuditLog.create({
+            action: 'UPDATE_BLOG_AUTHOR',
+            user: req.agent.id,
+            userRole: req.agent.role,
+            details: `Updated blog author: ${author.username}${resetPassword ? ' (password reset)' : ''}${typeof isActive === 'boolean' ? ` (active: ${isActive})` : ''}`,
+            targetResource: 'BlogAdmin',
+            targetId: author.id
+        });
+
+        res.json({
+            author: mapBlogAuthor(author),
+            temporaryPassword,
+            loginUrl: '/blog/admin/login'
+        });
+    } catch (err) {
+        console.error('updateBlogAuthor error:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// @route   DELETE api/super-admin/blog-authors/:id
+exports.deleteBlogAuthor = async (req, res) => {
+    try {
+        const author = await BlogAdmin.findById(req.params.id);
+        if (!author) {
+            return res.status(404).json({ msg: 'Blog author not found.' });
+        }
+
+        await BlogAdmin.findByIdAndDelete(req.params.id);
+
+        await AuditLog.create({
+            action: 'DELETE_BLOG_AUTHOR',
+            user: req.agent.id,
+            userRole: req.agent.role,
+            details: `Deleted blog author: ${author.username} (${author.email})`,
+            targetResource: 'BlogAdmin',
+            targetId: author.id
+        });
+
+        res.json({ success: true, msg: 'Blog author removed.' });
+    } catch (err) {
+        console.error('deleteBlogAuthor error:', err.message);
+        res.status(500).send('Server Error');
     }
 };
