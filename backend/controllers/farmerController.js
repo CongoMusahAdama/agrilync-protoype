@@ -172,9 +172,13 @@ exports.registerFarmerPublic = async (req, res) => {
             });
         }
 
-        sendFarmerWelcomeSms(farmer, { onboardingSource: 'self' }).catch((err) =>
-            console.error('Welcome SMS failed:', err.message)
-        );
+        let welcomeSms = { sent: false, succeeded: 0, message: 'Welcome SMS not attempted' };
+        try {
+            welcomeSms = await sendFarmerWelcomeSms(farmer, { onboardingSource: 'self' });
+        } catch (smsErr) {
+            console.error('Welcome SMS error:', smsErr.message);
+            welcomeSms = { sent: false, succeeded: 0, message: smsErr.message };
+        }
 
         res.json({
             success: true,
@@ -183,6 +187,11 @@ exports.registerFarmerPublic = async (req, res) => {
             verificationAgent: nearestAgent
                 ? { name: nearestAgent.name, agentId: nearestAgent.agentId }
                 : null,
+            sms: {
+                sent: Boolean(welcomeSms.sent),
+                recipientCount: welcomeSms.succeeded || 0,
+                message: welcomeSms.message,
+            },
         });
     } catch (err) {
         if (err.code === 11000) {
@@ -351,11 +360,32 @@ exports.addFarmer = async (req, res) => {
 
         dashboardService.invalidateCache(agentId);
 
-        sendFarmerWelcomeSms(farmer, { onboardingSource: 'agent', agent: req.agent }).catch((err) =>
-            console.error('Welcome SMS failed:', err.message)
-        );
+        let welcomeSms = { sent: false, succeeded: 0, message: 'Welcome SMS not attempted' };
+        try {
+            welcomeSms = await sendFarmerWelcomeSms(farmer, { onboardingSource: 'agent', agent: req.agent });
+            if (welcomeSms.sent) {
+                Activity.create({
+                    agent: agentId,
+                    type: 'event',
+                    title: 'Welcome SMS sent',
+                    description: `mNotify welcome SMS queued for ${farmer.name} (${welcomeSms.succeeded} recipient).`,
+                }).catch(() => {});
+            }
+        } catch (smsErr) {
+            console.error('Welcome SMS error:', smsErr.message);
+            welcomeSms = { sent: false, succeeded: 0, message: smsErr.message };
+        }
 
-        res.status(201).json(farmer);
+        const farmerPayload = farmer.toObject ? farmer.toObject() : farmer;
+        res.status(201).json({
+            ...farmerPayload,
+            sms: {
+                sent: Boolean(welcomeSms.sent),
+                recipientCount: welcomeSms.succeeded || 0,
+                message: welcomeSms.message,
+                skipped: Boolean(welcomeSms.skipped),
+            },
+        });
     } catch (err) {
         if (createdFarmerId) {
             await Farm.deleteMany({ farmer: createdFarmerId }).catch(() => {});
@@ -484,9 +514,11 @@ exports.updateFarmer = async (req, res) => {
                 read: false
             });
 
-            sendFarmerWelcomeSms(farmer, { onboardingSource: 'agent', agent: req.agent }).catch((err) =>
-                console.error('Verification welcome SMS failed:', err.message)
-            );
+            try {
+                await sendFarmerWelcomeSms(farmer, { onboardingSource: 'agent', agent: req.agent });
+            } catch (smsErr) {
+                console.error('Verification welcome SMS failed:', smsErr.message);
+            }
         }
 
         res.json(farmer);

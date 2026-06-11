@@ -458,10 +458,17 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         onSuccess: async (response: any) => {
             const savedFarmer = response.data;
             const lyncId = savedFarmer?.id || savedFarmer?.ghanaCardNumber || 'N/A';
+            const sms = savedFarmer?.sms;
+            const smsSent = Boolean(sms?.sent && (sms?.recipientCount ?? 0) > 0);
+            const smsLine = !isEditMode && sms
+                ? smsSent
+                    ? `<p style="font-size:13px;color:#065f46;margin-top:10px;">Welcome SMS queued for the grower via mNotify.</p>`
+                    : `<p style="font-size:13px;color:#b45309;margin-top:10px;">Grower saved, but welcome SMS was not sent${sms?.message ? `: ${sms.message}` : ''}. Check the phone number and try Bulk SMS.</p>`
+                : '';
             await Swal.fire({
                 icon: 'success', title: 'Onboarding Finalized',
-                html: `<p style="font-size:18px;color:#065f46;font-weight:800;">${isEditMode ? 'Farmer profile updated!' : 'Farmer onboarded successfully!'}</p><p style="font-family:monospace;font-size:22px;font-weight:900;color:#064e3b;">Lync ID: ${lyncId}</p>`,
-                confirmButtonText: 'Continue', confirmButtonColor: '#065f46', timer: 3000, timerProgressBar: true
+                html: `<p style="font-size:18px;color:#065f46;font-weight:800;">${isEditMode ? 'Farmer profile updated!' : 'Farmer onboarded successfully!'}</p><p style="font-family:monospace;font-size:22px;font-weight:900;color:#064e3b;">Lync ID: ${lyncId}</p>${smsLine}`,
+                confirmButtonText: 'Continue', confirmButtonColor: '#065f46', timer: smsSent ? 3000 : 5000, timerProgressBar: true
             });
             queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
             queryClient.invalidateQueries({ queryKey: ['agentFarmers'] });

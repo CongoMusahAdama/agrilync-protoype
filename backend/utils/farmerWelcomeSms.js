@@ -1,9 +1,4 @@
-const { sendSMS } = require('./smsService');
-
-const firstName = (name) => {
-    const trimmed = (name || 'Grower').trim();
-    return trimmed.split(/\s+/)[0] || 'Grower';
-};
+const { dispatchBulkGrowerSms } = require('./bulkGrowerSms');
 
 /** AgriLync grower ID (LYG-…) — same as on the farmer ID card */
 const resolveGrowerId = (farmer) => {
@@ -24,10 +19,9 @@ const formatPhoneDisplay = (phone) => {
 };
 
 /**
- * Build a polite welcome SMS for new growers (agent-led or self-registration).
+ * Build welcome SMS (bulk template — uses {farmer_name} / {agent_name} placeholders).
  */
 exports.buildFarmerWelcomeSms = ({ farmer, agent, onboardingSource = 'agent' }) => {
-    const name = firstName(farmer?.name);
     const growerId = resolveGrowerId(farmer);
     const growerIdLine = growerId ? ` Your Grower ID is ${growerId}.` : '';
 
@@ -41,7 +35,7 @@ exports.buildFarmerWelcomeSms = ({ farmer, agent, onboardingSource = 'agent' }) 
             : ' Your agent will be in touch with you soon.';
 
         return (
-            `Hello ${name}, welcome to AgriLync!` +
+            `Hello {farmer_name}, welcome to AgriLync!` +
             `${growerIdLine} Your grower profile is now active.` +
             ` Field Agent: ${agentLabel}.${contactLine}` +
             ` Thank you for farming with us.`
@@ -49,7 +43,7 @@ exports.buildFarmerWelcomeSms = ({ farmer, agent, onboardingSource = 'agent' }) 
     }
 
     return (
-        `Hello ${name}, welcome to AgriLync!` +
+        `Hello {farmer_name}, welcome to AgriLync!` +
         `${growerIdLine} Thank you for registering.` +
         ` Your profile is received and pending verification.` +
         ` We will SMS you once it is approved. Thank you.`
@@ -59,11 +53,20 @@ exports.buildFarmerWelcomeSms = ({ farmer, agent, onboardingSource = 'agent' }) 
 exports.resolveGrowerId = resolveGrowerId;
 
 /**
- * Send welcome SMS after successful onboarding (non-blocking for API handlers).
+ * Send welcome SMS via the shared mNotify bulk pipeline after onboarding.
  */
 exports.sendFarmerWelcomeSms = async (farmer, options = {}) => {
-    if (!farmer?.contact) {
-        return { success: false, skipped: true, reason: 'no_phone' };
+    const contact = farmer?.contact ? String(farmer.contact).trim() : '';
+    if (!contact || contact.toLowerCase() === 'null') {
+        console.warn('[Welcome SMS] Skipped — no phone on grower record:', farmer?._id?.toString?.() || farmer?._id);
+        return {
+            success: false,
+            sent: false,
+            skipped: true,
+            reason: 'no_phone',
+            message: 'Grower has no valid phone number on file.',
+            succeeded: 0,
+        };
     }
 
     const onboardingSource =
@@ -75,5 +78,34 @@ exports.sendFarmerWelcomeSms = async (farmer, options = {}) => {
         onboardingSource,
     });
 
-    return sendSMS(farmer.contact, message);
+    const agentId = options.agent?._id || options.agent?.id || farmer?.agent;
+
+    const result = await dispatchBulkGrowerSms({
+        farmerIds: farmer._id ? [farmer._id] : [],
+        farmers: [{ name: farmer.name, contact, _id: farmer._id }],
+        agentId,
+        message,
+        agentName: options.agent?.name || 'AgriLync Agent',
+        requireAgentOwnership: false,
+    });
+
+    if (!result.sent) {
+        console.error(
+            '[Welcome SMS] Delivery failed:',
+            result.message,
+            '| grower:',
+            farmer?._id?.toString?.(),
+            '| phone:',
+            contact
+        );
+    } else {
+        console.log(
+            `[Welcome SMS] mNotify bulk SMS queued for ${farmer.name} (${result.succeeded}/${result.total})`
+        );
+    }
+
+    return {
+        ...result,
+        skipped: false,
+    };
 };
