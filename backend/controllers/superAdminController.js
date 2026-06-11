@@ -25,6 +25,13 @@ const withTimeout = (promise, ms = 10000) => {
     ]);
 };
 
+const toDbRole = (role) => {
+    if (!role) return null;
+    if (role === 'super_admin' || role === 'Super Admin') return 'super_admin';
+    if (role === 'supervisor' || role === 'Supervisor') return 'supervisor';
+    return 'agent';
+};
+
 // @route   GET api/super-admin/stats
 // @desc    Get high-level dashboard stats
 exports.getDashboardStats = async (req, res) => {
@@ -913,14 +920,19 @@ exports.updateUser = async (req, res) => {
             return res.status(404).json({ msg: 'User not found' });
         }
 
-        user.name = name || user.name;
-        user.email = email || user.email;
-        user.contact = phone || user.contact;
-        user.role = role === 'supervisor' ? 'supervisor' : role === 'super_admin' ? 'super_admin' : 'agent';
-        user.region = region || user.region;
-        user.districts = communities || user.districts;
-        user.status = disabled === 'Yes' ? 'inactive' : 'active';
-        
+        if (name !== undefined) user.name = name || user.name;
+        if (email !== undefined) user.email = email || user.email;
+        if (phone !== undefined) user.contact = phone || user.contact;
+        if (role !== undefined) {
+            const dbRole = toDbRole(role);
+            if (dbRole) user.role = dbRole;
+        }
+        if (region !== undefined) user.region = region || user.region;
+        if (communities !== undefined) user.districts = communities;
+        if (disabled !== undefined) {
+            user.status = disabled === 'Yes' ? 'inactive' : 'active';
+        }
+
         if (enableMultipleLogin !== undefined) {
             user.enableMultipleLogin = enableMultipleLogin;
         }
@@ -935,14 +947,15 @@ exports.updateUser = async (req, res) => {
         if (resetSession) {
             user.isLoggedIn = false;
             user.currentSessionId = null;
+            user.refreshToken = null;
         }
 
         if (resetPassword) {
             user.password = crypto.randomBytes(4).toString('hex');
             user.hasChangedPassword = false;
-            // Clear current session to force a fresh login
             user.isLoggedIn = false;
             user.currentSessionId = null;
+            user.refreshToken = null;
         }
 
         await user.save();
@@ -973,8 +986,38 @@ exports.updateUser = async (req, res) => {
             authorised: true
         });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error('updateUser error:', err.message);
+        res.status(500).json({ msg: err.message || 'Failed to update user' });
+    }
+};
+
+// @route   POST api/super-admin/users/:id/reset-session
+// @desc    Clear a user's active login session so they can sign in again
+exports.resetUserSession = async (req, res) => {
+    try {
+        const user = await Agent.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        user.isLoggedIn = false;
+        user.currentSessionId = null;
+        user.refreshToken = null;
+        await user.save();
+
+        await AuditLog.create({
+            action: 'RESET_SESSION',
+            user: req.agent.id,
+            userRole: req.agent.role,
+            details: `Reset login session for ${user.role}: ${user.name}`,
+            targetResource: 'Agent',
+            targetId: user.id
+        });
+
+        res.json({ msg: 'Session cleared successfully' });
+    } catch (err) {
+        console.error('resetUserSession error:', err.message);
+        res.status(500).json({ msg: 'Failed to clear user session' });
     }
 };
 

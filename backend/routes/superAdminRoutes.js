@@ -7,6 +7,7 @@ const {
     getAgentAccountability,
     createUser,
     updateUser,
+    resetUserSession,
     deleteUser,
     getEscalations,
     getSystemLogs,
@@ -54,6 +55,7 @@ router.get('/agents', getAgentAccountability);
 router.get('/users', getUsersList);
 router.post('/users', createUser);
 router.put('/users/:id', updateUser);
+router.post('/users/:id/reset-session', resetUserSession);
 router.delete('/users/:id', deleteUser);
 router.get('/users-list', getUsersList);
 router.get('/escalations', getEscalations);

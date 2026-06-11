@@ -303,7 +303,7 @@ const AgentManagement = () => {
             name: user.name,
             email: user.email,
             phone: user.phone,
-            role: user.role,
+            role: user.role === 'Supervisor' ? 'supervisor' : user.role === 'Super Admin' ? 'super_admin' : 'agent',
             staffAccountNumber: user.staffAccountNumber,
             isDisabled: user.disabled === 'Yes',
             enableMultipleLogin: user.enableMultipleLogin || false,
@@ -423,7 +423,7 @@ const AgentManagement = () => {
         }
     };
 
-    const handleResetSession = async () => {
+    const handleResetSession = () => {
         if (!selectedUser) {
             setFormValues(prev => ({
                 ...prev,
@@ -441,23 +441,30 @@ const AgentManagement = () => {
             return;
         }
 
-        try {
-            await api.put(`/super-admin/users/${selectedUser.id}`, {
-                name: formValues.name,
-                email: formValues.email,
-                phone: formValues.phone,
-                role: formValues.role,
-                region: formValues.region,
-                communities: formValues.communities,
-                disabled: formValues.isDisabled ? 'Yes' : 'No',
-                staffAccountNumber: formValues.staffAccountNumber,
-                resetSession: true
-            });
-            toast.success(`Active sessions for ${selectedUser.name} have been cleared. They can now log in again.`);
-        } catch (err: any) {
-            console.error('Session reset failed:', err);
-            toast.error(err.response?.data?.msg || 'Failed to clear user sessions');
-        }
+        Swal.fire({
+            title: 'Reset Session?',
+            html: `This will sign <b>${selectedUser.name}</b> out on all devices.<br/><br/>They will be able to log in again afterwards.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#64748b',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, Reset Session',
+            cancelButtonText: 'Cancel',
+            target: '[role="dialog"]',
+            customClass: {
+                container: 'z-[99999]'
+            }
+        }).then(async (result) => {
+            if (!result.isConfirmed) return;
+
+            try {
+                await api.post(`/super-admin/users/${selectedUser.id}/reset-session`);
+                toast.success(`Active sessions for ${selectedUser.name} have been cleared. They can now log in again.`);
+            } catch (err: any) {
+                console.error('Session reset failed:', err);
+                toast.error(err.response?.data?.msg || 'Failed to clear user sessions');
+            }
+        });
     };
 
     const handleAvatarUpload = () => {
