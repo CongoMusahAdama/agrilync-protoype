@@ -10,6 +10,7 @@ const Escalation = require('../models/Escalation');
 const AuditLog = require('../models/AuditLog');
 const Notification = require('../models/Notification');
 const FieldVisit = require('../models/FieldVisit');
+const ScheduledVisit = require('../models/ScheduledVisit');
 const Media = require('../models/Media');
 const { Training, AgentTraining } = require('../models/Training');
 const Task = require('../models/Task');
@@ -774,19 +775,25 @@ exports.getAllFarmers = async (req, res) => {
 exports.getFarmerDetails = async (req, res) => {
     try {
         const farmer = await Farmer.findById(req.params.id)
-            .populate('agent', 'name agentId contact')
+            .populate('agent', 'name agentId contact email region')
+            .select('-password')
             .lean();
 
         if (!farmer) return res.status(404).json({ msg: 'Farmer not found' });
 
-        const fieldVisits = await FieldVisit.find({ farmer: farmer._id })
-            .sort({ date: -1 })
-            .limit(10)
-            .lean();
+        const [fieldVisits, farms, scheduledVisits, media] = await Promise.all([
+            FieldVisit.find({ farmer: farmer._id }).sort({ date: -1 }).limit(25).lean(),
+            Farm.find({ farmer: farmer._id }).sort({ createdAt: -1 }).lean(),
+            ScheduledVisit.find({ farmers: farmer._id }).sort({ scheduledDate: -1 }).limit(15).lean(),
+            Media.find({ farmer: farmer._id }).sort({ createdAt: -1 }).limit(20).select('name type url category createdAt').lean(),
+        ]);
 
         res.json({
             farmer,
             fieldVisits,
+            farms,
+            scheduledVisits,
+            media,
         });
     } catch (err) {
         console.error('Error in getFarmerDetails:', err);

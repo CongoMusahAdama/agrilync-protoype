@@ -11,10 +11,7 @@ import {
     Map as MapIcon,
     Search,
     Filter,
-    Phone,
-    Mail,
     Eye,
-    Sprout,
     Download,
     ArrowUpRight,
     MapPin,
@@ -26,12 +23,7 @@ import {
     Calendar,
     ChevronRight,
     Star,
-    History,
     Shield,
-    MoreHorizontal,
-    Navigation,
-    BookOpen,
-    User
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
@@ -50,6 +42,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import AdminFarmerProfileModal from '@/components/super-admin/AdminFarmerProfileModal';
 
 const FarmFarmerOversight = () => {
     const { darkMode } = useDarkMode();
@@ -91,14 +84,30 @@ const FarmFarmerOversight = () => {
     }, [isProfileOpen, selectedFarmer]);
 
     const fetchDeepDetails = async () => {
+        if (!selectedFarmer) return;
         setLoadingDetails(true);
+        setDeepFarmerDetails(null);
         try {
-            const res = await api.get(`/super-admin/farmers/${selectedFarmer.id}`);
+            const farmerId = selectedFarmer.id || selectedFarmer._id;
+            const res = await api.get(`/super-admin/farmers/${farmerId}`);
             setDeepFarmerDetails(res.data);
         } catch (err) {
             console.error('Failed to fetch deep details', err);
+            toast.error('Could not load full grower profile');
         } finally {
             setLoadingDetails(false);
+        }
+    };
+
+    const openFarmerProfile = (farmer: any) => {
+        setSelectedFarmer(farmer);
+        setIsProfileOpen(true);
+    };
+
+    const handleProfileOpenChange = (open: boolean) => {
+        setIsProfileOpen(open);
+        if (!open) {
+            setDeepFarmerDetails(null);
         }
     };
 
@@ -290,7 +299,7 @@ const FarmFarmerOversight = () => {
                                                     </div>
                                                 </td>
                                                 <td className="p-4 text-right space-x-2">
-                                                    <Button size="icon" variant="ghost" className="h-9 w-9 text-blue-500" onClick={() => { setSelectedFarmer(farmer); setIsProfileOpen(true); }}><Eye className="w-4 h-4" /></Button>
+                                                    <Button size="icon" variant="ghost" className="h-9 w-9 text-blue-500" onClick={() => openFarmerProfile(farmer)}><Eye className="w-4 h-4" /></Button>
                                                     <Button size="icon" variant="ghost" className="h-9 w-9 text-[#7ede56]" onClick={() => { setSelectedFarmer(farmer); setIsOverrideOpen(true); }}><Shield className="w-4 h-4" /></Button>
                                                 </td>
                                             </tr>
@@ -355,6 +364,9 @@ const FarmFarmerOversight = () => {
                                     </div>
 
                                     <div className="flex gap-3 pt-2">
+                                        <Button variant="outline" className="h-11 px-4 border-blue-500/30 text-blue-600 font-black uppercase text-[10px] tracking-widest rounded-xl" onClick={() => openFarmerProfile(farmer)}>
+                                            <Eye className="w-4 h-4 mr-1.5" /> View
+                                        </Button>
                                         <Button className="flex-1 bg-[#7ede56] text-[#002f37] hover:bg-[#6bcb4b] font-black uppercase text-[10px] tracking-widest h-11 rounded-xl shadow-lg" onClick={() => handleApprove(farmer)}>
                                             Approve Data
                                         </Button>
@@ -377,170 +389,15 @@ const FarmFarmerOversight = () => {
                 </TabsContent>
             </Tabs>
 
-            {/* Profile View Modal */}
-            <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
-                <DialogContent className={`sm:max-w-[1000px] border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
-                    <DialogTitle className="sr-only">Farmer Profile View</DialogTitle>
-                    {selectedFarmer && (
-                        <div className="flex flex-col">
-                            <div className="bg-[#002f37] p-8 text-white relative">
-                                <div className="absolute top-4 right-4 flex gap-2">
-                                    <Badge className={`${getStatusColor(selectedFarmer.status)} border-none text-[10px] px-3 font-black`}>{selectedFarmer.status}</Badge>
-                                </div>
-                                <div className="flex items-center gap-6">
-                                    {selectedFarmer.avatar && !selectedFarmer.avatar.includes('lovable-uploads/profile.png') ? (
-                                        <img src={selectedFarmer.avatar} alt={selectedFarmer.name} className="w-20 h-20 rounded-2xl object-cover border-4 border-white/20 shadow-lg" />
-                                    ) : (
-                                        <div className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center font-black text-3xl border border-white/20">{selectedFarmer.name ? selectedFarmer.name[0] : '?'}</div>
-                                    )}
-                                    <div>
-                                        <div className="flex items-center gap-3">
-                                            <h2 className="text-3xl font-black uppercase tracking-tighter">{selectedFarmer.name}</h2>
-                                            <span className="text-[10px] bg-white/20 px-2 py-1 rounded font-mono uppercase">ID: {selectedFarmer.id?.slice(-6) || 'UNKNOWN'}</span>
-                                        </div>
-                                        <div className="flex items-center gap-4 mt-2">
-                                            <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#7ede56] uppercase tracking-widest"><Phone className="w-3 h-3" /> {selectedFarmer.phone}</span>
-                                            <span className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest"><MapPin className="w-3 h-3" /> {selectedFarmer.region}</span>
-                                            <span className="flex items-center gap-1.5 text-[10px] font-bold text-blue-300 uppercase tracking-widest"><User className="w-3 h-3" /> Agent: {selectedFarmer.agentName || 'Unassigned'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-0 h-[500px]">
-                                <div className="p-8 border-r border-gray-100 dark:border-gray-800 space-y-8 overflow-y-auto">
-                                    <div className="space-y-4">
-                                        <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400"><History className="w-4 h-4" /> Identity Details</h4>
-                                        <div className={`p-4 rounded-xl space-y-3 ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-50'} border`}>
-                                            <div><p className="text-[8px] font-black text-gray-400 uppercase">National ID (GhanaCard)</p><p className="text-[10px] font-black">{deepFarmerDetails?.farmer?.ghanaCardNumber || 'GHA-00000000-0'}</p></div>
-                                            <div><p className="text-[8px] font-black text-gray-400 uppercase">Registered Mobile Money</p><p className="text-[10px] font-black">{deepFarmerDetails?.farmer?.contact || selectedFarmer.phone}</p></div>
-                                            <div><p className="text-[8px] font-black text-gray-400 uppercase">Residence Verified By</p><p className="text-[10px] font-black">{deepFarmerDetails?.farmer?.agent?.name || selectedFarmer.agentName}</p></div>
-                                            
-                                            {/* Show ID Cards if available */}
-                                            {(deepFarmerDetails?.farmer?.idCardFront || deepFarmerDetails?.farmer?.idCardBack) && (
-                                                <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-800 flex gap-2">
-                                                    {deepFarmerDetails.farmer.idCardFront && (
-                                                        <a href={deepFarmerDetails.farmer.idCardFront} target="_blank" rel="noreferrer" className="flex-1">
-                                                            <img src={deepFarmerDetails.farmer.idCardFront} alt="ID Front" className="w-full h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:opacity-80 transition-opacity" />
-                                                        </a>
-                                                    )}
-                                                    {deepFarmerDetails.farmer.idCardBack && (
-                                                        <a href={deepFarmerDetails.farmer.idCardBack} target="_blank" rel="noreferrer" className="flex-1">
-                                                            <img src={deepFarmerDetails.farmer.idCardBack} alt="ID Back" className="w-full h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:opacity-80 transition-opacity" />
-                                                        </a>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="space-y-4">
-                                        <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400"><BookOpen className="w-4 h-4" /> Training Ledger</h4>
-                                        <div className="space-y-2">
-                                            {['Financial Literacy 101', 'Soil Health Management', 'Cocoa Pests Controls'].map((t, idx) => (
-                                                <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
-                                                    <span className="text-[9px] font-black uppercase tracking-tight">{t}</span>
-                                                    <CheckCircle2 className="w-3 h-3 text-[#7ede56]" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="col-span-2 flex flex-col">
-                                    <div className="flex-1 p-8 overflow-y-auto space-y-8">
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Farm Location</h4>
-                                                <div className="aspect-video w-full rounded-2xl bg-gray-100 dark:bg-gray-800 relative overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700">
-                                                    {deepFarmerDetails?.farmer?.gpsLocation?.lat && deepFarmerDetails?.farmer?.gpsLocation?.lng ? (
-                                                        <iframe 
-                                                            title="Farm Location Map"
-                                                            width="100%" 
-                                                            height="100%" 
-                                                            frameBorder="0" 
-                                                            scrolling="no" 
-                                                            src={`https://www.openstreetmap.org/export/embed.html?bbox=${deepFarmerDetails.farmer.gpsLocation.lng - 0.005}%2C${deepFarmerDetails.farmer.gpsLocation.lat - 0.005}%2C${deepFarmerDetails.farmer.gpsLocation.lng + 0.005}%2C${deepFarmerDetails.farmer.gpsLocation.lat + 0.005}&layer=mapnik&marker=${deepFarmerDetails.farmer.gpsLocation.lat}%2C${deepFarmerDetails.farmer.gpsLocation.lng}`}
-                                                            className="absolute inset-0 w-full h-full object-cover"
-                                                        ></iframe>
-                                                    ) : (
-                                                        <Navigation className="w-10 h-10 text-gray-300 animate-pulse" />
-                                                    )}
-                                                    <div className="absolute inset-0 flex items-center justify-center bg-gray-100/50 backdrop-blur-sm opacity-0 hover:opacity-100 transition-opacity">
-                                                        <Button className="bg-[#002f37] text-white font-black text-[10px] uppercase rounded-xl" onClick={() => {
-                                                            if (deepFarmerDetails?.farmer?.gpsLocation?.lat && deepFarmerDetails?.farmer?.gpsLocation?.lng) {
-                                                                window.open(`https://www.google.com/maps?q=${deepFarmerDetails.farmer.gpsLocation.lat},${deepFarmerDetails.farmer.gpsLocation.lng}`, '_blank');
-                                                            } else {
-                                                                toast.error('GPS Location not available for this farmer');
-                                                            }
-                                                        }}>View on Google Maps</Button>
-                                                    </div>
-                                                    <div className="absolute bottom-3 left-3 flex gap-1 z-10 pointer-events-none">
-                                                        <Badge className="bg-black/80 text-white border-none text-[8px] px-2 py-0.5 shadow">LAT: {deepFarmerDetails?.farmer?.gpsLocation?.lat?.toFixed(4) || 'N/A'}</Badge>
-                                                        <Badge className="bg-black/80 text-white border-none text-[8px] px-2 py-0.5 shadow">LON: {deepFarmerDetails?.farmer?.gpsLocation?.lng?.toFixed(4) || 'N/A'}</Badge>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-4">
-                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Recent Visits</h4>
-                                                <div className="space-y-3">
-                                                    {loadingDetails ? (
-                                                        <p className="text-[10px] text-gray-400 font-bold uppercase">Loading visits...</p>
-                                                    ) : deepFarmerDetails?.fieldVisits?.length > 0 ? (
-                                                        deepFarmerDetails.fieldVisits.map((v: any) => (
-                                                            <div key={v._id} className="flex gap-3">
-                                                                <div className="w-1 bg-[#7ede56] rounded-full"></div>
-                                                                <div>
-                                                                    <p className="text-[10px] font-black uppercase">Field Inspection</p>
-                                                                    <p className="text-[8px] font-bold text-gray-400 uppercase">{new Date(v.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
-                                                                </div>
-                                                            </div>
-                                                        ))
-                                                    ) : (
-                                                        <p className="text-[10px] text-gray-400 font-bold uppercase">No visits recorded</p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Farm Journey Section */}
-                                        <div className="space-y-4 pt-6 border-t border-gray-100 dark:border-gray-800">
-                                            <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
-                                                <Sprout className="w-4 h-4" /> Seasonal Farm Journey
-                                            </h4>
-                                            <div className="relative pt-2">
-                                                <div className="absolute top-7 left-6 right-6 h-0.5 bg-gray-100 dark:bg-gray-800 hidden md:block"></div>
-                                                <div className="flex flex-col md:flex-row justify-between relative z-10 gap-6 md:gap-4 overflow-x-auto pb-2 hide-scrollbar">
-                                                    {['planning', 'planting', 'growing', 'harvesting', 'maintenance'].map((stage, idx) => {
-                                                        const stageData = deepFarmerDetails?.farmer?.stageDetails?.[stage];
-                                                        const isCompleted = stageData?.status === 'completed';
-                                                        const isCurrent = deepFarmerDetails?.farmer?.currentStage === stage;
-                                                        
-                                                        return (
-                                                            <div key={stage} className="flex md:flex-col items-center gap-4 md:gap-3 min-w-[120px] flex-shrink-0">
-                                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-4 border-white dark:border-gray-950 transition-colors z-10 shadow-sm ${isCompleted ? 'bg-[#7ede56] text-[#002f37]' : isCurrent ? 'bg-amber-400 text-white shadow-amber-400/50' : 'bg-gray-100 dark:bg-gray-800 text-gray-300'}`}>
-                                                                    {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <div className="w-2.5 h-2.5 rounded-full bg-current" />}
-                                                                </div>
-                                                                <div className="md:text-center flex-1 md:flex-none">
-                                                                    <p className={`text-[10px] font-black uppercase tracking-widest ${isCompleted ? 'text-[#7ede56]' : isCurrent ? 'text-amber-500' : 'text-gray-400'}`}>{stage}</p>
-                                                                    <p className="text-[8px] font-bold text-gray-400 uppercase">{stageData?.date ? new Date(stageData.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Pending'}</p>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="p-8 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex justify-between gap-4">
-                                        <Button variant="outline" className="flex-1 h-12 rounded-xl font-black uppercase text-[10px] tracking-widest" onClick={() => setIsProfileOpen(false)}>Close</Button>
-                                        <Button className="flex-1 h-12 bg-[#002f37] text-[#7ede56] hover:bg-[#001c21] rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg" onClick={() => { setIsProfileOpen(false); setIsOverrideOpen(true); }}>Change Status</Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
+            <AdminFarmerProfileModal
+                open={isProfileOpen}
+                onOpenChange={handleProfileOpenChange}
+                summaryFarmer={selectedFarmer}
+                details={deepFarmerDetails}
+                loading={loadingDetails}
+                onChangeStatus={() => setIsOverrideOpen(true)}
+                getStatusColor={getStatusColor}
+            />
 
             {/* Status Override Modal */}
             <Dialog open={isOverrideOpen} onOpenChange={setIsOverrideOpen}>
