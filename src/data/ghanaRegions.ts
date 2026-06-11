@@ -1,3 +1,14 @@
+/** Display + storage name for the Bono operational region (Brong-Ahafo) */
+export const BONO_AHAFO_REGION = 'Bono Ahafo Region';
+export const BONO_AHAFO_LABEL = 'Bono Ahafo';
+
+const LEGACY_BONO_REGION_NAMES = new Set([
+    'Bono',
+    'Bono Region',
+    BONO_AHAFO_LABEL,
+    BONO_AHAFO_REGION,
+]);
+
 export const GHANA_REGIONS: Record<string, string[]> = {
     "Ashanti Region": [
         "Adansi Asokwa", "Adansi North", "Adansi South", "Afigya Kwabre North", "Afigya Kwabre South",
@@ -39,7 +50,7 @@ export const GHANA_REGIONS: Record<string, string[]> = {
         "Sekondi-Takoradi Metropolitan", "Shama", "Tarkwa Nsuaem Municipal", "Wassa Amenfi North Municipal",
         "Wassa Amenfi South", "Wassa East"
     ],
-    "Bono Region": [
+    [BONO_AHAFO_REGION]: [
         "Banda", "Berekum East Municipal", "Berekum West", "Dormaa Central Municipal", "Dormaa East",
         "Dormaa West", "Jaman North", "Jaman South Municipal", "Sunyani Municipal", "Sunyani West",
         "Tain", "Wenchi Municipal"
@@ -53,7 +64,7 @@ export const GHANA_LANGUAGES: Record<string, string[]> = {
     "Northern Region": ["Dagbani", "English", "Hausa", "Twi"],
     "Central Region": ["Fante", "Twi", "English"],
     "Western Region": ["Fante", "Nzema", "Wassa", "English", "Twi"],
-    "Bono Region": ["Bono", "Twi", "English"],
+    [BONO_AHAFO_REGION]: ["Bono", "Twi", "English"],
     "Greater Accra": ["Ga", "Twi", "English", "Ewe", "Dangme"],
     "Upper East": ["Gurune (Frafra)", "Kusaal", "English", "Hausa"],
     "Upper West": ["Dagaare", "Waala", "English", "Hausa"],
@@ -160,7 +171,7 @@ export const GHANA_COMMUNITIES: Record<string, string[]> = {
     "Wassa Amenfi South": ["Agona Amenfi", "Manso Amenfi", "Kwamang", "Other (Specify)"],
     "Wassa East": ["Daboase", "Dompim", "Aboi", "Other (Specify)"],
 
-    // Bono Region
+    // Bono Ahafo Region
     "Banda": ["Banda Ahenkro", "Banda Nkwanta", "Bui", "Other (Specify)"],
     "Berekum East Municipal": ["Berekum", "Senase", "Jamdede", "Other (Specify)"],
     "Berekum West": ["Jinijini", "Fetentaa", "Kato", "Other (Specify)"],
@@ -175,15 +186,28 @@ export const GHANA_COMMUNITIES: Record<string, string[]> = {
     "Wenchi Municipal": ["Wenchi", "Subinso", "Tromeso", "Other (Specify)"]
 };
 
+/** Compare region names across legacy Bono / Bono Ahafo labels */
+export const normalizeOperationalRegion = (region: string | undefined): string => {
+    if (!region) return '';
+    if (LEGACY_BONO_REGION_NAMES.has(region)) return BONO_AHAFO_LABEL.toLowerCase();
+    return region.toLowerCase().replace(/\s+region$/i, '').trim();
+};
+
+export const regionsMatch = (a: string | undefined, b: string | undefined): boolean => {
+    const na = normalizeOperationalRegion(a);
+    const nb = normalizeOperationalRegion(b);
+    return na === nb || na.includes(nb) || nb.includes(na);
+};
+
 export const getRegionKey = (region: string | undefined): string => {
     if (!region) return "Ashanti Region";
+    if (LEGACY_BONO_REGION_NAMES.has(region)) return BONO_AHAFO_REGION;
     if (GHANA_REGIONS[region]) return region;
-    
-    // Check if adding " Region" helps
+
     const withSuffix = `${region} Region`;
+    if (LEGACY_BONO_REGION_NAMES.has(withSuffix)) return BONO_AHAFO_REGION;
     if (GHANA_REGIONS[withSuffix]) return withSuffix;
-    
-    // Fuzzy match
+
     const matchedKey = Object.keys(GHANA_REGIONS).find(k => k.toLowerCase().includes(region.toLowerCase()));
     return matchedKey || "Ashanti Region";
 };

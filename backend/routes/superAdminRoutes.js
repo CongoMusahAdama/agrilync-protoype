@@ -3,6 +3,7 @@ const router = express.Router();
 const {
     getDashboardStats,
     getRegionalPerformance,
+    getRegionalPerformanceDetail,
     getAgentAccountability,
     createUser,
     updateUser,
@@ -48,6 +49,7 @@ router.use(isSuperAdmin); // All routes in this file require Super Admin role
 router.get('/stats', getDashboardStats);
 router.get('/regions', getRegionalPerformance); // Updated from regional-performance for shorter path
 router.get('/regional-performance', getRegionalPerformance); // Added alias for compatibility
+router.get('/regional-performance/:id', getRegionalPerformanceDetail);
 router.get('/agents', getAgentAccountability);
 router.get('/users', getUsersList);
 router.post('/users', createUser);

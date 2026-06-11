@@ -107,7 +107,7 @@ const SignupFarmer = () => {
     };
 
     const ghanaRegions = [
-        'Ashanti', 'Eastern', 'Northern', 'Western', 'Volta', 'Central', 'Bono',
+        'Ashanti', 'Eastern', 'Northern', 'Western', 'Volta', 'Central', 'Bono Ahafo',
         'Greater Accra', 'Upper East', 'Upper West', 'Western North', 'Ahafo',
         'Bono East', 'Oti', 'Savannah', 'North East'
     ];

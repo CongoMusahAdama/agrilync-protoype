@@ -38,7 +38,7 @@ const regions = [
   { value: 'Western Region', label: 'Western', desc: 'Coastal Supply Management' },
   { value: 'Volta Region', label: 'Volta', desc: 'Lakeside Monitoring Zone' },
   { value: 'Central Region', label: 'Central', desc: 'Regional Logistics Center' },
-  { value: 'Bono Region', label: 'Bono', desc: 'Brong-Ahafo Field Office' },
+  { value: 'Bono Ahafo Region', label: 'Bono Ahafo', desc: 'Bono & Ahafo Field Office' },
   { value: 'Upper East Region', label: 'Upper East', desc: 'Arid Zone Cultivation' },
   { value: 'Upper West Region', label: 'Upper West', desc: 'Savannah Perimeter' }
 ];

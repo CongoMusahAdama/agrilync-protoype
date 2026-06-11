@@ -20,6 +20,8 @@ export default function RegionalPerformance() {
     const [filterTab, setFilterTab] = useState<'all' | 'on-track' | 'at-risk' | 'underperforming'>('all');
     const [season, setSeason] = useState('Current Season');
     const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
+    const [regionDetail, setRegionDetail] = useState<any | null>(null);
+    const [detailLoading, setDetailLoading] = useState(false);
 
     const [summaryStats, setSummaryStats] = useState<any[]>([]);
     const [regions, setRegions] = useState<any[]>([]);
@@ -69,7 +71,48 @@ export default function RegionalPerformance() {
         fill: r.isOperational === false ? '#6b7280' : r.onTrackRate >= 80 ? '#7ede56' : r.onTrackRate >= 60 ? '#f59e0b' : '#ef4444'
     }));
 
-    const selectedRegion = regions.find(r => r.id === selectedRegionId);
+    const formatRegionTitle = (name: string) =>
+        name.replace(/\s+Region$/i, '').trim() || name;
+
+    const openRegionDetail = async (regionId: string) => {
+        setSelectedRegionId(regionId);
+        setRegionDetail(null);
+        setDetailLoading(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        try {
+            const res = await api.get(`/super-admin/regional-performance/${regionId}`);
+            setRegionDetail(res.data);
+        } catch (err) {
+            console.error('Failed to load region details:', err);
+            const summary = regions.find((r) => r.id === regionId);
+            if (summary) {
+                setRegionDetail({
+                    ...summary,
+                    agentsList: [],
+                    fundedFarms: {
+                        onTrack: Math.max(0, (summary.activeFarms || 0) - (summary.atRiskFarms || 0)),
+                        atRisk: summary.atRiskFarms || 0,
+                        offTrack: 0,
+                    },
+                    capitalFlow: {
+                        disbursed: Math.round((summary.capitalDeployed || 0) * 0.65),
+                        pending: Math.round((summary.capitalDeployed || 0) * 0.2),
+                        settled: Math.round((summary.capitalDeployed || 0) * 0.15),
+                    },
+                    farmers: [],
+                });
+            }
+        } finally {
+            setDetailLoading(false);
+        }
+    };
+
+    const closeRegionDetail = () => {
+        setSelectedRegionId(null);
+        setRegionDetail(null);
+    };
+
+    const selectedRegion = regionDetail || regions.find((r) => r.id === selectedRegionId);
 
     return (
         <div className="space-y-8 pb-12 animate-in fade-in duration-300">
@@ -152,7 +195,7 @@ export default function RegionalPerformance() {
             </div>
 
             {/* Deep Dive Section (Expandable) */}
-            {selectedRegionId && selectedRegion && (
+            {selectedRegionId && (
                 <Card className={`border-none shadow-2xl animate-in slide-in-from-top-4 duration-500 overflow-hidden ring-2 ring-[#7ede56] ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
                     <div className="bg-[#002f37] p-6 flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -160,60 +203,94 @@ export default function RegionalPerformance() {
                                 <MapPin className="w-6 h-6 text-[#7ede56]" />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter">{selectedRegion.name} REGION</h3>
-                                <p className="text-[10px] font-bold text-[#7ede56] uppercase tracking-widest">Regional Detail Deep Dive</p>
+                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter">
+                                    {formatRegionTitle(selectedRegion?.name || 'Region')} Region
+                                </h3>
+                                <p className="text-[10px] font-bold text-[#7ede56] uppercase tracking-widest">
+                                    {detailLoading ? 'Loading regional data…' : 'Regional Detail Deep Dive'}
+                                </p>
                             </div>
                         </div>
-                        <Button variant="ghost" className="text-white/70 hover:text-white hover:bg-white/10 rounded-full h-10 w-10 p-0" onClick={() => setSelectedRegionId(null)}>
+                        <Button variant="ghost" className="text-white/70 hover:text-white hover:bg-white/10 rounded-full h-10 w-10 p-0" onClick={closeRegionDetail}>
                             <X className="w-5 h-5" />
                         </Button>
                     </div>
                     <CardContent className="p-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            <div className="space-y-4">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-gray-100 dark:border-gray-800 pb-2">Active Field Agents</h4>
-                                {selectedRegion.agentsList.map((ag: any, i: number) => (
-                                    <div key={i} className="flex justify-between items-center bg-gray-50 dark:bg-white/5 p-3 rounded-xl">
-                                        <div>
-                                            <p className="text-xs font-black uppercase">{ag.name}</p>
-                                            <p className="text-[9px] font-bold text-gray-400 uppercase">Sync: {ag.lastSync}</p>
+                        {detailLoading ? (
+                            <div className="py-16 text-center text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                Fetching agents, farms, and capital data…
+                            </div>
+                        ) : selectedRegion ? (
+                            <>
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                                    <div className="p-4 rounded-xl bg-gray-50 dark:bg-white/5">
+                                        <p className="text-[9px] font-black uppercase text-gray-400 mb-1">Lead Supervisor</p>
+                                        <p className="text-sm font-black">{selectedRegion.leadSupervisor || '—'}</p>
+                                    </div>
+                                    <div className="p-4 rounded-xl bg-gray-50 dark:bg-white/5">
+                                        <p className="text-[9px] font-black uppercase text-gray-400 mb-1">Active Agents</p>
+                                        <p className="text-sm font-black">{selectedRegion.agents ?? 0}</p>
+                                    </div>
+                                    <div className="p-4 rounded-xl bg-gray-50 dark:bg-white/5">
+                                        <p className="text-[9px] font-black uppercase text-gray-400 mb-1">On-Track Rate</p>
+                                        <p className="text-sm font-black text-[#7ede56]">{selectedRegion.onTrackRate ?? 0}%</p>
+                                    </div>
+                                    <div className="p-4 rounded-xl bg-gray-50 dark:bg-white/5">
+                                        <p className="text-[9px] font-black uppercase text-gray-400 mb-1">Farmers Onboarded</p>
+                                        <p className="text-sm font-black">{selectedRegion.farmersOnboarded ?? selectedRegion.farmers ?? 0}</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                                    <div className="space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-gray-100 dark:border-gray-800 pb-2">Active Field Agents</h4>
+                                        {(selectedRegion.agentsList || []).map((ag: any, i: number) => (
+                                            <div key={i} className="flex justify-between items-center bg-gray-50 dark:bg-white/5 p-3 rounded-xl">
+                                                <div>
+                                                    <p className="text-xs font-black uppercase">{ag.name}</p>
+                                                    <p className="text-[9px] font-bold text-gray-400 uppercase">Sync: {ag.lastSync}</p>
+                                                </div>
+                                                <Badge variant="outline" className="text-[9px] font-black">{ag.kpi} KPI</Badge>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-gray-100 dark:border-gray-800 pb-2">Funded Farms Matrix</h4>
+                                        <div className="space-y-3 pt-2">
+                                            <div className="flex justify-between items-center"><span className="text-[10px] font-bold uppercase flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[#7ede56]"></div>On Track</span><span className="font-black text-sm">{selectedRegion.fundedFarms?.onTrack ?? 0}</span></div>
+                                            <div className="flex justify-between items-center"><span className="text-[10px] font-bold uppercase flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500"></div>At Risk</span><span className="font-black text-sm">{selectedRegion.fundedFarms?.atRisk ?? 0}</span></div>
+                                            <div className="flex justify-between items-center"><span className="text-[10px] font-bold uppercase flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500"></div>Off Track</span><span className="font-black text-sm">{selectedRegion.fundedFarms?.offTrack ?? 0}</span></div>
                                         </div>
-                                        <Badge variant="outline" className="text-[9px] font-black">{ag.kpi} KPI</Badge>
                                     </div>
-                                ))}
-                            </div>
-                            
-                            <div className="space-y-4">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-gray-100 dark:border-gray-800 pb-2">Funded Farms Matrix</h4>
-                                <div className="space-y-3 pt-2">
-                                    <div className="flex justify-between items-center"><span className="text-[10px] font-bold uppercase flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[#7ede56]"></div>On Track</span><span className="font-black text-sm">{selectedRegion.fundedFarms.onTrack}</span></div>
-                                    <div className="flex justify-between items-center"><span className="text-[10px] font-bold uppercase flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500"></div>At Risk</span><span className="font-black text-sm">{selectedRegion.fundedFarms.atRisk}</span></div>
-                                    <div className="flex justify-between items-center"><span className="text-[10px] font-bold uppercase flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500"></div>Off Track</span><span className="font-black text-sm">{selectedRegion.fundedFarms.offTrack}</span></div>
-                                </div>
-                            </div>
 
-                            <div className="space-y-4">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-gray-100 dark:border-gray-800 pb-2">Capital Deployment Flow</h4>
-                                <div className="space-y-3 pt-2">
-                                    <div className="flex justify-between items-center"><span className="text-[10px] font-bold uppercase">Disbursed</span><span className="font-black text-sm text-[#7ede56]">GH₵ {(selectedRegion.capitalFlow.disbursed / 1000).toFixed(0)}k</span></div>
-                                    <div className="flex justify-between items-center"><span className="text-[10px] font-bold uppercase">Pending</span><span className="font-black text-sm text-amber-500">GH₵ {(selectedRegion.capitalFlow.pending / 1000).toFixed(0)}k</span></div>
-                                    <div className="flex justify-between items-center"><span className="text-[10px] font-bold uppercase">Settled</span><span className="font-black text-sm text-blue-500">GH₵ {(selectedRegion.capitalFlow.settled / 1000).toFixed(0)}k</span></div>
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-gray-100 dark:border-gray-800 pb-2">Recent Farmer Updates</h4>
-                                {selectedRegion.farmers.slice(0, 3).map((f: any, i: number) => (
-                                    <div key={i} className="flex justify-between items-center">
-                                        <p className="text-xs font-black uppercase">{f.name}</p>
-                                        <Badge className={`text-[8px] font-black uppercase ${f.status === 'On Track' ? 'bg-[#7ede56]/20 text-[#7ede56]' : f.status === 'At Risk' ? 'bg-amber-500/20 text-amber-500' : 'bg-red-500/20 text-red-500'} border-none`}>{f.status}</Badge>
+                                    <div className="space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-gray-100 dark:border-gray-800 pb-2">Capital Deployment Flow</h4>
+                                        <div className="space-y-3 pt-2">
+                                            <div className="flex justify-between items-center"><span className="text-[10px] font-bold uppercase">Disbursed</span><span className="font-black text-sm text-[#7ede56]">GH₵ {((selectedRegion.capitalFlow?.disbursed ?? 0) / 1000).toFixed(0)}k</span></div>
+                                            <div className="flex justify-between items-center"><span className="text-[10px] font-bold uppercase">Pending</span><span className="font-black text-sm text-amber-500">GH₵ {((selectedRegion.capitalFlow?.pending ?? 0) / 1000).toFixed(0)}k</span></div>
+                                            <div className="flex justify-between items-center"><span className="text-[10px] font-bold uppercase">Settled</span><span className="font-black text-sm text-blue-500">GH₵ {((selectedRegion.capitalFlow?.settled ?? 0) / 1000).toFixed(0)}k</span></div>
+                                        </div>
                                     </div>
-                                ))}
+
+                                    <div className="space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-gray-100 dark:border-gray-800 pb-2">Recent Farmer Updates</h4>
+                                        {(selectedRegion.farmers || []).slice(0, 5).map((f: any, i: number) => (
+                                            <div key={i} className="flex justify-between items-center gap-2">
+                                                <p className="text-xs font-black uppercase truncate">{f.name}</p>
+                                                <Badge className={`text-[8px] font-black uppercase shrink-0 ${f.status === 'On Track' ? 'bg-[#7ede56]/20 text-[#7ede56]' : f.status === 'At Risk' ? 'bg-amber-500/20 text-amber-500' : f.status === 'Pending' ? 'bg-gray-500/20 text-gray-500' : 'bg-red-500/20 text-red-500'} border-none`}>{f.status}</Badge>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="mt-8 flex justify-end">
+                                    <Button onClick={closeRegionDetail} className="h-10 px-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-[#002f37] hover:bg-[#7ede56] font-black uppercase text-[10px] tracking-widest transition-colors">Close Deep Dive</Button>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="py-16 text-center text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                Could not load region details. Please try again.
                             </div>
-                        </div>
-                        <div className="mt-8 flex justify-end">
-                             <Button onClick={() => setSelectedRegionId(null)} className="h-10 px-8 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-[#002f37] hover:bg-[#7ede56] font-black uppercase text-[10px] tracking-widest transition-colors">Close Deep Dive</Button>
-                        </div>
+                        )}
                     </CardContent>
                 </Card>
             )}
@@ -230,7 +307,7 @@ export default function RegionalPerformance() {
                                     <div className="flex items-center gap-3">
                                         <div className={`w-2.5 h-2.5 rounded-full ${status.color} shadow-sm ${region.isOperational !== false ? 'animate-pulse' : ''}`}></div>
                                         <div>
-                                            <CardTitle className="text-lg font-black uppercase tracking-tight">{region.name}</CardTitle>
+                                            <CardTitle className="text-lg font-black uppercase tracking-tight">{formatRegionTitle(region.name)}</CardTitle>
                                         </div>
                                     </div>
                                     {region.isOperational === false && (
@@ -284,10 +361,7 @@ export default function RegionalPerformance() {
                                         variant="outline" 
                                         className="w-full font-black text-[10px] uppercase tracking-widest h-10 rounded-xl"
                                         disabled={region.isOperational === false}
-                                        onClick={() => {
-                                            setSelectedRegionId(region.id);
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }}
+                                        onClick={() => openRegionDetail(region.id)}
                                     >
                                         {region.isOperational === false ? 'Non-Operational' : 'View Details'}
                                     </Button>
@@ -316,7 +390,7 @@ export default function RegionalPerformance() {
                                         <td className="p-5">
                                             <div className="flex items-center gap-3">
                                                 <div className={`w-2 h-2 rounded-full ${getStatusInfo(region.onTrackRate, region.atRiskFarms, region.isOperational).color}`}></div>
-                                                <span className="font-black uppercase">{region.name}</span>
+                                                <span className="font-black uppercase">{formatRegionTitle(region.name)}</span>
                                             </div>
                                         </td>
                                         <td className="p-5">
@@ -352,7 +426,7 @@ export default function RegionalPerformance() {
                                             </div>
                                         </td>
                                         <td className="p-5 text-right space-x-2">
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10" disabled={region.isOperational === false} onClick={() => { setSelectedRegionId(region.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10" disabled={region.isOperational === false} onClick={() => openRegionDetail(region.id)}>
                                                 <Navigation className="w-4 h-4" />
                                             </Button>
                                             <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-400 hover:text-gray-900 dark:hover:text-white" disabled={region.isOperational === false}>

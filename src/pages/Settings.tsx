@@ -722,7 +722,7 @@ const Settings = () => {
                             <SelectItem value="western">Western</SelectItem>
                             <SelectItem value="volta">Volta</SelectItem>
                             <SelectItem value="central">Central</SelectItem>
-                            <SelectItem value="bono">Bono</SelectItem>
+                            <SelectItem value="bono">Bono Ahafo</SelectItem>
                             <SelectItem value="other">Other</SelectItem>
                           </SelectContent>
                         </Select>

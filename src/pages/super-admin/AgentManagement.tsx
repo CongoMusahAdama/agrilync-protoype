@@ -59,7 +59,7 @@ interface UserPermission {
 }
 
 const communitiesMap: Record<string, string[]> = {
-    "Bono Region": ["Sunyani", "Berekum", "Dormaa Ahenkro", "Wenchi", "Techiman", "Duayaw Nkwanta"],
+    "Bono Ahafo Region": ["Sunyani", "Berekum", "Dormaa Ahenkro", "Wenchi", "Techiman", "Duayaw Nkwanta"],
     "Northern Region": ["Tamale", "Yendi", "Savelugu", "Nalerigu", "Walewale", "Damongo"],
     "Upper East Region": ["Bolgatanga", "Navrongo", "Bawku", "Paga", "Sandema", "Garu"],
     "Ashanti Region": ["Kumasi", "Obuasi", "Konongo", "Mampong", "Ejura", "Bekwai"],
@@ -100,7 +100,7 @@ const AgentManagement = () => {
 
     // Operational Regions
     const regionsList = [
-        "Bono Region",
+        "Bono Ahafo Region",
         "Northern Region",
         "Upper East Region",
         "Ashanti Region",
@@ -128,7 +128,7 @@ const AgentManagement = () => {
         deleteUser: boolean;
         avatar: string;
     }>({
-        region: 'Bono Region',
+        region: 'Bono Ahafo Region',
         communities: [],
         name: '',
         email: '',
@@ -148,7 +148,7 @@ const AgentManagement = () => {
     // ==========================================
     // TAB 2: ACCESS CONTROL STATE (USER ACCESS CONTROL)
     // ==========================================
-    const [accessRegion, setAccessRegion] = useState('Bono Region');
+    const [accessRegion, setAccessRegion] = useState('Bono Ahafo Region');
     const [selectedAccessUserId, setSelectedAccessUserId] = useState<string>(''); // Dynamic selection fallback
 
     // Access Control Module Checkboxes
@@ -291,7 +291,7 @@ const AgentManagement = () => {
         setSelectedUser(null);
         const autoAC = 'LYC' + Math.floor(10000 + Math.random() * 90000);
         setFormValues({
-            region: 'Bono Region',
+            region: 'Bono Ahafo Region',
             communities: [],
             name: '',
             email: '',

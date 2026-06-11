@@ -104,12 +104,12 @@ const farmVisits = [
     description: "Participated in the 2024 Agricultural Economics & Agribusiness Conference at UDS, Tamale — focused on regenerative agriculture and agribusiness development."
   },
 
-  // 📱 Digital Tools Training for Farmers (Dormaa Ahenkro, Bono Region)
+  // 📱 Digital Tools Training for Farmers (Dormaa Ahenkro, Bono Ahafo Region)
   {
     id: 9,
     title: "Digital Tools Training",
     image: "/lovable-uploads/gallery9.jpg",
-    region: "Bono Region",
+    region: "Bono Ahafo Region",
     category: "Training",
     date: "September 2024",
     description: "Engagement and training session in Dormaa Ahenkro to promote the adoption of digital tools among local farmers."
@@ -118,7 +118,7 @@ const farmVisits = [
     id: 16,
     title: "Digital Tools Training",
     image: "/lovable-uploads/gallery16.jpg",
-    region: "Bono Region",
+    region: "Bono Ahafo Region",
     category: "Training",
     date: "September 2024",
     description: "Engagement and training session in Dormaa Ahenkro to promote the adoption of digital tools among local farmers."
@@ -127,7 +127,7 @@ const farmVisits = [
     id: 17,
     title: "Digital Tools Training",
     image: "/lovable-uploads/gallery17.jpg",
-    region: "Bono Region",
+    region: "Bono Ahafo Region",
     category: "Training",
     date: "September 2024",
     description: "Engagement and training session in Dormaa Ahenkro to promote the adoption of digital tools among local farmers."
@@ -276,7 +276,7 @@ const regions = [
   "Ashanti Region",
   "Eastern Region",
   "Northern Region",
-  "Bono Region",
+  "Bono Ahafo Region",
   "Ahafo Region",
   "Volta Region",
   "Central Region"

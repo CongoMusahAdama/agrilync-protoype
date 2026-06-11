@@ -94,7 +94,7 @@ export const ImpactSection: React.FC<ImpactSectionProps> = ({ heroImages, curren
         {/* Impact Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 border-t border-white/10 pt-12">
           {[
-            { icon: Users, label: 'Pilot Farmers', end: 500, suffix: '', desc: 'across 7 target regions in Ghana: Western, Eastern, Volta, Ashanti, Central, Northern, and Bono.', duration: 2200, delay: 2000 },
+            { icon: Users, label: 'Pilot Farmers', end: 500, suffix: '', desc: 'across 7 target regions in Ghana: Western, Eastern, Volta, Ashanti, Central, Northern, and Bono Ahafo.', duration: 2200, delay: 2000 },
             { icon: TrendingUp, label: 'Income Growth', end: 15, suffix: '%+', desc: 'average increase in annual income for farmers connected to our investment ecosystem.', duration: 1800, delay: 2400 },
             { icon: MessageCircle, label: 'Engagement', end: 95, suffix: '%', desc: 'WhatsApp community engagement across our farmer networks.', duration: 2000, delay: 2200 },
             { icon: Play, label: 'Webinars', end: 8, suffix: '', desc: 'Online training sessions covering all essential aspects of farming.', duration: 1600, delay: 2600 },

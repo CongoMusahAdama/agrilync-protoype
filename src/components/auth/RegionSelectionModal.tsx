@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { MapPin, ShieldCheck, AlertCircle, ChevronLeft, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { BONO_AHAFO_LABEL, BONO_AHAFO_REGION, regionsMatch } from '@/data/ghanaRegions';
 
 interface RegionSelectionModalProps {
   isOpen: boolean;
@@ -26,7 +27,7 @@ const regions = [
   { value: 'Western Region', label: 'Western', desc: 'Coastal Supply Management' },
   { value: 'Volta Region', label: 'Volta', desc: 'Lakeside Monitoring Zone' },
   { value: 'Central Region', label: 'Central', desc: 'Regional Logistics Center' },
-  { value: 'Bono Region', label: 'Bono', desc: 'Brong-Ahafo Field Office' },
+  { value: BONO_AHAFO_REGION, label: BONO_AHAFO_LABEL, desc: 'Bono & Ahafo Field Office' },
   { value: 'Upper East Region', label: 'Upper East', desc: 'Arid Zone Cultivation' },
   { value: 'Upper West Region', label: 'Upper West', desc: 'Savannah Perimeter' }
 ];
@@ -50,10 +51,7 @@ const RegionSelectionModal: React.FC<RegionSelectionModalProps> = ({
     setIsValidating(true);
 
     setTimeout(() => {
-        const normalizedSelected = selectedRegion.toLowerCase().replace(' region', '').trim();
-        const normalizedAssigned = (assignedRegion || '').toLowerCase().replace(' region', '').trim();
-        
-        if (normalizedSelected === normalizedAssigned || normalizedAssigned.includes(normalizedSelected)) {
+        if (regionsMatch(selectedRegion, assignedRegion)) {
           toast.success('Region Verified Successfully');
           setErrorHeader(null);
           onSuccess(selectedRegion);

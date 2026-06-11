@@ -19,7 +19,7 @@ import { FAQSection } from '@/components/home/FAQSection';
 const heroImages = [
   { src: "/lovable-uploads/image%20copy%2020.png", name: "Sarah Mensah", age: "42yrs", location: "Volta Region", position: "center 5%" },
   { src: "/lovable-uploads/signup2.jpg", name: "Gabienu Emmanuel", age: "30yrs", location: "Ashanti Region, Ejura", position: "center 10%" },
-  { src: "/lovable-uploads/gallery16.jpg", name: "Elizabeth", age: "53yrs", location: "Bono Region, Dormaa Ahenkro", position: "center bottom" }
+  { src: "/lovable-uploads/gallery16.jpg", name: "Elizabeth", age: "53yrs", location: "Bono Ahafo Region, Dormaa Ahenkro", position: "center bottom" }
 ];
 
 const Index = () => {

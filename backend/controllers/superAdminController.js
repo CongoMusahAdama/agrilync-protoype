@@ -231,75 +231,193 @@ exports.getDashboardStats = async (req, res) => {
     }
 };
 
+const regionNameVariants = (regionName) => {
+    const normalized = (regionName || '').replace(/\s+Region$/i, '').trim();
+    const variants = new Set([regionName, normalized, `${normalized} Region`].filter(Boolean));
+    if (/bono/i.test(normalized)) {
+        ['Bono', 'Bono Region', 'Bono Ahafo', 'Bono Ahafo Region'].forEach((v) => variants.add(v));
+    }
+    return Array.from(variants);
+};
+
+const parseCapitalAmount = (value) => {
+    if (typeof value === 'number') return value;
+    return parseInt(String(value || '').replace(/[^\d]/g, ''), 10) || 0;
+};
+
+const enrichRegionSummary = (region) => {
+    const farmersOnboarded = region.farmers ?? region.farmersOnboarded ?? 0;
+    const target = Math.max(farmersOnboarded + 50, Math.ceil(farmersOnboarded * 1.25) || 100);
+    const capitalDeployed = parseCapitalAmount(region.capitalMatched) || farmersOnboarded * 3500;
+    return {
+        ...region,
+        farmersOnboarded,
+        target,
+        capitalDeployed,
+        seasonTrend: (region.onTrackRate ?? 100) >= 80 ? 'up' : 'down',
+    };
+};
+
+const mapFarmerPerformanceStatus = (farmer) => {
+    if (farmer.status === 'inactive') return 'Off Track';
+    if (
+        farmer.investmentStatus === 'At Risk' ||
+        farmer.currentStage === 'maintenance' ||
+        farmer.status === 'pending'
+    ) {
+        return 'At Risk';
+    }
+    return 'On Track';
+};
+
+const buildRegionalList = async () => {
+    const stats = await withTimeout(Agent.aggregate([
+        {
+            $group: {
+                _id: '$region',
+                agentCount: { $sum: 1 },
+                farmersCount: { $sum: '$stats.farmersOnboarded' },
+                farmsCount: { $sum: '$stats.activeFarms' },
+            },
+        },
+    ]));
+
+    const dbRegions = stats.map((r, i) => {
+        const totalFarms = r.farmsCount || 0;
+        const atRisk = Math.max(0, Math.floor(totalFarms * 0.1));
+        const onTrackRate = totalFarms > 0 ? Math.round(((totalFarms - atRisk) / totalFarms) * 100) : 100;
+
+        return enrichRegionSummary({
+            id: (i + 1).toString(),
+            name: r._id || 'Unknown Region',
+            agents: r.agentCount || 0,
+            farmers: r.farmersCount || 0,
+            activeFarms: totalFarms,
+            atRiskFarms: atRisk,
+            onTrackRate,
+            capitalMatched: `GH₵ ${(r.farmersCount * 3500).toLocaleString()}`,
+            leadSupervisor: 'Lead Supervisor',
+            isOperational: true,
+        });
+    });
+
+    const defaultRegions = [
+        { id: '1', name: 'Bono Ahafo Region', agents: 4, farmers: 120, activeFarms: 142, atRiskFarms: 3, onTrackRate: 92, capitalMatched: 'GH₵ 420,000', leadSupervisor: 'Ernest Osei', isOperational: true },
+        { id: '2', name: 'Northern Region', agents: 6, farmers: 210, activeFarms: 198, atRiskFarms: 12, onTrackRate: 78, capitalMatched: 'GH₵ 680,000', leadSupervisor: 'Abdul-Rahman Ali', isOperational: true },
+        { id: '3', name: 'Ashanti Region', agents: 8, farmers: 340, activeFarms: 312, atRiskFarms: 8, onTrackRate: 88, capitalMatched: 'GH₵ 1,200,000', leadSupervisor: 'Kofi Mensah', isOperational: true },
+        { id: '4', name: 'Volta Region', agents: 3, farmers: 95, activeFarms: 88, atRiskFarms: 2, onTrackRate: 94, capitalMatched: 'GH₵ 290,000', leadSupervisor: 'Dzifa Amenu', isOperational: true },
+    ].map(enrichRegionSummary);
+
+    return dbRegions.length > 0 ? dbRegions : defaultRegions;
+};
+
 // @route   GET api/super-admin/regional-performance
 // @desc    Get aggregated stats by region
 exports.getRegionalPerformance = async (req, res) => {
     try {
-        const stats = await withTimeout(Agent.aggregate([
-            {
-                $group: {
-                    _id: "$region",
-                    agentCount: { $sum: 1 },
-                    farmersCount: { $sum: "$stats.farmersOnboarded" },
-                    farmsCount: { $sum: "$stats.activeFarms" }
-                }
-            }
-        ]));
-
-        const dbRegions = stats.map((r, i) => {
-            const totalFarms = r.farmsCount || 0;
-            const atRisk = Math.max(0, Math.floor(totalFarms * 0.1));
-            const onTrackRate = totalFarms > 0 ? Math.round(((totalFarms - atRisk) / totalFarms) * 100) : 100;
-            
-            return {
-                id: (i + 1).toString(),
-                name: r._id || "Unknown Region",
-                agents: r.agentCount || 0,
-                farmers: r.farmersCount || 0,
-                activeFarms: totalFarms,
-                atRiskFarms: atRisk,
-                onTrackRate: onTrackRate,
-                capitalMatched: `GH₵ ${(r.farmersCount * 3500).toLocaleString()}`,
-                leadSupervisor: "Lead Supervisor",
-                isOperational: true
-            };
-        });
-
-        const defaultRegions = [
-            { id: "1", name: "Bono Region", agents: 4, farmers: 120, activeFarms: 142, atRiskFarms: 3, onTrackRate: 92, capitalMatched: "GH₵ 420,000", leadSupervisor: "Ernest Osei", isOperational: true },
-            { id: "2", name: "Northern Region", agents: 6, farmers: 210, activeFarms: 198, atRiskFarms: 12, onTrackRate: 78, capitalMatched: "GH₵ 680,000", leadSupervisor: "Abdul-Rahman Ali", isOperational: true },
-            { id: "3", name: "Ashanti Region", agents: 8, farmers: 340, activeFarms: 312, atRiskFarms: 8, onTrackRate: 88, capitalMatched: "GH₵ 1,200,000", leadSupervisor: "Kofi Mensah", isOperational: true },
-            { id: "4", name: "Volta Region", agents: 3, farmers: 95, activeFarms: 88, atRiskFarms: 2, onTrackRate: 94, capitalMatched: "GH₵ 290,000", leadSupervisor: "Dzifa Amenu", isOperational: true }
-        ];
-
-        const finalRegions = dbRegions.length > 0 ? dbRegions : defaultRegions;
+        const finalRegions = await buildRegionalList();
 
         const totalAgents = finalRegions.reduce((sum, r) => sum + r.agents, 0);
-        const totalFarmers = finalRegions.reduce((sum, r) => sum + r.farmers, 0);
-        const totalFarms = finalRegions.reduce((sum, r) => sum + r.activeFarms, 0);
         const totalAtRisk = finalRegions.reduce((sum, r) => sum + r.atRiskFarms, 0);
-        const avgOnTrackRate = Math.round(finalRegions.reduce((sum, r) => sum + r.onTrackRate, 0) / finalRegions.length);
+        const avgOnTrackRate = Math.round(
+            finalRegions.reduce((sum, r) => sum + r.onTrackRate, 0) / finalRegions.length
+        );
 
         const summaryStats = [
-            { label: "Active Regions", value: finalRegions.length.toString(), trend: "+12% vs last year", isPositive: true },
-            { label: "Total Field Agents", value: totalAgents.toString(), trend: "+4 this month", isPositive: true },
-            { label: "Overall On-Track Rate", value: `${avgOnTrackRate}%`, trend: "+1.8% vs last week", isPositive: true },
-            { label: "At-Risk Farms", value: totalAtRisk.toString(), trend: "-4 vs yesterday", isPositive: true }
+            { label: 'Active Regions', value: finalRegions.length.toString(), trend: '+12% vs last year', isPositive: true },
+            { label: 'Total Field Agents', value: totalAgents.toString(), trend: '+4 this month', isPositive: true },
+            { label: 'Overall On-Track Rate', value: `${avgOnTrackRate}%`, trend: '+1.8% vs last week', isPositive: true },
+            { label: 'At-Risk Farms', value: totalAtRisk.toString(), trend: '-4 vs yesterday', isPositive: true },
         ];
 
         const alerts = [
-            { id: "alt-1", region: "Northern Region", message: "Low visit compliance recorded in Savelugu district.", type: "warning" },
-            { id: "alt-2", region: "Ashanti Region", message: "Pest outbreak flagged in Ejura communities.", type: "danger" }
+            { id: 'alt-1', region: 'Northern Region', text: 'Low visit compliance recorded in Savelugu district.', severity: 'amber' },
+            { id: 'alt-2', region: 'Ashanti Region', text: 'Pest outbreak flagged in Ejura communities.', severity: 'red' },
         ];
 
         res.json({
             summaryStats,
             regions: finalRegions,
-            alerts
+            alerts,
         });
     } catch (err) {
         console.error('Error in getRegionalPerformance:', err);
         res.json({ summaryStats: [], regions: [], alerts: [] });
+    }
+};
+
+// @route   GET api/super-admin/regional-performance/:id
+// @desc    Get deep-dive details for a single region
+exports.getRegionalPerformanceDetail = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const regions = await buildRegionalList();
+        const region = regions.find((r) => r.id === id);
+
+        if (!region) {
+            return res.status(404).json({ msg: 'Region not found' });
+        }
+
+        const variants = regionNameVariants(region.name);
+        const [agents, farmers] = await Promise.all([
+            withTimeout(
+                Agent.find({ role: 'agent', region: { $in: variants } })
+                    .select('name updatedAt stats agentId')
+                    .sort({ updatedAt: -1 })
+                    .limit(20)
+            ),
+            withTimeout(
+                Farmer.find({ region: { $in: variants } })
+                    .select('name status investmentStatus currentStage updatedAt')
+                    .sort({ updatedAt: -1 })
+                    .limit(20)
+            ),
+        ]);
+
+        const agentsList = agents.map((agent) => ({
+            name: agent.name,
+            lastSync: agent.updatedAt
+                ? new Date(agent.updatedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                : 'N/A',
+            kpi: `${Math.min(100, (agent.stats?.farmersOnboarded || 0) * 8 + 20)}%`,
+        }));
+
+        const farmerRows = farmers.map((farmer) => ({
+            name: farmer.name,
+            status: mapFarmerPerformanceStatus(farmer),
+        }));
+
+        const onTrack = farmerRows.filter((f) => f.status === 'On Track').length;
+        const atRisk = farmerRows.filter((f) => f.status === 'At Risk').length;
+        const offTrack = farmerRows.filter((f) => f.status === 'Off Track').length;
+
+        const fundedFarms = {
+            onTrack: onTrack || Math.max(0, (region.activeFarms || 0) - (region.atRiskFarms || 0)),
+            atRisk: atRisk || region.atRiskFarms || 0,
+            offTrack: offTrack || Math.max(0, Math.floor((region.activeFarms || 0) * 0.05)),
+        };
+
+        const capitalBase = region.capitalDeployed || parseCapitalAmount(region.capitalMatched);
+        const capitalFlow = {
+            disbursed: Math.round(capitalBase * 0.65),
+            pending: Math.round(capitalBase * 0.2),
+            settled: Math.round(capitalBase * 0.15),
+        };
+
+        res.json({
+            ...region,
+            agentsList: agentsList.length
+                ? agentsList
+                : [{ name: 'No field agents assigned yet', lastSync: '—', kpi: '—' }],
+            fundedFarms,
+            capitalFlow,
+            farmers: farmerRows.length
+                ? farmerRows
+                : [{ name: 'No farmers onboarded in this region yet', status: 'Pending' }],
+        });
+    } catch (err) {
+        console.error('Error in getRegionalPerformanceDetail:', err);
+        res.status(500).json({ msg: 'Failed to load region details' });
     }
 };
 
@@ -439,7 +557,7 @@ exports.getEscalations = async (req, res) => {
                 priority,
                 category,
                 issue: e.message || 'Support Request Flagged',
-                region: e.region || 'Bono Region',
+                region: e.region || 'Bono Ahafo Region',
                 agent: e.source || 'Lync Agent',
                 date: e.createdAt || new Date(),
                 status,
@@ -961,7 +1079,7 @@ exports.getVisits = async (req, res) => {
             date: v.date,
             agent: v.agent?.name || 'Lync Agent',
             farmer: v.farmer?.name || 'Verified Grower',
-            region: v.farmer?.region || 'Bono Region',
+            region: v.farmer?.region || 'Bono Ahafo Region',
             purpose: v.purpose || 'Farm Monitoring',
             status: v.status || 'Completed',
             notes: v.notes || 'Routine crop health monitoring visit.',
@@ -975,7 +1093,7 @@ exports.getVisits = async (req, res) => {
                 date: new Date(Date.now() - 3600 * 1000),
                 agent: "Sarkodie Osei",
                 farmer: "Kwesi Appiah",
-                region: "Bono Region",
+                region: "Bono Ahafo Region",
                 purpose: "Crop Assessment",
                 status: "Completed",
                 notes: "Inspected maize leaves, found healthy maturity. Advised on second fertilizer application.",
@@ -1097,12 +1215,12 @@ exports.getTasks = async (req, res) => {
             dueDate: t.dueDate ? t.dueDate.toISOString().split('T')[0] : '2026-05-30',
             title: t.title || 'General Farm Verification',
             agent: t.agent?.name || 'Lync Agent',
-            region: t.agent?.region || 'Bono Region',
+            region: t.agent?.region || 'Bono Ahafo Region',
             progress: t.status === 'done' ? 100 : t.status === 'in-progress' ? 50 : 0
         }));
 
         const defaultTasks = [
-            { id: "tsk-001", priority: "High", dueDate: "2026-05-22", title: "Conduct Soil Health Verification", agent: "Sarkodie Osei", region: "Bono Region", progress: 50 },
+            { id: "tsk-001", priority: "High", dueDate: "2026-05-22", title: "Conduct Soil Health Verification", agent: "Sarkodie Osei", region: "Bono Ahafo Region", progress: 50 },
             { id: "tsk-002", priority: "Low", dueDate: "2026-05-25", title: "Obtain New Harvest Photos", agent: "Mohammed Ibrahim", region: "Northern Region", progress: 0 },
             { id: "tsk-003", priority: "High", dueDate: "2026-05-20", title: "KYC Dispute Resolution", agent: "Abdul-Rahman Ali", region: "Ashanti Region", progress: 100 }
         ];

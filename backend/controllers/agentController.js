@@ -20,9 +20,10 @@ exports.getProfile = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Agent not found' });
         }
 
-        // Prototype Access Grant: Ensure agent has access to Bono for testing
-        if (!agent.assignedRegions || !agent.assignedRegions.includes('Bono')) {
-            agent.assignedRegions = ['Ashanti', 'Bono', 'Northern', 'Upper East'];
+        // Prototype Access Grant: Ensure agent has access to Bono Ahafo for testing
+        const bonoAhafo = 'Bono Ahafo';
+        if (!agent.assignedRegions || !agent.assignedRegions.some((r) => ['Bono', 'Bono Ahafo', 'Bono Ahafo Region'].includes(r))) {
+            agent.assignedRegions = ['Ashanti', bonoAhafo, 'Northern', 'Upper East'];
         }
 
         res.json(agent);

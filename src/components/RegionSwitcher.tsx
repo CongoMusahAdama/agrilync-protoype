@@ -12,13 +12,14 @@ import api from '@/utils/api';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import { useAuth } from '@/contexts/AuthContext';
+import { normalizeOperationalRegion } from '@/data/ghanaRegions';
 
 interface RegionSwitcherProps {
   className?: string;
 }
 
 const regions = [
-  'Ashanti', 'Bono', 'Bono East', 'Central', 'Eastern', 
+  'Ashanti', 'Bono Ahafo', 'Bono East', 'Central', 'Eastern', 
   'Greater Accra', 'Northern', 'North East', 'Oti', 
   'Savannah', 'Upper East', 'Upper West', 'Volta', 
   'Western', 'Western North', 'Ahafo'
@@ -38,7 +39,10 @@ const RegionSwitcher: React.FC<RegionSwitcherProps> = ({ className }) => {
     const isSuperAdmin = agent?.role === 'super_admin';
 
     // Check if the agent is configured/assigned to the selected deployment zone
-    if (!isSuperAdmin && !assigned.includes(newRegion)) {
+    const isAssigned = assigned.some(
+      (r) => normalizeOperationalRegion(r) === normalizeOperationalRegion(newRegion)
+    );
+    if (!isSuperAdmin && !isAssigned) {
       Swal.fire({
         title: '<span class="text-[#002f37] font-black uppercase text-xl">Access Denied</span>',
         html: `<p class="text-gray-500 font-bold text-sm leading-relaxed">You are not currently configured/deployed to the <span class="text-[#065f46] font-black">${newRegion.toUpperCase()}</span> zone. Please contact your supervisor for deployment access.</p>`,
