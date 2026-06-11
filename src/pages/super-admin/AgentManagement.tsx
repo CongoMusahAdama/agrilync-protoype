@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,8 @@ import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import api from '@/utils/api';
+import { isCustomAvatar } from '@/utils/avatar';
+import { getCommunitiesForRegion } from '@/data/ghanaRegions';
 
 interface UserRecord {
     id: string;
@@ -57,16 +59,6 @@ interface UserPermission {
     menuType: 'Main' | 'Sub' | 'Action';
     enabled: boolean;
 }
-
-const communitiesMap: Record<string, string[]> = {
-    "Bono Ahafo Region": ["Sunyani", "Berekum", "Dormaa Ahenkro", "Wenchi", "Techiman", "Duayaw Nkwanta"],
-    "Northern Region": ["Tamale", "Yendi", "Savelugu", "Nalerigu", "Walewale", "Damongo"],
-    "Upper East Region": ["Bolgatanga", "Navrongo", "Bawku", "Paga", "Sandema", "Garu"],
-    "Ashanti Region": ["Kumasi", "Obuasi", "Konongo", "Mampong", "Ejura", "Bekwai"],
-    "Western Region": ["Sekondi-Takoradi", "Tarkwa", "Axim", "Elubo", "Prestea"],
-    "Volta Region": ["Ho", "Kpando", "Hohoe", "Aflao", "Anloga", "Sogakope"],
-    "Central Region": ["Cape Coast", "Winneba", "Mankessim", "Elmina", "Apam", "Kasoa"]
-};
 
 const AgentManagement = () => {
     const { darkMode } = useDarkMode();
@@ -141,6 +133,40 @@ const AgentManagement = () => {
         deleteUser: false,
         avatar: ''
     });
+
+    const [communitySearch, setCommunitySearch] = useState('');
+    const [customCommunity, setCustomCommunity] = useState('');
+
+    const regionCommunities = useMemo(
+        () => getCommunitiesForRegion(formValues.region),
+        [formValues.region]
+    );
+
+    const filteredCommunities = useMemo(() => {
+        const q = communitySearch.trim().toLowerCase();
+        if (!q) return regionCommunities;
+        return regionCommunities.filter((c) => c.toLowerCase().includes(q));
+    }, [regionCommunities, communitySearch]);
+
+    const customSelectedCommunities = useMemo(
+        () => formValues.communities.filter((c) => !regionCommunities.includes(c)),
+        [formValues.communities, regionCommunities]
+    );
+
+    const addCustomCommunity = () => {
+        const trimmed = customCommunity.trim();
+        if (!trimmed) {
+            toast.error('Enter a community name.');
+            return;
+        }
+        if (formValues.communities.includes(trimmed)) {
+            toast.error('That community is already selected.');
+            return;
+        }
+        setFormValues((prev) => ({ ...prev, communities: [...prev.communities, trimmed] }));
+        setCustomCommunity('');
+    };
+
     const [searchQuery, setSearchQuery] = useState('');
     const [regionFilter, setRegionFilter] = useState('All');
     const [entriesCount, setEntriesCount] = useState(10);
@@ -282,7 +308,7 @@ const AgentManagement = () => {
             enableMultipleLogin: user.enableMultipleLogin || false,
             resetPassword: user.passwordChanged === 'No',
             deleteUser: false,
-            avatar: user.avatar || ''
+            avatar: isCustomAvatar(user.avatar) ? user.avatar! : ''
         });
         setIsModalOpen(true);
     };
@@ -356,7 +382,7 @@ const AgentManagement = () => {
                     resetPassword: formValues.resetPassword,
                     staffAccountNumber: formValues.staffAccountNumber,
                     enableMultipleLogin: formValues.enableMultipleLogin,
-                    avatar: formValues.avatar
+                    avatar: isCustomAvatar(formValues.avatar) ? formValues.avatar : ''
                 });
                 setUsers(prev => prev.map(u => u.id === selectedUser.id ? res.data : u));
                 toast.success(`Profile update for "${formValues.name}" saved!`);
@@ -376,7 +402,7 @@ const AgentManagement = () => {
                     communities: formValues.communities,
                     staffAccountNumber: formValues.staffAccountNumber,
                     enableMultipleLogin: formValues.enableMultipleLogin,
-                    avatar: formValues.avatar
+                    avatar: isCustomAvatar(formValues.avatar) ? formValues.avatar : ''
                 });
                 setUsers(prev => [res.data, ...prev]);
                 Swal.fire({
@@ -603,11 +629,11 @@ const AgentManagement = () => {
                                             >
                                                 <td className="px-6 py-5 text-xs font-black text-gray-400">{idx + 1}</td>
                                                 <td className="px-6 py-5">
-                                                    <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center">
-                                                        {user.avatar ? (
+                                                    <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center bg-gray-50 dark:bg-gray-800">
+                                                        {isCustomAvatar(user.avatar) ? (
                                                             <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                                                         ) : (
-                                                            <UserCircle className="w-7 h-7 text-gray-300" />
+                                                            <UserCircle className="w-6 h-6 text-gray-400 dark:text-gray-500" />
                                                         )}
                                                     </div>
                                                 </td>
@@ -959,7 +985,11 @@ const AgentManagement = () => {
                                         </Label>
                                         <Select 
                                             value={formValues.region} 
-                                            onValueChange={(val) => setFormValues(prev => ({ ...prev, region: val, communities: [] }))}
+                                            onValueChange={(val) => {
+                                                setFormValues((prev) => ({ ...prev, region: val, communities: [] }));
+                                                setCommunitySearch('');
+                                                setCustomCommunity('');
+                                            }}
                                         >
                                             <SelectTrigger className={`h-11 rounded-none text-sm border-none shadow-inner ${darkMode ? 'bg-gray-855 text-white' : 'bg-gray-50 text-gray-900'}`}>
                                                 <SelectValue />
@@ -1062,43 +1092,99 @@ const AgentManagement = () => {
                                     </div>
                                 </div>
 
-                                {/* Dynamic Communities Selector based on selected Region */}
+                                {/* Communities from Ghana region data + custom entry */}
                                 <div className="space-y-3.5 pt-6 border-t border-gray-100 dark:border-gray-800">
                                     <Label className="text-[11px] font-black uppercase tracking-widest text-gray-450 block">
                                         Operational Communities (Select Multiple) <span className="text-[#7ede56] font-bold">({formValues.communities.length} selected)</span>
                                     </Label>
-                                    
-                                    <div className="flex flex-wrap gap-2">
-                                        {(communitiesMap[formValues.region] || []).map((community) => {
-                                            const isSelected = formValues.communities.includes(community);
-                                            return (
-                                                <button
-                                                    type="button"
-                                                    key={community}
-                                                    onClick={() => {
-                                                        setFormValues(prev => {
-                                                            const exists = prev.communities.includes(community);
-                                                            const newCommunities = exists
-                                                                ? prev.communities.filter(c => c !== community)
-                                                                : [...prev.communities, community];
-                                                            return { ...prev, communities: newCommunities };
-                                                        });
-                                                    }}
-                                                    className={`px-4 py-2.5 text-[11px] font-black uppercase tracking-wider transition-all duration-150 border-2 rounded-none ${
-                                                        isSelected 
-                                                            ? 'bg-[#7ede56] border-[#7ede56] text-[#002f37] shadow-md'
-                                                            : 'bg-transparent border-gray-200 dark:border-gray-850 text-gray-400 hover:border-gray-400 dark:hover:border-gray-600'
-                                                    }`}
-                                                >
-                                                    {community}
-                                                </button>
-                                            );
-                                        })}
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                        {regionCommunities.length} communities loaded for {formValues.region.replace(/\s+Region$/i, '')}
+                                    </p>
+
+                                    <Input
+                                        value={communitySearch}
+                                        onChange={(e) => setCommunitySearch(e.target.value)}
+                                        placeholder="Search communities…"
+                                        className={`h-10 rounded-none text-sm border-none shadow-inner ${darkMode ? 'bg-gray-855' : 'bg-gray-50'}`}
+                                    />
+
+                                    <div className="max-h-44 overflow-y-auto flex flex-wrap gap-2 pr-1 custom-scrollbar">
+                                        {filteredCommunities.length > 0 ? (
+                                            filteredCommunities.map((community) => {
+                                                const isSelected = formValues.communities.includes(community);
+                                                return (
+                                                    <button
+                                                        type="button"
+                                                        key={community}
+                                                        onClick={() => {
+                                                            setFormValues((prev) => {
+                                                                const exists = prev.communities.includes(community);
+                                                                const newCommunities = exists
+                                                                    ? prev.communities.filter((c) => c !== community)
+                                                                    : [...prev.communities, community];
+                                                                return { ...prev, communities: newCommunities };
+                                                            });
+                                                        }}
+                                                        className={`px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all duration-150 border-2 rounded-none ${
+                                                            isSelected
+                                                                ? 'bg-[#7ede56] border-[#7ede56] text-[#002f37] shadow-md'
+                                                                : 'bg-transparent border-gray-200 dark:border-gray-850 text-gray-400 hover:border-gray-400 dark:hover:border-gray-600'
+                                                        }`}
+                                                    >
+                                                        {community}
+                                                    </button>
+                                                );
+                                            })
+                                        ) : (
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest p-2">
+                                                No communities match your search.
+                                            </p>
+                                        )}
                                     </div>
-                                    
+
+                                    {customSelectedCommunities.length > 0 && (
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-[#7ede56]">Custom communities</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {customSelectedCommunities.map((community) => (
+                                                    <button
+                                                        type="button"
+                                                        key={`custom-${community}`}
+                                                        onClick={() => {
+                                                            setFormValues((prev) => ({
+                                                                ...prev,
+                                                                communities: prev.communities.filter((c) => c !== community),
+                                                            }));
+                                                        }}
+                                                        className="px-3 py-2 text-[10px] font-black uppercase tracking-wider bg-[#002f37] text-[#7ede56] border-2 border-[#7ede56] rounded-none"
+                                                    >
+                                                        {community} ×
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                                        <Input
+                                            value={customCommunity}
+                                            onChange={(e) => setCustomCommunity(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomCommunity())}
+                                            placeholder="Community not listed? Type name here"
+                                            className={`h-11 flex-1 rounded-none text-sm border-none shadow-inner ${darkMode ? 'bg-gray-855' : 'bg-gray-50'}`}
+                                        />
+                                        <Button
+                                            type="button"
+                                            onClick={addCustomCommunity}
+                                            className="h-11 px-6 rounded-none bg-[#002f37] hover:bg-[#004d5a] text-white font-black uppercase text-[10px] tracking-widest"
+                                        >
+                                            Add Community
+                                        </Button>
+                                    </div>
+
                                     {formValues.communities.length === 0 && (
                                         <p className="text-[10px] font-black uppercase tracking-widest text-rose-500">
-                                            * Please select at least one community of operation for this agent
+                                            * Please select or add at least one community of operation for this agent
                                         </p>
                                     )}
                                 </div>
@@ -1148,14 +1234,14 @@ const AgentManagement = () => {
                             <div className="lg:col-span-3 flex flex-col items-center justify-center p-6 border-l border-gray-150 dark:border-l-gray-800 space-y-4">
                                 <div className="relative group">
                                     <div className="w-28 h-28 rounded-none overflow-hidden border-4 border-[#7ede56] shadow-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative">
-                                        {formValues.avatar && !formValues.avatar.includes('lovable-uploads/profile.png') ? (
+                                        {isCustomAvatar(formValues.avatar) ? (
                                             <img 
                                                 src={formValues.avatar} 
                                                 alt="Preview avatar" 
                                                 className="w-full h-full object-cover animate-in fade-in rounded-none"
                                             />
                                         ) : (
-                                            <UserCircle className="w-16 h-16 text-gray-300" />
+                                            <UserCircle className="w-16 h-16 text-gray-400 dark:text-gray-500" />
                                         )}
                                     </div>
                                 </div>

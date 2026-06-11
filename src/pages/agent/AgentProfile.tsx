@@ -27,6 +27,14 @@ import AgentLayout from './AgentLayout';
 import Swal from 'sweetalert2';
 import api from '@/utils/api';
 import { playSuccessSound } from '@/utils/audio';
+import {
+  getCommunitiesForDistrict,
+  getCommunitiesForRegion,
+  getDistrictsForRegion,
+  getRegionKey,
+  GHANA_REGIONS,
+  OTHER_COMMUNITY_OPTION,
+} from '@/data/ghanaRegions';
 
 const Field = ({ label, id, type = "text", required = false, readOnly = false, value, onChange, options }: any) => (
   <div className="space-y-1.5">
@@ -85,9 +93,36 @@ const AgentProfile: React.FC = () => {
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
   const [creatingTicket, setCreatingTicket] = useState(false);
   const [selectedGuide, setSelectedGuide] = useState<any>(null);
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [selectedCommunity, setSelectedCommunity] = useState('');
+  const [customCommunity, setCustomCommunity] = useState('');
 
   useEffect(() => {
-    if (agent) setFormData(agent);
+    if (agent) {
+      setFormData(agent);
+      const regionKey = getRegionKey(agent.region);
+      const districts = getDistrictsForRegion(agent.region);
+      const communities = getCommunitiesForRegion(agent.region);
+      const storedDistrict = (agent as any).district || '';
+      const storedCommunity = (agent as any).community || agent.districts?.[0] || '';
+
+      if (storedDistrict && districts.includes(storedDistrict)) {
+        setSelectedDistrict(storedDistrict);
+      } else {
+        setSelectedDistrict('');
+      }
+
+      if (storedCommunity && communities.includes(storedCommunity)) {
+        setSelectedCommunity(storedCommunity);
+        setCustomCommunity('');
+      } else if (storedCommunity) {
+        setSelectedCommunity(OTHER_COMMUNITY_OPTION);
+        setCustomCommunity(storedCommunity);
+      } else {
+        setSelectedCommunity('');
+        setCustomCommunity('');
+      }
+    }
   }, [agent]);
 
   const navSections = [
@@ -179,11 +214,17 @@ const AgentProfile: React.FC = () => {
   const handleUpdateProfile = async () => {
     setSaving(true);
     try {
+      const finalCommunity =
+        selectedCommunity === OTHER_COMMUNITY_OPTION
+          ? customCommunity.trim()
+          : selectedCommunity;
+
       await api.put('/agents/profile', {
         name: formData.name,
         contact: formData.contact,
         region: formData.region,
-        district: formData.district
+        district: selectedDistrict || finalCommunity,
+        community: finalCommunity,
       });
       playSuccessSound();
       Swal.fire({
@@ -427,6 +468,114 @@ const AgentProfile: React.FC = () => {
             </Card>
           </div>
         );
+
+      case 'location': {
+        const regionOptions = Object.keys(GHANA_REGIONS);
+        const districtOptions = getDistrictsForRegion(formData.region || agent?.region);
+        const communityOptions = selectedDistrict
+          ? getCommunitiesForDistrict(selectedDistrict)
+          : getCommunitiesForRegion(formData.region || agent?.region);
+
+        return (
+          <Card className="rounded-[32px] border-none shadow-2xl bg-white overflow-hidden animate-fade-in">
+            <div className="h-1.5 w-full bg-[#7EDE56]" />
+            <CardContent className="p-8 md:p-10 space-y-10">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-2xl bg-[#7EDE56]/10 flex items-center justify-center text-[#002f37]">
+                  <MapPin className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black font-montserrat text-[#002F37] uppercase tracking-tight">Field Location</h3>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] mt-1">Region, district & community mapping</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Assigned Region</Label>
+                  <Select
+                    value={getRegionKey(formData.region || agent?.region)}
+                    onValueChange={(val) => {
+                      setFormData({ ...formData, region: val });
+                      setSelectedDistrict('');
+                      setSelectedCommunity('');
+                      setCustomCommunity('');
+                    }}
+                  >
+                    <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-100 font-semibold text-[13px]">
+                      <SelectValue placeholder="Select region" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-none shadow-2xl max-h-64">
+                      {regionOptions.map((r) => (
+                        <SelectItem key={r} value={r} className="text-xs font-bold uppercase">{r.replace(/\s+Region$/i, '')}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">District</Label>
+                  <Select value={selectedDistrict} onValueChange={(val) => { setSelectedDistrict(val); setSelectedCommunity(''); setCustomCommunity(''); }}>
+                    <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-100 font-semibold text-[13px]">
+                      <SelectValue placeholder="Select district" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-none shadow-2xl max-h-64">
+                      {districtOptions.map((d) => (
+                        <SelectItem key={d} value={d} className="text-xs font-bold">{d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5 md:col-span-2">
+                  <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Community</Label>
+                  <Select value={selectedCommunity} onValueChange={setSelectedCommunity}>
+                    <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-100 font-semibold text-[13px]">
+                      <SelectValue placeholder="Select community" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-none shadow-2xl max-h-64">
+                      {communityOptions.map((c) => (
+                        <SelectItem key={c} value={c} className="text-xs font-bold">{c}</SelectItem>
+                      ))}
+                      <SelectItem value={OTHER_COMMUNITY_OPTION} className="text-xs font-bold text-[#065f46]">{OTHER_COMMUNITY_OPTION}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {selectedCommunity === OTHER_COMMUNITY_OPTION && (
+                  <div className="space-y-1.5 md:col-span-2">
+                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Specify Community</Label>
+                    <Input
+                      value={customCommunity}
+                      onChange={(e) => setCustomCommunity(e.target.value)}
+                      placeholder="Enter your community name"
+                      className="h-11 rounded-xl bg-gray-50 border-gray-100 font-semibold text-[13px]"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {agent?.districts && agent.districts.length > 0 && (
+                <div className="space-y-2 pt-4 border-t border-gray-50">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Operational communities (assigned)</p>
+                  <div className="flex flex-wrap gap-2">
+                    {agent.districts.map((c: string) => (
+                      <Badge key={c} className="bg-[#7EDE56]/15 text-[#002f37] border-none font-black text-[9px] uppercase">{c}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-50">
+                <Button variant="ghost" className="h-14 px-8 rounded-2xl font-black text-[13px] text-gray-400" onClick={() => setActivePanel('home')}>BACK</Button>
+                <Button className="h-14 px-10 rounded-2xl bg-[#002f37] hover:bg-[#002f37]/90 text-white font-black text-[13px]" onClick={handleUpdateProfile} disabled={saving}>
+                  {saving ? 'SAVING...' : 'SAVE LOCATION'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      }
 
       case 'work-details':
         return (

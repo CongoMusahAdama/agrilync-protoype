@@ -493,7 +493,7 @@ exports.createUser = async (req, res) => {
             status: 'active',
             hasChangedPassword: false,
             enableMultipleLogin: enableMultipleLogin || false,
-            avatar: avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
+            avatar: avatar?.trim() || ''
         });
 
         // Password hashing is handled in pre-save middleware
@@ -697,7 +697,7 @@ exports.getUsersList = async (req, res) => {
             passwordChanged: u.hasChangedPassword ? 'Yes' : 'No',
             disabled: (u.status === 'inactive' || u.status === 'suspended') ? 'Yes' : 'No',
             staffAccountNumber: u.agentId,
-            avatar: u.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+            avatar: u.avatar || '',
             enableMultipleLogin: false,
             authorised: true
         }));
@@ -854,7 +854,7 @@ exports.createUser = async (req, res) => {
                 role === 'super_admin' || role === 'Super Admin' || role === 'supervisor' || role === 'Supervisor'
                     ? true
                     : Boolean(enableMultipleLogin),
-            avatar: avatar || '/lovable-uploads/profile.png'
+            avatar: avatar?.trim() || ''
         });
 
         await user.save();
@@ -924,8 +924,8 @@ exports.updateUser = async (req, res) => {
             user.enableMultipleLogin = true;
         }
 
-        if (avatar) {
-            user.avatar = avatar;
+        if (avatar !== undefined) {
+            user.avatar = avatar?.trim() || '';
         }
 
         if (resetSession) {

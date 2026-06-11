@@ -36,7 +36,7 @@ exports.getProfile = async (req, res) => {
 // @route   PUT api/agents/profile
 // @desc    Update agent profile
 exports.updateProfile = async (req, res) => {
-    const { name, contact, region, district, bio, avatar, gender, dob, email, fcmToken } = req.body;
+    const { name, contact, region, district, community, bio, avatar, gender, dob, email, fcmToken } = req.body;
 
     // Build profile object
     const profileFields = {};
@@ -44,6 +44,7 @@ exports.updateProfile = async (req, res) => {
     if (contact) profileFields.contact = contact;
     if (region) profileFields.region = region;
     if (district) profileFields.district = district;
+    if (community) profileFields.community = community;
     if (bio) profileFields.bio = bio;
     if (avatar) profileFields.avatar = avatar;
     if (gender) profileFields.gender = gender;

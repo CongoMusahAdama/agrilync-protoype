@@ -211,3 +211,42 @@ export const getRegionKey = (region: string | undefined): string => {
     const matchedKey = Object.keys(GHANA_REGIONS).find(k => k.toLowerCase().includes(region.toLowerCase()));
     return matchedKey || "Ashanti Region";
 };
+
+export const OTHER_COMMUNITY_OPTION = 'Other (Specify)';
+
+/** Fallback towns for regions not yet mapped to full district/community data */
+const REGION_COMMUNITY_FALLBACK: Record<string, string[]> = {
+    'Upper East Region': ['Bolgatanga', 'Navrongo', 'Bawku', 'Paga', 'Sandema', 'Garu'],
+    'Greater Accra Region': ['Accra', 'Tema', 'Madina', 'Ashaiman', 'Kasoa'],
+};
+
+export const getDistrictsForRegion = (region: string | undefined): string[] => {
+    const key = getRegionKey(region);
+    return GHANA_REGIONS[key] || [];
+};
+
+export const getCommunitiesForDistrict = (district: string | undefined): string[] => {
+    if (!district) return [];
+    return (GHANA_COMMUNITIES[district] || []).filter((c) => c !== OTHER_COMMUNITY_OPTION);
+};
+
+/** All communities across every district in a region (e.g. full Bono Ahafo list) */
+export const getCommunitiesForRegion = (region: string | undefined): string[] => {
+    const key = getRegionKey(region);
+    const districts = GHANA_REGIONS[key];
+
+    if (districts?.length) {
+        const set = new Set<string>();
+        for (const district of districts) {
+            getCommunitiesForDistrict(district).forEach((c) => set.add(c));
+        }
+        return Array.from(set).sort((a, b) => a.localeCompare(b));
+    }
+
+    return (REGION_COMMUNITY_FALLBACK[key] || REGION_COMMUNITY_FALLBACK[region || ''] || []).slice();
+};
+
+export const getLanguagesForRegion = (region: string | undefined): string[] => {
+    const key = getRegionKey(region);
+    return GHANA_LANGUAGES[key] || GHANA_LANGUAGES[region || ''] || ['English', 'Twi'];
+};
