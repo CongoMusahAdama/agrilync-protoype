@@ -2,11 +2,22 @@
 export const BONO_AHAFO_REGION = 'Bono Ahafo Region';
 export const BONO_AHAFO_LABEL = 'Bono Ahafo';
 
+/** Ahafo operational region — Asunafo North field office */
+export const ASUNAFO_NORTH_AHAFO_REGION = 'Asunafo North Ahafo Region';
+export const ASUNAFO_NORTH_AHAFO_LABEL = 'Asunafo North Ahafo';
+
 const LEGACY_BONO_REGION_NAMES = new Set([
     'Bono',
     'Bono Region',
     BONO_AHAFO_LABEL,
     BONO_AHAFO_REGION,
+]);
+
+const LEGACY_AHAFO_REGION_NAMES = new Set([
+    'Ahafo',
+    'Ahafo Region',
+    ASUNAFO_NORTH_AHAFO_LABEL,
+    ASUNAFO_NORTH_AHAFO_REGION,
 ]);
 
 export const GHANA_REGIONS: Record<string, string[]> = {
@@ -54,8 +65,74 @@ export const GHANA_REGIONS: Record<string, string[]> = {
         "Banda", "Berekum East Municipal", "Berekum West", "Dormaa Central Municipal", "Dormaa East",
         "Dormaa West", "Jaman North", "Jaman South Municipal", "Sunyani Municipal", "Sunyani West",
         "Tain", "Wenchi Municipal"
-    ]
+    ],
+    [ASUNAFO_NORTH_AHAFO_REGION]: [
+        "Asunafo North Municipal",
+        "Asunafo South Municipal",
+        "Asutifi North",
+        "Asutifi South",
+        "Tano North Municipal",
+        "Tano South Municipal",
+    ],
 };
+
+/** All region keys that have district/community data in GHANA_REGIONS */
+export const ALL_GHANA_REGION_KEYS = Object.keys(GHANA_REGIONS);
+
+/** Short labels for signup / switcher dropdowns */
+export const GHANA_REGION_SIGNUP_LABELS: Record<string, string> = {
+    'Ashanti Region': 'Ashanti',
+    'Eastern Region': 'Eastern',
+    'Northern Region': 'Northern',
+    'Western Region': 'Western',
+    'Volta Region': 'Volta',
+    'Central Region': 'Central',
+    [BONO_AHAFO_REGION]: BONO_AHAFO_LABEL,
+    [ASUNAFO_NORTH_AHAFO_REGION]: ASUNAFO_NORTH_AHAFO_LABEL,
+    'Greater Accra Region': 'Greater Accra',
+    'Upper East Region': 'Upper East',
+    'Upper West Region': 'Upper West',
+    'Western North Region': 'Western North',
+    'Bono East Region': 'Bono East',
+    'Oti Region': 'Oti',
+    'Savannah Region': 'Savannah',
+    'North East Region': 'North East',
+};
+
+/** Farmer / grower signup — all selectable regions */
+export const SIGNUP_REGION_OPTIONS = [
+    'Ashanti Region',
+    'Eastern Region',
+    'Northern Region',
+    'Western Region',
+    'Volta Region',
+    'Central Region',
+    BONO_AHAFO_REGION,
+    ASUNAFO_NORTH_AHAFO_REGION,
+    'Greater Accra Region',
+    'Upper East Region',
+    'Upper West Region',
+    'Western North Region',
+    'Bono East Region',
+    'Oti Region',
+    'Savannah Region',
+    'North East Region',
+];
+
+/** Agent login / region verification picker */
+export const OPERATIONAL_REGION_OPTIONS = [
+    { value: 'Ashanti Region', label: 'Ashanti', desc: 'Central Agricultural Hub' },
+    { value: 'Greater Accra Region', label: 'Greater Accra', desc: 'Capital Command Center' },
+    { value: 'Eastern Region', label: 'Eastern', desc: 'Resource & Field Operations' },
+    { value: 'Northern Region', label: 'Northern', desc: 'Savannah Data Terminal' },
+    { value: 'Western Region', label: 'Western', desc: 'Coastal Supply Management' },
+    { value: 'Volta Region', label: 'Volta', desc: 'Lakeside Monitoring Zone' },
+    { value: 'Central Region', label: 'Central', desc: 'Regional Logistics Center' },
+    { value: BONO_AHAFO_REGION, label: BONO_AHAFO_LABEL, desc: 'Bono & Ahafo Field Office' },
+    { value: ASUNAFO_NORTH_AHAFO_REGION, label: ASUNAFO_NORTH_AHAFO_LABEL, desc: 'Asunafo North — Ahafo Field Office' },
+    { value: 'Upper East Region', label: 'Upper East', desc: 'Arid Zone Cultivation' },
+    { value: 'Upper West Region', label: 'Upper West', desc: 'Savannah Perimeter' },
+];
 
 export const GHANA_LANGUAGES: Record<string, string[]> = {
     "Ashanti Region": ["Twi", "English", "Hausa"],
@@ -65,11 +142,11 @@ export const GHANA_LANGUAGES: Record<string, string[]> = {
     "Central Region": ["Fante", "Twi", "English"],
     "Western Region": ["Fante", "Nzema", "Wassa", "English", "Twi"],
     [BONO_AHAFO_REGION]: ["Bono", "Twi", "English"],
+    [ASUNAFO_NORTH_AHAFO_REGION]: ["Bono", "Twi", "English"],
     "Greater Accra": ["Ga", "Twi", "English", "Ewe", "Dangme"],
     "Upper East": ["Gurune (Frafra)", "Kusaal", "English", "Hausa"],
     "Upper West": ["Dagaare", "Waala", "English", "Hausa"],
     "Western North": ["Sefwi", "English", "Twi"],
-    "Ahafo": ["Bono", "Twi", "English"],
     "Bono East": ["Bono", "Twi", "English"],
     "Oti": ["Ewe", "Adele", "Nchumuru", "English"],
     "Savannah": ["Gonja", "English", "Twi"],
@@ -183,13 +260,22 @@ export const GHANA_COMMUNITIES: Record<string, string[]> = {
     "Sunyani Municipal": ["Sunyani", "Abesim", "New Dormaa", "Other (Specify)"],
     "Sunyani West": ["Odumase", "Chiraa", "Fiapre", "Other (Specify)"],
     "Tain": ["Nsawkaw", "Debibi", "Seikwa", "Other (Specify)"],
-    "Wenchi Municipal": ["Wenchi", "Subinso", "Tromeso", "Other (Specify)"]
+    "Wenchi Municipal": ["Wenchi", "Subinso", "Tromeso", "Other (Specify)"],
+
+    // Asunafo North Ahafo Region
+    "Asunafo North Municipal": ["Goaso", "Mim", "Kenyasi", "Sankore", "Atom", "Ayomso", "Other (Specify)"],
+    "Asunafo South Municipal": ["Kukuom", "Hwidiem", "Abuom", "Other (Specify)"],
+    "Asutifi North": ["Kenyasi", "Ntotroso", "Gyedu", "Other (Specify)"],
+    "Asutifi South": ["Hwidiem", "Acherensua", "Other (Specify)"],
+    "Tano North Municipal": ["Duayaw Nkwanta", "Yamfo", "Other (Specify)"],
+    "Tano South Municipal": ["Bechem", "Terchire", "Other (Specify)"],
 };
 
 /** Compare region names across legacy Bono / Bono Ahafo labels */
 export const normalizeOperationalRegion = (region: string | undefined): string => {
     if (!region) return '';
     if (LEGACY_BONO_REGION_NAMES.has(region)) return BONO_AHAFO_LABEL.toLowerCase();
+    if (LEGACY_AHAFO_REGION_NAMES.has(region)) return ASUNAFO_NORTH_AHAFO_LABEL.toLowerCase();
     return region.toLowerCase().replace(/\s+region$/i, '').trim();
 };
 
@@ -202,13 +288,18 @@ export const regionsMatch = (a: string | undefined, b: string | undefined): bool
 export const getRegionKey = (region: string | undefined): string => {
     if (!region) return "Ashanti Region";
     if (LEGACY_BONO_REGION_NAMES.has(region)) return BONO_AHAFO_REGION;
+    if (LEGACY_AHAFO_REGION_NAMES.has(region)) return ASUNAFO_NORTH_AHAFO_REGION;
     if (GHANA_REGIONS[region]) return region;
 
     const withSuffix = `${region} Region`;
     if (LEGACY_BONO_REGION_NAMES.has(withSuffix)) return BONO_AHAFO_REGION;
+    if (LEGACY_AHAFO_REGION_NAMES.has(withSuffix)) return ASUNAFO_NORTH_AHAFO_REGION;
     if (GHANA_REGIONS[withSuffix]) return withSuffix;
 
-    const matchedKey = Object.keys(GHANA_REGIONS).find(k => k.toLowerCase().includes(region.toLowerCase()));
+    const lower = region.toLowerCase();
+    if (lower.includes('asunafo') || lower.includes('ahafo')) return ASUNAFO_NORTH_AHAFO_REGION;
+
+    const matchedKey = Object.keys(GHANA_REGIONS).find(k => k.toLowerCase().includes(lower));
     return matchedKey || "Ashanti Region";
 };
 

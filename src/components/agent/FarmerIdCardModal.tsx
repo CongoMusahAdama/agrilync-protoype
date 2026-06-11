@@ -159,9 +159,9 @@ const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({ open, onOpenChang
                             <span className="text-xs font-black text-[#002f37] truncate block">{farmer.community || 'Central Hub'}</span>
                         </div>
                         <div className="space-y-1">
-                            <span className="text-[7px] font-black text-gray-400 uppercase tracking-widest block">Auth Index</span>
-                            <span className="text-xs font-black text-[#002f37] font-mono tracking-widest">
-                                {String(farmer.id || farmer.ghanaCardNumber).slice(-4)}
+                            <span className="text-[7px] font-black text-gray-400 uppercase tracking-widest block">Field Agent</span>
+                            <span className="text-xs font-black text-[#002f37] font-mono tracking-tighter truncate block">
+                                {farmer.onboardingAgentId || '—'}
                             </span>
                         </div>
                     </div>

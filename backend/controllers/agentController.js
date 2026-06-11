@@ -20,10 +20,8 @@ exports.getProfile = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Agent not found' });
         }
 
-        // Prototype Access Grant: Ensure agent has access to Bono Ahafo for testing
-        const bonoAhafo = 'Bono Ahafo';
-        if (!agent.assignedRegions || !agent.assignedRegions.some((r) => ['Bono', 'Bono Ahafo', 'Bono Ahafo Region'].includes(r))) {
-            agent.assignedRegions = ['Ashanti', bonoAhafo, 'Northern', 'Upper East'];
+        if (!agent.assignedRegions?.length && agent.region) {
+            agent.assignedRegions = [agent.region];
         }
 
         res.json(agent);
@@ -172,165 +170,131 @@ exports.updatePassword = async (req, res) => {
 exports.getPerformance = async (req, res) => {
     try {
         const agentId = req.agent._id || req.agent.id;
-
-        // DEV BYPASS: If using mock user, return HIGH FIDELITY simulated data
-        if (req.agent && req.agent.isMock) {
-            const { PERFORMANCE_TARGETS } = require('../config/constants');
-            const now = new Date();
-            const months = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
-            
-            // Simulated dynamic trend data for mock chart scannability
-            const trend = months.map((m, i) => ({
-                month: m,
-                value: 65 + Math.floor(Math.random() * 25)
-            }));
-
-            return res.json({
-                success: true,
-                agent: {
-                    name: req.agent.name,
-                    agentId: req.agent.agentId,
-                    region: req.agent.region,
-                    avatar: req.agent.avatar,
-                    title: req.agent.title || 'Elite Field Agent',
-                    stats: req.agent.stats,
-                },
-                summary: { kpisOnTarget: 4, totalKpis: 6, totalFarmers: 312, needsAttention: 15 },
-                kpis: [
-                    { label: 'Onboarding Volume', value: '412', unit: 'farmers', target: String(PERFORMANCE_TARGETS.ONBOARDING_VOLUME), progress: 82, status: 'On Track' },
-                    { label: 'Onboarding Completion Rate', value: '94', unit: '%', target: `\u2265${PERFORMANCE_TARGETS.COMPLETION_RATE}%`, progress: 94, status: 'On Track' },
-                    { label: 'Verification Pass Rate', value: '88', unit: '%', target: `\u2265${PERFORMANCE_TARGETS.VERIFICATION_PASS_RATE}%`, progress: 88, status: 'On Track' },
-                    { label: 'Monitoring Visit Frequency', value: '1.8', unit: 'visits/mo', target: `min. ${PERFORMANCE_TARGETS.VISIT_FREQUENCY}`, progress: 90, status: 'In Progress' },
-                    { label: 'Data Sync Timeliness', value: '97', unit: '%', target: `\u2265${PERFORMANCE_TARGETS.SYNC_RATE}%`, progress: 97, status: 'On Track' },
-                    { label: 'Harvest Yield Documentation', value: '284', unit: 'farms', target: '312', progress: 91, status: 'On Track' },
-                ],
-                trend,
-                visitLog: [
-                    { farmer: 'Kofi Mensah', farm: 'Cassava #4', region: 'Bono East', last: '27 Mar', visits: '2/2', sync: 'Synced', status: 'On Track', color: 'green' },
-                    { farmer: 'Ama Serwaa', farm: 'Maize North', region: 'Savannah', last: '26 Mar', visits: '1/2', sync: 'Synced', status: 'At Risk', color: 'amber' },
-                    { farmer: 'Samuel Osei', farm: 'Rice South', region: 'Oti', last: '25 Mar', visits: '0/2', sync: 'Pending', status: 'Off Track', color: 'red' },
-                ],
-                portfolio: { onTrack: 284, atRisk: 24, offTrack: 4, total: 312 },
-                trainingModules: [
-                    { title: 'Financial Literacy', count: '312/312', perc: '100%', color: 'var(--lgreen)', tag: 'Required' },
-                    { title: 'Farm Planning & GAP', count: '298/312', perc: '95%', color: 'var(--teal)', tag: 'Required' },
-                ],
-                seasonOutcomes: {
-                   yieldEst: '1.4k',
-                   repaymentRate: '98.2%',
-                   capitalDeployed: '$245k',
-                   partnerKpiMet: '14/15'
-                },
-                activeAlerts: [
-                    { id: 1, type: 'Pest Stress', message: '8 Farms in Rice North showing pest stress', color: 'rose' },
-                    { id: 2, type: 'Financial Lag', message: 'Repayment lag in Cassava Cluster #4', color: 'amber' }
-                ]
-            });
-        }
+        const range = ['month', 'season', 'all'].includes(req.query.range) ? req.query.range : 'month';
 
         let agent;
-
-        if (req.agent && req.agent.isMock) {
+        if (req.agent?.isMock) {
             agent = req.agent;
         } else {
             agent = await Agent.findById(agentId).select('-password').lean();
             if (!agent) return res.status(404).json({ success: false, message: 'Agent not found' });
         }
 
-        // ── Load models lazily to avoid circular deps ──────────────────────
-        let FieldVisit, Training, Report;
-        try { FieldVisit = require('../models/FieldVisit'); } catch (e) { FieldVisit = null; }
-        try { Training = require('../models/Training'); } catch (e) { Training = null; }
-        try { Report = require('../models/Report'); } catch (e) { Report = null; }
-
-        // ── Farmers ──────────────────────────────────────────────────────────
-        const allFarmers = await Farmer.find({ agent: agentId }).lean();
-        const totalFarmers = allFarmers.length;
-        const activeFarmers = allFarmers.filter(f => f.status === 'active').length;
-        const verifiedFarmers = allFarmers.filter(f => f.status === 'verified' || f.status === 'active').length; 
-
-         // KPI calculations moved to service below
-
-
-
-
-
-        // ── Field Visits this month ─────────────────────────────────────────
         const now = new Date();
+        const rangeStart = range === 'month'
+            ? new Date(now.getFullYear(), now.getMonth(), 1)
+            : range === 'season'
+                ? new Date(now.getFullYear(), now.getMonth() - 5, 1)
+                : new Date(2000, 0, 1);
+
+        const FieldVisit = require('../models/FieldVisit');
+        const Report = require('../models/Report');
+        const Match = require('../models/Match');
+
+        const allFarmers = await Farmer.find({ agent: agentId }).lean();
+        const scopedFarmers = allFarmers.filter((f) => new Date(f.createdAt) >= rangeStart);
+        const totalFarmers = scopedFarmers.length;
+        const activeFarmers = scopedFarmers.filter((f) => f.status === 'active').length;
+        const verifiedFarmers = scopedFarmers.filter((f) => f.status === 'active' || f.verificationConfirmed).length;
+
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const visitsThisMonth = await FieldVisit.find({
+            agent: agentId,
+            date: { $gte: monthStart },
+        }).populate('farmer', 'name region farmType status').lean();
 
-        let visitsThisMonth = [];
-        let visitLog = [];
-        if (FieldVisit) {
-            visitsThisMonth = await FieldVisit.find({
-                agent: agentId,
-                createdAt: { $gte: monthStart }
-            }).populate('farmer', 'name region farmType status').lean();
-
-            visitLog = visitsThisMonth.slice(0, 20).map(v => ({
-                farmer: v.farmer?.name || 'Unknown',
-                farm: v.farmName || (v.farmer?.farmType ? `${v.farmer.farmType} Farm` : 'Unknown Farm'),
-                region: v.farmer?.region || v.region || '—',
-                last: v.createdAt ? new Date(v.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '—',
-                visits: '1/2',
-                sync: v.synced !== false ? 'Synced' : 'Pending',
-                status: v.farmer?.status === 'active' ? 'On Track' : 'At Risk',
-                color: v.farmer?.status === 'active' ? 'green' : 'amber'
-            }));
-        }
-
-        // Visit frequency: avg visits/farmer this month
-        const avgVisitsPerFarmer = totalFarmers > 0
-            ? parseFloat((visitsThisMonth.length / totalFarmers).toFixed(1))
+        const avgVisitsPerFarmer = allFarmers.length > 0
+            ? parseFloat((visitsThisMonth.length / allFarmers.length).toFixed(1))
             : 0;
-        const visitFreqProgress = Math.min(Math.round((avgVisitsPerFarmer / 2) * 100), 100);
 
-        // ── Data Sync Timeliness ─────────────────────────────────────────────
-        let syncedReports = 0, totalReports = 0;
-        if (Report) {
-            totalReports = await Report.countDocuments({ agent: agentId });
-            syncedReports = await Report.countDocuments({ agent: agentId, synced: true });
-        }
-        const syncRate = totalReports > 0 ? Math.round((syncedReports / totalReports) * 100) : 0;
+        const totalReports = await Report.countDocuments({ agent: agentId, createdAt: { $gte: rangeStart } });
+        const reviewedReports = await Report.countDocuments({ agent: agentId, status: 'reviewed', createdAt: { $gte: rangeStart } });
+        const syncRate = totalReports > 0 ? Math.round((reviewedReports / totalReports) * 100) : (allFarmers.length ? 100 : 0);
 
-        // ── Training ─────────────────────────────────────────────────────────
-        let trainingModules = [];
-        if (Training) {
-            const trainings = await Training.find({ agent: agentId }).lean();
-            const completed = trainings.filter(t => t.status === 'completed').length;
-            const registered = trainings.filter(t => ['registered', 'upcoming'].includes(t.status)).length;
-            trainingModules = [
-                { title: 'Financial Literacy', count: `${completed}/${trainings.length}`, perc: trainings.length ? `${Math.round(completed / trainings.length * 100)}%` : '0%' },
-                { title: 'Farm Planning & GAP', count: `${registered}/${trainings.length}`, perc: trainings.length ? `${Math.round(registered / trainings.length * 100)}%` : '0%' },
-            ];
-        }
+        const profileComplete = allFarmers.filter((f) => f.idCardFront && f.idCardBack && f.farmLocation?.lat).length;
+        const profileSyncRate = allFarmers.length ? Math.round((profileComplete / allFarmers.length) * 100) : 0;
+        const effectiveSyncRate = Math.max(syncRate, profileSyncRate);
 
-        // ── Trend calculation via optimized service ───────────────────────
-        const trend = await performanceService.calculateOnboardingTrend(agentId);
+        const femaleCount = scopedFarmers.filter((f) => f.gender?.toLowerCase() === 'female').length;
+        const maleCount = scopedFarmers.filter((f) => f.gender?.toLowerCase() === 'male').length;
 
-        // ── Portfolio health split ────────────────────────────────────────────
-        const onTrack = allFarmers.filter(f => f.status === 'active').length;
-        const atRisk = allFarmers.filter(f => f.status === 'pending').length;
-        const offTrack = allFarmers.filter(f => f.status === 'inactive').length;
-
-        const femaleCount = allFarmers.filter(f => f.gender?.toLowerCase() === 'female').length;
-        const maleCount = allFarmers.filter(f => f.gender?.toLowerCase() === 'male').length;
-
-        // ── KPI scorecard via service ───────────────────────────────────────
         const kpis = performanceService.calculateKpis({
-            totalFarmers,
-            activeFarmers,
-            verifiedFarmers,
+            totalFarmers: range === 'all' ? allFarmers.length : totalFarmers,
+            activeFarmers: range === 'all' ? allFarmers.filter((f) => f.status === 'active').length : activeFarmers,
+            verifiedFarmers: range === 'all'
+                ? allFarmers.filter((f) => f.status === 'active' || f.verificationConfirmed).length
+                : verifiedFarmers,
             avgVisitsPerFarmer,
-            syncRate,
-            femaleCount,
-            maleCount
+            syncRate: effectiveSyncRate,
+            femaleCount: range === 'all'
+                ? allFarmers.filter((f) => f.gender?.toLowerCase() === 'female').length
+                : femaleCount,
+            maleCount: range === 'all'
+                ? allFarmers.filter((f) => f.gender?.toLowerCase() === 'male').length
+                : maleCount,
         });
 
-        const kpisOnTarget = kpis.filter(k => k.status === 'On Track').length;
+        const overallScore = performanceService.calculateOverallScore(kpis);
+        const trend = await performanceService.calculateOnboardingTrend(agentId);
+        const metricTrends = await performanceService.calculateMetricTrends(agentId, allFarmers.length);
+        const visitLog = performanceService.buildVisitLog(allFarmers, visitsThisMonth);
+        const trainingModules = performanceService.calculateTrainingDeliveryProgress(allFarmers);
+        const compliance = performanceService.calculateCompliance(allFarmers, effectiveSyncRate);
+        const verification = performanceService.calculateVerificationStats(allFarmers);
+
+        const farmersWithTraining = allFarmers.filter((f) => (f.trainingModules || []).length >= 3).length;
+        const trainingRate = allFarmers.length ? Math.round((farmersWithTraining / allFarmers.length) * 100) : 0;
+        const mediaVerified = effectiveSyncRate >= 95 && profileComplete === allFarmers.length && allFarmers.length > 0;
+        const incentives = performanceService.calculateIncentives({
+            totalFarmers: allFarmers.length,
+            trainingRate,
+            syncRate: effectiveSyncRate,
+            mediaVerified,
+        });
+
+        const onTrack = allFarmers.filter((f) => f.status === 'active').length;
+        const atRisk = allFarmers.filter((f) => f.status === 'pending').length;
+        const offTrack = allFarmers.filter((f) => f.status === 'inactive').length;
+        const pendingSync = allFarmers.filter((f) => f.status === 'pending' || !(f.idCardFront && f.idCardBack) || !f.farmLocation?.lat).length;
+
+        let matches = [];
+        try {
+            matches = await Match.find({ agent: agentId }).lean();
+        } catch {
+            matches = [];
+        }
+        const activeMatches = matches.filter((m) => m.status === 'Active' || m.approvalStatus === 'approved').length;
+        const capitalTotal = matches.reduce((sum, m) => {
+            const num = parseFloat(String(m.value || '0').replace(/[^0-9.]/g, ''));
+            return sum + (Number.isFinite(num) ? num : 0);
+        }, 0);
+
+        const activeAlerts = allFarmers
+            .filter((f) => f.status === 'pending' || f.status === 'inactive')
+            .slice(0, 5)
+            .map((f, i) => ({
+                id: f._id?.toString() || i,
+                type: f.status === 'pending' ? 'Verification' : 'Inactive',
+                message: `${f.name} (${f.community || f.region}) requires follow-up`,
+                color: f.status === 'pending' ? 'amber' : 'rose',
+            }));
+
+        let supervisor = null;
+        const supervisorAgent = await Agent.findOne({ role: 'supervisor', region: agent.region }).select('name').lean();
+        if (supervisorAgent) {
+            const initials = supervisorAgent.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+            supervisor = {
+                initials,
+                name: supervisorAgent.name,
+                rating: 0,
+                comment: '',
+                nextReview: 'Awaiting Schedule',
+            };
+        }
 
         res.json({
             success: true,
+            range,
             agent: {
                 name: agent.name,
                 agentId: agent.agentId,
@@ -340,23 +304,32 @@ exports.getPerformance = async (req, res) => {
                 stats: agent.stats,
             },
             summary: {
-                kpisOnTarget,
+                kpisOnTarget: kpis.filter((k) => k.status === 'On Track').length,
                 totalKpis: kpis.length,
-                totalFarmers,
+                totalFarmers: allFarmers.length,
                 needsAttention: offTrack + atRisk,
             },
+            overallScore,
+            pendingSync,
             kpis,
             trend,
+            metricTrends,
             visitLog,
-            portfolio: { onTrack, atRisk, offTrack, total: totalFarmers },
+            portfolio: { onTrack, atRisk, offTrack, total: allFarmers.length },
             trainingModules,
+            compliance,
+            verification,
+            incentives,
+            supervisor,
             seasonOutcomes: {
-                yieldEst: '0.0', // Standardized fallback for real data
-                repaymentRate: '0%',
-                capitalDeployed: '$0',
-                partnerKpiMet: '0/0'
+                yieldEst: '0.0',
+                repaymentRate: activeMatches > 0 && allFarmers.length > 0
+                    ? `${Math.round((activeMatches / allFarmers.length) * 100)}%`
+                    : '0%',
+                capitalDeployed: matches.length ? `GH¢${capitalTotal.toLocaleString()}` : 'GH¢0',
+                partnerKpiMet: `${activeMatches}/${matches.length || 0}`,
             },
-            activeAlerts: [] // Real alert engine integration point
+            activeAlerts,
         });
     } catch (err) {
         console.error('getPerformance Critical Error:', err);

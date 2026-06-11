@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import ProfileImageCropDialog from '@/components/ProfileImageCropDialog';
 import AgentLayout from './AgentLayout';
 import Swal from 'sweetalert2';
 import api from '@/utils/api';
@@ -96,6 +97,8 @@ const AgentProfile: React.FC = () => {
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedCommunity, setSelectedCommunity] = useState('');
   const [customCommunity, setCustomCommunity] = useState('');
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
 
   useEffect(() => {
     if (agent) {
@@ -219,13 +222,14 @@ const AgentProfile: React.FC = () => {
           ? customCommunity.trim()
           : selectedCommunity;
 
-      await api.put('/agents/profile', {
+      const updated = await updateAgent({
         name: formData.name,
         contact: formData.contact,
-        region: formData.region,
+        region: getRegionKey(formData.region || agent?.region),
         district: selectedDistrict || finalCommunity,
         community: finalCommunity,
       });
+      if (updated) setFormData(updated);
       playSuccessSound();
       Swal.fire({
         icon: 'success',
@@ -250,43 +254,48 @@ const AgentProfile: React.FC = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = '';
 
-    if (file.size > 2 * 1024 * 1024) {
+    if (file.size > 5 * 1024 * 1024) {
       return Swal.fire({
         icon: 'warning',
         title: 'File Too Large',
-        text: 'Profile images must be under 2MB for optimal performance.',
+        text: 'Profile images must be under 5MB.',
         confirmButtonColor: '#065f46'
       });
     }
 
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onloadend = async () => {
-      const base64data = reader.result as string;
-      setSaving(true);
-      try {
-        await updateAgent({ avatar: base64data });
-        playSuccessSound();
-        await Swal.fire({
-          icon: 'success',
-          title: 'Identity Updated',
-          text: 'Your profile picture has been refreshed.',
-          confirmButtonColor: '#065f46',
-          timer: 2000,
-          timerProgressBar: true
-        });
-      } catch (err) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Upload Failed',
-          text: 'Could not update your profile picture. Please try again.',
-          confirmButtonColor: '#065f46'
-        });
-      } finally {
-        setSaving(false);
-      }
+    reader.onloadend = () => {
+      setCropImageSrc(reader.result as string);
+      setCropDialogOpen(true);
     };
+  };
+
+  const handleCroppedAvatar = async (base64data: string) => {
+    setSaving(true);
+    try {
+      await updateAgent({ avatar: base64data });
+      playSuccessSound();
+      await Swal.fire({
+        icon: 'success',
+        title: 'Identity Updated',
+        text: 'Your profile picture has been refreshed.',
+        confirmButtonColor: '#065f46',
+        timer: 2000,
+        timerProgressBar: true
+      });
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Upload Failed',
+        text: 'Could not update your profile picture. Please try again.',
+        confirmButtonColor: '#065f46'
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleUpdateSettings = async (prefs: any, type: 'notification' | 'app') => {
@@ -410,9 +419,9 @@ const AgentProfile: React.FC = () => {
               </div>
               <div className="relative z-10 flex flex-col items-center md:items-start md:flex-row gap-8">
                 <div className="relative group">
-                  <div className="h-24 w-24 rounded-[32px] border-4 border-white/20 overflow-hidden bg-white/10 flex items-center justify-center shadow-2xl backdrop-blur-md">
+                  <div className="h-24 w-24 rounded-full border-4 border-white/20 overflow-hidden bg-[#004d4d] flex items-center justify-center shadow-2xl">
                     {agent?.avatar ? (
-                      <img src={agent.avatar} alt={agent.name} className="w-full h-full object-cover" />
+                      <img src={agent.avatar} alt={agent.name} className="w-full h-full object-cover object-center" />
                     ) : (
                       <span className="text-4xl font-black font-montserrat text-white/40">
                         {agent?.name?.split(' ').map((n:any) => n[0]).join('') || 'AG'}
@@ -870,7 +879,7 @@ const AgentProfile: React.FC = () => {
           <div className="w-[300px] shrink-0 space-y-8">
             <div className="bg-white rounded-[2.5rem] p-8 shadow-xl text-center space-y-4 border-b-[6px] border-[#002f37]">
                <div className="h-24 w-24 rounded-full mx-auto border-4 border-gray-50 overflow-hidden">
-                 {agent?.avatar ? <img src={agent.avatar} className="w-full h-full object-cover" /> : <User className="w-full h-full p-6 text-gray-200" />}
+                 {agent?.avatar ? <img src={agent.avatar} className="w-full h-full object-cover object-center" alt="" /> : <User className="w-full h-full p-6 text-gray-200" />}
                </div>
                <h3 className="font-black font-montserrat text-[#002f37] uppercase tracking-tight">{agent?.name}</h3>
                <Badge className="bg-gray-100 text-gray-500 border-none font-black text-[9px] font-inter">{agent?.agentId}</Badge>
@@ -919,6 +928,13 @@ const AgentProfile: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ProfileImageCropDialog
+        open={cropDialogOpen}
+        imageSrc={cropImageSrc}
+        onOpenChange={setCropDialogOpen}
+        onCropComplete={handleCroppedAvatar}
+      />
     </AgentLayout>
   );
 };

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { login, changePassword, logout, refreshToken } = require('../controllers/authController');
 const auth = require('../middleware/auth');
+const verifyToken = auth.verifyToken;
 const { loginRules, changePasswordRules, validate } = require('../middleware/validator');
 
 const { setupMFA, verifyMFA, loginVerifyMFA } = require('../controllers/mfaController');
@@ -13,7 +14,8 @@ router.post('/login', loginRules, validate, login);
 router.post('/logout', auth, logout);
 
 // @route   POST api/auth/change-password
-router.post('/change-password', auth, changePasswordRules, validate, changePassword);
+// JWT-only auth avoids DB timeout on first login password change (mobile / cold Render)
+router.post('/change-password', verifyToken, changePasswordRules, validate, changePassword);
 
 // @route   POST api/auth/refresh
 router.post('/refresh', refreshToken);

@@ -101,11 +101,15 @@ app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// Rate Limiting
+// Rate Limiting — dev dashboards poll several endpoints; keep prod protection without blocking local work
+const isDev = process.env.NODE_ENV !== 'production';
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-    message: 'Too many requests from this IP, please try again after 15 minutes'
+    windowMs: 15 * 60 * 1000,
+    max: parseInt(process.env.RATE_LIMIT_MAX || (isDev ? '2000' : '400'), 10),
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: 'Too many requests from this IP, please try again after 15 minutes',
+    skip: () => process.env.RATE_LIMIT_DISABLED === 'true',
 });
 
 // Apply rate limiter to all routes

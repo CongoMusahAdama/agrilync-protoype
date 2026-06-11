@@ -74,6 +74,7 @@ import { format } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/api';
 import Swal from 'sweetalert2';
+import { showValidationAlert } from '@/utils/validationAlert';
 import { useAuth } from '@/contexts/AuthContext';
 import { GHANA_REGIONS, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
 
@@ -391,13 +392,8 @@ const MediaDashboard: React.FC = () => {
       setUploadPreview(null);
       setUploadForm({ name: '', type: 'Photo', farm: '', album: '' });
     },
-    onError: () => {
-       Swal.fire({
-         icon: 'error',
-         title: 'Registry Failed',
-         text: 'Could not upload the asset. Please try again.',
-         confirmButtonColor: '#065f46'
-       });
+    onError: (error) => {
+      showValidationAlert('Upload Failed', error, 'Could not upload the asset. Please try again.');
     }
   });
 
@@ -422,13 +418,8 @@ const MediaDashboard: React.FC = () => {
       setAlbumName('');
       setAlbumDesc('');
     },
-    onError: () => {
-        Swal.fire({
-            icon: 'error',
-            title: 'Operation Failed',
-            text: 'Could not initialize the new album.',
-            confirmButtonColor: '#065f46'
-        });
+    onError: (error) => {
+      showValidationAlert('Album Failed', error, 'Could not create the album. Please try again.');
     }
   });
 
@@ -465,21 +456,11 @@ const MediaDashboard: React.FC = () => {
 
   const handleSubmitUpload = async () => {
     if (!uploadFile) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'File Required',
-            text: 'Please select a file to upload.',
-            confirmButtonColor: '#065f46'
-        });
+        showValidationAlert('File Required', 'Please select a file to upload.', 'Please select a file to upload.', 'warning');
         return;
     }
-    if (!uploadForm.name) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Name Required',
-            text: 'Please provide a reference name for this asset.',
-            confirmButtonColor: '#065f46'
-        });
+    if (!uploadForm.name.trim()) {
+        showValidationAlert('Name Required', 'Please provide a reference name for this asset.', 'Please provide a reference name for this asset.', 'warning');
         return;
     }
     const reader = new FileReader();
@@ -488,13 +469,13 @@ const MediaDashboard: React.FC = () => {
       const sizeKB = uploadFile.size / 1024;
       const sizeStr = sizeKB > 1024 ? `${(sizeKB / 1024).toFixed(1)} MB` : `${sizeKB.toFixed(0)} KB`;
       uploadMutation.mutate({
-        name: uploadForm.name,
+        name: uploadForm.name.trim(),
         type: uploadForm.type,
         url: base64,
         thumbnail: uploadFile.type.startsWith('image/') ? base64 : undefined,
         size: sizeStr,
         format: uploadFile.name.split('.').pop()?.toUpperCase(),
-        farm: uploadForm.farm || undefined,
+        farmName: uploadForm.farm?.trim() || undefined,
         album: uploadForm.album || undefined,
         status: 'Synced',
         community: agent?.community,

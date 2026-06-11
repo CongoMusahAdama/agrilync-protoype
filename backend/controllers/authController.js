@@ -121,7 +121,8 @@ exports.changePassword = async (req, res) => {
     const { newPassword } = req.body;
 
     try {
-        let agent = await Agent.findById(req.agent.id);
+        const agentId = req.agent.id || req.agent._id;
+        let agent = await Agent.findById(agentId);
         if (!agent) return res.status(404).json({ msg: 'Agent not found' });
 
         agent.password = newPassword;

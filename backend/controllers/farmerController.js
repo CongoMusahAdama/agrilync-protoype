@@ -2,8 +2,14 @@ const Farmer = require('../models/Farmer');
 const Agent = require('../models/Agent');
 const Notification = require('../models/Notification');
 const Activity = require('../models/Activity');
-const { uploadBase64ToCloudinary } = require('../utils/cloudinary');
+const { uploadDataUrl } = require('../utils/cloudinary');
 const dashboardService = require('../services/dashboardService');
+const {
+    buildFarmerOnboardingFields,
+    ensurePrimaryFarm,
+    normalizeRegion,
+} = require('../utils/farmerOnboarding');
+const { sendFarmerWelcomeSms } = require('../utils/farmerWelcomeSms');
 
 // @route   GET api/farmers
 // @desc    Get all farmers for current agent (with pagination)
@@ -80,47 +86,39 @@ exports.getFarmerById = async (req, res) => {
 // @desc    Solo farmer self-onboarding (pending verification)
 exports.registerFarmerPublic = async (req, res) => {
     try {
-        const {
-            name, region, district, community, farmType, contact, gender, dob,
-            language, otherLanguage, email, farmSize, yearsOfExperience,
-            landOwnershipStatus, cropsGrown, livestockType, password,
-            profilePicture, idCardFront, idCardBack
-        } = req.body;
+        const onboardingFields = buildFarmerOnboardingFields(req.body, { onboardingSource: 'self' });
+        const normalizedRegion = onboardingFields.region || normalizeRegion(req.body.region);
 
-        // Upload images to Cloudinary if present
-        const s3ProfilePicture = await uploadBase64ToCloudinary(req.body.profilePicture, 'farmers/profiles');
-        const s3IdCardFront = await uploadBase64ToCloudinary(req.body.idCardFront, 'farmers/ids');
-        const s3IdCardBack = await uploadBase64ToCloudinary(req.body.idCardBack, 'farmers/ids');
+        const s3ProfilePicture = req.body.profilePicture
+            ? await uploadDataUrl(req.body.profilePicture, 'farmers/profiles')
+            : undefined;
+        const s3IdCardFront = req.body.idCardFront
+            ? await uploadDataUrl(req.body.idCardFront, 'farmers/ids')
+            : undefined;
+        const s3IdCardBack = req.body.idCardBack
+            ? await uploadDataUrl(req.body.idCardBack, 'farmers/ids')
+            : undefined;
 
         const newFarmer = new Farmer({
-            name,
-            password,
-            region,
-            district,
-            community,
-            farmType,
-            contact,
-            gender,
-            dob,
-            language,
-            otherLanguage,
-            email,
-            farmSize,
-            yearsOfExperience,
-            landOwnershipStatus,
-            cropsGrown,
-            livestockType,
+            ...onboardingFields,
+            password: req.body.password,
             profilePicture: s3ProfilePicture,
             idCardFront: s3IdCardFront,
             idCardBack: s3IdCardBack,
-            status: 'pending', // Self-onboarded farmers must be verified
-            lastUpdated: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+            region: normalizedRegion,
+            status: 'pending',
+            lastUpdated: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
         });
 
         const farmer = await newFarmer.save();
 
-        // NOTIFICATION SYSTEM: Notify all agents in the farmer's region
-        const regionalAgents = await Agent.find({ region });
+        const regionalAgents = await Agent.find({
+            $or: [
+                { region: normalizedRegion },
+                { region: normalizedRegion.replace(' Region', '') },
+                { region: new RegExp(normalizedRegion.replace(' Region', '').trim(), 'i') },
+            ],
+        });
 
         if (regionalAgents.length > 0) {
             const notifications = regionalAgents.map(agent => ({
@@ -134,12 +132,9 @@ exports.registerFarmerPublic = async (req, res) => {
             await Notification.insertMany(notifications);
         }
 
-        // Send Welcome SMS
-        if (contact) {
-            const smsService = require('../utils/smsService');
-            const message = `Welcome ${name} to AgriLync! Your grower profile has been successfully created and is pending verification. We will keep you updated.`;
-            smsService.sendSMS(contact, message).catch(err => console.error('Welcome SMS failed:', err.message));
-        }
+        sendFarmerWelcomeSms(farmer, { onboardingSource: 'self' }).catch((err) =>
+            console.error('Welcome SMS failed:', err.message)
+        );
 
         res.json({ success: true, farmerId: farmer._id });
     } catch (err) {
@@ -156,24 +151,22 @@ exports.registerFarmerPublic = async (req, res) => {
 // @desc    Add a new farmer
 exports.addFarmer = async (req, res) => {
     try {
-        const {
-            name, region, district, community, farmType, contact, gender,
-            dob, language, otherLanguage, email, farmSize, yearsOfExperience,
-            landOwnershipStatus, cropsGrown, livestockType, profilePicture,
-            idCardFront, idCardBack, fieldNotes, investmentInterest,
-            preferredInvestmentType, estimatedCapitalNeed, hasPreviousInvestment,
-            ghanaCardNumber, verificationConfirmed, gpsLocation
-        } = req.body;
+        const onboardingFields = buildFarmerOnboardingFields(
+            { ...req.body, onboardingAgentId: req.body.onboardingAgentId || req.agent?.agentId },
+            { onboardingSource: 'agent' }
+        );
+        const ghanaCardNumber = req.body.ghanaCardNumber?.trim().toUpperCase();
+        const { profilePicture, idCardFront, idCardBack } = req.body;
 
         if (ghanaCardNumber) {
             const regex = /^GHA-\d{9}-\d$/;
             if (!regex.test(ghanaCardNumber)) {
-                return res.status(400).json({ msg: 'Invalid Ghana Card number format' });
+                return res.status(400).json({ msg: 'Invalid Ghana Card number format. Use GHA-XXXXXXXXX-X' });
             }
         }
 
-        if (dob) {
-            const dobDate = new Date(dob);
+        if (req.body.dob) {
+            const dobDate = new Date(req.body.dob);
             if (isNaN(dobDate.getTime()) || dobDate > new Date()) {
                 return res.status(400).json({ msg: 'Invalid Date of Birth' });
             }
@@ -194,7 +187,9 @@ exports.addFarmer = async (req, res) => {
                     existingGha.flags.push('Duplicate Ghana Card Attempted');
                     await existingGha.save();
                 }
-                return res.status(400).json({ msg: 'Ghana Card already exists in the system' });
+                return res.status(400).json({
+                    msg: `Ghana Card already registered for ${existingGha.name}. Check Grower Directory or use a different card.`,
+                });
             }
         }
 
@@ -206,32 +201,26 @@ exports.addFarmer = async (req, res) => {
         }
 
         // Upload images to Cloudinary if present
-        const s3ProfilePicture = await uploadBase64ToCloudinary(profilePicture, 'farmers/profiles');
-        const s3IdCardFront = await uploadBase64ToCloudinary(idCardFront, 'farmers/ids');
-        const s3IdCardBack = await uploadBase64ToCloudinary(idCardBack, 'farmers/ids');
+        const s3ProfilePicture = profilePicture ? await uploadDataUrl(profilePicture, 'farmers/profiles') : undefined;
+        const s3IdCardFront = idCardFront ? await uploadDataUrl(idCardFront, 'farmers/ids') : undefined;
+        const s3IdCardBack = idCardBack ? await uploadDataUrl(idCardBack, 'farmers/ids') : undefined;
 
         const newFarmer = new Farmer({
-            name, region, district, community, farmType, contact, gender,
-            dob, language, otherLanguage, email, farmSize, yearsOfExperience,
-            landOwnershipStatus, cropsGrown, livestockType,
+            ...onboardingFields,
             profilePicture: s3ProfilePicture,
             idCardFront: s3IdCardFront,
             idCardBack: s3IdCardBack,
             ghanaCardNumber,
-            verificationConfirmed,
-            gpsLocation,
             imageHash: generatedHash,
             flags,
-            fieldNotes, investmentInterest,
-            preferredInvestmentType, estimatedCapitalNeed, hasPreviousInvestment,
             agent: req.agent.id,
-            status: 'active', // Agent-onboarded farmers are active by default
-            lastUpdated: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+            status: 'active',
+            lastUpdated: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
         });
 
         const farmer = await newFarmer.save();
-        
-        // Invalidate dashboard cache for this agent
+        await ensurePrimaryFarm(farmer, req.agent.id);
+
         dashboardService.invalidateCache(req.agent.id);
 
         // Log Activity
@@ -245,21 +234,21 @@ exports.addFarmer = async (req, res) => {
         // Invalidate dashboard cache for this agent
         dashboardService.invalidateCache(req.agent.id);
 
-        // Send Welcome SMS
-        if (contact) {
-            const smsService = require('../utils/smsService');
-            const message = `Welcome ${name} to AgriLync! Your grower profile has been successfully onboarded by your field agent. You will now receive important updates here.`;
-            smsService.sendSMS(contact, message).catch(err => console.error('Welcome SMS failed:', err.message));
-        }
+        sendFarmerWelcomeSms(farmer, { onboardingSource: 'agent', agent: req.agent }).catch((err) =>
+            console.error('Welcome SMS failed:', err.message)
+        );
 
         res.status(201).json(farmer);
     } catch (err) {
+        if (err.code === 11000) {
+            return res.status(400).json({ msg: 'Ghana Card already exists in the system' });
+        }
         if (err.name === 'ValidationError') {
             const messages = Object.values(err.errors).map(val => val.message);
             return res.status(400).json({ msg: messages.join(', ') });
         }
         console.error('addFarmer error:', err.message);
-        res.status(500).json({ msg: 'Server error during farmer onboarding' });
+        res.status(500).json({ msg: err.message || 'Server error during farmer onboarding' });
     }
 };
 
@@ -267,9 +256,15 @@ exports.addFarmer = async (req, res) => {
 // @desc    Get all pending farmers in the agent's region
 exports.getPendingFarmersByRegion = async (req, res) => {
     try {
+        const agentRegion = req.agent.region || '';
+        const regionStem = agentRegion.replace(/\s+region$/i, '').trim();
         const farmers = await Farmer.find({
             status: 'pending',
-            region: req.agent.region
+            $or: [
+                { region: agentRegion },
+                { region: new RegExp(regionStem, 'i') },
+                { region: `${regionStem} Region` },
+            ],
         })
             .select('-idCardFront -idCardBack -password')
             .lean();
@@ -306,34 +301,61 @@ exports.updateFarmer = async (req, res) => {
         }
 
         // Explicitly allowed fields for update
-        const allowedUpdates = [
+        const mergedBody = { ...farmer.toObject(), ...updateData };
+        const structuredFields = buildFarmerOnboardingFields(mergedBody, {
+            onboardingSource: farmer.onboardingSource || updateData.onboardingSource || 'agent',
+        });
+
+        const allowedScalars = [
             'name', 'region', 'district', 'community', 'farmType', 'contact', 'gender',
             'dob', 'language', 'otherLanguage', 'email', 'farmSize', 'yearsOfExperience',
-            'landOwnershipStatus', 'cropsGrown', 'livestockType', 'profilePicture',
-            'idCardFront', 'idCardBack', 'fieldNotes', 'investmentInterest', 'status',
+            'landOwnershipStatus', 'cropsGrown', 'cropsGrownOther', 'livestockType',
+            'fieldNotes', 'investmentInterest', 'status',
             'preferredInvestmentType', 'estimatedCapitalNeed', 'hasPreviousInvestment',
-            'currentStage', 'stageDetails', 'ghanaCardNumber', 'verificationConfirmed', 'gpsLocation'
+            'currentStage', 'stageDetails', 'ghanaCardNumber', 'verificationConfirmed', 'onboardingAgentId',
+            'investmentReadinessScore', 'profileCompleteness',
         ];
 
-        // Update fields if provided and allowed
-        for (const key of allowedUpdates) {
-            if (updateData[key] !== undefined) {
-                // If it's a Base64 image, upload to S3 first
-                if (['profilePicture', 'idCardFront', 'idCardBack'].includes(key) &&
-                    typeof updateData[key] === 'string' &&
-                    updateData[key].startsWith('data:')) {
+        for (const key of allowedScalars) {
+            if (structuredFields[key] !== undefined) {
+                farmer[key] = typeof structuredFields[key] === 'string'
+                    ? structuredFields[key].trim()
+                    : structuredFields[key];
+            } else if (updateData[key] !== undefined) {
+                farmer[key] = typeof updateData[key] === 'string' ? updateData[key].trim() : updateData[key];
+            }
+        }
 
-                    const folder = key === 'profilePicture' ? 'farmers/profiles' : 'farmers/ids';
-                    farmer[key] = await uploadBase64ToCloudinary(updateData[key], folder);
+        if (updateData.cropList !== undefined) farmer.cropList = structuredFields.cropList;
+        if (updateData.livestockInventory !== undefined) {
+            farmer.livestockInventory = structuredFields.livestockInventory;
+            farmer.livestockType = structuredFields.livestockType;
+        }
+        if (updateData.trainingModules !== undefined) farmer.trainingModules = structuredFields.trainingModules;
+        if (updateData.farmLocation !== undefined || updateData.farmLatitude != null) {
+            farmer.farmLocation = structuredFields.farmLocation;
+            farmer.gpsLocation = structuredFields.gpsLocation;
+        }
+
+        for (const imageKey of ['profilePicture', 'idCardFront', 'idCardBack']) {
+            if (updateData[imageKey] !== undefined) {
+                if (typeof updateData[imageKey] === 'string' && updateData[imageKey].startsWith('data:')) {
+                    const folder = imageKey === 'profilePicture' ? 'farmers/profiles' : 'farmers/ids';
+                    farmer[imageKey] = await uploadDataUrl(updateData[imageKey], folder);
                 } else {
-                    farmer[key] = typeof updateData[key] === 'string' ? updateData[key].trim() : updateData[key];
+                    farmer[imageKey] = updateData[imageKey];
                 }
             }
         }
 
+        farmer.profileCompleteness = structuredFields.profileCompleteness;
         farmer.lastUpdated = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
         await farmer.save();
+
+        if (farmer.status === 'active' && farmer.agent) {
+            await ensurePrimaryFarm(farmer, farmer.agent);
+        }
 
         // Notification logic
         if (updateData.status === 'active' && isVerifyingRegional) {
@@ -345,6 +367,10 @@ exports.updateFarmer = async (req, res) => {
                 agent: req.agent.id,
                 read: false
             });
+
+            sendFarmerWelcomeSms(farmer, { onboardingSource: 'agent', agent: req.agent }).catch((err) =>
+                console.error('Verification welcome SMS failed:', err.message)
+            );
         }
 
         res.json(farmer);
@@ -377,6 +403,97 @@ exports.getFlaggedFarmers = async (req, res) => {
 
 // @route   PUT api/farmers/:id/resolve-flag
 // @desc    Resolve (clear) a specific flag from a farmer record
+// @route   POST api/farmers/bulk-sms
+// @desc    Send bulk SMS to selected farmers via mNotify
+exports.sendBulkSms = async (req, res) => {
+    const { farmerIds, message } = req.body;
+
+    if (!message?.trim()) {
+        return res.status(400).json({ success: false, message: 'Message text is required.' });
+    }
+    if (!Array.isArray(farmerIds) || farmerIds.length === 0) {
+        return res.status(400).json({ success: false, message: 'Select at least one farmer.' });
+    }
+
+    try {
+        const mongoose = require('mongoose');
+        const { sendBulkSMS, normalizePhone } = require('../utils/smsService');
+        const agentId = req.agent._id || req.agent.id;
+
+        const validIds = farmerIds.filter((id) => mongoose.Types.ObjectId.isValid(id));
+        if (validIds.length === 0) {
+            return res.status(400).json({ success: false, message: 'No valid farmer IDs provided.' });
+        }
+
+        const farmers = await Farmer.find({
+            _id: { $in: validIds },
+            agent: agentId,
+        }).select('name contact').lean();
+
+        if (farmers.length === 0) {
+            return res.status(403).json({
+                success: false,
+                message: 'No matching farmers found for your account.',
+            });
+        }
+
+        const recipients = farmers
+            .filter((f) => f.contact && String(f.contact).trim() && String(f.contact).toLowerCase() !== 'null')
+            .map((f) => ({
+                name: f.name,
+                phone: normalizePhone(f.contact),
+            }))
+            .filter((r) => r.phone.length >= 12);
+
+        if (recipients.length === 0) {
+            return res.json({
+                success: false,
+                message: 'None of the selected farmers have a valid mobile number on file.',
+                data: { total: farmers.length, succeeded: 0, failed: farmers.length },
+            });
+        }
+
+        const broadcastResult = await sendBulkSMS(recipients, message.trim(), {
+            agentName: req.agent.name || 'AgriLync Agent',
+        });
+
+        Activity.create({
+            agent: agentId,
+            type: 'event',
+            title: 'Bulk SMS broadcast',
+            description: broadcastResult.succeeded > 0
+                ? `mNotify queued SMS for ${broadcastResult.succeeded}/${recipients.length} grower(s).`
+                : `Bulk SMS attempted for ${recipients.length} grower(s) — delivery failed.`,
+        }).catch((err) => console.error('Bulk SMS activity log failed:', err.message));
+
+        if (!broadcastResult.succeeded) {
+            const hint = broadcastResult.simulated
+                ? 'mNotify API key is not configured on the server.'
+                : 'Check farmer phone numbers and mNotify account balance.';
+            return res.status(502).json({
+                success: false,
+                message: `SMS could not be delivered. ${hint}`,
+                data: broadcastResult,
+            });
+        }
+
+        return res.json({
+            success: true,
+            message: broadcastResult.simulated
+                ? `Simulated send to ${broadcastResult.succeeded} farmer(s) (mNotify key missing on server).`
+                : `mNotify is delivering your message to ${broadcastResult.succeeded} farmer(s).`,
+            data: broadcastResult,
+        });
+    } catch (err) {
+        console.error('sendBulkSms error:', err.message);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to send bulk SMS. Please try again.',
+            error: err.message,
+        });
+    }
+};
+
 exports.resolveFlag = async (req, res) => {
     try {
         const { flag } = req.body;

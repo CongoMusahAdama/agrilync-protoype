@@ -215,7 +215,8 @@ export const regions = [
     'Northern Region',
     'Upper East',
     'Upper West',
-    'Bono Ahafo Region'
+    'Bono Ahafo Region',
+    'Asunafo North Ahafo Region',
 ];
 
 export const farmCategories = {

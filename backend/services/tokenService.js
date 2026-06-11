@@ -17,10 +17,12 @@ const requireAuthSecrets = () => {
 const generateTokens = (payload) => {
     requireAuthSecrets();
 
+    const accessExpiresIn = process.env.JWT_ACCESS_EXPIRES_IN || '8h';
+
     const accessToken = jwt.sign(
         payload,
         process.env.JWT_SECRET,
-        { expiresIn: '1h' }
+        { expiresIn: accessExpiresIn }
     );
 
     const refreshToken = jwt.sign(
@@ -48,7 +50,7 @@ const setTokenCookies = (res, accessToken, refreshToken) => {
 
     const accessCookieOptions = {
         ...cookieOptions,
-        maxAge: 60 * 60 * 1000 // 1 hour
+        maxAge: 8 * 60 * 60 * 1000 // align with default JWT access lifetime
     };
 
     if (accessToken) res.cookie('accessToken', accessToken, accessCookieOptions);

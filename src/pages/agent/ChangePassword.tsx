@@ -29,7 +29,17 @@ const ChangePassword = () => {
 
         setLoading(true);
         try {
-            await api.post('/auth/change-password', { newPassword });
+            const postChange = () => api.post('/auth/change-password', { newPassword });
+            try {
+                await postChange();
+            } catch (firstErr: any) {
+                if (firstErr.response?.status === 503) {
+                    await new Promise((r) => setTimeout(r, 1500));
+                    await postChange();
+                } else {
+                    throw firstErr;
+                }
+            }
             await Swal.fire({
                 icon: 'success',
                 title: 'Password Updated!',
@@ -51,10 +61,17 @@ const ChangePassword = () => {
             }
             navigate('/dashboard/redirect');
         } catch (err: any) {
+            const validationErrors = err.response?.data?.errors;
+            const validationMsg = Array.isArray(validationErrors)
+                ? validationErrors.map((e: Record<string, string>) => Object.values(e)[0]).join(' ')
+                : null;
             Swal.fire({
                 icon: 'error',
-                title: 'Security Sync Error',
-                text: err.response?.data?.msg || 'Could not update your security credentials.',
+                title: err.response?.status === 422 ? 'Password Requirements' : 'Could Not Update Password',
+                text:
+                    validationMsg ||
+                    err.response?.data?.msg ||
+                    'Could not update your password. Check your connection and try again.',
                 confirmButtonColor: '#065f46'
             });
         } finally {
@@ -69,6 +86,7 @@ const ChangePassword = () => {
                     <CardTitle>Change Your Password</CardTitle>
                     <CardDescription>
                         Since this is your first time logging in, you must change your password for security reasons.
+                        Use at least 8 characters with one uppercase letter and one number.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>

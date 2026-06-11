@@ -13,6 +13,27 @@ cloudinary.config({
  * @param {string} folder 
  * @returns {Promise<string>} - The secure URL of the uploaded image
  */
+const uploadDataUrl = async (dataUrl, folder = 'agrilync') => {
+  if (!dataUrl?.startsWith('data:')) return dataUrl;
+
+  if (!isCloudinaryConfigured()) {
+    if (dataUrl.length > 12_000_000) {
+      throw new Error('File is too large. Configure Cloudinary or use a file under 8MB.');
+    }
+    return dataUrl;
+  }
+
+  try {
+    return await uploadBase64ToCloudinary(dataUrl, folder);
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production' && dataUrl.length <= 12_000_000) {
+      console.warn('[cloudinary] Upload failed — using inline data URL in dev:', err.message);
+      return dataUrl;
+    }
+    throw err;
+  }
+};
+
 const uploadBase64ToCloudinary = async (base64String, folder = 'agrilync') => {
   try {
     if (!base64String) return null;
@@ -29,7 +50,10 @@ const uploadBase64ToCloudinary = async (base64String, folder = 'agrilync') => {
     return result.secure_url;
   } catch (err) {
     console.error('Cloudinary Upload Error:', err.message);
-    throw new Error('Image upload failed');
+    const hint = /file size|too large|max/i.test(err.message || '')
+      ? 'File is too large for cloud storage. Please use a smaller image (under 10MB).'
+      : (err.message || 'Cloud storage upload failed');
+    throw new Error(hint);
   }
 };
 
@@ -65,6 +89,7 @@ const isCloudinaryConfigured = () =>
 module.exports = {
   cloudinary,
   uploadBase64ToCloudinary,
+  uploadDataUrl,
   uploadFileToCloudinary,
   isCloudinaryConfigured,
   deleteFromCloudinary

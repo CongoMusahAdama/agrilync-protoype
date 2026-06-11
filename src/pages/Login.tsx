@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import RegionSelectionModal from '@/components/auth/RegionSelectionModal';
+import { getRegionKey } from '@/data/ghanaRegions';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ const Login = () => {
   
   // Regional verification states
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
-  const [pendingSession, setPendingSession] = useState<{ token: string; agent: any } | null>(null);
+  const [pendingSession, setPendingSession] = useState<{ token: string; refreshToken?: string; agent: any } | null>(null);
 
   useEffect(() => {
     // Trigger animations after component mounts
@@ -53,16 +54,16 @@ const Login = () => {
         password: formData.password 
       });
       
-      const { token, agent } = res.data;
+      const { token, refreshToken, agent } = res.data;
       
       // Direct bypass of region selection for super admin role
       if (agent.role === 'super_admin') {
-        setSession(token, agent);
+        setSession(token, agent, refreshToken);
         toast.success(`Welcome back, Super Admin ${agent.name.split(' ')[0]}!`);
         navigate('/dashboard/super-admin');
       } else {
         // Step 2: Store session data temporarily and open verification modal
-        setPendingSession({ token, agent });
+        setPendingSession({ token, refreshToken, agent });
         setIsRegionModalOpen(true);
         toast.info('Credentials Verified. Please confirm your region.');
       }
@@ -83,13 +84,16 @@ const Login = () => {
     }
   };
 
-  const handleRegionSuccess = (region: string) => {
-    if (pendingSession) {
-      // Step 3: Finalize session and navigate to dashboard
-      // Ensure the newly verified region is merged into the agent object
-      setSession(pendingSession.token, { ...pendingSession.agent, region });
+  const handleRegionSuccess = async (region: string) => {
+    if (!pendingSession) return;
+    const normalizedRegion = getRegionKey(region);
+    try {
+      await api.put('/agents/profile', { region: normalizedRegion });
+      setSession(pendingSession.token, { ...pendingSession.agent, region: normalizedRegion }, pendingSession.refreshToken);
       setIsRegionModalOpen(false);
       navigate('/dashboard/agent');
+    } catch {
+      toast.error('Could not save your operational region. Please try again.');
     }
   };
 

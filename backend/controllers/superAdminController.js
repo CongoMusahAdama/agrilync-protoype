@@ -237,6 +237,9 @@ const regionNameVariants = (regionName) => {
     if (/bono/i.test(normalized)) {
         ['Bono', 'Bono Region', 'Bono Ahafo', 'Bono Ahafo Region'].forEach((v) => variants.add(v));
     }
+    if (/ahafo|asunafo/i.test(normalized)) {
+        ['Ahafo', 'Ahafo Region', 'Asunafo North Ahafo', 'Asunafo North Ahafo Region'].forEach((v) => variants.add(v));
+    }
     return Array.from(variants);
 };
 
@@ -873,7 +876,8 @@ exports.createUser = async (req, res) => {
         if (phone) {
             const smsService = require('../utils/smsService');
             const frontendUrl = process.env.FRONTEND_URL || 'https://agrilync.com';
-            const message = `Hello ${name}, your AgriLync account has been successfully created by an Admin. Login at ${frontendUrl}/login using your email or phone number and password: ${generatedPassword}. You will be required to update your password upon first login.`;
+            const agentLoginUrl = `${frontendUrl.replace(/\/$/, '')}/agent/login`;
+            const message = `Hello ${name}, your AgriLync account has been successfully created by an Admin. Login at ${agentLoginUrl} using your email or phone number and password: ${generatedPassword}. You will be required to update your password upon first login.`;
             smsService.sendSMS(phone, message).catch(err => console.error('Account creation SMS failed:', err.message));
         }
 

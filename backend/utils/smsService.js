@@ -5,6 +5,15 @@
  */
 const axios = require('axios');
 
+/** Normalize Ghana numbers for mNotify (e.g. 024… → 23324…) */
+const normalizePhone = (phone) => {
+    if (!phone) return '';
+    let digits = String(phone).replace(/[\s\-().+]/g, '');
+    if (digits.startsWith('0')) digits = `233${digits.slice(1)}`;
+    else if (!digits.startsWith('233')) digits = `233${digits}`;
+    return digits;
+};
+
 /**
  * Send a pure SMS notification using mNotify
  * @param {string} to - Recipient phone number
@@ -15,10 +24,15 @@ exports.sendSMS = async (to, body) => {
 
     const MNOTIFY_API_KEY = process.env.MNOTIFY_API_KEY;
     const SENDER_ID = process.env.MNOTIFY_SENDER_ID || 'AgriLync';
+    const recipient = normalizePhone(to);
+
+    if (!recipient || recipient.length < 12) {
+        return { success: false, error: 'Invalid phone number' };
+    }
 
     // Fallback if API key is missing
     if (!MNOTIFY_API_KEY) {
-        console.warn(`[mNotify SIMULATION] To ${to} (Sender: ${SENDER_ID}): ${body} (API key missing in .env)`);
+        console.warn(`[mNotify SIMULATION] To ${recipient} (Sender: ${SENDER_ID}): ${body} (API key missing in .env)`);
         return {
             success: true,
             simulated: true,
@@ -28,9 +42,9 @@ exports.sendSMS = async (to, body) => {
     }
 
     try {
-        console.log(`[mNotify] Dispatching SMS to: ${to}`);
+        console.log(`[mNotify] Dispatching SMS to: ${recipient}`);
         const response = await axios.post(`https://api.mnotify.com/api/sms/quick?key=${MNOTIFY_API_KEY}`, {
-            recipient: [to],
+            recipient: [recipient],
             sender: SENDER_ID,
             message: body,
             is_schedule: false,
@@ -56,23 +70,36 @@ exports.sendSMS = async (to, body) => {
  * @param {Array<{phone: string, name: string}>} recipients
  * @param {string} template - Message body with {farmer_name} placeholder
  */
-exports.sendBulkSMS = async (recipients, template) => {
-    if (!Array.isArray(recipients) || recipients.length === 0) return { success: false, count: 0 };
+exports.sendBulkSMS = async (recipients, template, options = {}) => {
+    if (!Array.isArray(recipients) || recipients.length === 0) {
+        return { success: false, total: 0, succeeded: 0, failed: 0 };
+    }
 
-    console.log(`[mNotify BULK] Dispatching to ${recipients.length} recipients.`);
+    const agentName = options.agentName || 'AgriLync Agent';
+    console.log(`[mNotify BULK] Dispatching to ${recipients.length} recipients via mNotify.`);
 
     const results = await Promise.allSettled(
         recipients.map(async (r) => {
-            const body = template.replace(/{farmer_name}/g, r.name || 'Grower');
+            const body = String(template)
+                .replace(/{farmer_name}/g, r.name || 'Grower')
+                .replace(/{agent_name}/g, agentName);
             return exports.sendSMS(r.phone, body);
         })
     );
 
-    const succeeded = results.filter(r => r.status === 'fulfilled' && r.value?.success).length;
+    const succeeded = results.filter((r) => r.status === 'fulfilled' && r.value?.success).length;
+    const simulated = results.some(
+        (r) => r.status === 'fulfilled' && r.value?.simulated
+    );
+
     return {
         success: succeeded > 0,
         total: recipients.length,
         succeeded,
-        failed: recipients.length - succeeded
+        failed: recipients.length - succeeded,
+        simulated,
+        channel: 'mnotify',
     };
 };
+
+exports.normalizePhone = normalizePhone;

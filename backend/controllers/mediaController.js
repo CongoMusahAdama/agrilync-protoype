@@ -1,7 +1,13 @@
+const mongoose = require('mongoose');
 const Media = require('../models/Media');
-const Farmer = require('../models/Farmer');
-const Farm = require('../models/Farm');
-const { uploadBase64ToCloudinary } = require('../utils/cloudinary');
+const { uploadDataUrl } = require('../utils/cloudinary');
+
+const toObjectId = (value) => {
+    if (value == null || value === '') return undefined;
+    const str = String(value).trim();
+    if (!mongoose.Types.ObjectId.isValid(str)) return undefined;
+    return str;
+};
 
 // @desc    Get all media for an agent with filtering
 // @route   GET /api/media
@@ -55,40 +61,49 @@ exports.uploadMedia = async (req, res) => {
         const uploadedItems = [];
 
         for (const item of items) {
-            let { 
-                name, 
-                type, 
-                url, 
-                thumbnail, 
-                size, 
-                format, 
-                farmerId, 
-                farmId, 
+            let {
+                name,
+                type,
+                url,
+                thumbnail,
+                size,
+                format,
+                farmerId,
+                farmId,
+                farmer,
+                farm,
+                farmName,
                 album,
-                metadata 
+                metadata = {},
             } = item;
 
-            // Validate and upload
-            if (url && url.startsWith('data:')) {
-                // Security check: Only allow images, videos, and PDFs
-                const allowedPrefixes = ['data:image/', 'data:video/', 'data:application/pdf'];
-                const isValid = allowedPrefixes.some(p => url.startsWith(p));
-                
-                if (!isValid) {
-                    return res.status(400).json({ msg: 'Invalid file type' });
-                }
-
-                url = await uploadBase64ToCloudinary(url, 'media/uploads');
+            if (!url || (typeof url === 'string' && !url.trim())) {
+                return res.status(400).json({ msg: 'No file was provided. Please select a photo, video, or PDF.' });
             }
-            
-            if (thumbnail && thumbnail.startsWith('data:')) {
-                thumbnail = await uploadBase64ToCloudinary(thumbnail, 'media/thumbnails');
+
+            const resolvedFarmerId = toObjectId(farmerId || farmer);
+            const resolvedFarmId = toObjectId(farmId || farm);
+            const entityLabel = typeof farmName === 'string' ? farmName.trim() : '';
+            if (!resolvedFarmId && entityLabel) {
+                metadata.farmName = entityLabel;
+            }
+
+            if (url.startsWith('data:')) {
+                const allowedPrefixes = ['data:image/', 'data:video/', 'data:application/pdf'];
+                if (!allowedPrefixes.some((p) => url.startsWith(p))) {
+                    return res.status(400).json({ msg: 'Invalid file type. Only images, videos, and PDFs are allowed.' });
+                }
+                url = await uploadDataUrl(url, 'media/uploads');
+            }
+
+            if (thumbnail?.startsWith('data:')) {
+                thumbnail = await uploadDataUrl(thumbnail, 'media/thumbnails');
             }
 
             const newMedia = new Media({
                 agent: req.agent.id,
-                farmer: farmerId,
-                farm: farmId,
+                farmer: resolvedFarmerId,
+                farm: resolvedFarmId,
                 name: name || `Upload_${Date.now()}`,
                 type: type || 'Photo',
                 url,
@@ -99,7 +114,7 @@ exports.uploadMedia = async (req, res) => {
                 region: req.agent.region,
                 district: req.agent.district,
                 community: req.agent.community,
-                metadata
+                metadata,
             });
 
             const savedMedia = await newMedia.save();
@@ -108,8 +123,12 @@ exports.uploadMedia = async (req, res) => {
 
         res.json(Array.isArray(req.body) ? uploadedItems : uploadedItems[0]);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error('Media upload error:', err);
+        const message =
+            err.message ||
+            (err.name === 'ValidationError' ? 'Invalid media details. Check file type and required fields.' : 'Could not upload the asset. Please try again.');
+        const status = err.name === 'ValidationError' || /too large|invalid file/i.test(message) ? 400 : 500;
+        res.status(status).json({ msg: message });
     }
 };
 

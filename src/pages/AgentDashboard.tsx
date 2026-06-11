@@ -107,10 +107,11 @@ import {
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import CountUp from '@/components/CountUp';
 import {
-  GHANA_COORDS,
+  getCoordsForRegion,
   STATUS_STYLES,
   DASHBOARD_CACHE_STALE_TIME,
-  DASHBOARD_CACHE_GC_TIME
+  DASHBOARD_CACHE_GC_TIME,
+  DASHBOARD_POLL_INTERVAL_MS,
 } from '@/data/dashboardConfig';
 
 // Modular Tab Components
@@ -203,6 +204,9 @@ const AgentDashboard: React.FC = () => {
   // New state for matches and disputes
   const [activeMetric, setActiveMetric] = useState('onboarding');
 
+  const dashboardPollingEnabled =
+    !isAddFarmerModalOpen && !editModalOpen && !isVerificationQueueModalOpen;
+
   const { data: summaryData, isLoading: loading, isFetching, refetch: refreshData } = useQuery({
     queryKey: ['agentDashboardSummary'],
     queryFn: async () => {
@@ -211,7 +215,8 @@ const AgentDashboard: React.FC = () => {
     },
     staleTime: DASHBOARD_CACHE_STALE_TIME,
     refetchOnReconnect: true,
-    refetchInterval: 5000, // Real-time background refresh
+    refetchInterval: dashboardPollingEnabled ? DASHBOARD_POLL_INTERVAL_MS : false,
+    refetchIntervalInBackground: false,
   });
 
   // Fetch scheduled visits for the summary card
@@ -222,8 +227,9 @@ const AgentDashboard: React.FC = () => {
       const resData = response.data;
       return Array.isArray(resData) ? resData : (resData?.data || []);
     },
-    staleTime: 0,
-    refetchInterval: 5000,
+    staleTime: DASHBOARD_CACHE_STALE_TIME,
+    refetchInterval: dashboardPollingEnabled ? DASHBOARD_POLL_INTERVAL_MS : false,
+    refetchIntervalInBackground: false,
   });
 
   // Fetch upcoming tasks for real-time missions
@@ -234,8 +240,9 @@ const AgentDashboard: React.FC = () => {
       const resData = response.data?.data || response.data || [];
       return Array.isArray(resData) ? resData : [];
     },
-    staleTime: 0,
-    refetchInterval: 5000,
+    staleTime: DASHBOARD_CACHE_STALE_TIME,
+    refetchInterval: dashboardPollingEnabled ? DASHBOARD_POLL_INTERVAL_MS : false,
+    refetchIntervalInBackground: false,
   });
 
   const scheduledVisits = useMemo(() => {
@@ -279,7 +286,7 @@ const AgentDashboard: React.FC = () => {
     staleTime: 5 * 60 * 1000
   });
 
-  const agentCoords = GHANA_COORDS[agent?.region || 'Ashanti Region'] || GHANA_COORDS['Ashanti Region'];
+  const agentCoords = getCoordsForRegion(agent?.region);
 
   // Real-time weather via Open-Meteo (free, no API key)
   const { data: weatherData } = useQuery({
@@ -359,10 +366,6 @@ const AgentDashboard: React.FC = () => {
   const fetchData = useCallback(() => {
     refreshData();
   }, [refreshData]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   // Notification State
   const [notificationFilter, setNotificationFilter] = useState<'all' | 'alert' | 'update'>('all');
@@ -858,7 +861,7 @@ const AgentDashboard: React.FC = () => {
             <div className="space-y-4 px-1">
               <h2 className="text-lg font-bold text-[#002f37] dark:text-white">Field Operations Map</h2>
               <Card className="border-none shadow-xl rounded-[2rem] overflow-hidden h-72 relative">
-                <div className="w-full h-full relative bg-gray-50 overflow-hidden"><OperationalMap farms={farms} darkMode={darkMode} /></div>
+                <div className="w-full h-full relative bg-gray-50 overflow-hidden"><OperationalMap farms={farms} darkMode={darkMode} agentRegion={agent?.region} /></div>
               </Card>
             </div>
 
@@ -1076,7 +1079,7 @@ const AgentDashboard: React.FC = () => {
                     <MapPin className="h-5 w-5 text-[#065f46]" /> Field Operations Map
                   </CardTitle>
                 </CardHeader>
-                <div className="flex-1 relative bg-gray-50"><OperationalMap farms={farms} darkMode={darkMode} /></div>
+                <div className="flex-1 relative bg-gray-50"><OperationalMap farms={farms} darkMode={darkMode} agentRegion={agent?.region} /></div>
               </Card>
             </TabsContent>
           </Tabs>

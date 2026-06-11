@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { MapPin, ShieldCheck, AlertCircle, ChevronLeft, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { BONO_AHAFO_LABEL, BONO_AHAFO_REGION, regionsMatch } from '@/data/ghanaRegions';
+import { OPERATIONAL_REGION_OPTIONS, regionsMatch } from '@/data/ghanaRegions';
 
 interface RegionSelectionModalProps {
   isOpen: boolean;
@@ -19,18 +19,7 @@ interface RegionSelectionModalProps {
   assignedRegion: string; 
 }
 
-const regions = [
-  { value: 'Ashanti Region', label: 'Ashanti', desc: 'Central Agricultural Hub' },
-  { value: 'Greater Accra Region', label: 'Greater Accra', desc: 'Capital Command Center' },
-  { value: 'Eastern Region', label: 'Eastern', desc: 'Resource & Field Operations' },
-  { value: 'Northern Region', label: 'Northern', desc: 'Savannah Data Terminal' },
-  { value: 'Western Region', label: 'Western', desc: 'Coastal Supply Management' },
-  { value: 'Volta Region', label: 'Volta', desc: 'Lakeside Monitoring Zone' },
-  { value: 'Central Region', label: 'Central', desc: 'Regional Logistics Center' },
-  { value: BONO_AHAFO_REGION, label: BONO_AHAFO_LABEL, desc: 'Bono & Ahafo Field Office' },
-  { value: 'Upper East Region', label: 'Upper East', desc: 'Arid Zone Cultivation' },
-  { value: 'Upper West Region', label: 'Upper West', desc: 'Savannah Perimeter' }
-];
+const regions = OPERATIONAL_REGION_OPTIONS;
 
 const RegionSelectionModal: React.FC<RegionSelectionModalProps> = ({ 
   isOpen, 

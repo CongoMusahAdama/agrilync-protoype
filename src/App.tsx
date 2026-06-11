@@ -72,11 +72,20 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false, // Disabled for better mobile performance
       refetchOnMount: true, // Refetch on mount to ensure fresh data
       refetchOnReconnect: true, // Refetch when connection restored
-      retry: 2, // Retry failed requests twice
+      retry: (failureCount, error) => {
+        const status = (error as { response?: { status?: number } })?.response?.status;
+        // Retrying 429s amplifies rate-limit storms from dashboard polling
+        if (status === 429) return false;
+        return failureCount < 2;
+      },
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
     },
     mutations: {
-      retry: 1,
+      retry: (failureCount, error) => {
+        const status = (error as { response?: { status?: number } })?.response?.status;
+        if (status && status >= 400 && status < 500) return false;
+        return failureCount < 1;
+      },
     },
   },
 });

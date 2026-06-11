@@ -16,6 +16,8 @@ import {
     History, Map 
 } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { useAuth } from '@/contexts/AuthContext';
+import { resolveInitialMapView } from '@/utils/mapLocation';
 
 interface FarmerData {
     _id?: string;
@@ -32,6 +34,7 @@ interface AddFieldModalProps {
 
 const AddFieldModal: React.FC<AddFieldModalProps> = ({ open, onOpenChange, farmer, onSuccess }) => {
     const queryClient = useQueryClient();
+    const { agent } = useAuth();
     const [step, setStep] = useState(1);
     
     const [formData, setFormData] = useState({
@@ -49,35 +52,51 @@ const AddFieldModal: React.FC<AddFieldModalProps> = ({ open, onOpenChange, farme
     const [farmLongitude, setFarmLongitude] = useState(0);
     const [measuredArea, setMeasuredArea] = useState(0);
     const [gpsLocation, setGpsLocation] = useState<{ lat: number; lng: number } | null>(null);
+    const [mapViewCenter, setMapViewCenter] = useState<[number, number] | undefined>();
+    const [mapViewZoom, setMapViewZoom] = useState(14);
 
     useEffect(() => {
-        if (open) {
-            setStep(1);
-            setFormData({
-                name: '',
-                crop: '',
-                size: '',
-                status: 'Pending',
-                soilType: '',
-                previousCrop: '',
-                fieldNotes: '',
-                farmingMethod: 'Conventional'
+        if (!open) return;
+
+        setStep(1);
+        setFormData({
+            name: '',
+            crop: '',
+            size: '',
+            status: 'Pending',
+            soilType: '',
+            previousCrop: '',
+            fieldNotes: '',
+            farmingMethod: 'Conventional'
+        });
+        setMeasuredArea(0);
+        setFarmLatitude(0);
+        setFarmLongitude(0);
+        setGpsLocation(null);
+        setMapViewCenter(undefined);
+
+        let cancelled = false;
+        (async () => {
+            const view = await resolveInitialMapView({
+                region: agent?.region,
+                setPinFromGps: true,
+                gpsZoom: 15,
+                geocodeZoom: 13,
             });
-            setMeasuredArea(0);
-            
-            // Try to get current location for initial map centering
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        setFarmLatitude(pos.coords.latitude);
-                        setFarmLongitude(pos.coords.longitude);
-                        setGpsLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                    },
-                    (err) => console.log('Location error:', err)
-                );
+            if (cancelled) return;
+            setMapViewCenter(view.center);
+            setMapViewZoom(view.zoom);
+            if (view.pinCoords) {
+                setFarmLatitude(view.pinCoords.lat);
+                setFarmLongitude(view.pinCoords.lng);
+                setGpsLocation(view.pinCoords);
             }
-        }
-    }, [open]);
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [open, agent?.region]);
 
     const handleInputChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -258,6 +277,8 @@ const AddFieldModal: React.FC<AddFieldModalProps> = ({ open, onOpenChange, farme
                                         <FarmMap
                                             latitude={farmLatitude}
                                             longitude={farmLongitude}
+                                            viewCenter={mapViewCenter}
+                                            viewZoom={mapViewZoom}
                                             onLocationChange={(lat, lng) => { setFarmLatitude(lat); setFarmLongitude(lng); }}
                                             onAreaChange={(area) => setMeasuredArea(area)}
                                             farmSize={measuredArea}

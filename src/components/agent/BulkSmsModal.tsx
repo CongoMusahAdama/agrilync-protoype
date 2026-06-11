@@ -33,6 +33,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import Swal from 'sweetalert2';
 import { motion, AnimatePresence } from 'framer-motion';
+import api from '@/utils/api';
 
 interface BulkSmsModalProps {
     open: boolean;
@@ -166,31 +167,47 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
 
         if (confirm.isConfirmed) {
             setSending(true);
-            const total = selectedFarmerIds.length;
-            let current = 0;
-            
-            const interval = setInterval(() => {
-                current += Math.ceil(total / 5);
-                if (current >= total) {
-                    current = total;
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        setSending(false);
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Broadcast Finalized',
-                            text: `Successfully reached ${total} farmers. Your operational records have been updated.`,
-                            confirmButtonColor: '#065f46',
-                            customClass: { popup: 'rounded-[2.5rem]' }
-                        });
-                        onOpenChange(false);
-                        setMessage('');
-                        setSelectedTemplate('');
-                        setSelectedFarmerIds(farmers.map(f => f.id || f._id));
-                    }, 500);
-                }
-                setSentCount(current);
-            }, 400);
+            setSentCount(0);
+            try {
+                const res = await api.post('/farmers/bulk-sms', {
+                    farmerIds: selectedFarmerIds,
+                    message,
+                });
+
+                const { succeeded = 0, total = 0, failed = 0, simulated } = res.data?.data || {};
+                setSentCount(succeeded);
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: simulated ? 'Broadcast Simulated' : 'Broadcast Queued',
+                    html: `
+                      <p class="text-gray-600 text-sm">
+                        mNotify ${simulated ? 'simulated' : 'is delivering'} your message to
+                        <strong>${succeeded}</strong> of <strong>${total}</strong> farmer(s).
+                        ${failed > 0 ? `<br/><span class="text-amber-600">${failed} could not be sent (invalid numbers).</span>` : ''}
+                      </p>
+                    `,
+                    confirmButtonColor: '#065f46',
+                    customClass: { popup: 'rounded-[2.5rem]' },
+                });
+
+                onOpenChange(false);
+                setMessage('');
+                setSelectedTemplate('');
+                setSelectedFarmerIds(farmers.map((f) => f.id || f._id));
+            } catch (err: any) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Transmission Failed',
+                    text:
+                        err.response?.data?.message ||
+                        'mNotify could not deliver this broadcast. Check numbers and try again.',
+                    confirmButtonColor: '#065f46',
+                    customClass: { popup: 'rounded-[2.5rem]' },
+                });
+            } finally {
+                setSending(false);
+            }
         }
     };
 

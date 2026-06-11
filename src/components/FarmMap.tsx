@@ -1,9 +1,10 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { MapContainer, TileLayer, useMap, Marker, Polygon, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Button } from '@/components/ui/button';
 import { Locate, Ruler, X } from 'lucide-react';
+import { MapViewController } from '@/components/map/MapViewController';
 
 // Fix for default marker icons in React-Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -19,6 +20,9 @@ interface FarmMapProps {
   onLocationChange: (lat: number, lng: number) => void;
   onAreaChange: (area: number) => void;
   farmSize?: number;
+  /** Map camera center (from GPS / geocode — not hardcoded). */
+  viewCenter?: [number, number];
+  viewZoom?: number;
 }
 
 // Component to handle map click events
@@ -179,9 +183,10 @@ const FarmMap: React.FC<FarmMapProps> = ({
   onLocationChange,
   onAreaChange,
   farmSize,
+  viewCenter,
+  viewZoom = 14,
 }) => {
   const [polygonPoints, setPolygonPoints] = useState<[number, number][]>([]);
-  const defaultCenter: [number, number] = [7.9465, -1.0232]; // Ghana center coordinates
 
   const handleLocationChange = (lat: number, lng: number) => {
     onLocationChange(lat, lng);
@@ -191,15 +196,18 @@ const FarmMap: React.FC<FarmMapProps> = ({
     setPolygonPoints(points);
   };
 
-  const currentCenter: [number, number] = 
-    (latitude && latitude !== 0 && longitude && longitude !== 0) ? [latitude, longitude] : defaultCenter;
+  const hasPin = latitude !== 0 && longitude !== 0;
+  const initialCenter: [number, number] = hasPin
+    ? [latitude, longitude]
+    : viewCenter ?? [7.9465, -1.0232];
+  const initialZoom = hasPin ? 15 : viewZoom;
 
   return (
     <div className="w-full space-y-2">
       <div className="relative h-[400px] w-full rounded-lg overflow-hidden border border-gray-300">
         <MapContainer
-          center={currentCenter}
-          zoom={13}
+          center={initialCenter}
+          zoom={initialZoom}
           style={{ height: '100%', width: '100%' }}
           scrollWheelZoom={true}
         >
@@ -207,14 +215,16 @@ const FarmMap: React.FC<FarmMapProps> = ({
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+
+          {viewCenter && (
+            <MapViewController center={viewCenter} zoom={viewZoom} />
+          )}
           
           <MapClickHandler onLocationChange={handleLocationChange} />
           <LocationButton onLocationChange={handleLocationChange} />
           <AreaMeasurement onAreaChange={onAreaChange} onPolygonChange={handlePolygonChange} />
           
-          {(latitude && latitude !== 0 && longitude && longitude !== 0) && (
-            <Marker position={[latitude, longitude]} />
-          )}
+          {hasPin && <Marker position={[latitude, longitude]} />}
           
           {polygonPoints.length >= 3 && (
             <Polygon

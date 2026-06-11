@@ -11,6 +11,7 @@ import { ArrowLeft, Users, MapPin, UserCheck, Upload, Phone, FileText } from 'lu
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Swal from 'sweetalert2';
+import { SIGNUP_REGION_OPTIONS, GHANA_REGION_SIGNUP_LABELS } from '@/data/ghanaRegions';
 
 const SignupGrower = () => {
     const navigate = useNavigate();
@@ -85,11 +86,6 @@ const SignupGrower = () => {
         // navigate('/dashboard/grower');
     };
 
-    const ghanaRegions = [
-        'Ashanti', 'Eastern', 'Northern', 'Western', 'Volta', 'Central', 'Bono Ahafo',
-        'Greater Accra', 'Upper East', 'Upper West', 'Western North', 'Ahafo',
-        'Bono East', 'Oti', 'Savannah', 'North East'
-    ];
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white font-manrope">
@@ -251,8 +247,10 @@ const SignupGrower = () => {
                                                     <SelectValue placeholder="Select region" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {ghanaRegions.map(region => (
-                                                        <SelectItem key={region} value={region.toLowerCase()}>{region}</SelectItem>
+                                                    {SIGNUP_REGION_OPTIONS.map((region) => (
+                                                        <SelectItem key={region} value={region}>
+                                                            {GHANA_REGION_SIGNUP_LABELS[region] || region.replace(' Region', '')}
+                                                        </SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>

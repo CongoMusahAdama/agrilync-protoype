@@ -12,18 +12,16 @@ import api from '@/utils/api';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import { useAuth } from '@/contexts/AuthContext';
-import { normalizeOperationalRegion } from '@/data/ghanaRegions';
+import { normalizeOperationalRegion, SIGNUP_REGION_OPTIONS, GHANA_REGION_SIGNUP_LABELS } from '@/data/ghanaRegions';
 
 interface RegionSwitcherProps {
   className?: string;
 }
 
-const regions = [
-  'Ashanti', 'Bono Ahafo', 'Bono East', 'Central', 'Eastern', 
-  'Greater Accra', 'Northern', 'North East', 'Oti', 
-  'Savannah', 'Upper East', 'Upper West', 'Volta', 
-  'Western', 'Western North', 'Ahafo'
-];
+const regionOptions = SIGNUP_REGION_OPTIONS.map((key) => ({
+  value: key,
+  label: GHANA_REGION_SIGNUP_LABELS[key] || key.replace(' Region', ''),
+}));
 
 const RegionSwitcher: React.FC<RegionSwitcherProps> = ({ className }) => {
   const { agent, updateAgent } = useAuth();
@@ -115,17 +113,17 @@ const RegionSwitcher: React.FC<RegionSwitcherProps> = ({ className }) => {
             </div>
             <DropdownMenuSeparator className="bg-gray-50 mx-2 mb-2" />
             <div className="max-h-[300px] overflow-y-auto px-1 space-y-1 custom-scrollbar">
-              {regions.map((r) => (
+              {regionOptions.map(({ value, label }) => (
                 <DropdownMenuItem 
-                  key={r} 
-                  onClick={() => handleRegionChange(r)}
-                  className={`rounded-[1rem] px-4 py-3.5 cursor-pointer hover:bg-[#7ede56]/5 focus:bg-[#7ede56]/5 transition-all text-[13px] font-bold flex items-center justify-between group/item ${currentRegion.includes(r) ? 'bg-[#7ede56]/10 text-[#065f46]' : 'text-gray-600'}`}
+                  key={value} 
+                  onClick={() => handleRegionChange(value)}
+                  className={`rounded-[1rem] px-4 py-3.5 cursor-pointer hover:bg-[#7ede56]/5 focus:bg-[#7ede56]/5 transition-all text-[13px] font-bold flex items-center justify-between group/item ${normalizeOperationalRegion(currentRegion) === normalizeOperationalRegion(value) ? 'bg-[#7ede56]/10 text-[#065f46]' : 'text-gray-600'}`}
                 >
                   <div className="flex items-center gap-3">
-                    <Globe className={`h-4 w-4 transition-transform group-hover/item:rotate-12 ${currentRegion.includes(r) ? 'text-[#065f46]' : 'text-gray-300'}`} />
-                    <span>{r}</span>
+                    <Globe className={`h-4 w-4 transition-transform group-hover/item:rotate-12 ${normalizeOperationalRegion(currentRegion) === normalizeOperationalRegion(value) ? 'text-[#065f46]' : 'text-gray-300'}`} />
+                    <span>{label}</span>
                   </div>
-                  {currentRegion.includes(r) ? (
+                  {normalizeOperationalRegion(currentRegion) === normalizeOperationalRegion(value) ? (
                       <div className="h-6 w-6 rounded-full bg-[#7ede56] flex items-center justify-center shadow-lg shadow-[#7ede56]/20">
                         <Check className="h-3 w-3 text-white stroke-[4]" />
                       </div>

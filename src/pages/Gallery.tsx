@@ -277,6 +277,7 @@ const regions = [
   "Eastern Region",
   "Northern Region",
   "Bono Ahafo Region",
+  "Asunafo North Ahafo Region",
   "Ahafo Region",
   "Volta Region",
   "Central Region"

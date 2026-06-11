@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
+import { showValidationAlert } from '@/utils/validationAlert';
 
 interface MediaFile {
     id: string;
@@ -84,24 +85,14 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({ open, onOpenChange,
         },
         onError: (err) => {
             console.error('Upload error:', err);
-            Swal.fire({
-                icon: 'error',
-                title: 'Sync Interrupted',
-                text: 'One or more field reports failed to sync with the network.',
-                confirmButtonColor: '#065f46'
-            });
+            showValidationAlert('Upload Failed', err, 'One or more files could not be uploaded.');
         }
     });
 
     const handleSubmit = async () => {
-        if (mediaFiles.length === 0) { 
-            Swal.fire({
-                icon: 'warning',
-                title: 'Queue Empty',
-                text: 'Please select at least one field asset (Image/Video/PDF) to sync.',
-                confirmButtonColor: '#065f46'
-            });
-            return; 
+        if (mediaFiles.length === 0) {
+            showValidationAlert('File Required', 'Please select at least one image, video, or PDF to upload.', 'Please select at least one file.', 'warning');
+            return;
         }
         
         setLoading(true);
@@ -123,7 +114,7 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({ open, onOpenChange,
                     thumbnail: item.file.type.startsWith('image/') ? base64 : undefined,
                     size: sizeStr,
                     format: item.file.name.split('.').pop()?.toUpperCase(),
-                    farm: farmer?._id || farmer?.id,
+                    farmerId: farmer?._id || farmer?.id,
                     album: item.name.startsWith('[Album] ') ? item.name.replace('[Album] ', '') : (item.category === 'Album' ? item.name : undefined),
                     category: item.category,
                     description: item.description,
@@ -156,13 +147,8 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({ open, onOpenChange,
 
             setStep(3);
             if (onSuccess) onSuccess();
-        } catch (error: any) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Transaction Error',
-                text: error.response?.data?.msg || 'An error occurred during report synchronization.',
-                confirmButtonColor: '#065f46'
-            });
+        } catch (error: unknown) {
+            showValidationAlert('Upload Failed', error, 'An error occurred while uploading your files.');
         } finally {
             setLoading(false);
         }

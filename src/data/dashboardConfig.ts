@@ -1,9 +1,12 @@
 /**
  * Dashboard Constants and Configuration for AgriLync
  */
+import { getRegionKey } from '@/data/ghanaRegions';
 
 // Ghana region coordinates for weather lookup
 export const GHANA_COORDS: Record<string, { lat: number; lng: number }> = {
+  'Ashanti': { lat: 6.6885, lng: -1.6244 },
+  'Western': { lat: 5.1264, lng: -2.0014 },
   'Ashanti Region': { lat: 6.6885, lng: -1.6244 },
   'Greater Accra Region': { lat: 5.6037, lng: -0.1870 },
   'Northern Region': { lat: 9.4008, lng: -0.8393 },
@@ -21,7 +24,21 @@ export const GHANA_COORDS: Record<string, { lat: number; lng: number }> = {
   'Savannah Region': { lat: 9.0880, lng: -1.8230 },
   'North East Region': { lat: 10.5105, lng: -0.3616 },
   'Ahafo Region': { lat: 7.5600, lng: -2.5500 },
+  'Asunafo North Ahafo Region': { lat: 6.8030, lng: -2.5150 },
+  'Asunafo North Ahafo': { lat: 6.8030, lng: -2.5150 },
   'Western North Region': { lat: 6.3093, lng: -2.7905 },
+};
+
+const DEFAULT_COORDS = GHANA_COORDS['Ashanti Region'];
+
+/** Resolve map/weather coordinates for any region label (Western, Western Region, etc.) */
+export const getCoordsForRegion = (region?: string) => {
+  if (!region) return DEFAULT_COORDS;
+  if (GHANA_COORDS[region]) return GHANA_COORDS[region];
+  const key = getRegionKey(region);
+  if (GHANA_COORDS[key]) return GHANA_COORDS[key];
+  const short = key.replace(/\s+Region$/i, '').trim();
+  return GHANA_COORDS[short] || DEFAULT_COORDS;
 };
 
 // Status Badge styles for consistency
@@ -46,6 +63,8 @@ export const STATUS_STYLES: Record<string, string> = {
 // Cache performance settings
 export const DASHBOARD_CACHE_STALE_TIME = 5 * 60 * 1000; // 5 minutes (matches backend cache TTL)
 export const DASHBOARD_CACHE_GC_TIME = 10 * 60 * 1000; // 10 minutes
+/** Background refresh for live dashboard widgets (avoid sub-minute polling — hits rate limits). */
+export const DASHBOARD_POLL_INTERVAL_MS = 60 * 1000;
 
 import api from '@/utils/api';
 

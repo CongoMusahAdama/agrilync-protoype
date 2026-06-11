@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { DASHBOARD_POLL_INTERVAL_MS } from '@/data/dashboardConfig';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -60,7 +61,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const [isNavigating, setIsNavigating] = useState(false);
     const [isInitialMount, setIsInitialMount] = useState(false);
     const [addFarmerModalOpen, setAddFarmerModalOpen] = useState(false);
-    const [notifications, setNotifications] = useState<any[]>([]);
     const location = useLocation();
     const [prevPath, setPrevPath] = useState(location.pathname);
     const [searchQuery, setSearchQuery] = useState('');
@@ -86,23 +86,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     // Check if any queries are fetching to show preloader
     const isFetching = queryClient.isFetching() > 0;
 
-    // Notifications are now fetched as part of the dashboard summary in most views,
-    // but the sidebar needs them globally. keeping them but making it more efficient.
-    useEffect(() => {
-        if (userType === 'agent') {
-            const fetchNotifications = async () => {
-                try {
-                    // Only fetch if we don't already have them from a higher-level query if applicable
-                    const res = await api.get('/notifications');
-                    setNotifications(res.data);
-                } catch (err) {
-                    // Fail silently for notifications to not block the UI
-                    console.error('Failed to fetch notifications', err);
-                }
-            };
-            fetchNotifications();
-        }
-    }, [userType]);
+    const { data: notifications = [] } = useQuery({
+        queryKey: ['notifications'],
+        queryFn: async () => {
+            const res = await api.get('/notifications');
+            return res.data;
+        },
+        enabled: userType === 'agent',
+        staleTime: DASHBOARD_POLL_INTERVAL_MS,
+        refetchInterval: userType === 'agent' && !addFarmerModalOpen ? DASHBOARD_POLL_INTERVAL_MS : false,
+        refetchIntervalInBackground: false,
+    });
 
     // Track initial mount and show preloader on first dashboard load
     useEffect(() => {

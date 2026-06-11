@@ -69,7 +69,7 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
         status: farmer.investmentStatus || farmer.status || 'Active', 
         health: 0, 
         size: farmer.farmSize || 'Not Recorded', 
-        crop: farmer.cropsGrown || farmer.livestockType || 'Not Specified',
+        crop: farmer.cropList?.filter((c: string) => c !== 'Other').join(', ') || farmer.cropsGrown || farmer.livestockType || 'Not Specified',
         lastVisit: 'Not Recorded',
         nextVisit: 'Awaiting Schedule'
     };

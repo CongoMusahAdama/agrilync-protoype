@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '@/utils/api';
-import { isLocalhost } from '@/utils/env';
+import { getRegionKey } from '@/data/ghanaRegions';
+import {
+    clearAuthSession,
+    getAccessToken,
+    getRefreshToken,
+    persistAuthSession,
+    refreshAccessToken,
+} from '@/utils/authToken';
 
 interface Agent {
     id: string;
@@ -35,37 +42,30 @@ interface AuthContextType {
     logout: () => Promise<void>;
     updateAgent: (updatedAgent: Partial<Agent>) => Promise<void>;
     setAgent: React.Dispatch<React.SetStateAction<Agent | null>>;
-    setSession: (token: string, agent: Agent) => void;
+    setSession: (token: string, agent: Agent, refreshToken?: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [agent, setAgent] = useState<Agent | null>(null);
-    const [token, setToken] = useState<string | null>(() => {
-        try {
-            return localStorage.getItem('token');
-        } catch (e) {
-            console.warn('LocalStorage access blocked. Session persistence disabled.');
-            return null;
-        }
-    });
+    const [token, setToken] = useState<string | null>(() => getAccessToken());
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadAgent = async () => {
-            const isDev = isLocalhost();
-            
             if (token) {
                 try {
-                    // Always fetch fresh profile from database to ensure role and session are valid
                     const res = await api.get('/agents/profile');
-                    setAgent(res.data);
+                    const profile = res.data;
+                    setAgent({
+                        ...profile,
+                        region: getRegionKey(profile.region) || profile.region,
+                    });
                 } catch (err: any) {
                     console.error('Failed to load agent', err);
-                    // If 401, clear token
-                    if (err?.response?.status === 401) {
-                        localStorage.removeItem('token');
+                    if (err?.response?.status === 401 && !getRefreshToken()) {
+                        clearAuthSession();
                         setToken(null);
                         setAgent(null);
                     }
@@ -79,18 +79,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loadAgent();
     }, [token]);
 
+    // Keep session alive on long dashboard idle (super admin, agents)
+    useEffect(() => {
+        if (!token || !getRefreshToken()) return undefined;
+
+        const REFRESH_INTERVAL_MS = 45 * 60 * 1000; // 45 minutes
+        const id = window.setInterval(async () => {
+            try {
+                const newToken = await refreshAccessToken();
+                setToken(newToken);
+            } catch {
+                // Interceptor handles hard logout on next API call
+            }
+        }, REFRESH_INTERVAL_MS);
+
+        return () => window.clearInterval(id);
+    }, [token]);
+
     const login = async (email: string, password: string, region?: string) => {
         const res = await api.post('/auth/login', { email, password, region });
-        const { token, agent } = res.data;
-        localStorage.setItem('token', token);
+        const { token, refreshToken, agent } = res.data;
+        persistAuthSession(token, refreshToken);
         setToken(token);
         setAgent(agent);
     };
 
-    const setSession = (token: string, agent: Agent) => {
-        localStorage.setItem('token', token);
-        setToken(token);
-        setAgent(agent);
+    const setSession = (accessToken: string, agent: Agent, refreshToken?: string | null) => {
+        persistAuthSession(accessToken, refreshToken);
+        setToken(accessToken);
+        setAgent({
+            ...agent,
+            region: agent.region ? (getRegionKey(agent.region) || agent.region) : agent.region,
+        });
     };
 
     const logout = async () => {
@@ -99,7 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (err) {
             console.error('Logout API call failed', err);
         } finally {
-            localStorage.removeItem('token');
+            clearAuthSession();
             setToken(null);
             setAgent(null);
         }
@@ -108,7 +128,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updateAgent = async (updatedAgent: Partial<Agent>) => {
         try {
             const res = await api.put('/agents/profile', updatedAgent);
-            setAgent(res.data);
+            const profile = res.data;
+            setAgent({
+                ...profile,
+                region: getRegionKey(profile.region) || profile.region,
+            });
             return res.data;
         } catch (error) {
             console.error('Update profile failed', error);

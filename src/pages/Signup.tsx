@@ -1,4 +1,4 @@
-﻿
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { UserCheck, Leaf, Users, TrendingUp, ArrowLeft, ArrowRight, ChevronDown, MapPin, Upload, Check, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import { WHATSAPP_COMMUNITY_URL } from '@/lib/communityLinks';
+import { SIGNUP_REGION_OPTIONS, GHANA_REGION_SIGNUP_LABELS } from '@/data/ghanaRegions';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -68,12 +69,6 @@ const Signup = () => {
       icon: <TrendingUp className="h-6 w-6 text-blue-600" />,
       color: 'bg-white border-gray-100 hover:border-[#7ede56] hover:bg-white shadow-xl'
     }
-  ];
-
-  const ghanaRegions = [
-    'Ashanti', 'Eastern', 'Northern', 'Western', 'Volta', 'Central', 'Bono Ahafo',
-    'Greater Accra', 'Upper East', 'Upper West', 'Western North', 'Ahafo',
-    'Bono East', 'Oti', 'Savannah', 'North East'
   ];
 
   const handleInputChange = (field: string, value: any) => {
@@ -254,8 +249,10 @@ const Signup = () => {
                       <SelectValue placeholder="Select region" />
                     </SelectTrigger>
                     <SelectContent>
-                      {ghanaRegions.map(region => (
-                        <SelectItem key={region} value={region.toLowerCase()}>{region}</SelectItem>
+                      {SIGNUP_REGION_OPTIONS.map((region) => (
+                        <SelectItem key={region} value={region}>
+                          {GHANA_REGION_SIGNUP_LABELS[region] || region.replace(' Region', '')}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -420,8 +417,10 @@ const Signup = () => {
                       <SelectValue placeholder="Select region" />
                     </SelectTrigger>
                     <SelectContent>
-                      {ghanaRegions.map(region => (
-                        <SelectItem key={region} value={region.toLowerCase()}>{region}</SelectItem>
+                      {SIGNUP_REGION_OPTIONS.map((region) => (
+                        <SelectItem key={region} value={region}>
+                          {GHANA_REGION_SIGNUP_LABELS[region] || region.replace(' Region', '')}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

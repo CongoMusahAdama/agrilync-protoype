@@ -93,12 +93,13 @@ const AgentManagement = () => {
     // Operational Regions
     const regionsList = [
         "Bono Ahafo Region",
+        "Asunafo North Ahafo Region",
         "Northern Region",
         "Upper East Region",
         "Ashanti Region",
         "Western Region",
         "Volta Region",
-        "Central Region"
+        "Central Region",
     ];
 
     // ==========================================

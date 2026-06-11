@@ -7,7 +7,6 @@ import { createWorker } from 'tesseract.js';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -21,6 +20,21 @@ import {
     Globe, Mail, Layers, Briefcase as FarmIcon
 } from 'lucide-react';
 import { GHANA_REGIONS, GHANA_LANGUAGES, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
+import { GHANA_CROPS, GHANA_LIVESTOCK, type LivestockEntry } from '@/data/ghanaCrops';
+import ProfileImageCropDialog from '@/components/ProfileImageCropDialog';
+import { resolveInitialMapView } from '@/utils/mapLocation';
+import { showValidationAlert } from '@/utils/validationAlert';
+import {
+    ONBOARDING_INPUT,
+    ONBOARDING_SELECT,
+    ONBOARDING_TEXTAREA,
+    OnboardingFieldLabel,
+    OnboardingFormCard,
+    OnboardingMobileProgress,
+    OnboardingSidebar,
+    OnboardingStepSection,
+    ONBOARDING_CONTENT_WIDTH,
+} from '@/components/agent/onboarding/OnboardingFormUI';
 
 const TRAINING_MODULES = [
     { id: 'soil_crop', title: 'Soil & Crop Management' },
@@ -53,23 +67,22 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
     const [step, setStep] = useState(1);
     const [isEditable, setIsEditable] = useState(true);
 
-    const emptyForm = {
+    const buildEmptyForm = React.useCallback(() => ({
         name: '', contact: '', gender: '', dob: '', language: '', otherLanguage: '',
         email: '', password: '', region: getRegionKey(agent?.region), district: '',
         community: '', farmType: '', farmSize: '', yearsOfExperience: '',
-        landOwnershipStatus: '', cropsGrown: '', livestockType: '', fieldNotes: '',
+        landOwnershipStatus: '', fieldNotes: '',
         investmentInterest: 'no', preferredInvestmentType: '', estimatedCapitalNeed: '',
         hasPreviousInvestment: false, investmentReadinessScore: 0,
         otherGender: '', otherDistrict: '', ghanaCardNumber: ''
-    };
+    }), [agent?.region]);
 
-    const [formData, setFormData] = useState(emptyForm);
+    const [formData, setFormData] = useState(buildEmptyForm);
     const [gpsLocation, setGpsLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [manualCommunity, setManualCommunity] = useState('');
     const [profilePicture, setProfilePicture] = useState('');
     const [idCardFront, setIdCardFront] = useState('');
     const [idCardBack, setIdCardBack] = useState('');
-    const [certificationChecked, setCertificationChecked] = useState(false);
     const [idVerificationChecked, setIdVerificationChecked] = useState(false);
     const [ocrProcessing, setOcrProcessing] = useState(false);
     const [ocrData, setOcrData] = useState<{ name?: string; dob?: string } | null>(null);
@@ -77,11 +90,18 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
     const [farmLatitude, setFarmLatitude] = useState(0);
     const [farmLongitude, setFarmLongitude] = useState(0);
     const [measuredArea, setMeasuredArea] = useState(0);
+    const [mapViewCenter, setMapViewCenter] = useState<[number, number] | undefined>();
+    const [mapViewZoom, setMapViewZoom] = useState(14);
     const [isIdCardModalOpen, setIsIdCardModalOpen] = useState(false);
     const [finalizedFarmer, setFinalizedFarmer] = useState<any>(null);
     const [trainingModules, setTrainingModules] = useState(
         TRAINING_MODULES.map(m => ({ ...m, completed: false }))
     );
+    const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
+    const [cropsGrownOther, setCropsGrownOther] = useState('');
+    const [livestockInventory, setLivestockInventory] = useState<LivestockEntry[]>([]);
+    const [cropDialogOpen, setCropDialogOpen] = useState(false);
+    const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
 
     const toggleModule = (id: string) => {
         if (!isEditable) return;
@@ -90,74 +110,194 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         ));
     };
 
-    React.useEffect(() => {
-        if (certificationChecked && navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => setGpsLocation({ lat: position.coords.latitude, lng: position.coords.longitude }),
-                () => console.log('Location not granted')
-            );
-        }
-    }, [certificationChecked]);
+    const toggleCrop = (crop: string) => {
+        if (!isEditable) return;
+        setSelectedCrops((prev) =>
+            prev.includes(crop) ? prev.filter((c) => c !== crop) : [...prev, crop]
+        );
+    };
 
-    React.useEffect(() => {
-        if (open && farmer && isEditMode) {
-            try {
-                setFormData({
-                    name: farmer.name || '', contact: farmer.contact || '', gender: farmer.gender || '',
-                    dob: farmer.dob ? (farmer.dob.includes('T') ? new Date(farmer.dob).toISOString().split('T')[0] : farmer.dob.split('T')[0]) : '',
-                    language: farmer.language || '', otherLanguage: farmer.otherLanguage || '',
-                    email: farmer.email || '', password: '',
-                    region: getRegionKey(farmer.region || agent?.region),
-                    district: farmer.district || '', community: farmer.community || '',
-                    farmType: farmer.farmType || '', farmSize: farmer.farmSize?.toString() || '',
-                    yearsOfExperience: farmer.yearsOfExperience?.toString() || '',
-                    landOwnershipStatus: farmer.landOwnershipStatus || '', cropsGrown: farmer.cropsGrown || '',
-                    livestockType: farmer.livestockType || '', fieldNotes: farmer.fieldNotes || '',
-                    investmentInterest: farmer.investmentInterest || 'no',
-                    preferredInvestmentType: farmer.preferredInvestmentType || '',
-                    estimatedCapitalNeed: farmer.estimatedCapitalNeed?.toString() || '',
-                    hasPreviousInvestment: farmer.hasPreviousInvestment || false,
-                    investmentReadinessScore: farmer.investmentReadinessScore || 0,
-                    otherGender: farmer.otherGender || '', otherDistrict: farmer.otherDistrict || '',
-                    ghanaCardNumber: farmer.ghanaCardNumber || ''
-                });
-                if (farmer.community && !GHANA_COMMUNITIES[farmer.district]?.includes(farmer.community)) {
-                    setManualCommunity(farmer.community);
-                    setFormData(prev => ({ ...prev, community: 'Other (Specify)' }));
-                } else {
-                    setManualCommunity('');
-                }
-                setProfilePicture(farmer.profilePicture || '');
-                setIdCardFront(farmer.idCardFront || '');
-                setIdCardBack(farmer.idCardBack || '');
-                setIdVerificationChecked(!!(farmer.idCardFront && farmer.idCardBack));
-                setCertificationChecked(true);
-                setOcrMismatch([]);
-                setOcrData(null);
-                setStep(1);
-                setIsEditable(false);
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Load Failed',
-                    text: 'Error loading farmer profile for editing. Refined data might be missing.',
-                    confirmButtonColor: '#002f37'
-                });
-            }
-        } else if ((open || !trigger) && !isEditMode) {
-            setFormData({ ...emptyForm, region: getRegionKey(agent?.region) });
+    const addLivestockEntry = () => {
+        if (!isEditable) return;
+        setLivestockInventory((prev) => [...prev, { type: 'Poultry', count: 0 }]);
+    };
+
+    const updateLivestockEntry = (index: number, field: keyof LivestockEntry, value: string | number) => {
+        if (!isEditable) return;
+        setLivestockInventory((prev) =>
+            prev.map((entry, i) => (i === index ? { ...entry, [field]: value } : entry))
+        );
+    };
+
+    const removeLivestockEntry = (index: number) => {
+        if (!isEditable) return;
+        setLivestockInventory((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const prevOpenRef = React.useRef(false);
+    const loadedEditFarmerIdRef = React.useRef<string | null>(null);
+
+    const resetNewFarmerForm = React.useCallback(() => {
+        setFormData(buildEmptyForm());
+        setManualCommunity('');
+        setProfilePicture('');
+        setIdCardFront('');
+        setIdCardBack('');
+        setCropImageSrc(null);
+        setCropDialogOpen(false);
+        setOcrMismatch([]);
+        setOcrData(null);
+        setStep(1);
+        setIsEditable(true);
+        setIdVerificationChecked(false);
+        setSelectedCrops([]);
+        setCropsGrownOther('');
+        setLivestockInventory([]);
+        setFarmLatitude(0);
+        setFarmLongitude(0);
+        setMeasuredArea(0);
+        setMapViewCenter(undefined);
+        setMapViewZoom(14);
+        setTrainingModules(TRAINING_MODULES.map((m) => ({ ...m, completed: false })));
+    }, [buildEmptyForm]);
+
+    const loadFarmerForEdit = React.useCallback((editFarmer: NonNullable<typeof farmer>) => {
+        setFormData({
+            name: editFarmer.name || '', contact: editFarmer.contact || '', gender: editFarmer.gender || '',
+            dob: editFarmer.dob ? (editFarmer.dob.includes('T') ? new Date(editFarmer.dob).toISOString().split('T')[0] : editFarmer.dob.split('T')[0]) : '',
+            language: editFarmer.language || '', otherLanguage: editFarmer.otherLanguage || '',
+            email: editFarmer.email || '', password: '',
+            region: getRegionKey(editFarmer.region || agent?.region),
+            district: editFarmer.district || '', community: editFarmer.community || '',
+            farmType: editFarmer.farmType || '', farmSize: editFarmer.farmSize?.toString() || '',
+            yearsOfExperience: editFarmer.yearsOfExperience?.toString() || '',
+            landOwnershipStatus: editFarmer.landOwnershipStatus || '', fieldNotes: editFarmer.fieldNotes || '',
+            investmentInterest: editFarmer.investmentInterest || 'no',
+            preferredInvestmentType: editFarmer.preferredInvestmentType || '',
+            estimatedCapitalNeed: editFarmer.estimatedCapitalNeed?.toString() || '',
+            hasPreviousInvestment: editFarmer.hasPreviousInvestment || false,
+            investmentReadinessScore: editFarmer.investmentReadinessScore || 0,
+            otherGender: editFarmer.otherGender || '', otherDistrict: editFarmer.otherDistrict || '',
+            ghanaCardNumber: editFarmer.ghanaCardNumber || ''
+        });
+        if (editFarmer.community && !GHANA_COMMUNITIES[editFarmer.district]?.includes(editFarmer.community)) {
+            setManualCommunity(editFarmer.community);
+            setFormData(prev => ({ ...prev, community: 'Other (Specify)' }));
+        } else {
             setManualCommunity('');
-            setProfilePicture('');
-            setIdCardFront('');
-            setIdCardBack('');
-            setOcrMismatch([]);
-            setOcrData(null);
-            setStep(1);
-            setIsEditable(true);
-            setIdVerificationChecked(false);
-            setCertificationChecked(false);
         }
-    }, [open, farmer, isEditMode, agent, trigger]);
+        setProfilePicture(editFarmer.profilePicture || '');
+        setIdCardFront(editFarmer.idCardFront || '');
+        setIdCardBack(editFarmer.idCardBack || '');
+        setIdVerificationChecked(!!(editFarmer.idCardFront && editFarmer.idCardBack));
+        setSelectedCrops(
+            editFarmer.cropList?.length
+                ? editFarmer.cropList
+                : (editFarmer.cropsGrown ? String(editFarmer.cropsGrown).split(',').map((s: string) => s.trim()).filter(Boolean) : [])
+        );
+        setCropsGrownOther(editFarmer.cropsGrownOther || '');
+        setLivestockInventory(editFarmer.livestockInventory?.length ? editFarmer.livestockInventory : []);
+        if (editFarmer.farmLocation?.lat != null) {
+            setFarmLatitude(editFarmer.farmLocation.lat);
+            setFarmLongitude(editFarmer.farmLocation.lng);
+            setMeasuredArea(editFarmer.farmLocation.measuredAcres || editFarmer.farmSize || 0);
+        }
+        setTrainingModules(
+            TRAINING_MODULES.map((m) => ({
+                ...m,
+                completed: (editFarmer.trainingModules || []).includes(m.id),
+            }))
+        );
+        setOcrMismatch([]);
+        setOcrData(null);
+        setStep(1);
+        setIsEditable(false);
+    }, [agent?.region]);
+
+    // Only reset/load when the modal opens — not when agent/profile refreshes in the background
+    React.useEffect(() => {
+        const wasOpen = prevOpenRef.current;
+        const isOpen = Boolean(open);
+        prevOpenRef.current = isOpen;
+
+        if (!isOpen) {
+            loadedEditFarmerIdRef.current = null;
+            return;
+        }
+
+        const justOpened = !wasOpen;
+
+        if (isEditMode && farmer) {
+            const farmerId = String(farmer._id || farmer.id || '');
+            if (justOpened || loadedEditFarmerIdRef.current !== farmerId) {
+                loadedEditFarmerIdRef.current = farmerId;
+                try {
+                    loadFarmerForEdit(farmer);
+                } catch {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Load Failed',
+                        text: 'Error loading farmer profile for editing. Refined data might be missing.',
+                        confirmButtonColor: '#002f37'
+                    });
+                }
+            }
+            return;
+        }
+
+        if (!isEditMode && justOpened) {
+            resetNewFarmerForm();
+        }
+    }, [open, farmer, isEditMode, loadFarmerForEdit, resetNewFarmerForm]);
+
+    // If the modal opened before agent profile finished loading, fill region without wiping other fields
+    React.useEffect(() => {
+        if (!open || isEditMode || !agent?.region) return;
+        setFormData((prev) => {
+            if (prev.region) return prev;
+            return { ...prev, region: getRegionKey(agent.region) };
+        });
+    }, [open, isEditMode, agent?.region]);
+
+    const mapInitRef = React.useRef(false);
+    const submitLockRef = React.useRef(false);
+
+    // Auto-locate map on open: phone GPS → geocode agent region (no hardcoded coords)
+    React.useEffect(() => {
+        if (!open) {
+            mapInitRef.current = false;
+            return;
+        }
+        if (mapInitRef.current) return;
+        mapInitRef.current = true;
+
+        if (isEditMode && farmer?.farmLocation?.lat != null) {
+            setMapViewCenter([farmer.farmLocation.lat, farmer.farmLocation.lng]);
+            setMapViewZoom(15);
+            return;
+        }
+
+        let cancelled = false;
+        (async () => {
+            const view = await resolveInitialMapView({
+                region: getRegionKey(agent?.region || formData.region),
+                setPinFromGps: !isEditMode,
+                gpsZoom: 15,
+                geocodeZoom: 13,
+            });
+            if (cancelled) return;
+            setMapViewCenter(view.center);
+            setMapViewZoom(view.zoom);
+            if (view.pinCoords) {
+                setFarmLatitude((prev) => (prev !== 0 ? prev : view.pinCoords!.lat));
+                setFarmLongitude((prev) => (prev !== 0 ? prev : view.pinCoords!.lng));
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [open, isEditMode, farmer, agent?.region, formData.region]);
 
     React.useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -168,7 +308,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             if (e.key === 'Enter' && !isTyping) {
                 e.preventDefault();
                 if (step < 4) setStep(prev => prev + 1);
-                else if (isEditable) handleSubmit();
+                else if (isEditable && !submitLockRef.current && !addFarmerMutation.isPending) handleSubmit();
             } else if (e.key === 'ArrowRight' && !isTyping) {
                 if (step < 4) setStep(prev => prev + 1);
             } else if (e.key === 'ArrowLeft' && !isTyping) {
@@ -260,6 +400,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'front' | 'back' | 'profile') => {
         const file = e.target.files?.[0];
         if (!file) return;
+        e.target.value = '';
         if (file.size > 5 * 1024 * 1024) { 
             Swal.fire({ icon: 'error', title: 'File Too Large', text: 'Maximum upload size is 5MB. Please choose a smaller image.', confirmButtonColor: '#002f37' });
             return; 
@@ -267,15 +408,28 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         const reader = new FileReader();
         reader.onloadend = async () => {
             try {
+                if (type === 'profile') {
+                    setCropImageSrc(reader.result as string);
+                    setCropDialogOpen(true);
+                    return;
+                }
                 const compressed = await compressImage(reader.result as string);
                 if (type === 'front') { setIdCardFront(compressed); processOCR(compressed); }
                 else if (type === 'back') setIdCardBack(compressed);
-                else setProfilePicture(compressed);
             } catch { 
                 Swal.fire({ icon: 'error', title: 'Processing Error', text: 'Failed to optimize image for upload.', confirmButtonColor: '#002f37' });
             }
         };
         reader.readAsDataURL(file);
+    };
+
+    const handleFarmerProfileCrop = async (dataUrl: string) => {
+        try {
+            const compressed = await compressImage(dataUrl, 512, 512, 0.88);
+            setProfilePicture(compressed);
+        } catch {
+            Swal.fire({ icon: 'error', title: 'Processing Error', text: 'Failed to optimize profile photo.', confirmButtonColor: '#002f37' });
+        }
     };
 
     const handleInputChange = (field: string, value: any) => {
@@ -300,6 +454,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             if (isEditMode && farmer?._id) return api.put(`/farmers/${farmer._id}`, payload);
             return api.post('/farmers', payload);
         },
+        retry: false,
         onSuccess: async (response: any) => {
             const savedFarmer = response.data;
             const lyncId = savedFarmer?.id || savedFarmer?.ghanaCardNumber || 'N/A';
@@ -314,25 +469,26 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             setFinalizedFarmer(savedFarmer);
             setIsIdCardModalOpen(true);
             onOpenChange?.(false);
-            setFormData({ ...emptyForm, region: getRegionKey(agent?.region) });
-            setManualCommunity(''); setIdCardFront(''); setIdCardBack(''); setStep(1);
+            resetNewFarmerForm();
         },
-        onError: (error: any) => {
-            console.error('Add/Edit Farmer Error:', error.response?.data);
-            Swal.fire({
-                icon: 'error',
-                title: 'Transaction Failed',
-                text: error.response?.data?.msg || error.response?.data?.message || 'Failed to complete grower registration',
-                confirmButtonColor: '#002f37'
-            });
+        onError: (error: unknown) => {
+            submitLockRef.current = false;
+            console.error('Add/Edit Farmer Error:', error);
+            showValidationAlert(
+                'Verification Failed',
+                error,
+                'Could not verify and complete grower registration. Please check the details and try again.'
+            );
         }
     });
 
     const isSubmitting = addFarmerMutation.isPending;
 
     const handleSubmit = async () => {
-        if (!certificationChecked) {
-            Swal.fire({ icon: 'error', title: 'Action Required', text: 'Please certify the verification of farmer information', confirmButtonColor: '#002f37' });
+        if (submitLockRef.current || addFarmerMutation.isPending) return;
+
+        if (!agent?.agentId) {
+            Swal.fire({ icon: 'error', title: 'Session Error', text: 'Your agent ID could not be verified. Please log out and sign in again.', confirmButtonColor: '#002f37' });
             return;
         }
         if (!idCardFront || !idCardBack) {
@@ -376,174 +532,144 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         const finalCommunity = formData.community === 'Other (Specify)' ? manualCommunity : formData.community;
         const payload: any = {
             ...formData,
+            ghanaCardNumber: formData.ghanaCardNumber.trim().toUpperCase(),
             gender: formData.gender === 'other' ? formData.otherGender : formData.gender,
             district: formData.district === 'other' ? formData.otherDistrict : formData.district,
             password: !isEditMode ? tempPassword : undefined,
             community: finalCommunity,
+            preferredInvestmentType:
+                formData.investmentInterest === 'yes' ? formData.preferredInvestmentType : undefined,
             farmSize: Number(formData.farmSize),
             yearsOfExperience: Number(formData.yearsOfExperience),
             estimatedCapitalNeed: formData.estimatedCapitalNeed ? Number(formData.estimatedCapitalNeed) : 0,
             investmentReadinessScore: Number(formData.investmentReadinessScore),
-            verificationConfirmed: certificationChecked,
-            gpsLocation, profilePicture, idCardFront, idCardBack, status: 'active',
-            trainingModules: trainingModules.filter(m => m.completed).map(m => m.id)
+            onboardingAgentId: agent.agentId,
+            verificationConfirmed: true,
+            profilePicture, idCardFront, idCardBack, status: 'active',
+            trainingModules: trainingModules.filter(m => m.completed).map(m => m.id),
+            cropList: selectedCrops,
+            cropsGrownOther: selectedCrops.includes('Other') ? cropsGrownOther : '',
+            livestockInventory,
+            farmLocation: farmLatitude && farmLongitude ? {
+                lat: farmLatitude,
+                lng: farmLongitude,
+                measuredAcres: measuredArea || Number(formData.farmSize) || 0,
+            } : gpsLocation ? {
+                lat: gpsLocation.lat,
+                lng: gpsLocation.lng,
+                measuredAcres: Number(formData.farmSize) || measuredArea || 0,
+            } : undefined,
         };
         if (isEditMode) delete payload.password;
-        addFarmerMutation.mutate(payload);
+
+        submitLockRef.current = true;
+        addFarmerMutation.mutate(payload, {
+            onSuccess: () => {
+                submitLockRef.current = false;
+            },
+        });
     };
 
     const steps = [
-        { id: 1, label: 'Identify', sub: 'Bio & personal info', icon: User },
-        { id: 2, label: 'Operation', sub: 'Farm location details', icon: Sprout },
-        { id: 3, label: 'Capital', sub: 'Investment & financials', icon: Coins },
-        { id: 4, label: 'Validate', sub: 'Documents & review', icon: FileText }
+        { id: 1, label: 'Identity', sub: 'Name, phone & ID', icon: User },
+        { id: 2, label: 'Farm', sub: 'Location & crops', icon: Sprout },
+        { id: 3, label: 'Investment', sub: 'Optional funding info', icon: Coins },
+        { id: 4, label: 'Verify', sub: 'Photos & finish', icon: FileText },
     ];
 
     return (
+        <>
         <Dialog open={open} onOpenChange={onOpenChange}>
             {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-            <DialogContent className="max-w-[1400px] w-[98vw] md:w-[95vw] h-[95vh] md:h-[85vh] p-0 overflow-hidden border-none bg-[#f4f7f9] shadow-2xl z-[150] [&>button]:hidden">
+            <DialogContent className="max-w-[100vw] sm:max-w-[96vw] lg:max-w-[min(1280px,94vw)] xl:max-w-[min(1360px,92vw)] w-full h-[100dvh] sm:h-[92dvh] lg:h-[88vh] p-0 overflow-hidden border-none bg-[#f4f7f6] shadow-2xl z-[150] rounded-none sm:rounded-2xl [&>button]:hidden">
                 <div className="sr-only">
                     <DialogTitle>{isEditMode ? 'Grower Profile Update' : 'New Grower Registration'}</DialogTitle>
                     <DialogDescription>{isEditMode ? 'Editing existing grower profile' : 'Form for onboarding a new grower'}</DialogDescription>
                 </div>
 
                 <div className="flex h-full w-full overflow-hidden">
-                    {/* ── LEFT SIDEBAR ── */}
-                    <div className="hidden lg:flex w-72 shrink-0 bg-white border-r border-gray-200 flex-col pt-8">
-                        <div className="px-8 pb-8 border-b border-gray-100 mb-6">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="h-10 w-10 rounded-xl bg-[#002f37] flex items-center justify-center text-[#7ede56] shadow-lg">
-                                    <Leaf className="h-6 w-6" />
-                                </div>
-                                <span className="font-extrabold text-[15px] text-[#002f37] tracking-tight">AgriLync Ops</span>
-                            </div>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Command Center</p>
-                        </div>
+                    <OnboardingSidebar steps={steps} currentStep={step} onStepClick={setStep} />
 
-                        <div className="flex-1 px-4 space-y-2">
-                            {steps.map((s) => {
-                                const isActive = step === s.id;
-                                const isDone = step > s.id;
-                                return (
-                                    <button
-                                        key={s.id}
-                                        onClick={() => setStep(s.id)}
-                                        className={`w-full flex items-center gap-4 py-4 px-6 rounded-none transition-all ${isActive ? 'bg-[#002f37]/5 text-[#002f37]' : 'text-gray-400 hover:bg-gray-50'}`}
-                                    >
-                                        <div className={`h-10 w-10 shrink-0 rounded-full flex items-center justify-center font-black text-sm transition-colors ${isActive ? 'bg-[#002f37] text-white shadow-md' : isDone ? 'bg-[#7ede56] text-[#002f37]' : 'bg-gray-100 text-gray-400'}`}>
-                                            {isDone ? <CheckCircle2 className="h-5 w-5" /> : s.id}
-                                        </div>
-                                        <div className="text-left">
-                                            <p className={`text-[13px] font-black tracking-tight ${isActive ? 'text-[#002f37]' : 'text-gray-500'}`}>{s.label}</p>
-                                            <p className="text-[10px] font-bold text-gray-400 leading-none">{s.sub}</p>
-                                        </div>
-                                    </button>
-                                );
-                            })}
-                        </div>
-
-                        <div className="p-8 bg-gray-50/50">
-                            <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-[#7ede56] animate-pulse" />
-                                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Protocol Active</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* ── RIGHT CONTENT ── */}
-                    <div className="flex-1 flex flex-col min-w-0 bg-[#f8fafc]">
-                        {/* Top bar */}
-                        <div className="bg-[#002f37] text-white py-4 px-4 md:px-10 flex items-center justify-between shadow-md shrink-0">
-                            <div className="flex items-center gap-6">
-                                <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-white drop-shadow-sm">
-                                    {isEditMode ? 'Edit Grower Profile' : 'New Grower Onboarding'}
+                    <div className="flex-1 flex flex-col min-w-0">
+                        <div className="bg-white/95 backdrop-blur-sm border-b border-gray-100 px-4 sm:px-8 lg:px-10 py-4 lg:py-5 flex items-center justify-between shrink-0 safe-area-top">
+                            <div className="min-w-0 pr-3">
+                                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-[#002f37] truncate">
+                                    {isEditMode ? 'Edit farmer' : 'Add new farmer'}
                                 </h2>
-                                <div className="hidden md:flex items-center gap-2">
-                                    {steps.map((s, idx) => (
-                                        <button
-                                            key={s.id}
-                                            onClick={() => setStep(s.id)}
-                                            className={`px-4 py-1.5 rounded-full text-[10.5px] font-black uppercase tracking-widest transition-all ${step === s.id ? 'bg-[#7ede56] text-[#002f37] shadow-lg scale-105' : 'bg-white/10 text-white/80 hover:bg-white/20'}`}
-                                        >
-                                            {s.label}
-                                        </button>
-                                    ))}
-                                </div>
+                                <p className="text-sm text-gray-500 mt-0.5">
+                                    <span className="text-[#065f46] font-medium">{steps[step - 1].label}</span>
+                                    <span className="hidden sm:inline text-gray-400"> · {steps[step - 1].sub}</span>
+                                </p>
                             </div>
                             <button
+                                type="button"
                                 onClick={() => onOpenChange?.(false)}
-                                className="h-9 w-9 flex items-center justify-center rounded-xl hover:bg-red-500/20 hover:text-red-400 transition-all text-white/60"
+                                className="h-10 w-10 flex items-center justify-center rounded-xl bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors shrink-0"
+                                aria-label="Close"
                             >
                                 <X className="h-5 w-5" />
                             </button>
                         </div>
 
-                        {/* Step breadcrumb */}
-                        <div className="bg-white border-b border-gray-200 px-4 md:px-10 py-4 flex items-center gap-2 flex-wrap shrink-0">
-                            <span className="text-[10px] font-black text-[#002f37]/40 uppercase tracking-widest leading-none mt-1 hidden sm:inline">Operational Phase</span>
-                            <ChevronRight className="h-3 w-3 text-gray-300 hidden sm:inline" />
-                            <span className="text-[10px] font-black text-[#065f46] uppercase tracking-widest leading-none mt-1 hidden sm:inline">{steps[step - 1].label}</span>
-                            <div className="w-full sm:w-auto sm:ml-auto">
-                                <h3 className="text-lg md:text-xl font-black text-[#002f37] tracking-tight">{steps[step - 1].label}: <span className="text-gray-400 font-bold">{steps[step - 1].sub}</span></h3>
-                            </div>
-                        </div>
+                        <OnboardingMobileProgress steps={steps} currentStep={step} onStepClick={setStep} />
 
                         {/* Scrollable content */}
-                        <ScrollArea className="flex-1">
-                            <div className="p-4 md:p-10 max-w-[1050px] mx-auto space-y-8">
+                        <ScrollArea className="flex-1 bg-gradient-to-b from-[#f4f7f6] to-[#eef3f1]">
+                            <div className={`p-4 sm:p-6 lg:p-8 xl:p-10 mx-auto space-y-6 lg:space-y-8 pb-10 ${ONBOARDING_CONTENT_WIDTH}`}>
 
                                 {/* ── STEP 1: IDENTITY ── */}
                                 {step === 1 && (
-                                    <div className="step-wrapper">
-                                        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-400">
-                                            <div className="bg-[#002f37] text-white px-6 py-4 rounded-none flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-none bg-white/10 flex items-center justify-center border border-white/20">
-                                                    <User className="h-5 w-5 text-[#7ede56]" />
-                                                </div>
-                                                <div>
-                                                    <span className="text-xs font-black uppercase tracking-widest block">Step 01 / Identity</span>
-                                                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-tighter">Bio & Personal Identification</p>
-                                                </div>
-                                            </div>
-                                            <div className="bg-white border border-gray-200 border-t-0 p-6 md:p-10 rounded-none shadow-sm">
-                                                <div className="flex flex-col items-center mb-8 pb-8 border-b border-gray-100">
-                                                    <Label className="text-[11px] font-black uppercase text-[#002f37]/60 tracking-widest mb-4">Profile Photo</Label>
-                                                    <label className={`relative cursor-pointer group ${!isEditable ? 'pointer-events-none' : ''}`}>
-                                                        <div className="h-28 w-28 rounded-full border-4 border-dashed border-gray-200 group-hover:border-[#7ede56] transition-colors overflow-hidden bg-gray-50 flex items-center justify-center shadow-inner">
+                                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-5">
+                                        <OnboardingStepSection
+                                            step={1}
+                                            icon={User}
+                                            title="Who is this farmer?"
+                                            description="Basic details as they appear on the Ghana Card."
+                                        />
+                                        <OnboardingFormCard>
+                                            <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] xl:grid-cols-[220px_1fr] gap-6 lg:gap-10 pb-6 lg:pb-8 border-b border-gray-100">
+                                                <div className="flex flex-col items-center lg:items-start">
+                                                    <OnboardingFieldLabel hint="Optional">Profile photo</OnboardingFieldLabel>
+                                                    <label className={`relative cursor-pointer group mt-4 ${!isEditable ? 'pointer-events-none' : ''}`}>
+                                                        <div className="h-28 w-28 lg:h-32 lg:w-32 rounded-2xl border-2 border-dashed border-[#065f46]/20 group-hover:border-[#7ede56] transition-all overflow-hidden bg-gradient-to-br from-gray-50 to-[#7ede56]/5 flex items-center justify-center shadow-inner">
                                                             {profilePicture
-                                                                ? <img src={profilePicture} alt="Profile" className="w-full h-full object-cover" />
-                                                                : <div className="flex flex-col items-center gap-1 text-gray-300 group-hover:text-[#7ede56] transition-colors">
+                                                                ? <img src={profilePicture} alt="Profile" className="w-full h-full object-cover object-center" />
+                                                                : <div className="flex flex-col items-center gap-2 text-gray-400 group-hover:text-[#065f46]">
                                                                     <Camera className="h-8 w-8" />
-                                                                    <span className="text-[9px] font-black uppercase tracking-widest text-center">Upload or<br/>Snap</span>
+                                                                    <span className="text-xs font-medium">Tap to add</span>
                                                                   </div>
                                                             }
                                                         </div>
                                                         {isEditable && (
-                                                            <div className="absolute bottom-0 right-0 h-9 w-9 rounded-full bg-[#002f37] border-2 border-white flex items-center justify-center shadow-lg group-hover:bg-[#7ede56] transition-colors" title="Select File or Take Photo">
-                                                                <Camera className="h-4 w-4 text-white group-hover:text-[#002f37] transition-colors" />
+                                                            <div className="absolute -bottom-1 -right-1 h-9 w-9 rounded-xl bg-[#065f46] border-2 border-white flex items-center justify-center shadow-md">
+                                                                <Camera className="h-4 w-4 text-white" />
                                                             </div>
                                                         )}
                                                         <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, 'profile')} disabled={!isEditable} />
                                                     </label>
                                                 </div>
 
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                                                    <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37]/60 tracking-widest">Grower Full Name</Label>
-                                                        <Input placeholder="Legal name" className="h-14 bg-gray-50 border-none rounded-xl font-bold" value={formData.name} onChange={(e) => handleInputChange('name', e.target.value)} disabled={!isEditable} />
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 lg:gap-6 content-start">
+                                                    <div className="space-y-2 sm:col-span-2">
+                                                        <OnboardingFieldLabel>Full name</OnboardingFieldLabel>
+                                                        <Input placeholder="As on Ghana Card" className={ONBOARDING_INPUT} value={formData.name} onChange={(e) => handleInputChange('name', e.target.value)} disabled={!isEditable} />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37]/60 tracking-widest">Phone Number</Label>
-                                                        <Input placeholder="+233 XX XXX XXX" className="h-14 bg-gray-50 border-none rounded-xl font-bold" value={formData.contact} onChange={(e) => handleInputChange('contact', e.target.value)} disabled={!isEditable} />
+                                                        <OnboardingFieldLabel>Phone number</OnboardingFieldLabel>
+                                                        <Input placeholder="024 000 0000" className={ONBOARDING_INPUT} value={formData.contact} onChange={(e) => handleInputChange('contact', e.target.value)} disabled={!isEditable} />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <OnboardingFieldLabel hint="Optional">Email</OnboardingFieldLabel>
+                                                        <Input placeholder="farmer@email.com" type="email" className={ONBOARDING_INPUT} value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} disabled={!isEditable} />
                                                     </div>
                                                 </div>
+                                            </div>
 
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
                                                     <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37]/60 tracking-widest">Preferred Language</Label>
+                                                        <OnboardingFieldLabel>Preferred language</OnboardingFieldLabel>
                                                         <Select value={formData.language} onValueChange={(v) => handleInputChange('language', v)} disabled={!isEditable}>
-                                                            <SelectTrigger className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500/20"><SelectValue placeholder="Select Language" /></SelectTrigger>
+                                                            <SelectTrigger className={ONBOARDING_SELECT}><SelectValue placeholder="Choose language" /></SelectTrigger>
                                                             <SelectContent className="max-h-[300px] rounded-2xl border-none shadow-2xl">
                                                                 {getLanguagesForRegion(formData.region).map(lang => (
                                                                     <SelectItem key={lang} value={lang} className="py-3 font-bold">{lang}</SelectItem>
@@ -553,16 +679,9 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                         </Select>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37]/60 tracking-widest">Email Address (Optional)</Label>
-                                                        <Input placeholder="farmer@example.com" type="email" className="h-14 bg-gray-50 border-none rounded-xl font-bold" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} disabled={!isEditable} />
-                                                    </div>
-                                                </div>
-
-                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8 pt-8 border-t border-gray-100">
-                                                    <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Gender</Label>
+                                                        <OnboardingFieldLabel>Gender</OnboardingFieldLabel>
                                                         <Select value={formData.gender} onValueChange={(v) => handleInputChange('gender', v)} disabled={!isEditable}>
-                                                            <SelectTrigger className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500/20"><SelectValue placeholder="Gender" /></SelectTrigger>
+                                                            <SelectTrigger className={ONBOARDING_SELECT}><SelectValue placeholder="Select" /></SelectTrigger>
                                                             <SelectContent className="rounded-2xl border-none shadow-2xl">
                                                                 <SelectItem value="male" className="py-3 font-bold">Male</SelectItem>
                                                                 <SelectItem value="female" className="py-3 font-bold">Female</SelectItem>
@@ -571,42 +690,37 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                         </Select>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Birth Date</Label>
-                                                        <Input type="date" className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500/20" value={formData.dob} onChange={(e) => handleInputChange('dob', e.target.value)} disabled={!isEditable} />
+                                                        <OnboardingFieldLabel>Date of birth</OnboardingFieldLabel>
+                                                        <Input type="date" className={ONBOARDING_INPUT} value={formData.dob} onChange={(e) => handleInputChange('dob', e.target.value)} disabled={!isEditable} />
                                                     </div>
-                                                    <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest font-mono">Ghana Card *</Label>
-                                                        <Input placeholder="GHA-XXXX-X" className="h-14 bg-gray-50 border-none rounded-xl font-mono tracking-widest text-[#002f37] font-black placeholder:text-gray-300 transition-all focus:ring-2 focus:ring-emerald-500/20" value={formData.ghanaCardNumber} onChange={(e) => handleInputChange('ghanaCardNumber', e.target.value.toUpperCase())} disabled={!isEditable} onPaste={(e) => e.preventDefault()} onDrop={(e) => e.preventDefault()} />
+                                                    <div className="space-y-2 sm:col-span-1">
+                                                        <OnboardingFieldLabel>Ghana Card number</OnboardingFieldLabel>
+                                                        <Input placeholder="GHA-000000000-0" className={`${ONBOARDING_INPUT} font-mono`} value={formData.ghanaCardNumber} onChange={(e) => handleInputChange('ghanaCardNumber', e.target.value.toUpperCase())} disabled={!isEditable} onPaste={(e) => e.preventDefault()} onDrop={(e) => e.preventDefault()} />
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
+                                        </OnboardingFormCard>
                                     </div>
                                 )}
 
                                 {/* ── STEP 2: OPERATION ── */}
                                 {step === 2 && (
-                                    <div className="step-wrapper">
-                                        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-400">
-                                            <div className="bg-[#002f37] text-white px-6 py-4 rounded-none flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-none bg-white/10 flex items-center justify-center border border-white/20">
-                                                    <Sprout className="h-5 w-5 text-[#7ede56]" />
-                                                </div>
-                                                <div>
-                                                    <span className="text-xs font-black uppercase tracking-widest block">Step 02 / Operation</span>
-                                                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-tighter">Asset & Farm Location Details</p>
-                                                </div>
-                                            </div>
-                                            <div className="bg-white border border-gray-200 border-t-0 p-6 md:p-10 rounded-none shadow-sm space-y-8">
-                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
+                                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-5">
+                                        <OnboardingStepSection
+                                            step={2}
+                                            icon={Sprout}
+                                            title="Farm & location"
+                                            description="Where they farm, what they grow, and pin the farm on the map."
+                                        />
+                                        <OnboardingFormCard className="space-y-6">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
                                                     <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Region</Label>
-                                                        <Input disabled className="h-14 bg-gray-50 border-none rounded-xl font-black text-gray-700" value={formData.region} />
+                                                        <OnboardingFieldLabel>Region</OnboardingFieldLabel>
+                                                        <Input disabled className={`${ONBOARDING_INPUT} bg-gray-50`} value={formData.region} />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">District</Label>
+                                                        <OnboardingFieldLabel>District</OnboardingFieldLabel>
                                                         <Select value={formData.district} onValueChange={(v) => handleInputChange('district', v)} disabled={!isEditable}>
-                                                            <SelectTrigger className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500/20"><SelectValue placeholder="District" /></SelectTrigger>
+                                                            <SelectTrigger className={ONBOARDING_SELECT}><SelectValue placeholder="District" /></SelectTrigger>
                                                             <SelectContent className="max-h-[300px] rounded-2xl border-none shadow-2xl">
                                                                 {formData.region && GHANA_REGIONS[formData.region]?.map(d => (
                                                                     <SelectItem key={d} value={d} className="py-3 font-bold">{d}</SelectItem>
@@ -615,9 +729,9 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                         </Select>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Community</Label>
+                                                        <OnboardingFieldLabel>Community</OnboardingFieldLabel>
                                                         <Select value={formData.community} onValueChange={(v) => handleInputChange('community', v)} disabled={!isEditable}>
-                                                            <SelectTrigger className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500/20"><SelectValue placeholder="Community" /></SelectTrigger>
+                                                            <SelectTrigger className={ONBOARDING_SELECT}><SelectValue placeholder="Community" /></SelectTrigger>
                                                             <SelectContent className="max-h-[300px] rounded-2xl border-none shadow-2xl">
                                                                 {formData.district && GHANA_COMMUNITIES[formData.district]?.map(c => (
                                                                     <SelectItem key={c} value={c} className="py-3 font-bold">{c}</SelectItem>
@@ -630,20 +744,20 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
 
                                                 {formData.community === 'Other (Specify)' && (
                                                     <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Specify Community</Label>
-                                                        <Input placeholder="Enter community name" className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 placeholder:text-gray-400" value={manualCommunity} onChange={(e) => setManualCommunity(e.target.value)} disabled={!isEditable} />
+                                                        <OnboardingFieldLabel>Specify community</OnboardingFieldLabel>
+                                                        <Input placeholder="Enter community name" className={ONBOARDING_INPUT} value={manualCommunity} onChange={(e) => setManualCommunity(e.target.value)} disabled={!isEditable} />
                                                     </div>
                                                 )}
 
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 border-t border-gray-100 pt-8">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 border-t border-gray-100 pt-6">
                                                     <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Experience (Years)</Label>
-                                                        <Input type="number" placeholder="Years of farming" className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 placeholder:text-gray-400" value={formData.yearsOfExperience} onChange={(e) => handleInputChange('yearsOfExperience', e.target.value)} disabled={!isEditable} />
+                                                        <OnboardingFieldLabel>Experience (years)</OnboardingFieldLabel>
+                                                        <Input type="number" placeholder="Years of farming" className={ONBOARDING_INPUT} value={formData.yearsOfExperience} onChange={(e) => handleInputChange('yearsOfExperience', e.target.value)} disabled={!isEditable} />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Primary Farm Type</Label>
+                                                        <OnboardingFieldLabel>Primary farm type</OnboardingFieldLabel>
                                                         <Select value={formData.farmType} onValueChange={(v) => handleInputChange('farmType', v)} disabled={!isEditable}>
-                                                            <SelectTrigger className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500/20"><SelectValue placeholder="Farm Focus" /></SelectTrigger>
+                                                            <SelectTrigger className={ONBOARDING_SELECT}><SelectValue placeholder="Farm Focus" /></SelectTrigger>
                                                             <SelectContent className="rounded-2xl border-none shadow-2xl">
                                                                 <SelectItem value="crop" className="py-3 font-bold">Crop Only</SelectItem>
                                                                 <SelectItem value="livestock" className="py-3 font-bold">Livestock Only</SelectItem>
@@ -653,11 +767,11 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 border-gray-100">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                                                     <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Land Ownership Status</Label>
+                                                        <OnboardingFieldLabel>Land ownership</OnboardingFieldLabel>
                                                         <Select value={formData.landOwnershipStatus} onValueChange={(v) => handleInputChange('landOwnershipStatus', v)} disabled={!isEditable}>
-                                                            <SelectTrigger className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500/20"><SelectValue placeholder="Ownership Status" /></SelectTrigger>
+                                                            <SelectTrigger className={ONBOARDING_SELECT}><SelectValue placeholder="Ownership Status" /></SelectTrigger>
                                                             <SelectContent className="rounded-2xl border-none shadow-2xl">
                                                                 <SelectItem value="owned" className="py-3 font-bold">Personal / Family Owned</SelectItem>
                                                                 <SelectItem value="leased" className="py-3 font-bold">Leased / Rented</SelectItem>
@@ -667,78 +781,129 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                         </Select>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Estimated Acreage</Label>
-                                                        <Input type="number" step="0.1" placeholder="Farm size in acres" className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 placeholder:text-gray-400" value={formData.farmSize} onChange={(e) => handleInputChange('farmSize', e.target.value)} disabled={!isEditable} />
+                                                        <OnboardingFieldLabel>Estimated acreage</OnboardingFieldLabel>
+                                                        <Input type="number" step="0.1" placeholder="Farm size in acres" className={ONBOARDING_INPUT} value={formData.farmSize} onChange={(e) => handleInputChange('farmSize', e.target.value)} disabled={!isEditable} />
                                                     </div>
                                                 </div>
 
                                                 {(formData.farmType === 'crop' || formData.farmType === 'mixed') && (
-                                                    <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest font-inter">Crops Currently Under Production</Label>
-                                                        <Input placeholder="e.g. Maize, Cocoa, Yam, Rice..." className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 placeholder:text-gray-400" value={formData.cropsGrown} onChange={(e) => handleInputChange('cropsGrown', e.target.value)} disabled={!isEditable} />
+                                                    <div className="space-y-3">
+                                                        <OnboardingFieldLabel>Crops under production</OnboardingFieldLabel>
+                                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                            {GHANA_CROPS.map((crop) => (
+                                                                <button
+                                                                    key={crop}
+                                                                    type="button"
+                                                                    onClick={() => toggleCrop(crop)}
+                                                                    className={`p-3 rounded-xl border text-left text-sm font-medium transition-all ${selectedCrops.includes(crop) ? 'bg-[#7ede56]/15 border-[#065f46] text-[#002f37]' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'}`}
+                                                                >
+                                                                    {crop}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                        {selectedCrops.includes('Other') && (
+                                                            <Input
+                                                                placeholder="Specify other crop(s)"
+                                                                className="h-12 bg-gray-50 border-none rounded-xl font-bold"
+                                                                value={cropsGrownOther}
+                                                                onChange={(e) => setCropsGrownOther(e.target.value)}
+                                                                disabled={!isEditable}
+                                                            />
+                                                        )}
                                                     </div>
                                                 )}
 
                                                 {(formData.farmType === 'livestock' || formData.farmType === 'mixed') && (
-                                                    <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest font-inter">Livestock Inventory</Label>
-                                                        <Input placeholder="e.g. Poultry (50), Pigs (10), Cattle (5)..." className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 placeholder:text-gray-400" value={formData.livestockType} onChange={(e) => handleInputChange('livestockType', e.target.value)} disabled={!isEditable} />
+                                                    <div className="space-y-3">
+                                                        <div className="flex items-center justify-between">
+                                                            <OnboardingFieldLabel>Livestock inventory</OnboardingFieldLabel>
+                                                            {isEditable && (
+                                                                <Button type="button" variant="outline" size="sm" onClick={addLivestockEntry} className="text-[10px] font-bold uppercase">
+                                                                    Add Entry
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                        {livestockInventory.length === 0 && (
+                                                            <p className="text-xs text-gray-400 font-medium">No livestock entries yet. Add poultry, cattle, goats, etc.</p>
+                                                        )}
+                                                        <div className="space-y-2">
+                                                            {livestockInventory.map((entry, index) => (
+                                                                <div key={index} className="grid grid-cols-12 gap-2 items-center">
+                                                                    <div className="col-span-5">
+                                                                        <Select value={entry.type} onValueChange={(v) => updateLivestockEntry(index, 'type', v)} disabled={!isEditable}>
+                                                                            <SelectTrigger className="h-12 bg-gray-50 border-none rounded-xl font-bold"><SelectValue /></SelectTrigger>
+                                                                            <SelectContent>
+                                                                                {GHANA_LIVESTOCK.map((type) => (
+                                                                                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                                                                                ))}
+                                                                            </SelectContent>
+                                                                        </Select>
+                                                                    </div>
+                                                                    <div className="col-span-3">
+                                                                        <Input type="number" min={0} placeholder="Count" className="h-12 bg-gray-50 border-none rounded-xl font-bold" value={entry.count || ''} onChange={(e) => updateLivestockEntry(index, 'count', Number(e.target.value))} disabled={!isEditable} />
+                                                                    </div>
+                                                                    <div className="col-span-3">
+                                                                        {entry.type === 'Other' && (
+                                                                            <Input placeholder="Specify" className="h-12 bg-gray-50 border-none rounded-xl font-bold" value={entry.otherLabel || ''} onChange={(e) => updateLivestockEntry(index, 'otherLabel', e.target.value)} disabled={!isEditable} />
+                                                                        )}
+                                                                    </div>
+                                                                    {isEditable && (
+                                                                        <button type="button" onClick={() => removeLivestockEntry(index)} className="col-span-1 text-red-400 hover:text-red-600">
+                                                                            <X className="h-4 w-4" />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                 )}
 
-                                                <div className="relative rounded-none overflow-hidden border-2 border-gray-100 h-[380px]">
-                                                    <div className="absolute top-4 left-4 z-10 px-4 py-2 bg-white/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 flex items-center gap-3">
-                                                        <div className="h-7 w-7 rounded-lg bg-[#002f37] flex items-center justify-center text-[#7ede56]">
-                                                            <MapPin className="h-4 w-4" />
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest leading-none">Geo-Capture Active</p>
-                                                            <p className="text-xs font-black text-[#002f37]">Verified Perimeter</p>
-                                                        </div>
+                                                <div className="space-y-2">
+                                                    <OnboardingFieldLabel hint="Tap the map or use your location to mark the farm">Farm location on map</OnboardingFieldLabel>
+                                                <div className="relative rounded-2xl overflow-hidden border border-gray-200 h-[280px] sm:h-[360px] lg:h-[400px]">
+                                                    <div className="absolute top-3 left-3 z-10 px-3 py-2 bg-white/95 rounded-lg shadow-sm border border-gray-100 flex items-center gap-2">
+                                                        <MapPin className="h-4 w-4 text-[#065f46]" />
+                                                        <p className="text-xs font-medium text-gray-600">Pin farm location</p>
                                                     </div>
                                                     <FarmMap
                                                         latitude={farmLatitude}
                                                         longitude={farmLongitude}
+                                                        viewCenter={mapViewCenter}
+                                                        viewZoom={mapViewZoom}
                                                         onLocationChange={(lat, lng) => { if (isEditable) { setFarmLatitude(lat); setFarmLongitude(lng); } }}
                                                         onAreaChange={(area) => { if (isEditable) { setMeasuredArea(area); if (formData.farmType === 'crop') setFormData(fd => ({ ...fd, farmSize: area.toFixed(2) })); } }}
                                                         farmSize={measuredArea}
                                                     />
-                                                    <div className="absolute bottom-4 right-4 z-10 bg-[#002f37] text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-4">
-                                                        <div className="text-right border-r border-white/10 pr-4">
-                                                            <p className="text-[8px] font-black text-[#7ede56] uppercase tracking-widest">Captured Area</p>
-                                                            <p className="text-xl font-black">{measuredArea.toFixed(2)} <span className="text-[10px] opacity-40 font-bold">acres</span></p>
+                                                    {measuredArea > 0 && (
+                                                        <div className="absolute bottom-3 right-3 z-10 bg-[#065f46] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md">
+                                                            {measuredArea.toFixed(2)} ha measured
                                                         </div>
-                                                        <Activity className="h-5 w-5 text-[#7ede56]" />
-                                                    </div>
+                                                    )}
                                                 </div>
-                                            </div>
-                                        </div>
+                                                </div>
+                                        </OnboardingFormCard>
                                     </div>
                                 )}
 
                                 {/* ── STEP 3: CAPITAL ── */}
                                 {step === 3 && (
-                                    <div className="step-wrapper">
-                                        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-400">
-                                            <div className="bg-[#002f37] text-white px-6 py-4 rounded-none flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-none bg-white/10 flex items-center justify-center border border-white/20">
-                                                    <Coins className="h-5 w-5 text-[#7ede56]" />
-                                                </div>
-                                                <div>
-                                                    <span className="text-xs font-black uppercase tracking-widest block">Step 03 / Capital</span>
-                                                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-tighter">Financial & Strategic Analysis</p>
-                                                </div>
-                                            </div>
-                                            <div className="bg-white border border-gray-200 border-t-0 p-6 md:p-10 rounded-none shadow-sm space-y-10">
+                                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-5">
+                                        <OnboardingStepSection
+                                            step={3}
+                                            icon={Coins}
+                                            title="Investment interest"
+                                            description="Optional — skip anything the farmer is not sure about yet."
+                                        />
+                                        <OnboardingFormCard className="space-y-8">
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-10">
                                                     <div className="space-y-4">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Investment Interest</Label>
+                                                        <OnboardingFieldLabel>Investment interest</OnboardingFieldLabel>
                                                         <div className="grid grid-cols-3 gap-3">
                                                             {['yes', 'maybe', 'no'].map(opt => (
                                                                 <button
                                                                     key={opt}
                                                                     onClick={() => isEditable && handleInputChange('investmentInterest', opt)}
-                                                                    className={`h-14 rounded-xl border-2 font-black uppercase text-[10px] tracking-widest transition-all ${formData.investmentInterest === opt ? 'bg-[#002f37] border-[#002f37] text-white shadow-xl' : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 hover:border-gray-300'}`}
+                                                                    className={`h-11 rounded-xl border text-sm font-semibold capitalize transition-all ${formData.investmentInterest === opt ? 'bg-[#065f46] border-[#065f46] text-white' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'}`}
                                                                 >
                                                                     {opt}
                                                                 </button>
@@ -746,23 +911,23 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                         </div>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest pl-1 text-[#002f37]">Capital Requirement (GHS)</Label>
+                                                        <OnboardingFieldLabel>Capital requirement (GHS)</OnboardingFieldLabel>
                                                         <div className="relative group">
                                                             <div className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-600 font-black text-xl">₵</div>
-                                                            <Input type="number" placeholder="0.00" className="h-14 pl-12 bg-gray-50 border-none rounded-xl font-black text-xl text-gray-900 placeholder:text-gray-300 transition-all focus:ring-2 focus:ring-emerald-500/20" value={formData.estimatedCapitalNeed} onChange={(e) => handleInputChange('estimatedCapitalNeed', e.target.value)} disabled={formData.investmentInterest === 'no' || !isEditable} />
+                                                            <Input type="number" placeholder="0.00" className={`${ONBOARDING_INPUT} pl-10 text-lg`} value={formData.estimatedCapitalNeed} onChange={(e) => handleInputChange('estimatedCapitalNeed', e.target.value)} disabled={formData.investmentInterest === 'no' || !isEditable} />
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
                                                     <div className="space-y-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest pl-1">Primary Investment Objective</Label>
+                                                        <OnboardingFieldLabel>Primary investment objective</OnboardingFieldLabel>
                                                         <Select 
                                                             value={formData.preferredInvestmentType} 
                                                             onValueChange={(v) => handleInputChange('preferredInvestmentType', v)} 
                                                             disabled={formData.investmentInterest === 'no' || !isEditable}
                                                         >
-                                                            <SelectTrigger className="h-14 bg-gray-50 border-none rounded-xl font-bold text-gray-900 transition-all focus:ring-2 focus:ring-emerald-500/20"><SelectValue placeholder="Select Purpose" /></SelectTrigger>
+                                                            <SelectTrigger className={ONBOARDING_SELECT}><SelectValue placeholder="Select Purpose" /></SelectTrigger>
                                                             <SelectContent className="rounded-2xl border-none shadow-2xl">
                                                                 <SelectItem value="inputs" className="py-3 font-bold">Farm Inputs (Seeds, Fertilizer, Agro-chem)</SelectItem>
                                                                 <SelectItem value="mechanization" className="py-3 font-bold">Mechanization & Equipment</SelectItem>
@@ -774,13 +939,13 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                     </div>
                                                 </div>
 
-                                                <div className="p-8 bg-gray-50 rounded-none border border-gray-100">
-                                                    <div className="flex items-center justify-between mb-6">
+                                                <div className="p-5 sm:p-6 bg-gray-50 rounded-xl border border-gray-100">
+                                                    <div className="flex items-center justify-between mb-4">
                                                         <div>
-                                                            <h4 className="text-sm font-black text-[#002f37] uppercase tracking-tight">Market Readiness Index</h4>
-                                                            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Risk evaluation score</p>
+                                                            <h4 className="text-sm font-semibold text-[#002f37]">Readiness score</h4>
+                                                            <p className="text-xs text-gray-500">Your assessment of investment readiness</p>
                                                         </div>
-                                                        <span className="text-3xl font-black text-[#065f46]">{formData.investmentReadinessScore}%</span>
+                                                        <span className="text-2xl font-bold text-[#065f46]">{formData.investmentReadinessScore}%</span>
                                                     </div>
                                                     <input
                                                         type="range" min="0" max="100" step="5"
@@ -793,7 +958,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
 
                                                 <div className="space-y-4">
                                                     <div className="flex items-center justify-between px-2">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Training Progress & Certification</Label>
+                                                        <OnboardingFieldLabel>Training progress</OnboardingFieldLabel>
                                                         <span className="text-[10px] font-bold text-[#065f46] uppercase bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
                                                             {trainingModules.filter(m => m.completed).length} / {trainingModules.length} Modules
                                                         </span>
@@ -818,45 +983,41 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                 </div>
 
                                                 <button
+                                                    type="button"
                                                     onClick={() => isEditable && handleInputChange('hasPreviousInvestment', !formData.hasPreviousInvestment)}
-                                                    className={`w-full p-8 rounded-3xl border-2 transition-all flex items-center justify-between ${formData.hasPreviousInvestment ? 'bg-[#002f37] border-[#002f37] text-white shadow-2xl' : 'bg-white border-gray-200 text-gray-800 hover:border-[#7ede56]'}`}
+                                                    className={`w-full p-4 sm:p-5 rounded-xl border-2 transition-all flex items-center justify-between gap-3 ${formData.hasPreviousInvestment ? 'bg-[#065f46]/5 border-[#065f46]' : 'bg-white border-gray-200 hover:border-gray-300'}`}
                                                 >
-                                                    <div className="flex items-center gap-6">
-                                                        <div className={`h-14 w-14 rounded-3xl flex items-center justify-center ${formData.hasPreviousInvestment ? 'bg-[#7ede56] text-[#002f37]' : 'bg-gray-100 text-gray-600'}`}>
-                                                            <ShieldCheck className="h-7 w-7" />
+                                                    <div className="flex items-center gap-3 text-left">
+                                                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${formData.hasPreviousInvestment ? 'bg-[#065f46] text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                                            <ShieldCheck className="h-5 w-5" />
                                                         </div>
-                                                        <div className="text-left">
-                                                            <h4 className="text-base font-black uppercase tracking-tight">Verified Credit Profile</h4>
-                                                            <p className={`text-[10px] font-bold uppercase tracking-widest ${formData.hasPreviousInvestment ? 'text-white/70' : 'text-gray-500'}`}>Previous repayment history</p>
+                                                        <div>
+                                                            <h4 className="text-sm font-semibold text-[#002f37]">Previous investment or credit</h4>
+                                                            <p className="text-xs text-gray-500">Has this farmer received loans before?</p>
                                                         </div>
                                                     </div>
-                                                    <div className={`h-8 w-8 rounded-full flex items-center justify-center border-4 ${formData.hasPreviousInvestment ? 'border-[#7ede56] bg-white text-[#002f37]' : 'border-gray-200'}`}>
-                                                        {formData.hasPreviousInvestment && <CheckCircle2 className="h-4 w-4" />}
+                                                    <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center shrink-0 ${formData.hasPreviousInvestment ? 'border-[#065f46] bg-[#065f46] text-white' : 'border-gray-300'}`}>
+                                                        {formData.hasPreviousInvestment && <CheckCircle2 className="h-3.5 w-3.5" />}
                                                     </div>
                                                 </button>
-                                            </div>
-                                        </div>
+                                        </OnboardingFormCard>
                                     </div>
                                 )}
 
                                 {/* ── STEP 4: VALIDATE ── */}
                                 {step === 4 && (
-                                    <div className="step-wrapper">
-                                        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-400">
-                                            <div className="bg-[#002f37] text-white px-6 py-4 rounded-t-3xl flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
-                                                    <FileText className="h-5 w-5 text-[#7ede56]" />
-                                                </div>
-                                                <div>
-                                                    <span className="text-xs font-black uppercase tracking-widest block">Step 04 / Validate</span>
-                                                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-tighter">Document Vault & Compliance Registry</p>
-                                                </div>
-                                            </div>
-                                            <div className="bg-white border border-gray-200 border-t-0 p-6 md:p-10 rounded-b-3xl shadow-sm space-y-8">
+                                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-5">
+                                        <OnboardingStepSection
+                                            step={4}
+                                            icon={FileText}
+                                            title="Documents & finish"
+                                            description="Upload Ghana Card photos, then complete onboarding."
+                                        />
+                                        <OnboardingFormCard className="space-y-6">
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
                                                     <div className="space-y-3">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest pl-1">Ghana Card — Front Face</Label>
-                                                        <div className="relative group rounded-3xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 h-[240px] flex flex-col items-center justify-center transition-all hover:border-[#7ede56]">
+                                                        <OnboardingFieldLabel>Ghana Card — front</OnboardingFieldLabel>
+                                                        <div className="relative group rounded-xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 h-[200px] sm:h-[220px] flex flex-col items-center justify-center transition-all hover:border-[#7ede56]">
                                                             {idCardFront
                                                                 ? <img src={idCardFront} alt="ID Front" className="w-full h-full object-cover" />
                                                                 : <div className="flex flex-col items-center gap-2 text-gray-300 group-hover:text-[#7ede56] transition-colors">
@@ -871,8 +1032,8 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                         </div>
                                                     </div>
                                                     <div className="space-y-3">
-                                                        <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest pl-1">Ghana Card — Back Face</Label>
-                                                        <div className="relative group rounded-3xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 h-[240px] flex flex-col items-center justify-center transition-all hover:border-[#7ede56]">
+                                                        <OnboardingFieldLabel>Ghana Card — back</OnboardingFieldLabel>
+                                                        <div className="relative group rounded-xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 h-[200px] sm:h-[220px] flex flex-col items-center justify-center transition-all hover:border-[#7ede56]">
                                                             {idCardBack
                                                                 ? <img src={idCardBack} alt="ID Back" className="w-full h-full object-cover" />
                                                                 : <div className="flex flex-col items-center gap-2 text-gray-300 group-hover:text-[#7ede56] transition-colors">
@@ -888,47 +1049,45 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                     </div>
                                                 </div>
 
-                                                <div className="space-y-3">
-                                                    <Label className="text-[11px] font-black uppercase text-[#002f37] tracking-widest">Field Notes</Label>
+                                                <div className="space-y-2">
+                                                    <OnboardingFieldLabel hint="Optional notes from your field visit">Field notes</OnboardingFieldLabel>
                                                     <Textarea
-                                                        placeholder="Log behavioral markers or infrastructure observations..."
-                                                        className="min-h-[120px] bg-gray-50 border-none rounded-2xl p-6 font-bold placeholder:opacity-30"
+                                                        placeholder="Anything useful for the next visit..."
+                                                        className={ONBOARDING_TEXTAREA}
                                                         value={formData.fieldNotes}
                                                         onChange={(e) => handleInputChange('fieldNotes', e.target.value)}
                                                         disabled={!isEditable}
                                                     />
                                                 </div>
 
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 pt-6 border-t border-gray-100">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                                                     <button
                                                         type="button"
                                                         onClick={() => isEditable && setIdVerificationChecked(!idVerificationChecked)}
-                                                        className={`p-5 rounded-3xl border-2 transition-all flex items-center gap-4 ${idVerificationChecked ? 'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-xl shadow-emerald-500/5' : 'bg-white border-gray-100 text-gray-800 hover:border-gray-200'}`}
+                                                        className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 text-left ${idVerificationChecked ? 'bg-emerald-50 border-emerald-500' : 'bg-white border-gray-200 hover:border-gray-300'}`}
                                                     >
-                                                        <div className={`h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${idVerificationChecked ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${idVerificationChecked ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
                                                             <UserCheck className="h-5 w-5" />
                                                         </div>
-                                                        <div className="text-left">
-                                                            <p className="text-[11px] font-black uppercase tracking-tight">Identity Match Locked</p>
-                                                            <p className={`text-[9px] font-bold uppercase tracking-widest opacity-60`}>Verified NiA biometric data</p>
+                                                        <div>
+                                                            <p className="text-sm font-semibold text-[#002f37]">ID verified</p>
+                                                            <p className="text-xs text-gray-500">Details match Ghana Card</p>
                                                         </div>
                                                     </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => isEditable && setCertificationChecked(!certificationChecked)}
-                                                        className={`p-5 rounded-3xl border-2 transition-all flex items-center gap-4 ${certificationChecked ? 'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-xl shadow-emerald-500/5' : 'bg-white border-gray-100 text-gray-800 hover:border-gray-200'}`}
-                                                    >
-                                                        <div className={`h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${certificationChecked ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                                    <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 flex items-center gap-3">
+                                                        <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 bg-[#065f46] text-white">
                                                             <ShieldCheck className="h-5 w-5" />
                                                         </div>
-                                                        <div className="text-left">
-                                                            <p className="text-[11px] font-black uppercase tracking-tight">Compliance Seal</p>
-                                                            <p className={`text-[9px] font-bold uppercase tracking-widest opacity-60`}>Protocol integrity passed</p>
+                                                        <div className="min-w-0">
+                                                            <p className="text-xs font-medium text-gray-500">Onboarding agent</p>
+                                                            <p className="text-sm font-bold text-[#002f37] font-mono truncate">
+                                                                {(isEditMode && farmer?.onboardingAgentId) ? farmer.onboardingAgentId : (agent?.agentId || '—')}
+                                                            </p>
+                                                            <p className="text-xs text-gray-400 truncate">{agent?.name}</p>
                                                         </div>
-                                                    </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
+                                        </OnboardingFormCard>
                                     </div>
                                 )}
 
@@ -936,37 +1095,42 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                         </ScrollArea>
 
                         {/* Footer Navigation */}
-                        <div className="bg-white border-t border-gray-200 px-4 md:px-10 py-4 md:py-6 flex items-center justify-between shrink-0">
+                        <div className="bg-white/95 backdrop-blur-sm border-t border-gray-100 px-4 sm:px-8 lg:px-10 py-4 flex items-center justify-between gap-3 shrink-0 safe-area-bottom shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.06)]">
                             <Button
                                 variant="ghost"
                                 onClick={step === 1 ? () => onOpenChange?.(false) : prevStep}
-                                className="h-14 px-4 md:px-8 rounded-2xl font-black uppercase tracking-widest text-[11px] text-gray-400 hover:text-red-500"
+                                className="h-11 sm:h-12 px-3 sm:px-5 rounded-xl text-sm font-semibold text-gray-500 hover:text-[#002f37]"
                             >
-                                {step === 1 ? <X className="h-5 w-5 mr-2" /> : <ChevronLeft className="h-5 w-5 mr-2" />}
-                                {step === 1 ? 'Discard' : 'Back'}
+                                <ChevronLeft className="h-4 w-4 sm:mr-1.5" />
+                                <span className="hidden sm:inline">{step === 1 ? 'Cancel' : 'Back'}</span>
                             </Button>
 
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 sm:gap-3">
                                 {isEditMode && !isEditable && (
                                     <Button
                                         onClick={() => setIsEditable(true)}
-                                        className="bg-[#002f37] text-white font-black h-14 px-8 rounded-2xl shadow-xl uppercase tracking-widest text-[11px]"
+                                        variant="outline"
+                                        className="h-11 sm:h-12 px-4 rounded-xl text-sm font-semibold border-[#065f46] text-[#065f46]"
                                     >
-                                        <Edit className="h-4 w-4 mr-2" />
-                                        Unlock
+                                        <Edit className="h-4 w-4 mr-1.5" />
+                                        Edit
                                     </Button>
                                 )}
                                 <Button
                                     onClick={step < 4 ? nextStep : handleSubmit}
                                     disabled={isSubmitting || (step === 4 && !isEditable)}
-                                    className={`h-14 px-12 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl transition-all active:scale-95 ${step < 4 ? 'bg-[#002f37] text-white hover:bg-[#002f37]/90' : 'bg-[#7ede56] text-[#002f37] hover:bg-[#7ede56]/90'}`}
+                                    className={`h-11 sm:h-12 px-6 sm:px-8 rounded-xl text-sm font-semibold shadow-md transition-all active:scale-[0.98] ${
+                                        step < 4
+                                            ? 'bg-[#065f46] text-white hover:bg-[#065f46]/90'
+                                            : 'bg-[#7ede56] text-[#002f37] hover:bg-[#6bc947]'
+                                    }`}
                                 >
                                     {isSubmitting ? (
                                         <Loader2 className="h-5 w-5 animate-spin" />
                                     ) : (
                                         <>
-                                            {step < 4 ? 'Next' : isEditMode ? 'Save Changes' : 'Finalize'}
-                                            {step < 4 && <ChevronRight className="h-5 w-5 ml-2" />}
+                                            {step < 4 ? 'Continue' : isEditMode ? 'Save' : 'Complete onboarding'}
+                                            {step < 4 && <ChevronRight className="h-4 w-4 ml-1.5" />}
                                         </>
                                     )}
                                 </Button>
@@ -975,19 +1139,27 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                     </div>
                 </div>
             </DialogContent>
-
-            {/* Print/Download Auto ID Card Modal triggered on Success */}
-            <FarmerIdCardModal 
-                open={isIdCardModalOpen} 
-                onOpenChange={(val) => {
-                    setIsIdCardModalOpen(val);
-                    if (!val) {
-                        onSuccess?.();
-                    }
-                }} 
-                farmer={finalizedFarmer} 
-            />
         </Dialog>
+
+        <ProfileImageCropDialog
+            open={cropDialogOpen}
+            imageSrc={cropImageSrc}
+            title="Crop grower profile photo"
+            onOpenChange={setCropDialogOpen}
+            onCropComplete={handleFarmerProfileCrop}
+        />
+
+        <FarmerIdCardModal
+            open={isIdCardModalOpen}
+            onOpenChange={(val) => {
+                setIsIdCardModalOpen(val);
+                if (!val) {
+                    onSuccess?.();
+                }
+            }}
+            farmer={finalizedFarmer}
+        />
+        </>
     );
 };
 

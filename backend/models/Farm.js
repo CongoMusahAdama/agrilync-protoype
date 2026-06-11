@@ -5,6 +5,11 @@ const farmSchema = new mongoose.Schema({
     name: { type: String, required: true },
     farmer: { type: mongoose.Schema.Types.ObjectId, ref: 'Farmer', required: true },
     location: { type: String, required: true },
+    coordinates: {
+        lat: { type: Number },
+        lng: { type: Number },
+    },
+    measuredAcres: { type: Number },
     crop: { type: String, required: true },
     status: {
         type: String,

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,8 @@ import Footer from '@/components/Footer';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
+import { GHANA_CROPS } from '@/data/ghanaCrops';
+import { getRegionKey, SIGNUP_REGION_OPTIONS, GHANA_REGION_SIGNUP_LABELS } from '@/data/ghanaRegions';
 
 const SignupFarmer = () => {
     const navigate = useNavigate();
@@ -27,6 +29,8 @@ const SignupFarmer = () => {
         farmDistrict: '',
         farmAddress: '',
         farmType: '',
+        selectedCrops: [] as string[],
+        cropsGrownOther: '',
         acceptTerms: false,
         acceptDataPolicy: false
     });
@@ -35,10 +39,19 @@ const SignupFarmer = () => {
     const [otpCode, setOtpCode] = useState('');
     const [activeTab, setActiveTab] = useState('personal');
 
-    const handleInputChange = (field: string, value: string | boolean) => {
+    const handleInputChange = (field: string, value: string | boolean | string[]) => {
         setFormData(prev => ({
             ...prev,
             [field]: value
+        }));
+    };
+
+    const toggleCrop = (crop: string) => {
+        setFormData((prev) => ({
+            ...prev,
+            selectedCrops: prev.selectedCrops.includes(crop)
+                ? prev.selectedCrops.filter((c) => c !== crop)
+                : [...prev.selectedCrops, crop],
         }));
     };
 
@@ -74,10 +87,13 @@ const SignupFarmer = () => {
                 contact: formData.phone,
                 email: formData.email,
                 password: formData.password,
-                region: formData.farmRegion,
+                region: getRegionKey(formData.farmRegion),
                 district: formData.farmDistrict,
                 community: formData.farmAddress,
-                farmType: formData.farmType || 'Crop Farming' // Default if not selected
+                farmType: formData.farmType || 'crop',
+                cropList: formData.selectedCrops,
+                cropsGrownOther: formData.selectedCrops.includes('Other') ? formData.cropsGrownOther : '',
+                onboardingSource: 'self',
             };
 
             const res = await api.post('/farmers/public/register', payload);
@@ -105,12 +121,6 @@ const SignupFarmer = () => {
             toast.error(err.response?.data?.msg || 'Failed to register. Please try again.');
         }
     };
-
-    const ghanaRegions = [
-        'Ashanti', 'Eastern', 'Northern', 'Western', 'Volta', 'Central', 'Bono Ahafo',
-        'Greater Accra', 'Upper East', 'Upper West', 'Western North', 'Ahafo',
-        'Bono East', 'Oti', 'Savannah', 'North East'
-    ];
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white font-manrope">
@@ -268,8 +278,10 @@ const SignupFarmer = () => {
                                                     <SelectValue placeholder="Select region" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {ghanaRegions.map(region => (
-                                                        <SelectItem key={region} value={region.toLowerCase()}>{region}</SelectItem>
+                                                    {SIGNUP_REGION_OPTIONS.map((region) => (
+                                                        <SelectItem key={region} value={region}>
+                                                            {GHANA_REGION_SIGNUP_LABELS[region] || region.replace(' Region', '')}
+                                                        </SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>
@@ -304,14 +316,39 @@ const SignupFarmer = () => {
                                                     <SelectValue placeholder="Select farm type" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="Crop Farming">Crop Farming</SelectItem>
-                                                    <SelectItem value="Livestock Farming">Livestock Farming</SelectItem>
-                                                    <SelectItem value="Mixed Farming">Mixed Farming</SelectItem>
-                                                    <SelectItem value="Aquaculture">Aquaculture</SelectItem>
+                                                    <SelectItem value="crop">Crop Farming</SelectItem>
+                                                    <SelectItem value="livestock">Livestock Farming</SelectItem>
+                                                    <SelectItem value="mixed">Mixed Farming</SelectItem>
+                                                    <SelectItem value="aquaculture">Aquaculture</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                     </div>
+
+                                    {(formData.farmType === 'crop' || formData.farmType === 'mixed') && (
+                                        <div className="space-y-3">
+                                            <Label>Primary Crops (select all that apply)</Label>
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                {GHANA_CROPS.map((crop) => (
+                                                    <button
+                                                        key={crop}
+                                                        type="button"
+                                                        onClick={() => toggleCrop(crop)}
+                                                        className={`p-2 rounded-lg border text-xs font-semibold transition-all ${formData.selectedCrops.includes(crop) ? 'bg-[#7ede56]/20 border-[#7ede56] text-[#002f37]' : 'bg-gray-50 border-gray-200 text-gray-600'}`}
+                                                    >
+                                                        {crop}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            {formData.selectedCrops.includes('Other') && (
+                                                <Input
+                                                    value={formData.cropsGrownOther}
+                                                    onChange={(e) => handleInputChange('cropsGrownOther', e.target.value)}
+                                                    placeholder="Specify other crop(s)"
+                                                />
+                                            )}
+                                        </div>
+                                    )}
 
                                     {/* Terms */}
                                     <div className="space-y-3 border-t pt-6">

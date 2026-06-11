@@ -61,8 +61,16 @@ interface AlertItem {
   message: string;
 }
 
+interface MetricTrend {
+  color: string;
+  data: number[];
+  months: string[];
+  target: string;
+}
+
 interface PerformanceData {
   trend: { value: number; month: string }[];
+  metricTrends?: Record<string, MetricTrend>;
   kpis: KPI[];
   pendingSync: number | string;
   overallScore: number | string;
@@ -72,14 +80,23 @@ interface PerformanceData {
     atRisk: number;
     offTrack: number;
   };
-  supervisor: {
+  supervisor?: {
     initials: string;
     name: string;
     rating: number;
     comment: string;
     nextReview: string;
-  };
+  } | null;
   visitLog: VisitLog[];
+  trainingModules?: { id: string; title: string; tag: string; count: string; perc: string; progress: number }[];
+  compliance?: { label: string; value: string; status: string }[];
+  verification?: { idAccuracy: number; gpsValidation: number; qaRating: string };
+  incentives?: {
+    items: { label: string; amount: number; progress: string; status: string; earned: boolean; partialAmount?: number }[];
+    estimatedBonus: number;
+    potentialBonus: number;
+    framework: { title: string; subtitle: string; amount: number; note: string }[];
+  };
   seasonOutcomes: {
     yieldEst: string;
     repaymentRate: string;
@@ -87,6 +104,7 @@ interface PerformanceData {
     partnerKpiMet: string;
   };
   activeAlerts?: AlertItem[];
+  summary?: { totalFarmers: number };
 }
 
 const AgentPerformance: React.FC = () => {
@@ -98,33 +116,40 @@ const AgentPerformance: React.FC = () => {
 
   React.useEffect(() => {
     const fetchPerformance = async () => {
+      setLoading(true);
       try {
-        const res = await api.get('/agents/performance');
+        const res = await api.get(`/agents/performance?range=${timeRange}`);
         setData(res.data);
       } catch (err) {
         console.error('Failed to fetch performance data', err);
+        setData(null);
       } finally {
         setLoading(false);
       }
     };
     fetchPerformance();
-  }, []);
-  
-  const metricData: Record<string, any> = {
-    onboarding: { color: 'var(--lgreen)', data: data?.trend ? data.trend.map((t:any)=>t.value) : [0,0,0,0,0,0], target: '250+' },
-    visits: { color: 'var(--teal)', data: [0, 0, 0, 0, 0, 0], target: '20' },
-    training: { color: 'var(--amber)', data: [0, 0, 0, 0, 0, 0], target: '80%' },
-    gender: { color: '#921573', data: [0, 0, 0, 0, 0, 0], target: '60% F' },
+  }, [timeRange]);
+
+  const emptyTrend: MetricTrend = { color: 'var(--lgreen)', data: [0, 0, 0, 0, 0, 0], months: [], target: '—' };
+  const metricData: Record<string, MetricTrend> = data?.metricTrends || {
+    onboarding: emptyTrend,
+    visits: { ...emptyTrend, color: 'var(--teal)' },
+    training: { ...emptyTrend, color: 'var(--amber)' },
+    gender: { ...emptyTrend, color: '#921573' },
   };
 
-  const currentMetric = metricData[activeMetric];
+  const currentMetric = metricData[activeMetric] || emptyTrend;
+  const totalFarmers = data?.summary?.totalFarmers ?? 0;
 
-  const stats = [
-    { label: 'Total Onboarded', value: data?.kpis?.[0]?.value || '0', unit: 'Farmers', icon: UserCheck, color: 'text-emerald-500', isLifetime: true },
-    { label: 'Field visits', value: data?.kpis?.[1]?.value || '0', unit: 'Visits', icon: MapPin, color: 'text-teal-500', isLifetime: false },
-    { label: 'Compliance', value: data?.kpis?.[2]?.value || '0', unit: '% Rate', icon: CheckCircle2, color: 'text-amber-500', isLifetime: false },
-    { label: 'Pending Sync', value: data?.pendingSync || '0', unit: 'Items', icon: Cloud, color: 'text-rose-500', isLifetime: false },
-  ];
+  if (loading) {
+    return (
+      <AgentLayout activeSection="performance" title="My Performance" subtitle="Loading your KPI scorecard...">
+        <div className="flex items-center justify-center min-h-[40vh] text-gray-400 font-bold uppercase tracking-widest text-sm">
+          Loading performance data...
+        </div>
+      </AgentLayout>
+    );
+  }
 
   return (
     <AgentLayout 
@@ -174,18 +199,16 @@ const AgentPerformance: React.FC = () => {
                Pilot KPI Scorecard
              </div>
              <Badge className="bg-[#7ede56]/10 text-[#065f46] border-none font-bold text-[9px] uppercase tracking-widest px-3">
-               Target Score: {data?.overallScore || '82'}%
+               Target Score: {data?.overallScore ?? 0}%
              </Badge>
            </h3>           
            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-            {(data?.kpis || [
-              { label: 'Pilot Onboarding', value: '312', unit: 'Farmers', target: '500', progress: 62, status: 'Active' },
-              { label: 'Gender Balance', value: '64/36', unit: 'F/M %', target: '60/40', progress: 100, status: 'Met' },
-              { label: 'Training Rate', value: '78', unit: '%', target: '80%', progress: 97, status: 'Near' },
-              { label: 'Monthly Visits', value: '14', unit: 'Visits', target: '10-20', progress: 70, status: 'On-Track' },
-              { label: 'Group Meetings', value: '2', unit: 'Meetings', target: '2/Mo', progress: 100, status: 'Met' },
-              { label: 'Media Compliance', value: '100', unit: '%', target: '100%', progress: 100, status: 'Verified' }
-            ]).map((kpi: KPI, idx: number) => {
+            {!data?.kpis?.length && (
+              <div className="col-span-full py-12 text-center text-gray-400 font-bold uppercase tracking-widest text-xs">
+                No KPI data yet — onboard farmers to see your scorecard
+              </div>
+            )}
+            {(data?.kpis || []).map((kpi: KPI, idx: number) => {
               const bgColors = ['bg-[#002f37]', 'bg-[#124b53]', 'bg-[#004d4d]', 'bg-[#006666]', 'bg-[#008080]', 'bg-[#065f46]'];
               const bgColor = bgColors[idx % bgColors.length];
               const getKpiIcon = (label: string) => {
@@ -262,46 +285,31 @@ const AgentPerformance: React.FC = () => {
                    </div>
                    
                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                           <span>High Volume Onboarding</span>
-                           <span className="text-[#065f46]">GH¢300</span>
+                      {(data?.incentives?.items || []).map((item) => (
+                        <div key={item.label} className="space-y-2">
+                          <div className="flex justify-between items-center text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                            <span>{item.label}</span>
+                            <span className="text-[#065f46]">GH¢{item.amount}</span>
+                          </div>
+                          <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
+                            <span className="text-[12px] font-bold text-[#002f37]">{item.progress}</span>
+                            <Badge className={`text-[8px] font-black uppercase ${item.earned ? 'bg-[#065f46] text-white' : item.status === 'Partial' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'}`}>
+                              {item.earned ? 'Earned' : item.partialAmount ? `GH¢${item.partialAmount} Matched` : item.status}
+                            </Badge>
+                          </div>
                         </div>
-                        <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
-                           <span className="text-[12px] font-bold text-[#002f37]">312 / 250 Farmers</span>
-                           <Badge className="bg-[#065f46] text-white text-[8px] font-black uppercase">Earned</Badge>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                           <span>Training Completion</span>
-                           <span className="text-[#065f46]">GH¢200</span>
-                        </div>
-                        <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
-                           <span className="text-[12px] font-bold text-[#002f37]">78% / 80% Rate</span>
-                           <Badge className="bg-amber-100 text-amber-700 text-[8px] font-black uppercase tracking-tighter">GH¢100 Matched</Badge>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                           <span>Reporting & Media</span>
-                           <span className="text-[#065f46]">GH¢200 Total</span>
-                        </div>
-                        <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
-                           <span className="text-[12px] font-bold text-[#002f37]">All Verified</span>
-                           <Badge className="bg-[#065f46] text-white text-[8px] font-black uppercase">Earned</Badge>
-                        </div>
-                      </div>
+                      ))}
+                      {!data?.incentives?.items?.length && (
+                        <p className="col-span-full text-xs text-gray-400 font-semibold">Incentive tracking activates as you onboard farmers.</p>
+                      )}
                    </div>
                  </div>
 
                  <div className="lg:w-48 p-6 rounded-[2rem] bg-[#002f37] text-white flex flex-col justify-center items-center text-center shadow-2xl relative">
                     <div className="absolute top-4 left-4 h-1.5 w-1.5 rounded-full bg-[#7ede56] animate-pulse" />
                     <p className="text-[10px] font-black uppercase tracking-widest text-white/50 mb-2">Est. Bonus</p>
-                    <h4 className="text-3xl font-black font-montserrat tracking-tighter">GH¢600</h4>
-                    <p className="text-[9px] font-bold text-[#7ede56] mt-1 italic">Potential: GH¢700</p>
+                    <h4 className="text-3xl font-black font-montserrat tracking-tighter">GH¢{data?.incentives?.estimatedBonus ?? 0}</h4>
+                    <p className="text-[9px] font-bold text-[#7ede56] mt-1 italic">Potential: GH¢{data?.incentives?.potentialBonus ?? 0}</p>
                     <button className="mt-4 text-[9px] font-black uppercase tracking-[0.2em] py-2 px-4 rounded-full bg-white/10 hover:bg-white/20 transition-all border border-white/10" onClick={() => Swal.fire({title:'Payout Details', text: 'Your incentives are processed on the 5th of every month following supervisor verification.', icon: 'info'})}>
                       View Breakdown
                     </button>
@@ -399,7 +407,7 @@ const AgentPerformance: React.FC = () => {
                   </div>
                   
                   {currentMetric.data.map((val: number, i: number) => {
-                    const monthName = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'][i];
+                    const monthName = currentMetric.months?.[i] || data?.trend?.[i]?.month || '—';
                     return (
                     <div key={i} className="flex-1 flex flex-col items-center gap-6 h-full justify-end relative group/bar">
                       <div className="w-full max-w-[48px] rounded-t-xl transition-all duration-700 hover:scale-x-105 relative cursor-pointer" 
@@ -415,7 +423,7 @@ const AgentPerformance: React.FC = () => {
                         </div>
                       </div>
                       <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] transition-colors group-hover/bar:text-gray-900">
-                        {data?.trend?.[i]?.month || monthName}
+                        {monthName}
                       </span>
                     </div>
                   )})}
@@ -663,48 +671,18 @@ const AgentPerformance: React.FC = () => {
             Proposed Incentive Structure
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="bg-[#002f37] text-white p-6 rounded-2xl shadow-2xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                <GraduationCap className="h-16 w-16" />
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#7ede56] mb-1">Activity Allowance</p>
-              <h4 className="text-xl font-black mb-4">Training Delivery</h4>
-              <div className="flex items-end justify-between">
-                <div>
-                  <p className="text-3xl font-black text-white">GH¢200</p>
-                  <p className="text-[9px] font-bold text-white/60 uppercase mt-1">Per Manual Completion</p>
+            {(data?.incentives?.framework || []).map((item, idx) => (
+              <Card key={item.title} className={`p-6 rounded-2xl shadow-xl relative overflow-hidden group ${idx === 0 ? 'bg-[#002f37] text-white' : 'bg-white border-2 border-[#002f37]/5'}`}>
+                <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${idx === 0 ? 'text-[#7ede56]' : 'text-[#065f46]'}`}>{item.subtitle}</p>
+                <h4 className={`text-xl font-black mb-4 ${idx === 0 ? 'text-white' : 'text-[#002f37]'}`}>{item.title}</h4>
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className={`text-3xl font-black ${idx === 2 ? 'text-[#065f46]' : idx === 0 ? 'text-white' : 'text-[#002f37]'}`}>GH¢{item.amount}</p>
+                    <p className={`text-[9px] font-bold uppercase mt-1 ${idx === 0 ? 'text-white/60' : 'text-gray-400'}`}>{item.note}</p>
+                  </div>
                 </div>
-                <Badge className="bg-[#7ede56] text-[#002f37] border-none font-black text-[10px]">PILOT RATE</Badge>
-              </div>
-            </Card>
-
-            <Card className="bg-white border-2 border-[#002f37]/5 p-6 rounded-2xl shadow-xl hover:border-[#065f46]/20 transition-all">
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#065f46] mb-1">Target Incentive A</p>
-              <h4 className="text-xl font-black text-[#002f37] mb-4">Monthly Goal Achievement</h4>
-              <div className="flex items-end justify-between">
-                <div>
-                  <p className="text-3xl font-black text-[#002f37]">GH¢600</p>
-                  <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">On reaching 500 farmer onboarding</p>
-                </div>
-                <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-[#065f46]" />
-                </div>
-              </div>
-            </Card>
-
-            <Card className="bg-white border-2 border-[#7ede56]/20 p-6 rounded-2xl shadow-xl hover:border-[#7ede56]/40 transition-all">
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#065f46] mb-1">Target Incentive B</p>
-              <h4 className="text-xl font-black text-[#002f37] mb-4">Excellence Bonus</h4>
-              <div className="flex items-end justify-between">
-                <div>
-                  <p className="text-3xl font-black text-[#065f46]">GH¢700</p>
-                  <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Top tier regional performance</p>
-                </div>
-                <div className="h-10 w-10 rounded-xl bg-[#7ede56]/10 flex items-center justify-center">
-                  <Star className="h-5 w-5 text-[#065f46]" />
-                </div>
-              </div>
-            </Card>
+              </Card>
+            ))}
           </div>
         </div>
 
@@ -719,12 +697,7 @@ const AgentPerformance: React.FC = () => {
               <ShieldCheck className="h-6 w-6 text-[#065f46]" />
             </div>
             <div className="space-y-6">
-              {[
-                { label: 'Soil Test Completion', value: '92%', status: 'Compliant' },
-                { label: 'GAP Training Attendance', value: '88%', status: 'Compliant' },
-                { label: 'Harvest Reporting', value: '45%', status: 'Ongoing' },
-                { label: 'Repayment Schedule Sync', value: '96%', status: 'Excellent' }
-              ].map((item, i) => (
+              {(data?.compliance || []).map((item, i) => (
                 <div key={i} className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
                     <div className="h-1 w-8 bg-gray-100 rounded-full group-hover:bg-[#7ede56] transition-colors"></div>
@@ -732,7 +705,7 @@ const AgentPerformance: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-[14px] font-black text-[#002f37]">{item.value}</span>
-                    <Badge className={`text-[8px] font-black uppercase px-2 py-0.5 border-none ${item.status === 'Ongoing' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-700'}`}>
+                    <Badge className={`text-[8px] font-black uppercase px-2 py-0.5 border-none ${item.status === 'Ongoing' ? 'bg-blue-100 text-blue-600' : item.status === 'Excellent' ? 'bg-emerald-100 text-emerald-700' : 'bg-green-100 text-green-700'}`}>
                       {item.status}
                     </Badge>
                   </div>
@@ -751,24 +724,24 @@ const AgentPerformance: React.FC = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white/5 p-4 rounded-xl border border-white/10">
-                <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-3">Ghana Card OCR Accuracy</p>
-                <p className="text-2xl font-black text-[#7ede56]">94.2%</p>
+                <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-3">Ghana Card Capture Rate</p>
+                <p className="text-2xl font-black text-[#7ede56]">{data?.verification?.idAccuracy ?? 0}%</p>
                 <div className="mt-4 h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#7ede56]" style={{ width: '94.2%' }}></div>
+                  <div className="h-full bg-[#7ede56]" style={{ width: `${data?.verification?.idAccuracy ?? 0}%` }}></div>
                 </div>
               </div>
               <div className="bg-white/5 p-4 rounded-xl border border-white/10">
                 <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-3">GPS Perimeter Validation</p>
-                <p className="text-2xl font-black text-[#7ede56]">100%</p>
+                <p className="text-2xl font-black text-[#7ede56]">{data?.verification?.gpsValidation ?? 0}%</p>
                 <div className="mt-4 h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#7ede56]" style={{ width: '100%' }}></div>
+                  <div className="h-full bg-[#7ede56]" style={{ width: `${data?.verification?.gpsValidation ?? 0}%` }}></div>
                 </div>
               </div>
             </div>
             <div className="mt-8 pt-6 border-t border-white/10">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-white/60 uppercase tracking-widest">Quality Assurance Rating</span>
-                <span className="text-[12px] font-black text-white">ELITE AGENT STATUS</span>
+                <span className="text-[12px] font-black text-white uppercase">{data?.verification?.qaRating || 'Building'}</span>
               </div>
             </div>
           </Card>
@@ -780,24 +753,22 @@ const AgentPerformance: React.FC = () => {
           <Card className="p-8 border-none shadow-xl rounded-2xl">
             <div className="mb-8">
               <h3 className="section-title text-[#002f37] font-black text-lg">Training Delivery Progress</h3>
-              <p className="text-xs text-gray-500 font-semibold uppercase tracking-widest mt-1">Completion per module across your 312 farmers</p>
+              <p className="text-xs text-gray-500 font-semibold uppercase tracking-widest mt-1">Completion per module across your {totalFarmers} farmers</p>
             </div>
             <div className="space-y-8">
-              {[
-                { title: 'Climate-Smart Agriculture', icon: Leaf, desc: 'Adapting to environmental changes', count: '243/312', perc: '78%', color: 'var(--lgreen)', tag: 'Required' },
-                { title: 'Financial Literacy', icon: DollarSign, desc: 'Budgeting & Saving for inputs', count: '180/312', perc: '58%', color: 'var(--teal)', tag: 'Required' },
-                { title: 'Agricultural Management', icon: GraduationCap, desc: 'Crop lifecycle & farm governance', count: '290/312', perc: '93%', color: 'var(--amber)', tag: 'Required' },
-                { title: 'AI Advisory Tools', icon: Bot, desc: 'Modern data tools utilization', count: '112/312', perc: '36%', color: 'var(--gray200)', tag: 'Advanced' },
-              ].map((m, i) => (
-                <div key={i}>
+              {(data?.trainingModules || []).map((m, i) => {
+                const icons = [Leaf, DollarSign, GraduationCap, Sprout, GraduationCap, Bot];
+                const Icon = icons[i % icons.length];
+                const colors = ['var(--lgreen)', 'var(--teal)', 'var(--amber)', 'var(--lgreen)', 'var(--teal)', 'var(--gray200)'];
+                return (
+                <div key={m.id || i}>
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex gap-4">
                       <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#065f46]/10">
-                        <m.icon className="h-5 w-5" />
+                        <Icon className="h-5 w-5" />
                       </div>
                       <div>
                         <p className="text-sm font-black text-[#002f37]">{m.title}</p>
-                        <p className="text-[10px] text-gray-500 font-semibold">{m.desc}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -811,10 +782,13 @@ const AgentPerformance: React.FC = () => {
                     </div>
                   </div>
                   <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full transition-all duration-1000" style={{ width: m.perc, backgroundColor: m.color }} />
+                    <div className="h-full transition-all duration-1000" style={{ width: `${m.progress}%`, backgroundColor: colors[i % colors.length] }} />
                   </div>
                 </div>
-              ))}
+              );})}
+              {!data?.trainingModules?.length && (
+                <p className="text-sm text-gray-400 font-semibold">No training module data yet.</p>
+              )}
             </div>
           </Card>
 

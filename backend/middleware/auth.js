@@ -2,34 +2,52 @@ const jwt = require('jsonwebtoken');
 const Agent = require('../models/Agent');
 const { allowsConcurrentSessions } = require('../utils/sessionPolicy');
 
+const AUTH_DB_TIMEOUT_MS = 12000;
+
 /**
- * Helper to race DB queries against a timeout
+ * Helper to race DB queries against a timeout (Render + Atlas can be slow on cold start)
  */
-const dbTimeout = (promise, ms = 3000) => Promise.race([
+const dbTimeout = (promise, ms = AUTH_DB_TIMEOUT_MS) => Promise.race([
     promise,
     new Promise((_, reject) => setTimeout(() => reject(new Error('AUTH_DB_TIMEOUT')), ms))
 ]);
 
-/**
- * Token Based Authentication Middleware
- * Supports Cookies (preferred), x-auth-token, and Bearer tokens
- */
-const auth = async (req, res, next) => {
-    // 1. Check cookies first (preferred for cookie-based auth)
+const extractToken = (req) => {
     let token = req.cookies ? req.cookies.accessToken : null;
-
-    // 2. Fallback to headers for API/Mobile compatibility
-    if (!token) {
-        token = req.header('x-auth-token');
-    }
-
-    // 3. Fallback to Authorization: Bearer token
+    if (!token) token = req.header('x-auth-token');
     if (!token) {
         const authHeader = req.header('Authorization');
         if (authHeader && authHeader.startsWith('Bearer ')) {
             token = authHeader.split(' ')[1];
         }
     }
+    return token;
+};
+
+/**
+ * Token Based Authentication Middleware
+ * Supports Cookies (preferred), x-auth-token, and Bearer tokens
+ */
+/**
+ * JWT-only auth — no DB round-trip (used for first-time password change on slow mobile networks)
+ */
+const verifyToken = (req, res, next) => {
+    const token = extractToken(req);
+    if (!token) {
+        return res.status(401).json({ msg: 'No token, authorization denied' });
+    }
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.agent = { id: decoded.agent.id, _id: decoded.agent.id };
+        next();
+    } catch (err) {
+        console.error('[AUTH] Token verification error:', err.message);
+        return res.status(401).json({ msg: 'Token is not valid' });
+    }
+};
+
+const auth = async (req, res, next) => {
+    const token = extractToken(req);
 
     if (!token) {
         return res.status(401).json({ msg: 'No token, authorization denied' });
@@ -38,8 +56,19 @@ const auth = async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        // Fetch agent with timeout to prevent hanging on DB latency
-        const agent = await dbTimeout(Agent.findById(decoded.agent.id).select('-password'));
+        const loadAgent = () =>
+            dbTimeout(Agent.findById(decoded.agent.id).select('-password').lean());
+
+        let agent;
+        try {
+            agent = await loadAgent();
+        } catch (firstErr) {
+            if (firstErr.message === 'AUTH_DB_TIMEOUT') {
+                agent = await loadAgent();
+            } else {
+                throw firstErr;
+            }
+        }
 
         if (!agent) {
             return res.status(401).json({ msg: 'Agent not found' });
@@ -69,3 +98,4 @@ const auth = async (req, res, next) => {
 };
 
 module.exports = auth;
+module.exports.verifyToken = verifyToken;

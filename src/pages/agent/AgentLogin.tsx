@@ -29,19 +29,9 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { OPERATIONAL_REGION_OPTIONS } from '@/data/ghanaRegions';
 
-const regions = [
-  { value: 'Ashanti Region', label: 'Ashanti', desc: 'Central Agricultural Hub' },
-  { value: 'Greater Accra Region', label: 'Greater Accra', desc: 'Capital Command Center' },
-  { value: 'Eastern Region', label: 'Eastern', desc: 'Resource & Field Operations' },
-  { value: 'Northern Region', label: 'Northern', desc: 'Savannah Data Terminal' },
-  { value: 'Western Region', label: 'Western', desc: 'Coastal Supply Management' },
-  { value: 'Volta Region', label: 'Volta', desc: 'Lakeside Monitoring Zone' },
-  { value: 'Central Region', label: 'Central', desc: 'Regional Logistics Center' },
-  { value: 'Bono Ahafo Region', label: 'Bono Ahafo', desc: 'Bono & Ahafo Field Office' },
-  { value: 'Upper East Region', label: 'Upper East', desc: 'Arid Zone Cultivation' },
-  { value: 'Upper West Region', label: 'Upper West', desc: 'Savannah Perimeter' }
-];
+const regions = OPERATIONAL_REGION_OPTIONS;
 
 const AgentLogin = () => {
   const navigate = useNavigate();
@@ -81,7 +71,7 @@ const AgentLogin = () => {
         password: formData.password
       });
 
-      const { token, agent } = res.data;
+      const { token, refreshToken, agent } = res.data;
 
       // Lock to the agent's assigned region — no free selection allowed
       const agentRegion = agent.region || '';
@@ -102,7 +92,7 @@ const AgentLogin = () => {
       }
 
       setAssignedRegion(agentRegion);
-      setSession(token, { ...agent, region: agentRegion });
+      setSession(token, { ...agent, region: agentRegion }, refreshToken);
       toast.success(`Welcome back, ${agent.name.split(' ')[0]}!`);
       navigate('/dashboard/agent');
     } catch (error: any) {

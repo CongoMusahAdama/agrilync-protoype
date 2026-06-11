@@ -18,7 +18,13 @@ const farmerSchema = new mongoose.Schema({
     investmentStatus: { type: String, default: 'Pending' },
     lastVisit: { type: String },
     lastUpdated: { type: String },
-    agent: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent', required: true },
+    agent: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent', required: false },
+    onboardingSource: {
+        type: String,
+        enum: ['agent', 'self'],
+        default: 'agent',
+    },
+    profileCompleteness: { type: Number, default: 0, min: 0, max: 100 },
     profilePicture: { type: String }, // Base64
     currentStage: { type: String, default: 'planning' },
     stageDetails: {
@@ -54,13 +60,26 @@ const farmerSchema = new mongoose.Schema({
     yearsOfExperience: { type: Number },
     landOwnershipStatus: { type: String },
     cropsGrown: { type: String },
+    cropList: [{ type: String }],
+    cropsGrownOther: { type: String },
     livestockType: { type: String },
-    cropsGrown: { type: String },
-    livestockType: { type: String },
+    livestockInventory: [{
+        type: { type: String },
+        count: { type: Number, default: 0 },
+        otherLabel: { type: String },
+    }],
+    trainingModules: [{ type: String }],
+    farmLocation: {
+        lat: { type: Number },
+        lng: { type: Number },
+        measuredAcres: { type: Number },
+    },
     idCardFront: { type: String },
     idCardBack: { type: String },
     ghanaCardNumber: { type: String, unique: true, sparse: true },
     verificationConfirmed: { type: Boolean, default: false },
+    /** Human-readable agent ID (e.g. LYC-…) stamped at onboarding */
+    onboardingAgentId: { type: String },
     gpsLocation: {
         lat: { type: Number },
         lng: { type: Number }
