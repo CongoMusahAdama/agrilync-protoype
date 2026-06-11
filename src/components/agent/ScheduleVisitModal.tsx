@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,9 @@ import {
     Camera,
     Activity,
     UserCheck,
-    Briefcase
+    Briefcase,
+    Check,
+    Search,
 } from 'lucide-react';
 
 interface ScheduleVisitModalProps {
@@ -35,24 +37,26 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
     const queryClient = useQueryClient();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const sendSmsNotification = async (count: number) => {
+    const showSmsToast = async (count: number, sent: boolean) => {
+        if (!sent || count <= 0) return;
         await Swal.fire({
             title: 'SMS Dispatched',
-            html: `<div class="text-left"><p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Automated Protocol</p><p class="text-sm text-gray-700">SMS notification sent to <b>${count}</b> farmer(s) regarding the scheduled field visit.</p></div>`,
+            html: `<div class="text-left"><p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Bulk SMS (mNotify)</p><p class="text-sm text-gray-700">Bulk SMS queued for <b>${count}</b> grower(s) regarding the scheduled field visit.</p></div>`,
             icon: 'info',
-            toast: true, 
+            toast: true,
             position: 'top-end',
             timer: 4000,
             showConfirmButton: false,
             background: '#fff',
             color: '#002f37',
             iconColor: '#7ede56',
-            timerProgressBar: true
+            timerProgressBar: true,
         });
     };
 
+    const [farmerSearch, setFarmerSearch] = useState('');
     const [formData, setFormData] = useState({
-        farmerId: '',
+        farmerIds: [] as string[],
         visitType: '',
         visitDate: '',
         visitTime: '',
@@ -75,19 +79,34 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
         enabled: open,
     });
 
-    const farmers = (farmersBatch || []) as Array<{ _id?: string; id?: string; name?: string; ghanaCardNumber?: string }>;
-    const selectedFarmer = farmers.find(f => (f._id || f.id) === formData.farmerId);
+    const farmers = (farmersBatch || []) as Array<{ _id?: string; id?: string; name?: string; ghanaCardNumber?: string; community?: string }>;
+    const filteredFarmers = useMemo(
+        () => farmers.filter((f) => {
+            const id = f._id || f.id;
+            if (!id) return false;
+            if (!farmerSearch.trim()) return true;
+            const q = farmerSearch.toLowerCase();
+            return [f.name, f.id, f.community].some((v) => v?.toLowerCase().includes(q));
+        }),
+        [farmers, farmerSearch]
+    );
+    const allFarmersSelected = filteredFarmers.length > 0
+        && filteredFarmers.every((f) => formData.farmerIds.includes((f._id || f.id) as string));
+    const selectedFarmers = farmers.filter((f) => formData.farmerIds.includes((f._id || f.id) as string));
+    const primaryFarmer = selectedFarmers[0];
 
     useEffect(() => {
         if (open) {
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
+            const presetId = farmer?._id || farmer?.id;
             setFormData(prev => ({
                 ...prev,
-                farmerId: farmer?._id || farmer?.id || prev.farmerId,
+                farmerIds: presetId ? [presetId] : prev.farmerIds,
                 visitDate: tomorrow.toISOString().split('T')[0],
                 visitTime: '09:00',
             }));
+            setFarmerSearch('');
         }
     }, [open, farmer]);
 
@@ -96,17 +115,21 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
             const res = await api.post('/scheduled-visits', data);
             return res.data;
         },
-        onSuccess: async () => {
+        onSuccess: async (result: { sms?: { sent?: boolean; recipientCount?: number } }) => {
+            const smsCount = result?.sms?.recipientCount ?? 0;
+            const smsSent = Boolean(result?.sms?.sent && smsCount > 0);
             await Swal.fire({
                 icon: 'success',
                 title: 'Visit Scheduled!',
-                text: 'The field visit has been synced to the AgriLync system.',
+                text: smsSent
+                    ? `Visit saved. Bulk SMS queued for ${smsCount} grower(s) via mNotify.`
+                    : 'The field visit has been synced to the AgriLync system.',
                 confirmButtonText: 'OK',
                 confirmButtonColor: '#065f46',
-                timer: 2000,
+                timer: 2500,
                 timerProgressBar: true,
             });
-            sendSmsNotification(1);
+            showSmsToast(smsCount, smsSent);
             queryClient.invalidateQueries({ queryKey: ['scheduledVisits'] });
             queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
             handleClose();
@@ -122,9 +145,19 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
         },
     });
 
+    const toggleAllFarmers = () => {
+        const ids = filteredFarmers.map((f) => (f._id || f.id) as string);
+        setFormData((prev) => ({
+            ...prev,
+            farmerIds: allFarmersSelected
+                ? prev.farmerIds.filter((id) => !ids.includes(id))
+                : [...new Set([...prev.farmerIds, ...ids])],
+        }));
+    };
+
     const handleClose = () => {
         setFormData({
-            farmerId: '',
+            farmerIds: [],
             visitType: '',
             visitDate: '',
             visitTime: '',
@@ -135,6 +168,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
             challenges: '',
         });
         setPhotos([]);
+        setFarmerSearch('');
         onOpenChange(false);
     };
 
@@ -149,9 +183,9 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
     };
 
     const handleSubmit = () => {
-        if (!formData.farmerId) { 
-            Swal.fire({ icon: 'warning', title: 'Grower Required', text: 'Please select a target grower for this visit.', confirmButtonColor: '#065f46' });
-            return; 
+        if (formData.farmerIds.length === 0) {
+            Swal.fire({ icon: 'warning', title: 'Grower Required', text: 'Please select at least one grower for this visit.', confirmButtonColor: '#065f46' });
+            return;
         }
         if (!formData.visitDate || !formData.visitTime) { 
             Swal.fire({ icon: 'warning', title: 'Schedule Required', text: 'Please set both a visit date and time.', confirmButtonColor: '#065f46' });
@@ -163,8 +197,8 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
         }
 
         createVisitMutation.mutate({
-            farmerIds: [formData.farmerId],
-            visitType: formData.visitType || 'farm-visit',
+            farmerIds: formData.farmerIds,
+            visitType: formData.farmerIds.length > 1 ? 'farmer-meeting' : (formData.visitType || 'farm-visit'),
             scheduledDate: new Date(formData.visitDate).toISOString(),
             scheduledTime: formData.visitTime,
             purpose: formData.purpose,
@@ -205,37 +239,75 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
                 {/* Scrollable body */}
                 <div className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
 
-                    {/* Grower Name & Lync ID inline */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2 bg-gray-50/80 dark:bg-white/5 p-4 rounded-2xl border border-gray-100 dark:border-white/5 transition-all focus-within:border-emerald-500/50">
-                            <div className="flex items-center gap-2 mb-1">
+                    {/* Growers — single or group */}
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
                                 <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-emerald-900/40 dark:text-gray-400">Target Grower *</Label>
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-emerald-900/40 dark:text-gray-400">Target Grower(s) *</Label>
                             </div>
-                            <Select value={formData.farmerId} onValueChange={v => setFormData(p => ({ ...p, farmerId: v }))}>
-                                <SelectTrigger className="h-10 border-none bg-transparent p-0 text-sm font-black text-gray-800 dark:text-white shadow-none focus:ring-0">
-                                    <SelectValue placeholder="Identify farmer..." />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-2xl border-none shadow-2xl z-[2000] p-1">
-                                    {farmers.length === 0
-                                        ? <SelectItem value="_none" disabled>No farmers found</SelectItem>
-                                        : farmers.map((f) => (
-                                            <SelectItem key={f._id || f.id} value={(f._id || f.id) as string} className="rounded-xl py-3 font-bold hover:bg-emerald-50">{f.name}</SelectItem>
-                                        ))
-                                    }
-                                </SelectContent>
-                            </Select>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${formData.farmerIds.length > 0 ? 'bg-[#065f46]/10 text-[#065f46]' : 'bg-gray-100 text-gray-400'}`}>
+                                {formData.farmerIds.length} selected
+                            </span>
                         </div>
-
-                        <div className="space-y-2 bg-gray-50/80 dark:bg-white/5 p-4 rounded-2xl border border-gray-100 dark:border-white/5">
-                            <div className="flex items-center gap-2 mb-1">
-                                <MapPin className="h-3.5 w-3.5 text-emerald-600" />
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-[#065f46]/40 dark:text-gray-400">Operation Lync ID</Label>
+                        <div className="rounded-2xl border border-gray-100 dark:border-white/10 overflow-hidden bg-white dark:bg-white/5">
+                            <div className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/10">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search grower name, ID or community..."
+                                        value={farmerSearch}
+                                        onChange={(e) => setFarmerSearch(e.target.value)}
+                                        className="w-full h-9 pl-8 pr-3 text-xs font-semibold rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 outline-none focus:border-[#065f46]"
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={toggleAllFarmers}
+                                    className={`whitespace-nowrap text-[10px] font-black uppercase tracking-wide px-3 py-2 rounded-xl border transition-all ${allFarmersSelected ? 'bg-[#065f46] text-white border-[#065f46]' : 'bg-white dark:bg-white/5 text-gray-500 border-gray-200 dark:border-white/10'}`}
+                                >
+                                    {allFarmersSelected ? 'Deselect All' : 'Select All'}
+                                </button>
                             </div>
-                            <p className="text-sm font-black text-[#065f46] tracking-tight truncate">
-                                {selectedFarmer ? (selectedFarmer.id || `LYG-${selectedFarmer.ghanaCardNumber || String(selectedFarmer._id).replace(/\D/g, '').padEnd(7, '0').slice(0, 7)}`) : 'No farmer selected'}
-                            </p>
+                            <div className="max-h-40 overflow-y-auto divide-y divide-gray-50 dark:divide-white/5">
+                                {filteredFarmers.length === 0 ? (
+                                    <div className="py-8 text-center text-xs text-gray-400">No growers found</div>
+                                ) : filteredFarmers.map((f) => {
+                                    const farmerId = (f._id || f.id) as string;
+                                    const selected = formData.farmerIds.includes(farmerId);
+                                    return (
+                                        <button
+                                            key={farmerId}
+                                            type="button"
+                                            onClick={() => setFormData((p) => ({
+                                                ...p,
+                                                farmerIds: selected
+                                                    ? p.farmerIds.filter((id) => id !== farmerId)
+                                                    : [...p.farmerIds, farmerId],
+                                            }))}
+                                            className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${selected ? 'bg-[#065f46]/5' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                                        >
+                                            <div className={`h-4 w-4 rounded border-2 flex items-center justify-center shrink-0 ${selected ? 'bg-[#065f46] border-[#065f46]' : 'border-gray-300'}`}>
+                                                {selected && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-black text-gray-800 dark:text-white truncate">{f.name}</p>
+                                                <p className="text-[10px] text-gray-400 truncate">{f.id || '—'} · {f.community || 'No community'}</p>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
+                        {primaryFarmer && (
+                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#065f46]/70">
+                                <MapPin className="h-3.5 w-3.5" />
+                                {formData.farmerIds.length > 1
+                                    ? `Group visit — all ${formData.farmerIds.length} growers will receive SMS`
+                                    : `Lync ID: ${primaryFarmer.id || primaryFarmer.ghanaCardNumber || '—'}`}
+                            </div>
+                        )}
                     </div>
 
                     {/* Visit Date | Time | Hours */}

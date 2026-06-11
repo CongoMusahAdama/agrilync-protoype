@@ -474,6 +474,9 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         onError: (error: unknown) => {
             submitLockRef.current = false;
             console.error('Add/Edit Farmer Error:', error);
+            queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
+            queryClient.invalidateQueries({ queryKey: ['agentFarmers'] });
+            queryClient.invalidateQueries({ queryKey: ['farmers'] });
             showValidationAlert(
                 'Verification Failed',
                 error,
@@ -487,8 +490,12 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
     const handleSubmit = async () => {
         if (submitLockRef.current || addFarmerMutation.isPending) return;
 
+        if (!agent?.id && !agent?.agentId) {
+            Swal.fire({ icon: 'error', title: 'Session Error', text: 'Your agent session could not be verified. Please log out and sign in again.', confirmButtonColor: '#002f37' });
+            return;
+        }
         if (!agent?.agentId) {
-            Swal.fire({ icon: 'error', title: 'Session Error', text: 'Your agent ID could not be verified. Please log out and sign in again.', confirmButtonColor: '#002f37' });
+            Swal.fire({ icon: 'error', title: 'Profile Incomplete', text: 'Your Field Agent ID is missing from your profile. Contact an administrator before onboarding growers.', confirmButtonColor: '#002f37' });
             return;
         }
         if (!idCardFront || !idCardBack) {

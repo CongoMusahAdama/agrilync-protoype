@@ -1,4 +1,5 @@
 const Farmer = require('../models/Farmer');
+const Farm = require('../models/Farm');
 const Agent = require('../models/Agent');
 const Notification = require('../models/Notification');
 const Activity = require('../models/Activity');
@@ -15,6 +16,8 @@ const {
     buildPendingQueueQuery,
     agentCanVerifyFarmer,
 } = require('../utils/agentAssignment');
+
+const resolveAgentId = (agent) => agent?._id || agent?.id || null;
 
 // @route   GET api/farmers
 // @desc    Get all farmers for current agent (with pagination)
@@ -75,7 +78,8 @@ exports.getFarmerById = async (req, res) => {
         }
 
         // Security check: Only assigned agent can view full farmer data
-        const isAssignedAgent = farmer.agent && farmer.agent.toString() === req.agent.id;
+        const agentId = resolveAgentId(req.agent);
+        const isAssignedAgent = farmer.agent && agentId && farmer.agent.toString() === agentId.toString();
         if (!isAssignedAgent) {
             return res.status(401).json({ success: false, message: 'Not authorized to view this farmer profile' });
         }
@@ -259,7 +263,13 @@ exports.growerLogin = async (req, res) => {
 // @route   POST api/farmers
 // @desc    Add a new farmer
 exports.addFarmer = async (req, res) => {
+    let createdFarmerId = null;
     try {
+        const agentId = resolveAgentId(req.agent);
+        if (!agentId) {
+            return res.status(401).json({ msg: 'Agent session is invalid. Please log out and sign in again.' });
+        }
+
         const onboardingFields = buildFarmerOnboardingFields(
             { ...req.body, onboardingAgentId: req.body.onboardingAgentId || req.agent?.agentId },
             { onboardingSource: 'agent' }
@@ -322,26 +332,24 @@ exports.addFarmer = async (req, res) => {
             ghanaCardNumber,
             imageHash: generatedHash,
             flags,
-            agent: req.agent.id,
+            agent: agentId,
             status: 'active',
             lastUpdated: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
         });
 
         const farmer = await newFarmer.save();
-        await ensurePrimaryFarm(farmer, req.agent.id);
+        createdFarmerId = farmer._id;
 
-        dashboardService.invalidateCache(req.agent.id);
+        await ensurePrimaryFarm(farmer, agentId);
 
-        // Log Activity
         await Activity.create({
-            agent: req.agent.id,
+            agent: agentId,
             type: 'verification',
             title: `Onboarded ${farmer.name}`,
-            description: `New farmer added in ${farmer.community || 'their community'}`
+            description: `New farmer added in ${farmer.community || 'their community'}`,
         });
 
-        // Invalidate dashboard cache for this agent
-        dashboardService.invalidateCache(req.agent.id);
+        dashboardService.invalidateCache(agentId);
 
         sendFarmerWelcomeSms(farmer, { onboardingSource: 'agent', agent: req.agent }).catch((err) =>
             console.error('Welcome SMS failed:', err.message)
@@ -349,11 +357,16 @@ exports.addFarmer = async (req, res) => {
 
         res.status(201).json(farmer);
     } catch (err) {
+        if (createdFarmerId) {
+            await Farm.deleteMany({ farmer: createdFarmerId }).catch(() => {});
+            await Farmer.deleteOne({ _id: createdFarmerId }).catch(() => {});
+            console.error('addFarmer rolled back partial farmer:', createdFarmerId.toString());
+        }
         if (err.code === 11000) {
             return res.status(400).json({ msg: 'Ghana Card already exists in the system' });
         }
         if (err.name === 'ValidationError') {
-            const messages = Object.values(err.errors).map(val => val.message);
+            const messages = Object.values(err.errors).map((val) => val.message);
             return res.status(400).json({ msg: messages.join(', ') });
         }
         console.error('addFarmer error:', err.message);
@@ -467,7 +480,7 @@ exports.updateFarmer = async (req, res) => {
                 time: 'Just now',
                 type: 'verification',
                 priority: 'medium',
-                agent: req.agent.id,
+                agent: agentId,
                 read: false
             });
 
@@ -519,73 +532,54 @@ exports.sendBulkSms = async (req, res) => {
     }
 
     try {
-        const mongoose = require('mongoose');
-        const { sendBulkSMS, normalizePhone } = require('../utils/smsService');
+        const { dispatchBulkGrowerSms } = require('../utils/bulkGrowerSms');
         const agentId = req.agent._id || req.agent.id;
 
-        const validIds = farmerIds.filter((id) => mongoose.Types.ObjectId.isValid(id));
-        if (validIds.length === 0) {
-            return res.status(400).json({ success: false, message: 'No valid farmer IDs provided.' });
-        }
-
-        const farmers = await Farmer.find({
-            _id: { $in: validIds },
-            agent: agentId,
-        }).select('name contact').lean();
-
-        if (farmers.length === 0) {
-            return res.status(403).json({
-                success: false,
-                message: 'No matching farmers found for your account.',
-            });
-        }
-
-        const recipients = farmers
-            .filter((f) => f.contact && String(f.contact).trim() && String(f.contact).toLowerCase() !== 'null')
-            .map((f) => ({
-                name: f.name,
-                phone: normalizePhone(f.contact),
-            }))
-            .filter((r) => r.phone.length >= 12);
-
-        if (recipients.length === 0) {
-            return res.json({
-                success: false,
-                message: 'None of the selected farmers have a valid mobile number on file.',
-                data: { total: farmers.length, succeeded: 0, failed: farmers.length },
-            });
-        }
-
-        const broadcastResult = await sendBulkSMS(recipients, message.trim(), {
+        const result = await dispatchBulkGrowerSms({
+            farmerIds,
+            agentId,
+            message: message.trim(),
             agentName: req.agent.name || 'AgriLync Agent',
+            requireAgentOwnership: true,
         });
 
         Activity.create({
             agent: agentId,
             type: 'event',
             title: 'Bulk SMS broadcast',
-            description: broadcastResult.succeeded > 0
-                ? `mNotify queued SMS for ${broadcastResult.succeeded}/${recipients.length} grower(s).`
-                : `Bulk SMS attempted for ${recipients.length} grower(s) — delivery failed.`,
+            description: result.sent
+                ? `mNotify queued SMS for ${result.succeeded}/${result.total} grower(s).`
+                : `Bulk SMS attempted — ${result.message}`,
         }).catch((err) => console.error('Bulk SMS activity log failed:', err.message));
 
-        if (!broadcastResult.succeeded) {
-            const hint = broadcastResult.simulated
+        if (!result.sent && result.total === 0 && !result.success) {
+            const status = result.message?.includes('matching growers') ? 403 : 400;
+            return res.status(status).json({ success: false, message: result.message, data: result.data });
+        }
+
+        if (!result.sent && result.total > 0) {
+            return res.json({
+                success: false,
+                message: result.message,
+                data: { total: result.total, succeeded: 0, failed: result.failed },
+            });
+        }
+
+        if (!result.sent) {
+            const hint = result.simulated
                 ? 'mNotify API key is not configured on the server.'
                 : 'Check farmer phone numbers and mNotify account balance.';
             return res.status(502).json({
                 success: false,
                 message: `SMS could not be delivered. ${hint}`,
-                data: broadcastResult,
+                data: result.data,
             });
         }
 
         return res.json({
             success: true,
-            message: broadcastResult.simulated
-                ? `Simulated send to ${broadcastResult.succeeded} farmer(s) (mNotify key missing on server).`
-                : `mNotify is delivering your message to ${broadcastResult.succeeded} farmer(s).`,
-            data: broadcastResult,
+            message: result.message,
+            data: result.data,
         });
     } catch (err) {
         console.error('sendBulkSms error:', err.message);

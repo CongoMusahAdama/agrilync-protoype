@@ -84,7 +84,10 @@ const auth = async (req, res, next) => {
             return res.status(401).json({ msg: 'Session active on another device' });
         }
 
-        // Attachment of agent to request
+        // Lean documents use _id; normalize so controllers can use req.agent.id
+        if (agent && !agent.id && agent._id) {
+            agent.id = agent._id;
+        }
         req.agent = agent;
         next();
     } catch (err) {

@@ -103,10 +103,11 @@ export default function DeliverTrainingModal({ open, onOpenChange, onSuccess, ed
     date: '', time: '09:00', mode: '', venue: '', region: agentRegion, district: '', community: '', customCommunity: '', language: '', farmerIds: [] as string[], notes: ''
   });
 
-  const sendSmsNotification = async (count: number, moduleName: string) => {
+  const showSmsToast = async (count: number, moduleName: string, sent: boolean) => {
+    if (!sent || count <= 0) return;
     await Swal.fire({
         title: 'SMS Broadcast Sent',
-        html: `<div class="text-left"><p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Training Protocol</p><p class="text-sm text-gray-700">SMS notification sent to <b>${count}</b> farmer(s) regarding the <b>${moduleName}</b> session.</p></div>`,
+        html: `<div class="text-left"><p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Bulk SMS (mNotify)</p><p class="text-sm text-gray-700">Bulk SMS queued for <b>${count}</b> grower(s) for the <b>${moduleName}</b> session.</p></div>`,
         icon: 'info', toast: true, position: 'top-end', timer: 4500, showConfirmButton: false,
         background: '#fff', color: '#002f37', iconColor: '#7ede56', timerProgressBar: true
     });
@@ -212,20 +213,24 @@ export default function DeliverTrainingModal({ open, onOpenChange, onSuccess, ed
         notes: form.notes,
       };
 
+      let smsCount = 0;
+      let smsSent = false;
       if (editItem) {
         await api.patch(`/training-deliveries/${editItem._id}`, payload);
       } else {
-        await api.post('/training-deliveries', payload);
+        const res = await api.post('/training-deliveries', payload);
+        smsCount = res.data?.sms?.recipientCount ?? 0;
+        smsSent = Boolean(res.data?.sms?.sent && smsCount > 0);
       }
-      
+
       onOpenChange(false);
       await Swal.fire({
         icon: 'success',
         title: editItem ? 'Training Updated!' : 'Training Scheduled!',
-        html: `<p style="color:#065f46;font-weight:700;font-size:16px;margin:8px 0 4px">${chosen?.title}</p><p style="color:#6b7280;font-size:13px;margin:0">${new Date(form.date).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})} · ${form.farmerIds.length} farmer(s)</p>`,
+        html: `<p style="color:#065f46;font-weight:700;font-size:16px;margin:8px 0 4px">${chosen?.title}</p><p style="color:#6b7280;font-size:13px;margin:0">${new Date(form.date).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})} · ${form.farmerIds.length} grower(s)${smsSent ? ` · bulk SMS queued for ${smsCount}` : ''}</p>`,
         confirmButtonColor: '#065f46', confirmButtonText: 'Done', timer: 3500, timerProgressBar: true,
       });
-      sendSmsNotification(form.farmerIds.length, chosen?.title || 'Training');
+      if (!editItem) showSmsToast(smsCount, chosen?.title || 'Training', smsSent);
       qc.invalidateQueries({ queryKey: ['trainingDeliveries'] });
       qc.invalidateQueries({ queryKey: ['scheduledVisits'] });
       onSuccess?.();

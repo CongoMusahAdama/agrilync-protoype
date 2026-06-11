@@ -1,5 +1,6 @@
 const TrainingDelivery = require('../models/TrainingDelivery');
 const Activity = require('../models/Activity');
+const { sendTrainingSessionSms } = require('../utils/visitSms');
 
 // ─────────────────────────────────────────────────────────────
 // GET /api/training-deliveries
@@ -85,7 +86,30 @@ exports.createDelivery = async (req, res) => {
         const populated = await TrainingDelivery.findById(delivery._id)
             .populate('farmers', 'name id contact community region');
 
-        res.status(201).json({ success: true, data: populated });
+        let smsResult = { sent: false, succeeded: 0, message: 'SMS not attempted' };
+        try {
+            smsResult = await sendTrainingSessionSms(delivery, req.agent);
+            if (smsResult.sent) {
+                await TrainingDelivery.findByIdAndUpdate(delivery._id, {
+                    smsSent: true,
+                    smsSentAt: new Date(),
+                });
+                populated.smsSent = true;
+            }
+        } catch (smsErr) {
+            console.error('createDelivery SMS failed (non-fatal):', smsErr.message);
+            smsResult = { sent: false, succeeded: 0, message: smsErr.message };
+        }
+
+        res.status(201).json({
+            success: true,
+            data: populated,
+            sms: {
+                sent: smsResult.sent,
+                recipientCount: smsResult.succeeded || 0,
+                message: smsResult.message,
+            },
+        });
     } catch (err) {
         console.error('createDelivery error:', err.message);
         res.status(500).json({ success: false, message: err.message || 'Failed to create training delivery' });
@@ -202,56 +226,36 @@ exports.sendSMSNotification = async (req, res) => {
         if (!delivery) return res.status(404).json({ success: false, message: 'Training delivery not found' });
         if (String(delivery.agent) !== agentId) return res.status(401).json({ success: false, message: 'Not authorized' });
 
-        const Farmer = require('../models/Farmer');
-        let farmers = [];
-        if (delivery.farmers && delivery.farmers.length > 0) {
-            farmers = await Farmer.find({ _id: { $in: delivery.farmers } }, 'name contact id');
+        const smsResult = await sendTrainingSessionSms(delivery, req.agent, { customMessage });
+        const noPhoneWarning = !smsResult.sent && smsResult.total > 0
+            ? 'Note: No growers in this session have a valid phone number.'
+            : null;
+
+        if (smsResult.sent) {
+            await TrainingDelivery.findByIdAndUpdate(id, {
+                smsSent: true,
+                smsSentAt: new Date(),
+            });
         }
-
-        const dateStr = new Date(delivery.deliveryDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-        const agentName = req.agent.name || 'AgriLync Agent';
-
-        const smsMessage = customMessage || 
-            `Hello! This is ${agentName} from AgriLync. ` +
-            `A training session for ${delivery.moduleTitle} has been scheduled for ${dateStr} at ${delivery.deliveryTime}. ` +
-            `${delivery.venue ? 'Venue: ' + delivery.venue + '. ' : ''}Please try to attend!`;
-
-        const recipients = farmers
-            .filter(f => f.contact && String(f.contact).trim() !== '' && String(f.contact).toLowerCase() !== 'null')
-            .map(f => ({ 
-                name: f.name, 
-                phone: String(f.contact).replace(/[\s\-\(\)]/g, '') 
-            }));
-
-        let broadcastResult = { succeeded: 0 };
-        if (recipients.length > 0) {
-            const smsService = require('../utils/smsService');
-            broadcastResult = await smsService.sendBulkSMS(recipients, smsMessage);
-        }
-
-        const noPhoneWarning = farmers.length > 0 && recipients.length === 0
-            ? 'Note: No growers in this session have a valid phone number.' : null;
-
-        await TrainingDelivery.findByIdAndUpdate(id, {
-            smsSent: true,
-            smsSentAt: new Date()
-        });
 
         try {
             await Activity.create({
                 agent: req.agent._id || req.agent.id,
                 type: 'event',
-                title: 'Training notification sent',
-                description: broadcastResult.succeeded > 0
-                    ? `SMS sent to ${broadcastResult.succeeded}/${recipients.length} grower(s) for ${delivery.moduleTitle}`
-                    : `Notification prepared for ${delivery.moduleTitle}. ${noPhoneWarning || ''}`
+                title: 'Bulk SMS — training session',
+                description: smsResult.sent
+                    ? `mNotify bulk SMS sent to ${smsResult.succeeded}/${smsResult.total} grower(s) for ${delivery.moduleTitle}`
+                    : `Bulk SMS prepared for ${delivery.moduleTitle}. ${noPhoneWarning || smsResult.message || ''}`,
             });
         } catch (e) { /* non-fatal */ }
 
         res.json({
             success: true,
-            message: broadcastResult.succeeded > 0 ? `SMS queued for ${broadcastResult.succeeded} grower(s)` : 'Session marked — no valid phone numbers found.',
-            warning: noPhoneWarning || undefined
+            message: smsResult.sent
+                ? `SMS queued for ${smsResult.succeeded} grower(s)`
+                : (smsResult.message || 'Session marked — no valid phone numbers found.'),
+            warning: noPhoneWarning || undefined,
+            data: { recipientCount: smsResult.succeeded || 0 },
         });
 
     } catch (err) {

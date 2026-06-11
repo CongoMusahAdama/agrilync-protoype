@@ -2,6 +2,7 @@ const ScheduledVisit = require('../models/ScheduledVisit');
 const Farmer = require('../models/Farmer');
 const Activity = require('../models/Activity');
 const Notification = require('../models/Notification');
+const { sendScheduledVisitSms } = require('../utils/visitSms');
 
 // @route   GET api/scheduled-visits
 // @desc    Get all scheduled visits for current agent
@@ -110,7 +111,31 @@ exports.createScheduledVisit = async (req, res) => {
         const populatedVisit = await ScheduledVisit.findById(savedVisit._id)
             .populate('farmers', 'name contact region district community');
 
-        res.json({ success: true, data: populatedVisit });
+        let smsResult = { sent: false, succeeded: 0, message: 'SMS not attempted' };
+        try {
+            smsResult = await sendScheduledVisitSms(savedVisit, req.agent);
+            if (smsResult.sent) {
+                await ScheduledVisit.findByIdAndUpdate(savedVisit._id, {
+                    smsSent: true,
+                    smsSentAt: new Date(),
+                    smsMessage: String(smsResult.smsMessage || '').substring(0, 500),
+                });
+                populatedVisit.smsSent = true;
+            }
+        } catch (smsErr) {
+            console.error('createScheduledVisit SMS failed (non-fatal):', smsErr.message);
+            smsResult = { sent: false, succeeded: 0, message: smsErr.message };
+        }
+
+        res.json({
+            success: true,
+            data: populatedVisit,
+            sms: {
+                sent: smsResult.sent,
+                recipientCount: smsResult.succeeded || 0,
+                message: smsResult.message,
+            },
+        });
     } catch (err) {
         console.error('createScheduledVisit error:', err.message);
         res.status(500).json({ success: false, message: 'Server error' });
@@ -153,74 +178,48 @@ exports.sendSMSNotification = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Authorization mismatch: This visit record belongs to another agent.' });
         }
 
-        // Fetch full farmer details - using the model already imported at the top
-        let farmers = [];
-        if (visit.farmers && visit.farmers.length > 0) {
-            // Filter out any potential invalid farmer IDs
-            const validFarmerIds = visit.farmers.filter(fid => fid && String(fid).length === 24);
-            farmers = await Farmer.find({ _id: { $in: validFarmerIds } }, 'name contact id');
-        }
+        const smsResult = await sendScheduledVisitSms(visit, req.agent, { customMessage });
 
-        // 4. Build message and Send with smsService
-        const dateStr = visit.scheduledDate 
-            ? new Date(visit.scheduledDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-            : 'Unscheduled';
-        
-        const agentName = req.agent.name || 'AgriLync Agent';
-        const visitTypeLabel = visit.visitType === 'farm-visit' ? 'farm visit'
-            : visit.visitType === 'community-visit' ? 'community visit' : 'field mission';
-
-        const smsMessage = customMessage ||
-            `Hello! This is ${agentName} from AgriLync. ` +
-            `A ${visitTypeLabel} is scheduled for ${dateStr} at ${visit.scheduledTime || 'morning'}. ` +
-            `Purpose: ${visit.purpose || 'Field check'}. Please be ready. Thank you.`;
-
-        // Filter and collect valid recipients for bulk dispatch
-        const validRecipients = farmers
-            .filter(f => f.contact && String(f.contact).trim() !== '' && String(f.contact).toLowerCase() !== 'null')
-            .map(f => ({
-                name: f.name,
-                phone: String(f.contact).replace(/[\s\-\(\)]/g, '')
-            }));
-
-        if (validRecipients.length === 0) {
+        if (!smsResult.sent && smsResult.total === 0) {
             return res.json({
                 success: true,
-                message: 'Notification recorded. Note: No mobile contact numbers were available for real-time dispatch.',
+                message: smsResult.message || 'No growers were linked to this visit for SMS.',
                 warning: 'No growers in this visit list have valid contact numbers.',
-                data: { recipientCount: 0 }
+                data: { recipientCount: 0 },
             });
         }
 
-        const smsService = require('../utils/smsService');
-        const broadcastResult = await smsService.sendBulkSMS(validRecipients, smsMessage);
+        if (!smsResult.sent) {
+            return res.json({
+                success: true,
+                message: smsResult.message || 'No valid phone numbers found for the selected growers.',
+                warning: 'No growers in this visit list have valid contact numbers.',
+                data: { recipientCount: 0 },
+            });
+        }
 
-        // 5. Finalize visit status update
         try {
             await ScheduledVisit.findByIdAndUpdate(id, {
                 smsSent: true,
                 smsSentAt: new Date(),
-                smsMessage: smsMessage.substring(0, 500)
+                smsMessage: String(smsResult.smsMessage || '').substring(0, 500),
             });
         } catch (dbErr) {
             console.error('[SMS] Status update failed:', dbErr.message);
         }
 
-        // 6. Log activity
         const agentIdForActivity = req.agent._id || req.agent.id;
         await Activity.create({
             agent: agentIdForActivity,
             type: 'event',
-            title: 'Field notification dispatched',
-            description: broadcastResult.succeeded > 0
-                ? `SMS notification successfully queued for ${broadcastResult.succeeded}/${validRecipients.length} grower(s).`
-                : `Notification logged for sector: ${visit.community || 'Field Visit'}. ${broadcastResult.failed > 0 ? broadcastResult.failed + ' failed.' : '' }`
+            title: 'Bulk SMS — field visit',
+            description: `mNotify bulk SMS queued for ${smsResult.succeeded}/${smsResult.total} grower(s).`,
         });
 
         return res.json({
             success: true,
-            message: `Communication broadcast successfully queued for ${broadcastResult.succeeded} grower(s).`,
-            data: { recipientCount: broadcastResult.succeeded }
+            message: `Communication broadcast successfully queued for ${smsResult.succeeded} grower(s).`,
+            data: { recipientCount: smsResult.succeeded },
         });
 
     } catch (err) {
