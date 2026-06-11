@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sprout, TrendingUp, Award, ArrowRight } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { whatsappMeUrl } from '@/lib/communityLinks';
 
 const investmentPackages = [
   {
@@ -135,7 +136,7 @@ export const InvestmentPackagesSection: React.FC = () => {
                   </li>
                 </ul>
                 <Button
-                  onClick={() => window.open(`https://wa.me/233506626068?text=Hello%20Agrilync,%20I%20am%20interested%20in%20the%20FarmPartner%20Initiative%20${pkg.name}%20Package.`, '_blank', 'noopener,noreferrer')}
+                  onClick={() => window.open(whatsappMeUrl(`Hello Agrilync, I am interested in the FarmPartner Initiative ${pkg.name} Package.`), '_blank', 'noopener,noreferrer')}
                   className={`w-full py-6 text-sm font-bold uppercase tracking-widest transition-all ${isMiddle ? 'bg-[#002f37] hover:bg-black text-white group-hover:bg-white group-hover:text-[#002f37]' : 'bg-white group-hover:bg-[#002f37] text-[#002f37] group-hover:text-white'}`}
                 >
                   Select Package

@@ -348,8 +348,7 @@ exports.createUser = async (req, res) => {
             return res.status(400).json({ msg: 'User already exists' });
         }
 
-        // Assign a default password if not provided
-        const defaultPassword = password || 'Default@123';
+        const defaultPassword = password?.trim() || crypto.randomBytes(4).toString('hex');
 
         // Auto-generate ID based on role
         const dbRole = role === 'Supervisor' ? 'supervisor' : 'agent';
@@ -817,7 +816,7 @@ exports.updateUser = async (req, res) => {
         }
 
         if (resetPassword) {
-            user.password = 'Default@123';
+            user.password = crypto.randomBytes(4).toString('hex');
             user.hasChangedPassword = false;
             // Clear current session to force a fresh login
             user.isLoggedIn = false;

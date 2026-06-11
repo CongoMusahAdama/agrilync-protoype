@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { UserCheck, Leaf, Users, TrendingUp, ArrowLeft, ArrowRight, ChevronDown, MapPin, Upload, Check, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
+import { WHATSAPP_COMMUNITY_URL } from '@/lib/communityLinks';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -705,7 +706,7 @@ const Signup = () => {
                       <div className="mt-2">
                         <p className="mb-3">Our registration system is currently being optimized. Join our WhatsApp community for updates!</p>
                         <a
-                          href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe"
+                          href={WHATSAPP_COMMUNITY_URL || '#'}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 bg-[#25D366] text-white px-4 py-2 rounded-full font-semibold text-sm hover:bg-[#128C7E] transition-colors"

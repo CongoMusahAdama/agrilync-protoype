@@ -218,8 +218,7 @@ router.get('/auth/me', blogAuth, async (req, res) => {
 
 const { sendSMS } = require('../utils/smsService');
 
-const WHATSAPP_COMMUNITY_URL =
-    process.env.WHATSAPP_COMMUNITY_URL || 'https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe';
+const WHATSAPP_COMMUNITY_URL = process.env.WHATSAPP_COMMUNITY_URL?.trim() || '';
 
 function buildResourceAccessSms(resourceTitle) {
     const title = resourceTitle || 'your resource';

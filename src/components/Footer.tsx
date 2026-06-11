@@ -4,6 +4,13 @@ import { Link } from 'react-router-dom';
 import { Leaf, Mail, MessageCircle, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  CONTACT_EMAIL,
+  CONTACT_PHONE_SECONDARY,
+  CONTACT_WHATSAPP,
+  WHATSAPP_COMMUNITY_URL,
+  formatGhanaPhone,
+} from '@/lib/communityLinks';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
@@ -66,19 +73,23 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4 text-green-400" />
-                <a href="mailto:agrilync@gmail.com" className="text-gray-400 hover:text-green-400 text-xs transition-colors">
-                  agrilync@gmail.com
+                <a href={CONTACT_EMAIL ? `mailto:${CONTACT_EMAIL}` : '#'} className="text-gray-400 hover:text-green-400 text-xs transition-colors">
+                  {CONTACT_EMAIL || 'Contact us'}
                 </a>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4 text-green-400" />
                 <div className="flex flex-col">
-                  <a href="tel:+233506626068" className="text-gray-400 hover:text-green-400 text-xs transition-colors">
-                    +233 506 626 068
-                  </a>
-                  <a href="tel:+233247552111" className="text-gray-400 hover:text-green-400 text-xs transition-colors">
-                    +233 247 552 111
-                  </a>
+                  {CONTACT_WHATSAPP && (
+                    <a href={`tel:+${CONTACT_WHATSAPP}`} className="text-gray-400 hover:text-green-400 text-xs transition-colors">
+                      {formatGhanaPhone(CONTACT_WHATSAPP)}
+                    </a>
+                  )}
+                  {CONTACT_PHONE_SECONDARY && (
+                    <a href={`tel:+${CONTACT_PHONE_SECONDARY}`} className="text-gray-400 hover:text-green-400 text-xs transition-colors">
+                      {formatGhanaPhone(CONTACT_PHONE_SECONDARY)}
+                    </a>
+                  )}
                 </div>
               </div>
               <div className="flex items-center space-x-3">
@@ -129,7 +140,9 @@ const Footer = () => {
               <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Privacy Policy</Link>
               <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Risk Disclosure</Link>
               <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Refund Policy</Link>
-              <a href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Community</a>
+              {WHATSAPP_COMMUNITY_URL && (
+                <a href={WHATSAPP_COMMUNITY_URL} target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Community</a>
+              )}
             </div>
           </div>
 
@@ -170,9 +183,11 @@ const Footer = () => {
           <p className="text-gray-500 text-[10px] mb-2 md:mb-0">© 2026 Agrilync Nexus. All rights reserved.</p>
           <div className="flex items-center space-x-2">
             <MessageCircle className="h-4 w-4 text-green-400" />
-            <a href="https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 text-[10px] transition-colors">
-              Join our WhatsApp Community
-            </a>
+            {WHATSAPP_COMMUNITY_URL && (
+              <a href={WHATSAPP_COMMUNITY_URL} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 text-[10px] transition-colors">
+                Join our WhatsApp Community
+              </a>
+            )}
           </div>
         </div>
       </div>

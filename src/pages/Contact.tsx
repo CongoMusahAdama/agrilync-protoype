@@ -7,7 +7,7 @@ import { Send, Mail, Phone, MapPin, Clock, Facebook, Twitter, Instagram, Linkedi
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-import { WHATSAPP_COMMUNITY_URL } from '@/lib/communityLinks';
+import { CONTACT_WHATSAPP, WHATSAPP_COMMUNITY_URL } from '@/lib/communityLinks';
 
 const BRAND_TEAL = '#002F37';
 const BRAND_GREEN = '#7ede56';
@@ -42,7 +42,7 @@ const Contact = () => {
     e.preventDefault();
 
     // Redirect to WhatsApp with the message
-    const phone = '233506626068'; // Primary WhatsApp
+    const phone = CONTACT_WHATSAPP;
     const message = `Hello Agrilync Nexus!
 
 Name: ${formData.name}

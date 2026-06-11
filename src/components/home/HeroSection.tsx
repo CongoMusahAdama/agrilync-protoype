@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { whatsappMeUrl } from '@/lib/communityLinks';
 
 export const HeroSection: React.FC = () => {
 
@@ -43,7 +44,7 @@ export const HeroSection: React.FC = () => {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-start justify-start gap-3 md:gap-6 animate-fade-in-up delay-400">
             <a
-              href="https://wa.me/233506626068"
+              href={whatsappMeUrl()}
               target="_blank"
               rel="noopener noreferrer"
               className="shrink-0 w-full sm:w-auto"

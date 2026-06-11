@@ -11,20 +11,32 @@ node_modules
 dist
 dist-ssr
 *.local
-# Internal docs (do not publish)
+
+# Internal docs & ops guides (do not publish)
 SYSTEM_ARCHITECTURE.md
+AWS_SETUP_GUIDE.md
+THIRD_PARTY_APIS.md
+THIRD_PARTY.mb
+systemupdate.md
 
 # Security & Configuration
 .env
 .env.*
-!*.env.example
+!.env.example
 backend/.env
 backend/config/*.json
 firebase-service-account.json
-backend/scripts/*.txt
 credentials.txt
 *.key
 *.pem
+
+# Generated credentials & subscriber exports
+backend/scripts/*.txt
+backend/scripts/*credentials*
+**/field_agents_credentials.txt
+
+# User uploads (use S3/Cloudinary in production)
+backend/uploads/
 
 # AI & Workspace Infrastructure
 .gemini/
@@ -32,6 +44,26 @@ credentials.txt
 brain/
 .system_generated/
 artifacts/
+
+# Build / debug / recovery scratch files
+build_output*.txt
+diff.txt
+git_diff.txt
+recovered_*.txt
+tasks_errors.txt
+ts_errors.txt
+tsc_errors.txt
+tsc_output.txt
+tsconfig.temp.json
+vite.config.ts.timestamp-*.mjs
+original_index_temp*.tsx
+old_head.tsx
+recover.py
+fix_location.py
+
+# Supabase local secrets
+supabase/.env
+supabase/.branches
 
 # System & OS
 .DS_Store
