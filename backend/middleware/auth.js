@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const Agent = require('../models/Agent');
+const { allowsConcurrentSessions } = require('../utils/sessionPolicy');
 
 /**
  * Helper to race DB queries against a timeout
@@ -44,8 +45,13 @@ const auth = async (req, res, next) => {
             return res.status(401).json({ msg: 'Agent not found' });
         }
 
-        // Verify session ID to enforce single device login (if sessionId exists in token)
-        if (agent.currentSessionId && decoded.agent.sessionId && agent.currentSessionId !== decoded.agent.sessionId) {
+        // Single-session accounts only: reject tokens from a superseded login
+        if (
+            !allowsConcurrentSessions(agent) &&
+            agent.currentSessionId &&
+            decoded.agent.sessionId &&
+            agent.currentSessionId !== decoded.agent.sessionId
+        ) {
             return res.status(401).json({ msg: 'Session active on another device' });
         }
 

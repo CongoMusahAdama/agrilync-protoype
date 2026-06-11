@@ -3,6 +3,7 @@ import { Mail, Phone, Loader2, Users, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/utils/customSonner';
+import api from '@/utils/api';
 import {
   fetchAdminSubscribers,
   getApiErrorMessage,
@@ -11,16 +12,23 @@ import {
 
 type SubscribersAdminPanelProps = {
   onCountChange?: (count: number) => void;
+  /** Use super-admin session instead of blog-admin token */
+  superAdmin?: boolean;
 };
 
-const SubscribersAdminPanel: React.FC<SubscribersAdminPanelProps> = ({ onCountChange }) => {
+const SubscribersAdminPanel: React.FC<SubscribersAdminPanelProps> = ({
+  onCountChange,
+  superAdmin = false,
+}) => {
   const [subscribers, setSubscribers] = useState<SubscriberRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadSubscribers = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await fetchAdminSubscribers();
+      const data = superAdmin
+        ? (await api.get<SubscriberRecord[]>('/super-admin/subscribers')).data
+        : await fetchAdminSubscribers();
       setSubscribers(data);
       onCountChange?.(data.length);
     } catch (err) {
@@ -28,7 +36,7 @@ const SubscribersAdminPanel: React.FC<SubscribersAdminPanelProps> = ({ onCountCh
     } finally {
       setLoading(false);
     }
-  }, [onCountChange]);
+  }, [onCountChange, superAdmin]);
 
   useEffect(() => {
     loadSubscribers();

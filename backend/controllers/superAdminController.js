@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const Agent = require('../models/Agent');
 const BlogAdmin = require('../models/BlogAdmin');
+const Subscriber = require('../models/Subscriber');
 const Farm = require('../models/Farm');
 const Farmer = require('../models/Farmer');
 const Match = require('../models/Match');
@@ -732,7 +733,10 @@ exports.createUser = async (req, res) => {
             password: generatedPassword,
             hasChangedPassword: false, // Force password update on first login
             agentId: staffAccountNumber,
-            enableMultipleLogin: enableMultipleLogin || false,
+            enableMultipleLogin:
+                role === 'super_admin' || role === 'Super Admin' || role === 'supervisor' || role === 'Supervisor'
+                    ? true
+                    : Boolean(enableMultipleLogin),
             avatar: avatar || '/lovable-uploads/profile.png'
         });
 
@@ -798,6 +802,9 @@ exports.updateUser = async (req, res) => {
         
         if (enableMultipleLogin !== undefined) {
             user.enableMultipleLogin = enableMultipleLogin;
+        }
+        if (user.role === 'super_admin' || user.role === 'supervisor') {
+            user.enableMultipleLogin = true;
         }
 
         if (avatar) {
@@ -1141,6 +1148,19 @@ const mapBlogAuthor = (author) => ({
 });
 
 const generateTempPassword = () => crypto.randomBytes(4).toString('hex');
+
+// @route   GET api/super-admin/subscribers
+exports.getSubscribers = async (req, res) => {
+    try {
+        const subscribers = await Subscriber.find()
+            .select('email phone source lastResource createdAt updatedAt')
+            .sort({ createdAt: -1 });
+        res.json(subscribers);
+    } catch (err) {
+        console.error('getSubscribers error:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
 
 // @route   GET api/super-admin/blog-authors
 exports.getBlogAuthors = async (req, res) => {

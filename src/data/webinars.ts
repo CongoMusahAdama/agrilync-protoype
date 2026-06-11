@@ -93,6 +93,21 @@ export const WEBINARS: WebinarItem[] = [
     status: 'completed',
     recordingLink: 'https://youtu.be/k2FJAGKz35k',
   },
+  {
+    id: 6,
+    title: 'THE FARMER TALK: Smart Farm Planning for Farm Profitability',
+    date: '2026-07-04',
+    time: '7:00 PM – 8:00 PM',
+    location: 'Virtual (Online)',
+    spots: 200,
+    registered: 0,
+    image: '/lovable-uploads/farm%20B.png',
+    description:
+      'A knowledge session for forward-thinking agripreneurs on using budgets and farm records to improve profitability. Speaker: Cynthia Awewura Abavare (Climate Change & Environmental Conservation Specialist, Field Agent, AgriLync Nexus). Moderated by Congo Musah Adama (Founder & CEO, AgriLync Nexus).',
+    speaker: 'Cynthia Awewura Abavare',
+    status: 'upcoming',
+    registrationLink: 'https://luma.com/8wjuzm3c',
+  },
 ];
 
 export const upcomingWebinars = WEBINARS.filter(w => w.status === 'upcoming');

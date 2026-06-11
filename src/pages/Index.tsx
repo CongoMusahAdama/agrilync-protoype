@@ -65,14 +65,20 @@ const Index = () => {
 
   if (showSplash) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center z-[9999] bg-[#7ede56]">
-        <div className="relative">
-          <img src="/Frame 74.png" alt="Logo" className="w-32 h-32 md:w-48 md:h-48 animate-spin-slow relative z-10" />
-          <div className="absolute inset-0 bg-white/40 blur-2xl rounded-full scale-150 animate-pulse opacity-50"></div>
+      <div className="fixed inset-0 flex items-center justify-center z-[9999] bg-white">
+        <div className="relative flex flex-col items-center">
+          <img
+            src="/Frame 74.png"
+            alt="AgriLync Nexus"
+            className="w-28 h-28 sm:w-36 sm:h-36 object-contain relative z-10 animate-splash-logo"
+          />
         </div>
         <style>{`
-          @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-          .animate-spin-slow { animation: spin-slow 3s linear infinite; }
+          @keyframes splash-logo {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+          }
+          .animate-splash-logo { animation: splash-logo 0.6s ease-out forwards; }
         `}</style>
       </div>
     );

@@ -68,7 +68,15 @@ const Login = () => {
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      const msg = error.response?.data?.msg || error.message || 'Login failed. Please try again.';
+      const data = error.response?.data;
+      const msg =
+        (typeof data === 'object' && data?.msg) ||
+        (typeof data === 'string' && data) ||
+        (error.response?.status === 500
+          ? 'Server error — backend auth may not be configured. Check JWT_SECRET and REFRESH_TOKEN_SECRET on Render.'
+          : null) ||
+        error.message ||
+        'Login failed. Please try again.';
       toast.error(msg);
     } finally {
       setLoading(false);

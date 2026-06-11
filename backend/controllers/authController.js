@@ -2,11 +2,19 @@ const Agent = require('../models/Agent');
 const crypto = require('crypto');
 const AuditLog = require('../models/AuditLog');
 const { generateTokens, setTokenCookies, clearTokenCookies } = require('../services/tokenService');
+const { allowsConcurrentSessions } = require('../utils/sessionPolicy');
 
 // @route   POST api/auth/login
 // @desc    Authenticate agent & get token
 exports.login = async (req, res) => {
     const { email, password, region } = req.body;
+
+    if (!process.env.JWT_SECRET || !process.env.REFRESH_TOKEN_SECRET) {
+        console.error('[AUTH] Login blocked: JWT_SECRET or REFRESH_TOKEN_SECRET is not configured');
+        return res.status(500).json({
+            msg: 'Server auth is not configured. Set JWT_SECRET and REFRESH_TOKEN_SECRET on the backend host.',
+        });
+    }
 
     try {
         let agent = await Agent.findOne({ 
@@ -30,15 +38,23 @@ exports.login = async (req, res) => {
             });
         }
 
-        // Prevent multiple device logins if not explicitly allowed
-        if (agent.isLoggedIn && !agent.enableMultipleLogin) {
+        const multiSession = allowsConcurrentSessions(agent);
+
+        // Admins / explicitly flagged accounts may sign in on multiple devices
+        if (agent.isLoggedIn && !multiSession) {
             return res.status(403).json({ msg: 'Account is already logged in on another device. Please contact an Administrator to reset your session.' });
         }
 
-        // Mark as logged in and generate secure session ID
+        if (agent.role === 'super_admin' && !agent.enableMultipleLogin) {
+            agent.enableMultipleLogin = true;
+        }
+
         const sessionId = crypto.randomBytes(32).toString('hex');
         agent.isLoggedIn = true;
-        agent.currentSessionId = sessionId;
+        // Single-session accounts: new login invalidates other devices
+        if (!multiSession) {
+            agent.currentSessionId = sessionId;
+        }
 
         if (region) {
             agent.region = region;
@@ -54,14 +70,13 @@ exports.login = async (req, res) => {
         agent.refreshToken = refreshToken;
         await agent.save();
 
-        // Audit Logging
-        await AuditLog.create({
+        AuditLog.create({
             action: 'LOGIN',
             user: agent.id,
             userRole: agent.role,
             details: `Agent ${agent.name} logged in`,
             ipAddress: req.ip || 'unknown'
-        });
+        }).catch((err) => console.error('Login audit log failed:', err.message));
 
         // Set cookies and respond
         setTokenCookies(res, accessToken, refreshToken);

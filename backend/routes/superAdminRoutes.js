@@ -25,7 +25,8 @@ const {
     getBlogAuthors,
     createBlogAuthor,
     updateBlogAuthor,
-    deleteBlogAuthor
+    deleteBlogAuthor,
+    getSubscribers
 } = require('../controllers/superAdminController');
 const auth = require('../middleware/auth');
 
@@ -69,6 +70,7 @@ router.get('/tasks', getTasks); // Tasks route
 router.get('/reports', getReports); // Analytics reports route
 router.post('/notifications', sendNotification); // New route to send notifications
 
+router.get('/subscribers', getSubscribers);
 router.get('/blog-authors', getBlogAuthors);
 router.post('/blog-authors', createBlogAuthor);
 router.put('/blog-authors/:id', updateBlogAuthor);

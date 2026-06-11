@@ -4,6 +4,7 @@ const Agent = require('../models/Agent');
 const crypto = require('crypto');
 const AuditLog = require('../models/AuditLog');
 const { generateTokens, setTokenCookies } = require('../services/tokenService');
+const { allowsConcurrentSessions } = require('../utils/sessionPolicy');
 
 // @desc    Generate MFA QR Code
 // @route   POST /api/auth/mfa/setup
@@ -81,10 +82,15 @@ exports.loginVerifyMFA = async (req, res) => {
         });
 
         if (verified) {
-            // Generate secure session ID
+            const multiSession = allowsConcurrentSessions(agent);
             const sessionId = crypto.randomBytes(32).toString('hex');
             agent.isLoggedIn = true;
-            agent.currentSessionId = sessionId;
+            if (!multiSession) {
+                agent.currentSessionId = sessionId;
+            }
+            if (agent.role === 'super_admin' && !agent.enableMultipleLogin) {
+                agent.enableMultipleLogin = true;
+            }
 
             // Generate tokens
             const payload = {

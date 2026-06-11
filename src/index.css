@@ -130,6 +130,10 @@
     @apply border-border;
   }
 
+  html {
+    background-color: #ffffff;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
