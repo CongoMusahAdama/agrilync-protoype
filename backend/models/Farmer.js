@@ -19,6 +19,8 @@ const farmerSchema = new mongoose.Schema({
     lastVisit: { type: String },
     lastUpdated: { type: String },
     agent: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent', required: false },
+    /** Nearest field agent routed to verify this self-onboarded grower */
+    verificationAgent: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent', required: false },
     onboardingSource: {
         type: String,
         enum: ['agent', 'self'],
@@ -117,6 +119,7 @@ const farmerSchema = new mongoose.Schema({
 // Indexing for performance
 farmerSchema.index({ agent: 1, status: 1, region: 1 });
 farmerSchema.index({ status: 1, region: 1 });
+farmerSchema.index({ verificationAgent: 1, status: 1 });
 
 // Internal ID and Password Generation
 farmerSchema.pre('save', async function () {

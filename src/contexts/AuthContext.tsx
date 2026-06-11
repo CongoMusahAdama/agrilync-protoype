@@ -4,6 +4,7 @@ import { getRegionKey } from '@/data/ghanaRegions';
 import {
     clearAuthSession,
     getAccessToken,
+    getAccountType,
     getRefreshToken,
     persistAuthSession,
     refreshAccessToken,
@@ -54,6 +55,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         const loadAgent = async () => {
+            if (getAccountType() === 'grower') {
+                setAgent(null);
+                setLoading(false);
+                return;
+            }
             if (token) {
                 try {
                     const res = await api.get('/agents/profile');

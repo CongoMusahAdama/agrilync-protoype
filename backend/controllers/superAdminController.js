@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 const Agent = require('../models/Agent');
 const BlogAdmin = require('../models/BlogAdmin');
 const Subscriber = require('../models/Subscriber');
@@ -30,6 +31,16 @@ const toDbRole = (role) => {
     if (role === 'super_admin' || role === 'Super Admin') return 'super_admin';
     if (role === 'supervisor' || role === 'Supervisor') return 'supervisor';
     return 'agent';
+};
+
+const getRequestAgentId = (agent) => agent?._id || agent?.id || null;
+
+const writeAuditLog = async (payload) => {
+    try {
+        await AuditLog.create(payload);
+    } catch (err) {
+        console.error('Audit log failed:', err.message);
+    }
 };
 
 // @route   GET api/super-admin/stats
@@ -960,15 +971,19 @@ exports.updateUser = async (req, res) => {
 
         await user.save();
 
-        // Create Audit Log
-        await AuditLog.create({
-            action: 'UPDATE_USER',
-            user: req.agent.id,
-            userRole: req.agent.role,
-            details: `Updated ${user.role}: ${user.name}`,
-            targetResource: 'Agent',
-            targetId: user.id
-        });
+        const actorId = getRequestAgentId(req.agent);
+        if (actorId) {
+            await writeAuditLog({
+                action: resetSession ? 'RESET_SESSION' : 'UPDATE_USER',
+                user: actorId,
+                userRole: req.agent.role,
+                details: resetSession
+                    ? `Reset login session for ${user.role}: ${user.name}`
+                    : `Updated ${user.role}: ${user.name}`,
+                targetResource: 'Agent',
+                targetId: user._id.toString()
+            });
+        }
 
         res.json({
             id: user._id.toString(),
@@ -995,29 +1010,37 @@ exports.updateUser = async (req, res) => {
 // @desc    Clear a user's active login session so they can sign in again
 exports.resetUserSession = async (req, res) => {
     try {
-        const user = await Agent.findById(req.params.id);
+        const { id } = req.params;
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ msg: 'Invalid user id' });
+        }
+
+        const user = await Agent.findByIdAndUpdate(
+            id,
+            { $set: { isLoggedIn: false, currentSessionId: null, refreshToken: null } },
+            { new: true }
+        );
+
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }
 
-        user.isLoggedIn = false;
-        user.currentSessionId = null;
-        user.refreshToken = null;
-        await user.save();
-
-        await AuditLog.create({
-            action: 'RESET_SESSION',
-            user: req.agent.id,
-            userRole: req.agent.role,
-            details: `Reset login session for ${user.role}: ${user.name}`,
-            targetResource: 'Agent',
-            targetId: user.id
-        });
+        const actorId = getRequestAgentId(req.agent);
+        if (actorId) {
+            await writeAuditLog({
+                action: 'RESET_SESSION',
+                user: actorId,
+                userRole: req.agent.role || 'super_admin',
+                details: `Reset login session for ${user.role}: ${user.name}`,
+                targetResource: 'Agent',
+                targetId: user._id.toString()
+            });
+        }
 
         res.json({ msg: 'Session cleared successfully' });
     } catch (err) {
         console.error('resetUserSession error:', err.message);
-        res.status(500).json({ msg: 'Failed to clear user session' });
+        res.status(500).json({ msg: err.message || 'Failed to clear user session' });
     }
 };
 

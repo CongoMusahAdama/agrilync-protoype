@@ -10,6 +10,7 @@ const Report = require('../models/Report');
 const redis = require('../utils/redis');
 const performanceService = require('./performanceService');
 const { CACHE_TTL } = require('../config/constants');
+const { buildPendingQueueQuery } = require('../utils/agentAssignment');
 
 // Fallback in-memory cache for when Redis is unavailable
 const memoryCache = new Map();
@@ -89,11 +90,11 @@ exports.getDashboardSummary = async (agent) => {
                 .select('_id id farmer investor agent type severity status dateLogged region description createdAt timeline evidence notes resolution')
                 .populate('farmer', 'name region')
                 .lean(),
-            // Pending queue for the agent's region
-            Farmer.find({ status: 'pending', region })
+            // Pending verification queue — routed to this agent by location
+            Farmer.find(buildPendingQueueQuery(agent))
                 .sort({ createdAt: -1 })
                 .limit(10)
-                .select('name status region date profilePicture ghanaCardNumber')
+                .select('name status region district community profilePicture ghanaCardNumber verificationAgent createdAt')
                 .lean(),
             Training.find().sort({ date: 1 }).limit(5).select('title date location status').lean(),
             AgentTraining.find({ agent: agentId })

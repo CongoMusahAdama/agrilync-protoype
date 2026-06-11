@@ -354,14 +354,7 @@ const AgentDashboard: React.FC = () => {
     return disputesRaw;
   }, [disputesRaw]);
 
-  const pendingFarmers = useMemo(() => {
-    const effectiveRegion = agent?.region || "Ashanti Region";
-    const regSearch = (effectiveRegion || '').toLowerCase().replace(' region', '').trim();
-    return pendingFarmersRaw.filter((f: any) => {
-      const fReg = (f.region || '').toLowerCase().replace(' region', '').trim();
-      return !regSearch || fReg === regSearch || fReg.includes(regSearch) || regSearch.includes(fReg);
-    });
-  }, [pendingFarmersRaw, agent?.region]);
+  const pendingFarmers = useMemo(() => pendingFarmersRaw, [pendingFarmersRaw]);
 
   const fetchData = useCallback(() => {
     refreshData();

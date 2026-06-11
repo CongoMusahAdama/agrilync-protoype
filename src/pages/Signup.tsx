@@ -699,23 +699,18 @@ const Signup = () => {
               {/* Roles Dropdown Pill */}
               <div className="relative w-full">
                 <Select onValueChange={(val) => {
-                  toast({
-                    title: "ðŸš§ Signup Under Development",
-                    description: (
-                      <div className="mt-2">
-                        <p className="mb-3">Our registration system is currently being optimized. Join our WhatsApp community for updates!</p>
-                        <a
-                          href={WHATSAPP_COMMUNITY_URL || '#'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 bg-[#25D366] text-white px-4 py-2 rounded-full font-semibold text-sm hover:bg-[#128C7E] transition-colors"
-                        >
-                          Join WhatsApp Community
-                        </a>
-                      </div>
-                    ),
-                    duration: 10000,
-                  });
+                  if (val === 'grower') {
+                    navigate('/signup/grower');
+                    return;
+                  }
+                  if (val === 'farmer') {
+                    navigate('/signup/farmer');
+                    return;
+                  }
+                  if (val === 'investor') {
+                    navigate('/signup/investor');
+                    return;
+                  }
                 }}>
                   <SelectTrigger
                     className="w-full h-14 rounded-full bg-white border-[1px] border-gray-200 shadow-[0_8px_20px_-8px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_24px_-8px_rgba(0,0,0,0.1)] transition-all duration-300 px-8 text-[#002f37] font-semibold hover:border-[#7ede56]/50 focus:ring-0 focus:ring-offset-0 flex justify-center"
@@ -763,15 +758,9 @@ const Signup = () => {
               <div className="mt-6 text-center">
                 <p className="text-gray-500">
                   Already have an account?{' '}
-                  <span onClick={() => {
-                    toast({
-                      title: "🚧 Dashboard Under Construction",
-                      description: "Access to the dashboard is currently restricted. Please check back later. For inquiries, contact us at agrilync@gmail.com or +233 50 662 6068.",
-                      duration: 8000,
-                    });
-                  }} className="text-[#002f37] font-bold cursor-pointer hover:underline opacity-80">
+                  <Link to="/login" className="text-[#002f37] font-bold hover:underline opacity-80">
                     Log in
-                  </span>
+                  </Link>
                 </p>
               </div>
             </div>

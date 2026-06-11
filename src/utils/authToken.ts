@@ -3,6 +3,22 @@ import { getApiBaseUrl } from '@/utils/apiConfig';
 
 const REFRESH_KEY = 'refreshToken';
 const ACCESS_KEY = 'token';
+const GROWER_TOKEN_KEY = 'growerToken';
+const GROWER_PROFILE_KEY = 'growerProfile';
+const ACCOUNT_TYPE_KEY = 'accountType';
+
+export interface GrowerProfile {
+    id: string;
+    lyncId?: string;
+    name: string;
+    status: 'active' | 'pending' | 'inactive';
+    region?: string;
+    district?: string;
+    community?: string;
+    contact?: string;
+    email?: string;
+    profilePicture?: string;
+}
 
 export const getAccessToken = () => {
     try {
@@ -27,9 +43,45 @@ export const persistAuthSession = (accessToken: string, refreshToken?: string | 
     }
 };
 
+export const persistGrowerSession = (accessToken: string, farmer: GrowerProfile) => {
+    localStorage.setItem(GROWER_TOKEN_KEY, accessToken);
+    localStorage.setItem(GROWER_PROFILE_KEY, JSON.stringify(farmer));
+    localStorage.setItem(ACCOUNT_TYPE_KEY, 'grower');
+    localStorage.setItem(ACCESS_KEY, accessToken);
+    localStorage.removeItem(REFRESH_KEY);
+};
+
+export const getGrowerToken = () => {
+    try {
+        return localStorage.getItem(GROWER_TOKEN_KEY);
+    } catch {
+        return null;
+    }
+};
+
+export const getGrowerProfile = (): GrowerProfile | null => {
+    try {
+        const raw = localStorage.getItem(GROWER_PROFILE_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
+    }
+};
+
+export const getAccountType = () => {
+    try {
+        return localStorage.getItem(ACCOUNT_TYPE_KEY);
+    } catch {
+        return null;
+    }
+};
+
 export const clearAuthSession = () => {
     localStorage.removeItem(ACCESS_KEY);
     localStorage.removeItem(REFRESH_KEY);
+    localStorage.removeItem(GROWER_TOKEN_KEY);
+    localStorage.removeItem(GROWER_PROFILE_KEY);
+    localStorage.removeItem(ACCOUNT_TYPE_KEY);
     localStorage.removeItem('blogAdminToken');
     localStorage.removeItem('blogAdminUser');
 };

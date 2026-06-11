@@ -1,5 +1,5 @@
 import axios, { type InternalAxiosRequestConfig, type AxiosResponse, type AxiosError } from 'axios';
-import { clearAuthSession, getAccessToken, refreshAccessToken } from '@/utils/authToken';
+import { clearAuthSession, getAccessToken, getAccountType, getRefreshToken, refreshAccessToken } from '@/utils/authToken';
 import { getApiBaseUrl } from '@/utils/apiConfig';
 
 export { getApiBaseUrl };
@@ -71,14 +71,19 @@ api.interceptors.response.use(
 
         const originalRequest = error.config;
         const isAuthRefresh = originalRequest?.url?.includes('/auth/refresh');
-        const isLogin = originalRequest?.url?.includes('/auth/login');
+        const isLogin =
+            originalRequest?.url?.includes('/auth/login') ||
+            originalRequest?.url?.includes('/farmers/auth/login');
+        const isGrowerAccount = getAccountType() === 'grower';
 
         if (
             error.response.status === 401 &&
             originalRequest &&
             !originalRequest._retry &&
             !isAuthRefresh &&
-            !isLogin
+            !isLogin &&
+            !isGrowerAccount &&
+            getRefreshToken()
         ) {
             if (isRefreshing) {
                 return new Promise<string>((resolve, reject) => {

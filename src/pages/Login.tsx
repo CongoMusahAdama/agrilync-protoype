@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import RegionSelectionModal from '@/components/auth/RegionSelectionModal';
 import { getRegionKey } from '@/data/ghanaRegions';
+import { persistGrowerSession } from '@/utils/authToken';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -68,6 +69,27 @@ const Login = () => {
         toast.info('Credentials Verified. Please confirm your region.');
       }
     } catch (error: any) {
+      const status = error.response?.status;
+      if (status === 400 || status === 403) {
+        try {
+          const growerRes = await api.post('/farmers/auth/login', {
+            email: formData.email,
+            password: formData.password,
+          });
+          const { token, farmer } = growerRes.data;
+          persistGrowerSession(token, farmer);
+          if (farmer.status === 'pending') {
+            toast.success(`Welcome ${farmer.name.split(' ')[0]}! Your profile is pending field agent verification.`);
+          } else {
+            toast.success(`Welcome back, ${farmer.name.split(' ')[0]}!`);
+          }
+          navigate('/dashboard/grower');
+          return;
+        } catch (growerErr: any) {
+          console.error('Grower login error:', growerErr);
+        }
+      }
+
       console.error('Login error:', error);
       const data = error.response?.data;
       const msg =

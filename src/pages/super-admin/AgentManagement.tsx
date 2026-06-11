@@ -457,12 +457,30 @@ const AgentManagement = () => {
         }).then(async (result) => {
             if (!result.isConfirmed) return;
 
+            if (!selectedUser.id) {
+                toast.error('Cannot reset session: user id is missing. Refresh the page and try again.');
+                return;
+            }
+
             try {
-                await api.post(`/super-admin/users/${selectedUser.id}/reset-session`);
+                try {
+                    await api.post(`/super-admin/users/${selectedUser.id}/reset-session`);
+                } catch (postErr: any) {
+                    const status = postErr.response?.status;
+                    if (status === 404 || status === 405) {
+                        await api.put(`/super-admin/users/${selectedUser.id}`, { resetSession: true });
+                    } else {
+                        throw postErr;
+                    }
+                }
                 toast.success(`Active sessions for ${selectedUser.name} have been cleared. They can now log in again.`);
             } catch (err: any) {
                 console.error('Session reset failed:', err);
-                toast.error(err.response?.data?.msg || 'Failed to clear user sessions');
+                const msg =
+                    err.response?.data?.msg ||
+                    (typeof err.response?.data === 'string' ? err.response.data : null) ||
+                    'Failed to clear user sessions';
+                toast.error(msg);
             }
         });
     };

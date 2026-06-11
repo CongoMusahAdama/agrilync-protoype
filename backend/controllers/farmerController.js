@@ -10,6 +10,11 @@ const {
     normalizeRegion,
 } = require('../utils/farmerOnboarding');
 const { sendFarmerWelcomeSms } = require('../utils/farmerWelcomeSms');
+const {
+    findNearestVerificationAgent,
+    buildPendingQueueQuery,
+    agentCanVerifyFarmer,
+} = require('../utils/agentAssignment');
 
 // @route   GET api/farmers
 // @desc    Get all farmers for current agent (with pagination)
@@ -83,11 +88,42 @@ exports.getFarmerById = async (req, res) => {
 };
 
 // @route   POST api/farmers/public/register
-// @desc    Solo farmer self-onboarding (pending verification)
+// @desc    Lync Grower self-onboarding (pending verification)
 exports.registerFarmerPublic = async (req, res) => {
     try {
+        const ghanaCardNumber = req.body.ghanaCardNumber?.trim().toUpperCase();
+        if (ghanaCardNumber) {
+            const ghaRegex = /^GHA-\d{9}-\d$/;
+            if (!ghaRegex.test(ghanaCardNumber)) {
+                return res.status(400).json({ msg: 'Invalid Ghana Card number format. Use GHA-XXXXXXXXX-X' });
+            }
+            const existingGha = await Farmer.findOne({ ghanaCardNumber });
+            if (existingGha) {
+                return res.status(400).json({
+                    msg: `Ghana Card already registered for ${existingGha.name}. Contact your field agent if this is an error.`,
+                });
+            }
+        }
+
+        if (req.body.dob) {
+            const dobDate = new Date(req.body.dob);
+            if (Number.isNaN(dobDate.getTime()) || dobDate > new Date()) {
+                return res.status(400).json({ msg: 'Invalid Date of Birth' });
+            }
+        }
+
         const onboardingFields = buildFarmerOnboardingFields(req.body, { onboardingSource: 'self' });
         const normalizedRegion = onboardingFields.region || normalizeRegion(req.body.region);
+
+        if (!onboardingFields.name || !onboardingFields.contact || !normalizedRegion) {
+            return res.status(400).json({ msg: 'Name, phone number, and region are required.' });
+        }
+        if (!onboardingFields.district || !onboardingFields.community) {
+            return res.status(400).json({ msg: 'District and community are required.' });
+        }
+        if (!onboardingFields.farmType) {
+            return res.status(400).json({ msg: 'Farm type is required.' });
+        }
 
         const s3ProfilePicture = req.body.profilePicture
             ? await uploadDataUrl(req.body.profilePicture, 'farmers/profiles')
@@ -99,6 +135,13 @@ exports.registerFarmerPublic = async (req, res) => {
             ? await uploadDataUrl(req.body.idCardBack, 'farmers/ids')
             : undefined;
 
+        const draftFarmer = {
+            ...onboardingFields,
+            region: normalizedRegion,
+            ghanaCardNumber,
+        };
+        const nearestAgent = await findNearestVerificationAgent(draftFarmer);
+
         const newFarmer = new Farmer({
             ...onboardingFields,
             password: req.body.password,
@@ -106,44 +149,110 @@ exports.registerFarmerPublic = async (req, res) => {
             idCardFront: s3IdCardFront,
             idCardBack: s3IdCardBack,
             region: normalizedRegion,
+            ghanaCardNumber,
             status: 'pending',
+            verificationAgent: nearestAgent?._id || undefined,
             lastUpdated: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
         });
 
         const farmer = await newFarmer.save();
 
-        const regionalAgents = await Agent.find({
-            $or: [
-                { region: normalizedRegion },
-                { region: normalizedRegion.replace(' Region', '') },
-                { region: new RegExp(normalizedRegion.replace(' Region', '').trim(), 'i') },
-            ],
-        });
-
-        if (regionalAgents.length > 0) {
-            const notifications = regionalAgents.map(agent => ({
+        if (nearestAgent?._id) {
+            await Notification.create({
                 title: 'New Grower Verification Req.',
                 time: 'Just now',
                 type: 'verification',
-                priority: 'medium',
-                agent: agent._id,
-                read: false
-            }));
-            await Notification.insertMany(notifications);
+                priority: 'high',
+                agent: nearestAgent._id,
+                read: false,
+            });
         }
 
         sendFarmerWelcomeSms(farmer, { onboardingSource: 'self' }).catch((err) =>
             console.error('Welcome SMS failed:', err.message)
         );
 
-        res.json({ success: true, farmerId: farmer._id });
+        res.json({
+            success: true,
+            farmerId: farmer._id,
+            lyncId: farmer.id,
+            verificationAgent: nearestAgent
+                ? { name: nearestAgent.name, agentId: nearestAgent.agentId }
+                : null,
+        });
     } catch (err) {
+        if (err.code === 11000) {
+            return res.status(400).json({ msg: 'A grower with this Ghana Card or ID already exists.' });
+        }
         if (err.name === 'ValidationError') {
             const messages = Object.values(err.errors).map(val => val.message);
             return res.status(400).json({ msg: messages.join(', ') });
         }
         console.error('registerFarmerPublic error:', err.message);
         res.status(500).json({ msg: 'Server error during registration' });
+    }
+};
+
+// @route   POST api/farmers/auth/login
+// @desc    Lync Grower login (phone or email + password)
+exports.growerLogin = async (req, res) => {
+    const { email, password } = req.body;
+    const identifier = String(email || '').trim();
+
+    if (!identifier || !password) {
+        return res.status(400).json({ msg: 'Phone/email and password are required' });
+    }
+
+    try {
+        const farmer = await Farmer.findOne({
+            $or: [{ email: identifier }, { contact: identifier }],
+        });
+
+        if (!farmer) {
+            return res.status(400).json({ msg: 'Invalid credentials' });
+        }
+
+        if (farmer.status === 'inactive') {
+            return res.status(403).json({
+                msg: 'This account is inactive. Please contact your AgriLync field agent.',
+            });
+        }
+
+        const isMatch = await farmer.comparePassword(password);
+        if (!isMatch) {
+            return res.status(400).json({ msg: 'Invalid credentials' });
+        }
+
+        const jwt = require('jsonwebtoken');
+        if (!process.env.JWT_SECRET) {
+            return res.status(500).json({ msg: 'Server auth is not configured.' });
+        }
+
+        const token = jwt.sign(
+            { farmer: { id: farmer._id.toString() }, accountType: 'grower' },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '8h' }
+        );
+
+        res.json({
+            token,
+            accountType: 'grower',
+            farmer: {
+                id: farmer._id.toString(),
+                lyncId: farmer.id,
+                name: farmer.name,
+                status: farmer.status,
+                region: farmer.region,
+                district: farmer.district,
+                community: farmer.community,
+                contact: farmer.contact,
+                email: farmer.email,
+                profilePicture: farmer.profilePicture,
+            },
+        });
+    } catch (err) {
+        console.error('growerLogin error:', err.message);
+        res.status(500).json({ msg: 'Server error. Please try again.' });
     }
 };
 
@@ -256,17 +365,9 @@ exports.addFarmer = async (req, res) => {
 // @desc    Get all pending farmers in the agent's region
 exports.getPendingFarmersByRegion = async (req, res) => {
     try {
-        const agentRegion = req.agent.region || '';
-        const regionStem = agentRegion.replace(/\s+region$/i, '').trim();
-        const farmers = await Farmer.find({
-            status: 'pending',
-            $or: [
-                { region: agentRegion },
-                { region: new RegExp(regionStem, 'i') },
-                { region: `${regionStem} Region` },
-            ],
-        })
+        const farmers = await Farmer.find(buildPendingQueueQuery(req.agent))
             .select('-idCardFront -idCardBack -password')
+            .sort({ createdAt: -1 })
             .lean();
 
         res.json(farmers);
@@ -287,17 +388,19 @@ exports.updateFarmer = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Farmer not found' });
         }
 
-        // Security check: Only assigned agent or regional agent (for verification) can update
-        const isAssignedAgent = farmer.agent && farmer.agent.toString() === req.agent.id;
-        const isVerifyingRegional = farmer.status === 'pending' && farmer.region === req.agent.region;
+        const agentId = req.agent._id || req.agent.id;
+        const isAssignedAgent = farmer.agent && farmer.agent.toString() === agentId.toString();
+        const canVerify = agentCanVerifyFarmer(req.agent, farmer);
 
-        if (!isAssignedAgent && !isVerifyingRegional) {
+        if (!isAssignedAgent && !canVerify) {
             return res.status(401).json({ success: false, message: 'Not authorized to update this farmer profile' });
         }
 
-        // If verifying a pending farmer, assign IT to the current agent
-        if (isVerifyingRegional && updateData.status === 'active') {
-            farmer.agent = req.agent.id;
+        if (canVerify && farmer.status === 'pending' && updateData.status === 'active') {
+            farmer.agent = agentId;
+            if (!farmer.verificationAgent) {
+                farmer.verificationAgent = agentId;
+            }
         }
 
         // Explicitly allowed fields for update
@@ -358,7 +461,7 @@ exports.updateFarmer = async (req, res) => {
         }
 
         // Notification logic
-        if (updateData.status === 'active' && isVerifyingRegional) {
+        if (updateData.status === 'active' && canVerify) {
             await Notification.create({
                 title: `Grower ${farmer.name} Verified`,
                 time: 'Just now',
