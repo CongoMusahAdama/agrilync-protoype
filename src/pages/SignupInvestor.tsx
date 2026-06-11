@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { ArrowLeft, TrendingUp, Phone, AlertCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Swal from 'sweetalert2';
+import { guardPublicRoleSignup, isPublicRoleSignupEnabled } from '@/utils/signupGate';
 
 const SignupInvestor = () => {
     const navigate = useNavigate();
@@ -24,6 +25,12 @@ const SignupInvestor = () => {
 
     const [otpSent, setOtpSent] = useState(false);
     const [otpCode, setOtpCode] = useState('');
+
+    useEffect(() => {
+        if (!isPublicRoleSignupEnabled()) {
+            guardPublicRoleSignup().then(() => navigate('/signup', { replace: true }));
+        }
+    }, [navigate]);
 
     const handleInputChange = (field: string, value: string | boolean) => {
         setFormData(prev => ({
@@ -44,8 +51,10 @@ const SignupInvestor = () => {
         return false;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!(await guardPublicRoleSignup())) return;
 
         if (!verifyOTP()) {
             Swal.fire({
@@ -56,17 +65,12 @@ const SignupInvestor = () => {
             return;
         }
 
-        // Show under development message
         Swal.fire({
-            title: 'Under Development',
-            html: `🌾 Thank you for your interest in AgriLync!<br><br>Our authentication system and user dashboards are currently under development and will be available very soon.<br><br>Stay tuned for updates!`,
+            title: 'Investor signup coming soon',
+            html: 'Investor registration is not open yet. Please check back soon.',
             icon: 'info',
             confirmButtonColor: '#2563eb'
         });
-        return;
-
-        // console.log('Investor Registration Data:', formData);
-        // navigate('/dashboard/investor');
     };
 
     return (

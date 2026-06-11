@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import { GHANA_CROPS } from '@/data/ghanaCrops';
 import { getRegionKey, SIGNUP_REGION_OPTIONS, GHANA_REGION_SIGNUP_LABELS } from '@/data/ghanaRegions';
+import { guardPublicRoleSignup, isPublicRoleSignupEnabled } from '@/utils/signupGate';
 
 const SignupFarmer = () => {
     const navigate = useNavigate();
@@ -38,6 +39,12 @@ const SignupFarmer = () => {
     const [otpSent, setOtpSent] = useState(false);
     const [otpCode, setOtpCode] = useState('');
     const [activeTab, setActiveTab] = useState('personal');
+
+    useEffect(() => {
+        if (!isPublicRoleSignupEnabled()) {
+            guardPublicRoleSignup().then(() => navigate('/signup', { replace: true }));
+        }
+    }, [navigate]);
 
     const handleInputChange = (field: string, value: string | boolean | string[]) => {
         setFormData(prev => ({
@@ -69,6 +76,8 @@ const SignupFarmer = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!(await guardPublicRoleSignup())) return;
 
         if (formData.password !== formData.confirmPassword) {
             toast.error('Passwords do not match');

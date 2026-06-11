@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +22,7 @@ import {
     getCommunitiesForRegion,
 } from '@/data/ghanaRegions';
 import { persistGrowerSession } from '@/utils/authToken';
+import { guardPublicRoleSignup, isPublicRoleSignupEnabled } from '@/utils/signupGate';
 
 const readFileAsDataUrl = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -64,6 +65,12 @@ const SignupGrower = () => {
     const [otpSent, setOtpSent] = useState(false);
     const [otpCode, setOtpCode] = useState('');
     const [activeTab, setActiveTab] = useState('personal');
+
+    useEffect(() => {
+        if (!isPublicRoleSignupEnabled()) {
+            guardPublicRoleSignup().then(() => navigate('/signup', { replace: true }));
+        }
+    }, [navigate]);
 
     const regionKey = formData.farmRegion ? getRegionKey(formData.farmRegion) : '';
     const districtOptions = useMemo(
@@ -109,6 +116,8 @@ const SignupGrower = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!(await guardPublicRoleSignup())) return;
 
         if (formData.password !== formData.confirmPassword) {
             toast.error('Passwords do not match');

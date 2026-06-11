@@ -9,8 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { UserCheck, Leaf, Users, TrendingUp, ArrowLeft, ArrowRight, ChevronDown, MapPin, Upload, Check, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
-import { WHATSAPP_COMMUNITY_URL } from '@/lib/communityLinks';
 import { SIGNUP_REGION_OPTIONS, GHANA_REGION_SIGNUP_LABELS } from '@/data/ghanaRegions';
+import { guardPublicRoleSignup } from '@/utils/signupGate';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -698,7 +698,9 @@ const Signup = () => {
 
               {/* Roles Dropdown Pill */}
               <div className="relative w-full">
-                <Select onValueChange={(val) => {
+                <Select onValueChange={async (val) => {
+                  const allowed = await guardPublicRoleSignup();
+                  if (!allowed) return;
                   if (val === 'grower') {
                     navigate('/signup/grower');
                     return;
