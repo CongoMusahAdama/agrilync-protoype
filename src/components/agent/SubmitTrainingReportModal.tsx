@@ -67,7 +67,7 @@ export default function SubmitTrainingReportModal({ open, onOpenChange, delivery
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 border-none rounded-2xl overflow-hidden shadow-2xl [&>button:first-of-type]:hidden bg-white">
+      <DialogContent hideCloseButton className="sm:max-w-md p-0 border-none rounded-2xl overflow-hidden shadow-2xl bg-white">
         {/* Header */}
         <div className="bg-[#065f46] p-5 flex items-start justify-between text-white">
           <div className="flex gap-3">

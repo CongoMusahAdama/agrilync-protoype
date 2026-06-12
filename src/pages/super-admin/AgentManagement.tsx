@@ -37,6 +37,15 @@ import api from '@/utils/api';
 import { isCustomAvatar } from '@/utils/avatar';
 import { getCommunitiesForRegion } from '@/data/ghanaRegions';
 
+interface SupervisorOption {
+    id: string;
+    name: string;
+    contact: string;
+    email: string;
+    region: string;
+    staffAccountNumber: string;
+}
+
 interface UserRecord {
     id: string;
     name: string;
@@ -50,6 +59,8 @@ interface UserRecord {
     staffAccountNumber: string;
     avatar?: string;
     enableMultipleLogin?: boolean;
+    supervisorId?: string;
+    supervisorName?: string;
     authorised: boolean;
 }
 
@@ -68,7 +79,22 @@ const AgentManagement = () => {
     const [mainTab, setMainTab] = useState<'UserCreation' | 'AccessControl'>('UserCreation');
 
     const [users, setUsers] = useState<UserRecord[]>([]);
+    const [supervisors, setSupervisors] = useState<SupervisorOption[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const fetchSupervisors = React.useCallback(async () => {
+        try {
+            const res = await api.get('/super-admin/supervisors');
+            setSupervisors(Array.isArray(res.data) ? res.data : []);
+        } catch (err) {
+            console.error('Failed to fetch supervisors:', err);
+            setSupervisors([]);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchSupervisors();
+    }, [fetchSupervisors]);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -120,20 +146,33 @@ const AgentManagement = () => {
         resetPassword: boolean;
         deleteUser: boolean;
         avatar: string;
+        supervisorId: string;
     }>({
         region: 'Bono Ahafo Region',
         communities: [],
         name: '',
         email: '',
         phone: '',
-        role: 'Lync Agent',
+        role: 'agent',
         staffAccountNumber: '',
         isDisabled: false,
         enableMultipleLogin: false,
         resetPassword: false,
         deleteUser: false,
-        avatar: ''
+        avatar: '',
+        supervisorId: '',
     });
+
+    const availableSupervisors = useMemo(() => {
+        if (!supervisors.length) return [];
+        const regionKey = (formValues.region || '').toLowerCase().replace(/\s+region$/i, '').trim();
+        if (!regionKey) return supervisors;
+        const regional = supervisors.filter((s) => {
+            const supRegion = (s.region || '').toLowerCase().replace(/\s+region$/i, '').trim();
+            return supRegion === regionKey || supRegion.includes(regionKey) || regionKey.includes(supRegion);
+        });
+        return regional.length > 0 ? regional : supervisors;
+    }, [supervisors, formValues.region]);
 
     const [communitySearch, setCommunitySearch] = useState('');
     const [customCommunity, setCustomCommunity] = useState('');
@@ -309,7 +348,8 @@ const AgentManagement = () => {
             enableMultipleLogin: user.enableMultipleLogin || false,
             resetPassword: user.passwordChanged === 'No',
             deleteUser: false,
-            avatar: isCustomAvatar(user.avatar) ? user.avatar! : ''
+            avatar: isCustomAvatar(user.avatar) ? user.avatar! : '',
+            supervisorId: user.supervisorId || '',
         });
         setIsModalOpen(true);
     };
@@ -323,13 +363,14 @@ const AgentManagement = () => {
             name: '',
             email: '',
             phone: '',
-            role: 'Lync Agent',
+            role: 'agent',
             staffAccountNumber: autoAC,
             isDisabled: false,
             enableMultipleLogin: false,
             resetPassword: false,
             deleteUser: false,
-            avatar: ''
+            avatar: '',
+            supervisorId: '',
         });
         setIsModalOpen(true);
     };
@@ -342,6 +383,11 @@ const AgentManagement = () => {
 
         if (formValues.communities.length === 0) {
             toast.error("Please select at least one community for this agent.");
+            return;
+        }
+
+        if (formValues.role === 'agent' && !formValues.supervisorId) {
+            toast.error('Please assign a reporting supervisor for this field agent.');
             return;
         }
 
@@ -383,7 +429,8 @@ const AgentManagement = () => {
                     resetPassword: formValues.resetPassword,
                     staffAccountNumber: formValues.staffAccountNumber,
                     enableMultipleLogin: formValues.enableMultipleLogin,
-                    avatar: isCustomAvatar(formValues.avatar) ? formValues.avatar : ''
+                    avatar: isCustomAvatar(formValues.avatar) ? formValues.avatar : '',
+                    supervisorId: formValues.role === 'agent' ? formValues.supervisorId : undefined,
                 });
                 setUsers(prev => prev.map(u => u.id === selectedUser.id ? res.data : u));
                 toast.success(`Profile update for "${formValues.name}" saved!`);
@@ -403,9 +450,13 @@ const AgentManagement = () => {
                     communities: formValues.communities,
                     staffAccountNumber: formValues.staffAccountNumber,
                     enableMultipleLogin: formValues.enableMultipleLogin,
-                    avatar: isCustomAvatar(formValues.avatar) ? formValues.avatar : ''
+                    avatar: isCustomAvatar(formValues.avatar) ? formValues.avatar : '',
+                    supervisorId: formValues.role === 'agent' ? formValues.supervisorId : undefined,
                 });
                 setUsers(prev => [res.data, ...prev]);
+                if (formValues.role === 'supervisor') {
+                    fetchSupervisors();
+                }
                 Swal.fire({
                     title: 'Personnel Onboarded!',
                     html: `<b>${formValues.name}</b> has been successfully provisioned.<br/><br/>A secure random password has been generated and sent via SMS to the user.<br/><br/><i>They must update their password on first login.</i>`,
@@ -1089,7 +1140,8 @@ const AgentManagement = () => {
                                                 setFormValues(prev => ({ 
                                                     ...prev, 
                                                     role: val,
-                                                    staffAccountNumber: updatedAC
+                                                    staffAccountNumber: updatedAC,
+                                                    supervisorId: val === 'agent' ? prev.supervisorId : '',
                                                 }));
                                             }}
                                         >
@@ -1103,6 +1155,32 @@ const AgentManagement = () => {
                                             </SelectContent>
                                         </Select>
                                     </div>
+
+                                    {formValues.role === 'agent' && (
+                                        <div className="space-y-2 md:col-span-2">
+                                            <Label className="text-[11px] font-black uppercase tracking-widest text-gray-450">
+                                                Reporting Supervisor <span className="text-rose-500">*</span>
+                                            </Label>
+                                            <Select
+                                                value={formValues.supervisorId || undefined}
+                                                onValueChange={(val) => setFormValues((prev) => ({ ...prev, supervisorId: val }))}
+                                            >
+                                                <SelectTrigger className={`h-11 rounded-none text-sm border-none shadow-inner ${darkMode ? 'bg-gray-855 text-white' : 'bg-gray-50 text-gray-900'}`}>
+                                                    <SelectValue placeholder={availableSupervisors.length ? 'Select supervisor for this agent' : 'Add a supervisor account first'} />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-none border-none shadow-2xl max-h-64">
+                                                    {availableSupervisors.map((sup) => (
+                                                        <SelectItem key={sup.id} value={sup.id}>
+                                                            {sup.name} · {sup.contact || sup.email || 'No contact'} · {sup.region}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                                Agents will see this supervisor&apos;s name and contact in their dashboard.
+                                            </p>
+                                        </div>
+                                    )}
 
                                     {/* Staff A/C Number */}
                                     <div className="space-y-2">

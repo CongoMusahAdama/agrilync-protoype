@@ -83,6 +83,8 @@ interface PerformanceData {
   supervisor?: {
     initials: string;
     name: string;
+    contact?: string;
+    email?: string;
     rating: number;
     comment: string;
     nextReview: string;
@@ -506,21 +508,36 @@ const AgentPerformance: React.FC = () => {
               <blockquote className="text-sm font-medium italic text-white/80 leading-relaxed mb-6">
                 {data?.supervisor?.comment || '"No supervisor feedback has been recorded for this period."'}
               </blockquote>
-              <div className="pt-6 border-t border-white/10 flex justify-between items-center">
+              <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <span className="text-[10px] font-bold text-white/40 uppercase">Next review: {data?.supervisor?.nextReview || 'Awaiting Schedule'}</span>
-                <button 
-                  onClick={() => Swal.fire({
-                    icon: 'success',
-                    title: 'Feedback Recorded',
-                    text: 'Your response has been transmitted to your regional supervisor.',
-                    confirmButtonColor: '#002f37',
-                    timer: 2000,
-                    timerProgressBar: true
-                  })}
-                  className="text-[11px] font-black text-[#7ede56] hover:underline flex items-center gap-1"
-                >
-                  Reply <ArrowRight className="h-3 w-3" />
-                </button>
+                <div className="flex items-center gap-3">
+                  {(data?.supervisor?.contact || data?.supervisor?.email) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const phone = data?.supervisor?.contact?.replace(/\s/g, '');
+                        if (phone) window.location.href = `tel:${phone}`;
+                        else if (data?.supervisor?.email) window.location.href = `mailto:${data.supervisor.email}`;
+                      }}
+                      className="text-[11px] font-black text-white/80 hover:text-[#7ede56]"
+                    >
+                      Call supervisor
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => Swal.fire({
+                      icon: 'success',
+                      title: 'Feedback Recorded',
+                      text: 'Your response has been transmitted to your regional supervisor.',
+                      confirmButtonColor: '#002f37',
+                      timer: 2000,
+                      timerProgressBar: true
+                    })}
+                    className="text-[11px] font-black text-[#7ede56] hover:underline flex items-center gap-1"
+                  >
+                    Reply <ArrowRight className="h-3 w-3" />
+                  </button>
+                </div>
               </div>
             </Card>
           </div>

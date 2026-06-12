@@ -353,7 +353,7 @@ const Overview = () => {
 
             {/* Quick Action Drawer */}
             <Sheet open={!!drawerType} onOpenChange={(val) => !val && setDrawerType(null)}>
-                <SheetContent className="sm:max-w-md border-none shadow-2xl p-0 overflow-hidden bg-white dark:bg-gray-950">
+                <SheetContent hideCloseButton className="sm:max-w-md border-none shadow-2xl p-0 overflow-hidden bg-white dark:bg-gray-950">
                     <div className="bg-[#002f37] p-8 text-white relative">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 -mr-16 -mt-16 rounded-full blur-3xl"></div>
                         <SheetHeader className="relative z-10 text-left">

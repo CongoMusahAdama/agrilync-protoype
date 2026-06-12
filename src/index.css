@@ -1067,3 +1067,22 @@
   border-color: #e5e7eb;
   border-width: 2px;
 }
+
+/* Agent dashboard — mobile field use (prevent iOS Safari auto-zoom on form focus) */
+@media (max-width: 767px) {
+  .agent-dashboard-root,
+  body.agent-dashboard-active {
+    touch-action: manipulation;
+  }
+
+  .agent-dashboard-root input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+  .agent-dashboard-root select,
+  .agent-dashboard-root textarea,
+  .agent-dashboard-root [role="combobox"],
+  body.agent-dashboard-active input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+  body.agent-dashboard-active select,
+  body.agent-dashboard-active textarea,
+  body.agent-dashboard-active [role="combobox"] {
+    font-size: 16px !important;
+  }
+}

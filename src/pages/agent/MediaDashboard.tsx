@@ -1135,7 +1135,7 @@ const MediaDashboard: React.FC = () => {
       </div>
 
       <Dialog open={!!selectedMedia} onOpenChange={(open) => !open && setSelectedMedia(null)}>
-        <DialogContent className="max-w-5xl w-[95vw] sm:w-full p-0 border-none bg-black/80 backdrop-blur-3xl overflow-hidden rounded-none shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] transition-all duration-500 z-[250]">
+        <DialogContent hideCloseButton className="max-w-5xl w-[95vw] sm:w-full p-0 border-none bg-black/80 backdrop-blur-3xl overflow-hidden rounded-none shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] transition-all duration-500 z-[250]">
           <DialogTitle className="sr-only">{selectedMedia?.name || 'Media Preview'}</DialogTitle>
           <DialogDescription className="sr-only">Viewing details for {selectedMedia?.name}</DialogDescription>
           {selectedMedia && (

@@ -206,11 +206,11 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
         });
     };
 
-    const inputCls = `h-12 w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 px-4 text-sm font-semibold text-gray-800 dark:text-white outline-none focus:border-[#065f46] focus:ring-1 focus:ring-[#065f46] placeholder:text-gray-400 transition-all`;
+    const inputCls = `h-12 w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 px-4 text-base md:text-sm font-semibold text-gray-800 dark:text-white outline-none focus:border-[#065f46] focus:ring-1 focus:ring-[#065f46] placeholder:text-gray-400 transition-all`;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl w-[95vw] p-0 overflow-hidden flex flex-col h-[75vh] border-none bg-white dark:bg-[#002f37] rounded-none shadow-2xl">
+            <DialogContent hideCloseButton className="max-w-4xl w-full md:w-[95vw] p-0 overflow-hidden flex flex-col h-full max-h-[100dvh] md:h-[75vh] border-none bg-white dark:bg-[#002f37] rounded-none shadow-2xl">
                 <DialogTitle className="sr-only">Schedule Field Visit</DialogTitle>
                 <DialogDescription className="sr-only">Log a new field visit for inspection or support.</DialogDescription>
 
@@ -405,7 +405,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
                         <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Challenges Encountered (Optional)</Label>
                         <Textarea
                             placeholder="Document any difficulties reaching the location, weather conditions, or other challenges during the visit..."
-                            className="min-h-[90px] rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-semibold text-gray-800 dark:text-white resize-none placeholder:text-gray-400 focus:border-emerald-500"
+                            className="min-h-[90px] rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-base md:text-sm font-semibold text-gray-800 dark:text-white resize-none placeholder:text-gray-400 focus:border-emerald-500"
                             value={formData.challenges}
                             onChange={e => setFormData(p => ({ ...p, challenges: e.target.value }))}
                         />

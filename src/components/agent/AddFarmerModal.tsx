@@ -595,7 +595,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         <>
         <Dialog open={open} onOpenChange={onOpenChange}>
             {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-            <DialogContent className="max-w-[100vw] sm:max-w-[96vw] lg:max-w-[min(1280px,94vw)] xl:max-w-[min(1360px,92vw)] w-full h-[100dvh] sm:h-[92dvh] lg:h-[88vh] p-0 overflow-hidden border-none bg-[#f4f7f6] shadow-2xl z-[150] rounded-none sm:rounded-2xl [&>button]:hidden">
+            <DialogContent hideCloseButton className="max-w-[100vw] sm:max-w-[96vw] lg:max-w-[min(1280px,94vw)] xl:max-w-[min(1360px,92vw)] w-full h-[100dvh] sm:h-[92dvh] lg:h-[88vh] p-0 overflow-hidden border-none bg-[#f4f7f6] shadow-2xl z-[150] rounded-none sm:rounded-2xl">
                 <div className="sr-only">
                     <DialogTitle>{isEditMode ? 'Grower Profile Update' : 'New Grower Registration'}</DialogTitle>
                     <DialogDescription>{isEditMode ? 'Editing existing grower profile' : 'Form for onboarding a new grower'}</DialogDescription>

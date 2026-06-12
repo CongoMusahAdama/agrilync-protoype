@@ -4,10 +4,10 @@ import { CheckCircle2, Leaf, LucideIcon } from 'lucide-react';
 
 export const ONBOARDING_FIELD_LABEL = 'text-sm font-semibold text-[#002f37]';
 export const ONBOARDING_INPUT =
-  'h-12 bg-white border border-gray-200/90 rounded-xl font-medium text-[15px] text-gray-900 placeholder:text-gray-400 shadow-[0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-2 focus-visible:ring-[#7ede56]/50 focus-visible:border-[#7ede56]/50 transition-shadow';
+  'h-12 bg-white border border-gray-200/90 rounded-xl font-medium text-base md:text-[15px] text-gray-900 placeholder:text-gray-400 shadow-[0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-2 focus-visible:ring-[#7ede56]/50 focus-visible:border-[#7ede56]/50 transition-shadow';
 export const ONBOARDING_SELECT = `${ONBOARDING_INPUT} font-medium`;
 export const ONBOARDING_TEXTAREA =
-  'min-h-[110px] bg-white border border-gray-200/90 rounded-xl p-4 font-medium text-[15px] placeholder:text-gray-400 shadow-[0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-2 focus-visible:ring-[#7ede56]/50';
+  'min-h-[110px] bg-white border border-gray-200/90 rounded-xl p-4 font-medium text-base md:text-[15px] placeholder:text-gray-400 shadow-[0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-2 focus-visible:ring-[#7ede56]/50';
 
 /** Form uses full width of the main panel on desktop (sidebar + wide modal). */
 export const ONBOARDING_CONTENT_WIDTH = 'w-full max-w-none';

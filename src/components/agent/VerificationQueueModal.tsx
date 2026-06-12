@@ -76,7 +76,7 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`max-w-5xl p-0 overflow-hidden border-0 shadow-2xl ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
+            <DialogContent hideCloseButton className={`max-w-5xl p-0 overflow-hidden border-0 shadow-2xl ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
                 <div className="bg-gradient-to-r from-[#065f46] to-[#044a36] p-8 text-white relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-12 -mb-12 blur-xl" />

@@ -14,6 +14,8 @@ const ScheduledVisit = require('../models/ScheduledVisit');
 const Media = require('../models/Media');
 const { Training, AgentTraining } = require('../models/Training');
 const Task = require('../models/Task');
+const FarmerDeletionRequest = require('../models/FarmerDeletionRequest');
+const { deleteFarmerCascade } = require('../utils/deleteFarmerCascade');
 const { sendPushNotification } = require('../utils/firebase');
 const bcrypt = require('bcryptjs');
 
@@ -42,6 +44,34 @@ const writeAuditLog = async (payload) => {
     } catch (err) {
         console.error('Audit log failed:', err.message);
     }
+};
+
+const resolveSupervisorAssignment = async (supervisorId, role) => {
+    const dbRole = toDbRole(role);
+    if (dbRole !== 'agent') {
+        return null;
+    }
+    if (!supervisorId) {
+        const err = new Error('Please assign a supervisor for this field agent.');
+        err.status = 400;
+        throw err;
+    }
+    if (!mongoose.Types.ObjectId.isValid(supervisorId)) {
+        const err = new Error('Invalid supervisor selected.');
+        err.status = 400;
+        throw err;
+    }
+    const supervisor = await Agent.findOne({
+        _id: supervisorId,
+        role: 'supervisor',
+        status: { $ne: 'inactive' },
+    }).select('_id name').lean();
+    if (!supervisor) {
+        const err = new Error('Selected supervisor was not found or is inactive.');
+        err.status = 400;
+        throw err;
+    }
+    return supervisor._id;
 };
 
 // @route   GET api/super-admin/stats
@@ -697,14 +727,41 @@ exports.getPartnershipsSummary = async (req, res) => {
     }
 };
 
+// @route   GET api/super-admin/supervisors
+// @desc    List supervisors for agent assignment
+exports.getSupervisors = async (req, res) => {
+    try {
+        const supervisors = await Agent.find({
+            role: 'supervisor',
+            status: { $ne: 'inactive' },
+        })
+            .select('name contact email region agentId')
+            .sort({ name: 1 })
+            .lean();
+
+        res.json(supervisors.map((s) => ({
+            id: s._id.toString(),
+            name: s.name,
+            contact: s.contact || '',
+            email: s.email,
+            region: s.region,
+            staffAccountNumber: s.agentId,
+        })));
+    } catch (err) {
+        console.error('getSupervisors error:', err.message);
+        res.status(500).json({ msg: 'Server Error' });
+    }
+};
+
 // @route   GET api/super-admin/users-list
 // @desc    Get all supervisors and agents (with pagination)
 exports.getUsersList = async (req, res) => {
     try {
-        const roleQuery = { role: { $in: ['supervisor', 'agent'] } };
+        const roleQuery = { role: { $in: ['supervisor', 'agent', 'super_admin'] } };
 
         const dbUsers = await withTimeout(Agent.find(roleQuery)
-            .select('name email role region status agentId contact districts avatar hasChangedPassword')
+            .select('name email role region status agentId contact districts avatar hasChangedPassword supervisor enableMultipleLogin')
+            .populate('supervisor', 'name contact')
             .sort({ role: 1, name: 1 })
             .lean());
 
@@ -713,14 +770,16 @@ exports.getUsersList = async (req, res) => {
             name: u.name,
             email: u.email,
             phone: u.contact || '',
-            role: u.role === 'supervisor' ? 'Supervisor' : 'Lync Agent',
+            role: u.role === 'supervisor' ? 'Supervisor' : u.role === 'super_admin' ? 'Super Admin' : 'Lync Agent',
             region: u.region,
             communities: u.districts || [],
             passwordChanged: u.hasChangedPassword ? 'Yes' : 'No',
             disabled: (u.status === 'inactive' || u.status === 'suspended') ? 'Yes' : 'No',
             staffAccountNumber: u.agentId,
             avatar: u.avatar || '',
-            enableMultipleLogin: false,
+            enableMultipleLogin: u.enableMultipleLogin || false,
+            supervisorId: u.supervisor?._id?.toString() || (typeof u.supervisor === 'string' ? u.supervisor : '') || '',
+            supervisorName: u.supervisor?.name || '',
             authorised: true
         }));
 
@@ -856,11 +915,19 @@ exports.sendNotification = async (req, res) => {
 // @route   POST api/super-admin/users
 // @desc    Create Supervisor or Agent
 exports.createUser = async (req, res) => {
-    const { name, email, phone, role, region, communities, disabled, staffAccountNumber, enableMultipleLogin, avatar } = req.body;
+    const { name, email, phone, role, region, communities, disabled, staffAccountNumber, enableMultipleLogin, avatar, supervisorId } = req.body;
     try {
         let user = await Agent.findOne({ email });
         if (user) {
             return res.status(400).json({ msg: 'User already exists' });
+        }
+
+        const dbRole = role === 'super_admin' ? 'super_admin' : role === 'supervisor' ? 'supervisor' : 'agent';
+        let assignedSupervisor = null;
+        try {
+            assignedSupervisor = await resolveSupervisorAssignment(supervisorId, dbRole);
+        } catch (assignErr) {
+            return res.status(assignErr.status || 400).json({ msg: assignErr.message });
         }
 
         // Generate a random 8-character password
@@ -871,13 +938,14 @@ exports.createUser = async (req, res) => {
             name,
             email,
             contact: phone,
-            role: role === 'super_admin' ? 'super_admin' : role === 'supervisor' ? 'supervisor' : 'agent',
+            role: dbRole,
             region,
             districts: communities,
             status: disabled === 'Yes' ? 'inactive' : 'active',
             password: generatedPassword,
             hasChangedPassword: false, // Force password update on first login
             agentId: staffAccountNumber,
+            supervisor: assignedSupervisor,
             enableMultipleLogin:
                 role === 'super_admin' || role === 'Super Admin' || role === 'supervisor' || role === 'Supervisor'
                     ? true
@@ -907,6 +975,10 @@ exports.createUser = async (req, res) => {
         }
 
 
+        const supervisorDoc = assignedSupervisor
+            ? await Agent.findById(assignedSupervisor).select('name contact').lean()
+            : null;
+
         res.json({
             id: user._id.toString(),
             name: user.name,
@@ -920,6 +992,8 @@ exports.createUser = async (req, res) => {
             staffAccountNumber: user.agentId,
             avatar: user.avatar,
             enableMultipleLogin: user.enableMultipleLogin,
+            supervisorId: supervisorDoc?._id?.toString() || '',
+            supervisorName: supervisorDoc?.name || '',
             authorised: true
         });
     } catch (err) {
@@ -931,7 +1005,7 @@ exports.createUser = async (req, res) => {
 // @route   PUT api/super-admin/users/:id
 // @desc    Update Supervisor or Agent
 exports.updateUser = async (req, res) => {
-    const { name, email, phone, role, region, communities, disabled, resetPassword, resetSession, enableMultipleLogin, avatar } = req.body;
+    const { name, email, phone, role, region, communities, disabled, resetPassword, resetSession, enableMultipleLogin, avatar, supervisorId } = req.body;
     try {
         let user = await Agent.findById(req.params.id);
         if (!user) {
@@ -947,6 +1021,22 @@ exports.updateUser = async (req, res) => {
         }
         if (region !== undefined) user.region = region || user.region;
         if (communities !== undefined) user.districts = communities;
+
+        const effectiveRole = role !== undefined ? toDbRole(role) : user.role;
+        if (supervisorId !== undefined || role !== undefined) {
+            if (effectiveRole === 'agent') {
+                try {
+                    user.supervisor = await resolveSupervisorAssignment(
+                        supervisorId !== undefined ? supervisorId : user.supervisor,
+                        'agent'
+                    );
+                } catch (assignErr) {
+                    return res.status(assignErr.status || 400).json({ msg: assignErr.message });
+                }
+            } else {
+                user.supervisor = null;
+            }
+        }
         if (disabled !== undefined) {
             user.status = disabled === 'Yes' ? 'inactive' : 'active';
         }
@@ -992,19 +1082,26 @@ exports.updateUser = async (req, res) => {
             });
         }
 
+        const populated = await Agent.findById(user._id)
+            .populate('supervisor', 'name contact')
+            .select('name email contact role region districts hasChangedPassword status agentId avatar enableMultipleLogin supervisor')
+            .lean();
+
         res.json({
-            id: user._id.toString(),
-            name: user.name,
-            email: user.email,
-            phone: user.contact || '',
-            role: user.role === 'supervisor' ? 'Supervisor' : 'Lync Agent',
-            region: user.region,
-            communities: user.districts || [],
-            passwordChanged: user.hasChangedPassword ? 'Yes' : 'No',
-            disabled: (user.status === 'inactive' || user.status === 'suspended') ? 'Yes' : 'No',
-            staffAccountNumber: user.agentId,
-            avatar: user.avatar,
-            enableMultipleLogin: user.enableMultipleLogin,
+            id: populated._id.toString(),
+            name: populated.name,
+            email: populated.email,
+            phone: populated.contact || '',
+            role: populated.role === 'supervisor' ? 'Supervisor' : populated.role === 'super_admin' ? 'Super Admin' : 'Lync Agent',
+            region: populated.region,
+            communities: populated.districts || [],
+            passwordChanged: populated.hasChangedPassword ? 'Yes' : 'No',
+            disabled: (populated.status === 'inactive' || populated.status === 'suspended') ? 'Yes' : 'No',
+            staffAccountNumber: populated.agentId,
+            avatar: populated.avatar,
+            enableMultipleLogin: populated.enableMultipleLogin,
+            supervisorId: populated.supervisor?._id?.toString() || '',
+            supervisorName: populated.supervisor?.name || '',
             authorised: true
         });
     } catch (err) {
@@ -1493,5 +1590,132 @@ exports.deleteBlogAuthor = async (req, res) => {
     } catch (err) {
         console.error('deleteBlogAuthor error:', err.message);
         res.status(500).send('Server Error');
+    }
+};
+
+// @route   GET api/super-admin/farmer-deletion-requests
+// @desc    List grower deletion requests (default: pending)
+exports.getFarmerDeletionRequests = async (req, res) => {
+    try {
+        const status = req.query.status || 'pending';
+        const filter = status === 'all' ? {} : { status };
+
+        const requests = await FarmerDeletionRequest.find(filter)
+            .populate('farmer', 'name id contact region community status profilePicture ghanaCardNumber')
+            .populate('requestedBy', 'name agentId contact region')
+            .populate('reviewedBy', 'name')
+            .sort({ createdAt: -1 })
+            .limit(100)
+            .lean();
+
+        res.json(requests);
+    } catch (err) {
+        console.error('getFarmerDeletionRequests error:', err.message);
+        res.status(500).json({ msg: 'Server Error' });
+    }
+};
+
+// @route   PUT api/super-admin/farmer-deletion-requests/:id/review
+// @desc    Approve or reject a grower deletion request
+exports.reviewFarmerDeletionRequest = async (req, res) => {
+    const { action, reviewNote } = req.body;
+
+    if (!['approve', 'reject'].includes(action)) {
+        return res.status(400).json({ msg: 'Action must be approve or reject.' });
+    }
+
+    try {
+        const request = await FarmerDeletionRequest.findById(req.params.id)
+            .populate('farmer', 'name id contact')
+            .populate('requestedBy', 'name _id');
+
+        if (!request) {
+            return res.status(404).json({ msg: 'Deletion request not found.' });
+        }
+        if (request.status !== 'pending') {
+            return res.status(409).json({ msg: 'This request has already been reviewed.' });
+        }
+
+        const farmerRef = request.farmer;
+        const farmerName = farmerRef?.name || request.farmerSnapshot?.name || 'Grower';
+        const agentId = request.requestedBy?._id || request.requestedBy;
+
+        if (action === 'approve') {
+            if (!farmerRef) {
+                return res.status(404).json({ msg: 'Grower record no longer exists.' });
+            }
+
+            const deletionSummary = await deleteFarmerCascade(farmerRef._id);
+
+            request.status = 'approved';
+            request.reviewedBy = req.agent._id || req.agent.id;
+            request.reviewNote = (reviewNote || '').trim() || 'Approved by admin';
+            request.reviewedAt = new Date();
+            await request.save();
+
+            await AuditLog.create({
+                action: 'APPROVE_FARMER_DELETION',
+                user: req.agent.id,
+                userRole: req.agent.role,
+                details: `Approved deletion of grower ${farmerName}. Agent reason: ${request.reason}. Admin note: ${request.reviewNote}`,
+                targetResource: 'FarmerDeletionRequest',
+                targetId: request._id.toString(),
+            });
+
+            if (agentId) {
+                await Notification.create({
+                    title: 'Grower Deletion Approved',
+                    message: `Admin approved removal of ${farmerName}. The grower has been permanently deleted from the system.`,
+                    type: 'alert',
+                    priority: 'high',
+                    senderRole: 'super-admin',
+                    senderName: req.agent.name || 'Admin',
+                    agent: agentId,
+                });
+            }
+
+            return res.json({
+                success: true,
+                msg: `${farmerName} has been permanently deleted.`,
+                deletionSummary,
+                request,
+            });
+        }
+
+        request.status = 'rejected';
+        request.reviewedBy = req.agent._id || req.agent.id;
+        request.reviewNote = (reviewNote || '').trim() || 'Rejected by admin';
+        request.reviewedAt = new Date();
+        await request.save();
+
+        await AuditLog.create({
+            action: 'REJECT_FARMER_DELETION',
+            user: req.agent.id,
+            userRole: req.agent.role,
+            details: `Rejected deletion of grower ${farmerName}. Agent reason: ${request.reason}. Admin note: ${request.reviewNote}`,
+            targetResource: 'FarmerDeletionRequest',
+            targetId: request._id.toString(),
+        });
+
+        if (agentId) {
+            await Notification.create({
+                title: 'Grower Deletion Rejected',
+                message: `Admin rejected deletion of ${farmerName}. Note: ${request.reviewNote}`,
+                type: 'alert',
+                priority: 'medium',
+                senderRole: 'super-admin',
+                senderName: req.agent.name || 'Admin',
+                agent: agentId,
+            });
+        }
+
+        res.json({
+            success: true,
+            msg: `Deletion request for ${farmerName} was rejected.`,
+            request,
+        });
+    } catch (err) {
+        console.error('reviewFarmerDeletionRequest error:', err.message);
+        res.status(500).json({ msg: 'Server Error' });
     }
 };

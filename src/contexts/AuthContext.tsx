@@ -23,6 +23,14 @@ interface Agent {
     community?: string;
     contact?: string;
     avatar?: string;
+    supervisor?: {
+        _id?: string;
+        name: string;
+        contact?: string;
+        email?: string;
+        agentId?: string;
+        region?: string;
+    } | string | null;
     role: 'super_admin' | 'supervisor' | 'agent';
     status: 'active' | 'inactive' | 'suspended';
     stats?: {

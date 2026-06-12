@@ -100,6 +100,35 @@ const AgentProfile: React.FC = () => {
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
 
+  const supervisorInfo = React.useMemo(() => {
+    const sup = (agent as { supervisor?: { name?: string; contact?: string; email?: string } })?.supervisor;
+    return sup && typeof sup === 'object' ? sup : null;
+  }, [agent]);
+
+  const contactSupervisor = (mode: 'phone' | 'email' | 'whatsapp' = 'phone') => {
+    const phone = supervisorInfo?.contact?.replace(/\s/g, '');
+    const email = supervisorInfo?.email;
+    if (mode === 'phone' && phone) {
+      window.location.href = `tel:${phone}`;
+      return;
+    }
+    if (mode === 'whatsapp' && phone) {
+      const digits = phone.replace(/\D/g, '');
+      window.open(`https://wa.me/${digits}`, '_blank');
+      return;
+    }
+    if (email) {
+      window.location.href = `mailto:${email}?subject=AgriLync Field Agent Support`;
+      return;
+    }
+    Swal.fire({
+      icon: 'info',
+      title: 'Supervisor not assigned',
+      text: 'No reporting supervisor is linked to your account yet. Please ask your admin to assign one.',
+      confirmButtonColor: '#065f46',
+    });
+  };
+
   useEffect(() => {
     if (agent) {
       setFormData(agent);
@@ -603,8 +632,8 @@ const AgentProfile: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <Field label="Agent Identity" id="aid" readOnly value={agent?.agentId} />
                 <Field label="Current Grade" id="role" readOnly value="Field Agent (Gold)" />
-                <Field label="Reporting Supervisor" id="sup" readOnly value="Samuel Kwaku" />
-                <Field label="Onboarding Date" id="start" readOnly value="September 2024" />
+                <Field label="Reporting Supervisor" id="sup" readOnly value={supervisorInfo?.name || 'Not assigned'} />
+                <Field label="Supervisor Contact" id="supc" readOnly value={supervisorInfo?.contact || supervisorInfo?.email || '—'} />
               </div>
             </CardContent>
           </Card>
@@ -681,17 +710,28 @@ const AgentProfile: React.FC = () => {
                   <Handshake className="h-64 w-64 -rotate-12" />
                </div>
                <div className="relative z-10 space-y-8 flex flex-col items-center">
-                  <Badge className="bg-[#7EDE56] text-[#002F37] font-black font-inter px-4 py-2 border-none uppercase tracking-[0.25em] rounded-full shadow-lg">DIRECT SUPPORT</Badge>
+                  <Badge className="bg-[#7EDE56] text-[#002F37] font-black font-inter px-4 py-2 border-none uppercase tracking-[0.25em] rounded-full shadow-lg">YOUR SUPERVISOR</Badge>
                   <div className="space-y-2">
-                    <h3 className="text-3xl font-black font-montserrat tracking-tight">Need immediate help?</h3>
-                    <p className="text-white/60 text-[13px] font-medium max-w-xs mx-auto">Skip the queue and talk directly to our expert field coordinators.</p>
+                    <h3 className="text-3xl font-black font-montserrat tracking-tight">{supervisorInfo?.name || 'Supervisor pending'}</h3>
+                    <p className="text-white/60 text-[13px] font-medium max-w-xs mx-auto">
+                      {supervisorInfo?.contact || supervisorInfo?.email
+                        ? 'Contact your assigned regional supervisor directly from the field.'
+                        : 'Ask your admin to assign a supervisor to your account.'}
+                    </p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-sm">
-                    <Button className="bg-[#7EDE56] hover:bg-[#8eff6b] text-[#002F37] font-black font-montserrat h-14 rounded-2xl w-full border-none shadow-xl shadow-[#7EDE56]/10 uppercase tracking-widest text-[11px]">
-                      Call Support
+                    <Button
+                      onClick={() => contactSupervisor('phone')}
+                      className="bg-[#7EDE56] hover:bg-[#8eff6b] text-[#002F37] font-black font-montserrat h-14 rounded-2xl w-full border-none shadow-xl shadow-[#7EDE56]/10 uppercase tracking-widest text-[11px]"
+                    >
+                      Call Supervisor
                     </Button>
-                    <Button variant="ghost" className="bg-white/10 text-white hover:bg-white/20 h-14 rounded-2xl w-full font-black font-montserrat border-none uppercase tracking-widest text-[11px]">
-                      WhatsApp Chat
+                    <Button
+                      onClick={() => contactSupervisor('whatsapp')}
+                      variant="ghost"
+                      className="bg-white/10 text-white hover:bg-white/20 h-14 rounded-2xl w-full font-black font-montserrat border-none uppercase tracking-widest text-[11px]"
+                    >
+                      WhatsApp
                     </Button>
                   </div>
                </div>

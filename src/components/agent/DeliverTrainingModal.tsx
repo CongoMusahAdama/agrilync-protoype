@@ -246,13 +246,12 @@ export default function DeliverTrainingModal({ open, onOpenChange, onSuccess, ed
   };
 
   // Shared input class
-  const inp = 'w-full h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-800 font-medium outline-none focus:border-[#065f46] focus:ring-2 focus:ring-[#065f46]/15 placeholder:text-gray-400 placeholder:font-normal transition-all';
-  const selTrig = 'h-10 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-800 focus:border-[#065f46] focus:ring-2 focus:ring-[#065f46]/15 px-3';
+  const inp = 'w-full h-10 rounded-lg border border-gray-200 bg-white px-3 text-base md:text-sm text-gray-800 font-medium outline-none focus:border-[#065f46] focus:ring-2 focus:ring-[#065f46]/15 placeholder:text-gray-400 placeholder:font-normal transition-all';
+  const selTrig = 'h-10 rounded-lg border border-gray-200 bg-white text-base md:text-sm font-medium text-gray-800 focus:border-[#065f46] focus:ring-2 focus:ring-[#065f46]/15 px-3';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full sm:max-w-3xl p-0 gap-0 border border-gray-200 bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col [&>button:first-of-type]:hidden"
-        style={{ maxHeight: '92vh' }}>
+      <DialogContent hideCloseButton className="w-full sm:max-w-3xl p-0 gap-0 border border-gray-200 bg-white max-md:rounded-none rounded-2xl shadow-2xl overflow-hidden flex flex-col max-md:h-full max-md:max-h-[100dvh] md:max-h-[92vh]">
 
         {/* ── Header ── */}
         <div className="shrink-0 px-5 pt-5 pb-4 border-b border-gray-100">

@@ -14,6 +14,7 @@ const {
     getFarmsOversight,
     getPartnershipsSummary,
     getUsersList,
+    getSupervisors,
     getAllFarmers,
     getFarmerDetails,
     updateFarmerStatus,
@@ -28,7 +29,9 @@ const {
     createBlogAuthor,
     updateBlogAuthor,
     deleteBlogAuthor,
-    getSubscribers
+    getSubscribers,
+    getFarmerDeletionRequests,
+    reviewFarmerDeletionRequest,
 } = require('../controllers/superAdminController');
 const auth = require('../middleware/auth');
 
@@ -52,6 +55,7 @@ router.get('/regions', getRegionalPerformance); // Updated from regional-perform
 router.get('/regional-performance', getRegionalPerformance); // Added alias for compatibility
 router.get('/regional-performance/:id', getRegionalPerformanceDetail);
 router.get('/agents', getAgentAccountability);
+router.get('/supervisors', getSupervisors);
 router.get('/users', getUsersList);
 router.post('/users', createUser);
 router.put('/users/:id', updateUser);
@@ -67,6 +71,8 @@ router.get('/partnerships', getPartnershipsSummary);
 router.get('/farmers', getAllFarmers); // New route for farmers
 router.get('/farmers/:id', getFarmerDetails); // Get deep details
 router.put('/farmers/:id/status', updateFarmerStatus); // Override status route
+router.get('/farmer-deletion-requests', getFarmerDeletionRequests);
+router.put('/farmer-deletion-requests/:id/review', reviewFarmerDeletionRequest);
 router.get('/visits', getVisits); // Field visits route
 router.get('/media', getMedia); // Media route
 router.get('/training', getTraining); // Training audit route

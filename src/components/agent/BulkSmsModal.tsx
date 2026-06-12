@@ -213,7 +213,7 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-5xl w-[95vw] h-[95vh] md:h-[85vh] flex flex-col p-0 overflow-hidden border border-white/20 bg-[#FDFCFB]/80 backdrop-blur-3xl rounded-none shadow-[0_50px_100px_-20px_rgba(0,47,47,0.25)] z-[200] selection:bg-[#7ede56]/30">
+            <DialogContent hideCloseButton className="max-w-5xl w-[95vw] h-[95vh] md:h-[85vh] flex flex-col p-0 overflow-hidden border border-white/20 bg-[#FDFCFB]/80 backdrop-blur-3xl rounded-none shadow-[0_50px_100px_-20px_rgba(0,47,47,0.25)] z-[200] selection:bg-[#7ede56]/30">
                 
                 {/* Modern Header - High Contrast */}
                 <div className="bg-[#002f37] text-white p-6 md:p-10 relative shrink-0 overflow-hidden">
@@ -405,7 +405,7 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
                                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300 group-focus-within:text-[#065f46] transition-colors" />
                                     <Input 
                                         placeholder="Filter list..." 
-                                        className="h-12 pl-12 pr-4 text-xs font-bold rounded-none border-none bg-white shadow-sm focus:ring-4 focus:ring-[#002f37]/5 transition-all text-[#002f37]"
+                                        className="h-12 pl-12 pr-4 text-base md:text-xs font-bold rounded-none border-none bg-white shadow-sm focus:ring-4 focus:ring-[#002f37]/5 transition-all text-[#002f37]"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />

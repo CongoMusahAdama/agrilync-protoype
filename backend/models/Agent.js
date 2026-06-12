@@ -37,6 +37,13 @@ const agentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Agent'
     },
+    /** Assigned regional supervisor (field agents only) */
+    supervisor: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Agent',
+        default: null,
+        index: true,
+    },
     stats: {
         farmersOnboarded: { type: Number, default: 0 },
         activeFarms: { type: Number, default: 0 },

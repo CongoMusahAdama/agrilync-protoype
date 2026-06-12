@@ -167,6 +167,26 @@ const FarmManagement: React.FC = () => {
         refetchOnReconnect: true
     });
 
+    const { data: deletionRequestsData, refetch: refetchDeletionRequests } = useQuery({
+        queryKey: ['farmerDeletionRequests'],
+        queryFn: async () => {
+            const response = await api.get('/farmers/deletion-requests');
+            return response.data?.data || [];
+        },
+        staleTime: 60 * 1000,
+        refetchOnWindowFocus: false,
+    });
+
+    const pendingDeletionByFarmerId = useMemo(() => {
+        const map = new Map<string, any>();
+        (deletionRequestsData || []).forEach((request: any) => {
+            if (request.status !== 'pending') return;
+            const farmerId = request.farmer?._id || request.farmer;
+            if (farmerId) map.set(farmerId.toString(), request);
+        });
+        return map;
+    }, [deletionRequestsData]);
+
     // useQuery for field visits
     const { data: visitLogsData, isLoading: loadingVisits, isFetching: fetchingVisits, refetch: refetchVisits } = useQuery({
         queryKey: ['fieldVisits'],
@@ -352,6 +372,59 @@ const FarmManagement: React.FC = () => {
             // Fallback to available data if fetch fails
             setSelectedFarmer(farmer);
             setEditModalOpen(true);
+        }
+    };
+
+    const handleRequestFarmerDeletion = async (farmer: any) => {
+        const farmerId = farmer._id || farmer.id;
+        const pending = pendingDeletionByFarmerId.get(farmerId?.toString());
+        if (pending) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Already Pending',
+                text: 'A deletion request for this grower is already awaiting admin approval.',
+                confirmButtonColor: '#065f46',
+            });
+            return;
+        }
+
+        const result = await Swal.fire({
+            title: 'Request Grower Deletion?',
+            html: `<p style="font-size:14px;color:#4b5563;margin-bottom:8px;">The grower is <strong>not</strong> removed until an admin approves your request.</p><p style="font-size:13px;color:#6b7280;"><strong>${farmer.name}</strong> · ${getDisplayId(farmer)}</p>`,
+            input: 'textarea',
+            inputLabel: 'Reason for deletion (required)',
+            inputPlaceholder: 'e.g. Duplicate record, grower relocated out of region, grower requested removal...',
+            inputAttributes: { minlength: '10', maxlength: '2000', 'aria-label': 'Deletion reason' },
+            inputValidator: (value) => {
+                if (!value || value.trim().length < 10) {
+                    return 'Please provide a reason (at least 10 characters).';
+                }
+                return null;
+            },
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            confirmButtonText: 'Submit for Admin Review',
+            cancelButtonText: 'Cancel',
+        });
+
+        if (!result.isConfirmed || !result.value) return;
+
+        try {
+            await api.post(`/farmers/${farmerId}/deletion-request`, { reason: result.value.trim() });
+            refetchDeletionRequests();
+            await Swal.fire({
+                icon: 'success',
+                title: 'Request Submitted',
+                text: 'Your deletion request was sent to admin for approval.',
+                confirmButtonColor: '#065f46',
+            });
+        } catch (error: any) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Request Failed',
+                text: error.response?.data?.message || 'Could not submit deletion request.',
+                confirmButtonColor: '#065f46',
+            });
         }
     };
 
@@ -1147,13 +1220,20 @@ const FarmManagement: React.FC = () => {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Badge className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border-0 ring-1 ring-inset ${farmer.displayStatus === 'Completed' ? 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20' :
-                                                            farmer.displayStatus === 'Pending' ? 'bg-amber-500/10 text-amber-500 ring-amber-500/20' :
-                                                                farmer.displayStatus === 'Matched' ? 'bg-indigo-500/10 text-indigo-500 ring-indigo-500/20' :
-                                                                    'bg-blue-500/10 text-blue-500 ring-blue-500/20'
-                                                            }`}>
-                                                            {farmer.displayStatus}
-                                                        </Badge>
+                                                        <div className="flex flex-col gap-1.5 items-start">
+                                                            <Badge className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border-0 ring-1 ring-inset ${farmer.displayStatus === 'Completed' ? 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20' :
+                                                                farmer.displayStatus === 'Pending' ? 'bg-amber-500/10 text-amber-500 ring-amber-500/20' :
+                                                                    farmer.displayStatus === 'Matched' ? 'bg-indigo-500/10 text-indigo-500 ring-indigo-500/20' :
+                                                                        'bg-blue-500/10 text-blue-500 ring-blue-500/20'
+                                                                }`}>
+                                                                {farmer.displayStatus}
+                                                            </Badge>
+                                                            {pendingDeletionByFarmerId.has((farmer._id || farmer.id)?.toString()) && (
+                                                                <Badge className="bg-rose-500/10 text-rose-600 ring-1 ring-rose-500/20 text-[9px] font-black uppercase tracking-widest">
+                                                                    Deletion Pending
+                                                                </Badge>
+                                                            )}
+                                                        </div>
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
@@ -1208,6 +1288,20 @@ const FarmManagement: React.FC = () => {
                                                             >
                                                                 <FileText className="w-3.5 h-3.5" />
                                                                 <span className="text-[10px] font-black uppercase tracking-widest">Report</span>
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                onClick={() => handleRequestFarmerDeletion(farmer)}
+                                                                disabled={pendingDeletionByFarmerId.has((farmer._id || farmer.id)?.toString())}
+                                                                className={`h-8 px-3 rounded-lg flex items-center gap-2 ${pendingDeletionByFarmerId.has((farmer._id || farmer.id)?.toString())
+                                                                    ? 'opacity-40 cursor-not-allowed'
+                                                                    : darkMode ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20' : 'bg-rose-50 text-rose-600 hover:bg-rose-100'
+                                                                }`}
+                                                                title={pendingDeletionByFarmerId.has((farmer._id || farmer.id)?.toString()) ? 'Deletion request pending admin review' : 'Request grower deletion (admin approval required)'}
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                                <span className="text-[10px] font-black uppercase tracking-widest">Delete</span>
                                                             </Button>
                                                         </div>
                                                     </TableCell>

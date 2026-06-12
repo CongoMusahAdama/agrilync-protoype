@@ -139,12 +139,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         }
     }, [location.pathname, agent, userType, navigate, queryClient]);
 
+    // Portaled modals render on document.body — tag body so mobile form CSS applies there too
+    useEffect(() => {
+        if (userType !== 'agent') return;
+        document.body.classList.add('agent-dashboard-active');
+        return () => document.body.classList.remove('agent-dashboard-active');
+    }, [userType]);
+
     const effectiveSubtitle = description || subtitle;
     const currentTitle = title || 'Dashboard';
     const activeNotifications = userType === 'agent' ? notifications : agentNotifications;
 
     return (
-        <div className={`h-screen overflow-hidden font-inter ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
+        <div className={`h-screen overflow-hidden font-inter ${userType === 'agent' ? 'agent-dashboard-root' : ''} ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
             {/* Full-page preloader only on initial app boot if needed, otherwise rely on skeletons */}
             {/* Preloader removed to improve perceived performance */}
             <div className="flex h-full">

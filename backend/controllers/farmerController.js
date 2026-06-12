@@ -3,6 +3,8 @@ const Farm = require('../models/Farm');
 const Agent = require('../models/Agent');
 const Notification = require('../models/Notification');
 const Activity = require('../models/Activity');
+const FarmerDeletionRequest = require('../models/FarmerDeletionRequest');
+const AuditLog = require('../models/AuditLog');
 const { uploadDataUrl } = require('../utils/cloudinary');
 const dashboardService = require('../services/dashboardService');
 const {
@@ -641,6 +643,112 @@ exports.resolveFlag = async (req, res) => {
         res.json({ success: true, message: 'Flag resolved', flags: farmer.flags });
     } catch (err) {
         console.error('resolveFlag error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+// @route   GET api/farmers/deletion-requests
+// @desc    List deletion requests submitted by the current agent
+exports.getAgentDeletionRequests = async (req, res) => {
+    try {
+        const agentId = resolveAgentId(req.agent);
+        const requests = await FarmerDeletionRequest.find({ requestedBy: agentId })
+            .populate('farmer', 'name id contact region community status')
+            .sort({ createdAt: -1 })
+            .limit(50)
+            .lean();
+
+        res.json({ success: true, data: requests });
+    } catch (err) {
+        console.error('getAgentDeletionRequests error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+// @route   POST api/farmers/:id/deletion-request
+// @desc    Agent requests admin approval to delete a grower
+exports.requestFarmerDeletion = async (req, res) => {
+    try {
+        const reason = (req.body.reason || '').trim();
+        if (reason.length < 10) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide a deletion reason (at least 10 characters).',
+            });
+        }
+
+        const farmer = await Farmer.findById(req.params.id);
+        if (!farmer) {
+            return res.status(404).json({ success: false, message: 'Farmer not found' });
+        }
+
+        const agentId = resolveAgentId(req.agent);
+        const isAssignedAgent = farmer.agent && agentId && farmer.agent.toString() === agentId.toString();
+        if (!isAssignedAgent) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only the assigned agent can request deletion for this grower.',
+            });
+        }
+
+        const existingPending = await FarmerDeletionRequest.findOne({
+            farmer: farmer._id,
+            status: 'pending',
+        });
+        if (existingPending) {
+            return res.status(409).json({
+                success: false,
+                message: 'A deletion request for this grower is already pending admin review.',
+            });
+        }
+
+        const request = await FarmerDeletionRequest.create({
+            farmer: farmer._id,
+            requestedBy: agentId,
+            reason,
+            farmerSnapshot: {
+                name: farmer.name,
+                lyncId: farmer.id,
+                contact: farmer.contact,
+                region: farmer.region,
+                community: farmer.community,
+                ghanaCardNumber: farmer.ghanaCardNumber,
+            },
+        });
+
+        await AuditLog.create({
+            action: 'REQUEST_FARMER_DELETION',
+            user: agentId,
+            userRole: req.agent.role || 'agent',
+            details: `Deletion requested for grower ${farmer.name} (${farmer.id || farmer._id}). Reason: ${reason}`,
+            targetResource: 'Farmer',
+            targetId: farmer._id.toString(),
+        });
+
+        const admins = await Agent.find({
+            role: { $in: ['super_admin', 'supervisor'] },
+            status: { $ne: 'inactive' },
+        }).select('_id').lean();
+
+        await Promise.all(admins.map((admin) =>
+            Notification.create({
+                title: 'Grower Deletion Request',
+                message: `${req.agent.name} requested deletion of ${farmer.name}. Reason: ${reason.slice(0, 180)}${reason.length > 180 ? '…' : ''}`,
+                type: 'alert',
+                priority: 'high',
+                senderRole: 'supervisor',
+                senderName: req.agent.name || 'Field Agent',
+                agent: admin._id,
+            })
+        ));
+
+        res.status(201).json({
+            success: true,
+            message: 'Deletion request submitted. An admin must approve before the grower is removed.',
+            data: request,
+        });
+    } catch (err) {
+        console.error('requestFarmerDeletion error:', err.message);
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };

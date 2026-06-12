@@ -70,6 +70,28 @@ import Preloader from '@/components/ui/Preloader';
 export const TrainingPerformanceContent = () => {
   const { darkMode } = useDarkMode();
   const { agent } = useAuth();
+
+  const supervisorInfo =
+    agent?.supervisor && typeof agent.supervisor === 'object' ? agent.supervisor : null;
+
+  const contactSupervisor = () => {
+    const phone = supervisorInfo?.contact?.replace(/\s/g, '');
+    const email = supervisorInfo?.email;
+    if (phone) {
+      window.location.href = `tel:${phone}`;
+      return;
+    }
+    if (email) {
+      window.location.href = `mailto:${email}?subject=Technical Help Request`;
+      return;
+    }
+    Swal.fire({
+      icon: 'info',
+      title: 'Supervisor not assigned',
+      text: 'No reporting supervisor is linked to your account yet.',
+      confirmButtonColor: '#065f46',
+    });
+  };
   const [trainingFilter, setTrainingFilter] = useState('all');
 
   // All useState hooks must be declared before any conditional returns
@@ -921,10 +943,14 @@ export const TrainingPerformanceContent = () => {
             </div>
             <div className="relative z-10">
               <h3 className="text-lg font-bold mb-2">Need Technical Help?</h3>
-              <p className="text-white/80 text-sm mb-6 leading-relaxed">Connect with our support team or your regional supervisor for immediate assistance.</p>
+              <p className="text-white/80 text-sm mb-2 leading-relaxed">
+                {supervisorInfo?.name
+                  ? `Your supervisor: ${supervisorInfo.name}${supervisorInfo.contact ? ` · ${supervisorInfo.contact}` : ''}`
+                  : 'Connect with your regional supervisor for immediate assistance.'}
+              </p>
               <div className="space-y-3">
                 <Button 
-                  onClick={() => window.location.href = 'mailto:supervisor@agrilync.com?subject=Technical Help Request'}
+                  onClick={contactSupervisor}
                   className="w-full bg-[#065f46] text-white hover:bg-[#065f46]/90 font-bold uppercase tracking-wider text-xs h-10 border-none"
                 >
                   Contact Supervisor

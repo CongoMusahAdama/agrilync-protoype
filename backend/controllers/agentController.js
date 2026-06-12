@@ -14,7 +14,10 @@ exports.getProfile = async (req, res) => {
 
         // DEV BYPASS or Pre-loaded agent
         // If we have the agent object already (from auth middleware), use it safely
-        const agent = await Agent.findById(req.agent._id || req.agent.id).select('-password').lean();
+        const agent = await Agent.findById(req.agent._id || req.agent.id)
+            .populate('supervisor', 'name contact email agentId region')
+            .select('-password')
+            .lean();
         
         if (!agent) {
             return res.status(404).json({ success: false, message: 'Agent not found' });
@@ -22,6 +25,17 @@ exports.getProfile = async (req, res) => {
 
         if (!agent.assignedRegions?.length && agent.region) {
             agent.assignedRegions = [agent.region];
+        }
+
+        if (!agent.supervisor && agent.role === 'agent' && agent.region) {
+            const fallbackSupervisor = await Agent.findOne({
+                role: 'supervisor',
+                region: agent.region,
+                status: { $ne: 'inactive' },
+            }).select('name contact email agentId region').lean();
+            if (fallbackSupervisor) {
+                agent.supervisor = fallbackSupervisor;
+            }
         }
 
         res.json(agent);
@@ -280,12 +294,28 @@ exports.getPerformance = async (req, res) => {
             }));
 
         let supervisor = null;
-        const supervisorAgent = await Agent.findOne({ role: 'supervisor', region: agent.region }).select('name').lean();
+        let supervisorAgent = null;
+        if (agent.supervisor) {
+            supervisorAgent = await Agent.findById(agent.supervisor)
+                .select('name contact email agentId region')
+                .lean();
+        }
+        if (!supervisorAgent) {
+            supervisorAgent = await Agent.findOne({
+                role: 'supervisor',
+                region: agent.region,
+                status: { $ne: 'inactive' },
+            }).select('name contact email agentId region').lean();
+        }
         if (supervisorAgent) {
             const initials = supervisorAgent.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
             supervisor = {
                 initials,
                 name: supervisorAgent.name,
+                contact: supervisorAgent.contact || '',
+                email: supervisorAgent.email || '',
+                agentId: supervisorAgent.agentId || '',
+                region: supervisorAgent.region || '',
                 rating: 0,
                 comment: '',
                 nextReview: 'Awaiting Schedule',

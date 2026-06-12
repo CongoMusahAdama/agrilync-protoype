@@ -589,7 +589,7 @@ const Gallery = () => {
 
       {/* Enhanced Lightbox Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-[100vw] w-screen h-screen p-0 bg-black/95 border-none shadow-none flex flex-col items-center justify-center overflow-hidden focus:outline-none">
+        <DialogContent hideCloseButton className="max-w-[100vw] w-screen h-screen p-0 bg-black/95 border-none shadow-none flex flex-col items-center justify-center overflow-hidden focus:outline-none">
 
           {/* Top Bar */}
           <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex justify-between items-center z-50 bg-gradient-to-b from-black/60 to-transparent">
