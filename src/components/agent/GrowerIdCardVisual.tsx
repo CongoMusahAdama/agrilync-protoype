@@ -1,226 +1,379 @@
 import React from 'react';
-import { CheckCircle2, ShieldCheck, Star } from 'lucide-react';
+import { CheckCircle2, Globe, Mail, MapPin, Phone, ShieldCheck, Star } from 'lucide-react';
 import AgriLyncLogo, { AgriLyncLogoWatermark } from '@/components/brand/AgriLyncLogo';
 import { buildGrowerVerifyUrl, getGrowerDisplayId } from '@/utils/growerId';
-import {
-    calcGrowerAge,
-    experienceStarCount,
-    formatCardIssueDate,
-    getDigitalCardNumber,
-    parseYearsOfExperience,
-} from '@/utils/growerCard';
+import { buildGrowerCardData, type GrowerCardData } from '@/utils/growerCard';
+import { CONTACT_EMAIL } from '@/lib/communityLinks';
 
 export interface GrowerIdCardVisualProps {
     farmer: any;
-    /** Slightly larger layout for print/download capture */
     printMode?: boolean;
     className?: string;
+    /** Show only front or back (default: both) */
+    side?: 'front' | 'back' | 'both';
 }
 
+const CARD_BG: React.CSSProperties = {
+    backgroundImage: `repeating-linear-gradient(
+        127deg,
+        transparent,
+        transparent 10px,
+        rgba(0, 47, 55, 0.025) 10px,
+        rgba(0, 47, 55, 0.025) 11px
+    )`,
+};
+
+const HeaderBand = ({ printMode }: { printMode: boolean }) => (
+    <div
+        className={`relative shrink-0 bg-[#002f37] overflow-hidden ${printMode ? 'h-[58px]' : 'h-[52px]'}`}
+    >
+        <div className="absolute inset-0 opacity-50">
+            <div className="absolute -left-6 top-0 h-full w-28 bg-[#065f46] skew-x-[-14deg]" />
+            <div className="absolute left-16 top-0 h-full w-20 bg-[#7ede56]/25 skew-x-[-14deg]" />
+            <div className="absolute left-32 top-0 h-full w-16 bg-[#065f46]/40 skew-x-[-14deg]" />
+        </div>
+        <div className="relative z-[1] h-full flex items-center justify-between px-4 gap-2">
+            <div className="min-w-0">
+                <p className="text-[7px] font-black text-[#7ede56] uppercase tracking-[0.28em] leading-none">
+                    Operational Credential
+                </p>
+                <p className="text-[10px] font-bold text-white/90 mt-0.5 leading-none">Grower Identity Card</p>
+            </div>
+            <AgriLyncLogo
+                variant="onDark"
+                iconClassName={printMode ? 'h-11' : 'h-9'}
+                className="shrink-0 origin-right scale-105"
+            />
+        </div>
+    </div>
+);
+
+const FooterBand = () => (
+    <div className="relative shrink-0 h-[22px] bg-[#065f46] overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 opacity-40">
+            <div className="absolute -right-4 top-0 h-full w-24 bg-[#7ede56]/30 skew-x-[-12deg]" />
+            <div className="absolute right-16 top-0 h-full w-16 bg-[#002f37]/50 skew-x-[-12deg]" />
+        </div>
+        <span className="relative z-[1] text-[6px] font-black text-[#7ede56] uppercase tracking-[0.22em]">
+            AgriLync Digital Trust Ecosystem · v2.4
+        </span>
+    </div>
+);
+
+const DetailRow = ({
+    label,
+    value,
+    mono,
+    accent,
+}: {
+    label: string;
+    value: string;
+    mono?: boolean;
+    accent?: boolean;
+}) => (
+    <div className="min-w-0">
+        <p className="card-label text-[7px] font-black text-[#065f46]/60 uppercase tracking-widest leading-none mb-0.5">
+            {label}
+        </p>
+        <p
+            className={`card-value text-[10px] font-bold text-[#002f37] leading-snug break-words ${
+                mono ? 'font-mono' : ''
+            } ${accent ? 'text-[#065f46] font-black' : ''}`}
+        >
+            {value}
+        </p>
+    </div>
+);
+
+const CardShell = ({
+    children,
+    printMode,
+    label,
+}: {
+    children: React.ReactNode;
+    printMode: boolean;
+    label?: string;
+}) => (
+    <div className="flex flex-col items-center gap-1.5">
+        {label && !printMode && (
+            <span className="text-[9px] font-black uppercase tracking-[0.25em] text-white/50">{label}</span>
+        )}
+        <div
+            className={`grower-id-card-face relative rounded-xl overflow-hidden flex flex-col bg-white border border-gray-200/90 shadow-xl ${
+                printMode ? 'w-[680px]' : 'w-[min(100vw-2rem,580px)]'
+            }`}
+            style={{
+                aspectRatio: '1.586 / 1',
+                minHeight: printMode ? 428 : 366,
+                fontFamily: '"Inter", sans-serif',
+                ...CARD_BG,
+            }}
+        >
+            {children}
+        </div>
+    </div>
+);
+
+const GrowerIdCardFront = ({ data, printMode }: { data: GrowerCardData; printMode: boolean }) => {
+    const qrPx = printMode ? 100 : 80;
+    const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=${qrPx}x${qrPx}&data=${encodeURIComponent(data.verifyUrl)}&bgcolor=ffffff&color=002f37&margin=2`;
+
+    return (
+        <CardShell printMode={printMode} label="Front">
+            <HeaderBand printMode={printMode} />
+            <div className="relative flex-1 flex min-h-0 overflow-hidden">
+                <AgriLyncLogoWatermark />
+
+                {/* Photo column — overlaps header */}
+                <div className="relative z-[2] w-[28%] shrink-0 flex flex-col items-center px-2 pt-0 pb-2">
+                    <div className={`relative ${printMode ? '-mt-7' : '-mt-6'}`}>
+                        <div
+                            className={`${
+                                printMode ? 'w-[100px] h-[100px]' : 'w-[84px] h-[84px]'
+                            } rounded-full border-[3px] border-white shadow-lg overflow-hidden bg-white ring-2 ring-[#065f46]/20`}
+                        >
+                            <img
+                                src={data.profileSrc}
+                                crossOrigin="anonymous"
+                                alt={data.name}
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 bg-[#7ede56] text-[#002f37] p-0.5 rounded-full border-2 border-white shadow">
+                            <ShieldCheck className="w-3 h-3" strokeWidth={2.5} />
+                        </div>
+                    </div>
+
+                    <div className="mt-2 flex flex-col items-center gap-1 w-full px-0.5">
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#065f46]/10 rounded-full border border-[#065f46]/15">
+                            <CheckCircle2 className="w-2.5 h-2.5 text-[#065f46] shrink-0" strokeWidth={2.5} />
+                            <span className="text-[7px] font-black text-[#065f46] uppercase tracking-wide leading-none">
+                                Lync Grower
+                            </span>
+                        </div>
+                        <span className="text-[7px] font-black text-[#002f37]/80 uppercase tracking-wide text-center leading-tight">
+                            {data.farmTypeLabel}
+                        </span>
+                    </div>
+
+                    <div className="mt-2 w-full space-y-1.5 px-1">
+                        <DetailRow label="D.O.B." value={data.dobLabel} />
+                        <DetailRow label="Date Issued" value={data.issueDate} />
+                        <DetailRow label="Gender" value={data.gender} />
+                    </div>
+                </div>
+
+                {/* Main identity */}
+                <div className="relative z-[1] flex-1 flex min-w-0 pr-2 py-2 gap-2">
+                    <div className="flex-1 flex flex-col min-w-0 pt-1">
+                        <h2
+                            className="text-[#002f37] font-black text-sm uppercase leading-tight break-words pr-1"
+                            style={{ fontFamily: 'Poppins, sans-serif' }}
+                        >
+                            {data.name}
+                        </h2>
+                        <p className="text-[9px] font-bold text-[#065f46] uppercase tracking-wide mt-0.5">
+                            {data.farmTypeLabel}
+                        </p>
+
+                        <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-2 flex-1 content-start">
+                            <DetailRow label="Grower ID" value={data.growerId} mono accent />
+                            <DetailRow label="Card No." value={data.cardNumber} mono accent />
+                            <DetailRow
+                                label="Age"
+                                value={data.age != null ? `${data.age} Years` : '—'}
+                            />
+                            <DetailRow label="Region" value={data.region} />
+                            <DetailRow label="District" value={data.district} />
+                            <DetailRow label="Community" value={data.community} />
+                        </div>
+
+                        <div className="mt-auto pt-2 border-t border-dashed border-[#065f46]/15">
+                            <p className="text-[6px] text-gray-400 uppercase tracking-widest">Authorized Issue</p>
+                            <p className="text-[8px] font-black text-[#065f46] italic">AgriLync Field Network</p>
+                        </div>
+                    </div>
+
+                    <div className="shrink-0 w-[72px] flex flex-col items-center justify-end pb-1">
+                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#7ede56]/10 border border-[#7ede56]/20 mb-1.5">
+                            <ShieldCheck className="w-2.5 h-2.5 text-[#065f46] shrink-0" />
+                            <span className="text-[6px] font-black text-[#065f46] uppercase leading-none">Secured</span>
+                        </div>
+                        <p className="text-[6px] font-black text-gray-400 uppercase tracking-widest text-center mb-1">
+                            Scan to Verify
+                        </p>
+                        <div className="bg-white p-1 rounded-md border border-gray-200 shadow-sm">
+                            <img
+                                src={qrSrc}
+                                crossOrigin="anonymous"
+                                alt={`QR ${data.growerId}`}
+                                className="block"
+                                style={{ width: printMode ? 64 : 52, height: printMode ? 64 : 52 }}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <FooterBand />
+        </CardShell>
+    );
+};
+
+const GrowerIdCardBack = ({ data, printMode }: { data: GrowerCardData; printMode: boolean }) => {
+    const barcodeSrc = `https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(
+        data.cardNumber
+    )}&scale=2&height=8&includetext=false&backgroundcolor=ffffff`;
+
+    return (
+        <CardShell printMode={printMode} label="Back">
+            <HeaderBand printMode={printMode} />
+            <div className="relative flex-1 flex min-h-0 overflow-hidden">
+                <AgriLyncLogoWatermark />
+
+                <div className="relative z-[1] flex flex-1 min-w-0">
+                    {/* Left — full record */}
+                    <div className="w-[55%] border-r border-dashed border-[#065f46]/25 px-3 py-2.5 flex flex-col min-w-0">
+                        <div className="mb-2">
+                            <p className="text-[11px] font-black text-[#002f37] uppercase leading-tight">{data.name}</p>
+                            <p className="text-[8px] font-bold text-[#065f46] uppercase">{data.farmTypeLabel}</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-y-2 flex-1 content-start text-left">
+                            <DetailRow label="Grower ID" value={data.growerId} mono />
+                            <DetailRow label="Card Number" value={data.cardNumber} mono accent />
+                            <DetailRow label="Phone" value={data.contact} mono />
+                            <DetailRow
+                                label="Years of Experience"
+                                value={
+                                    data.yearsExp != null
+                                        ? `${data.yearsExp} Yrs · Verified`
+                                        : '—'
+                                }
+                            />
+                            <DetailRow
+                                label="Field Agent"
+                                value={
+                                    data.fieldAgentName !== '—'
+                                        ? `${data.fieldAgentName} (${data.fieldAgent})`
+                                        : data.fieldAgent
+                                }
+                            />
+                            <DetailRow label="Zone / District" value={data.district} />
+                            <DetailRow label="Community" value={data.community} />
+                            <DetailRow label="Date Issued" value={data.issueDate} />
+                        </div>
+
+                        <div className="mt-2 pt-2 border-t border-[#065f46]/10">
+                            <img
+                                src={barcodeSrc}
+                                crossOrigin="anonymous"
+                                alt={`Barcode ${data.cardNumber}`}
+                                className="h-8 w-full max-w-[200px] object-contain object-left"
+                            />
+                            <p className="text-[6px] font-mono text-gray-400 mt-0.5">{data.cardNumber}</p>
+                        </div>
+                    </div>
+
+                    {/* Right — org & verification */}
+                    <div className="flex-1 px-3 py-2.5 flex flex-col min-w-0">
+                        <div className="flex justify-end mb-3">
+                            <AgriLyncLogo variant="onLight" iconClassName={printMode ? 'h-10' : 'h-8'} />
+                        </div>
+
+                        <p className="text-[7px] font-black text-[#065f46] uppercase tracking-widest mb-2">
+                            Verification & Support
+                        </p>
+
+                        <div className="space-y-2">
+                            <div className="flex items-start gap-1.5">
+                                <Globe className="w-3 h-3 text-[#065f46] shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-[6px] font-black text-gray-400 uppercase">Website</p>
+                                    <p className="text-[8px] font-bold text-[#002f37]">www.agrilync.com</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-1.5">
+                                <Mail className="w-3 h-3 text-[#065f46] shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-[6px] font-black text-gray-400 uppercase">Email</p>
+                                    <p className="text-[8px] font-bold text-[#002f37] break-all">
+                                        {CONTACT_EMAIL || 'support@agrilync.com'}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-1.5">
+                                <MapPin className="w-3 h-3 text-[#065f46] shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-[6px] font-black text-gray-400 uppercase">Region</p>
+                                    <p className="text-[8px] font-bold text-[#002f37]">{data.region}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-1.5">
+                                <Phone className="w-3 h-3 text-[#065f46] shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-[6px] font-black text-gray-400 uppercase">Field Agent ID</p>
+                                    <p className="text-[8px] font-bold text-[#002f37] font-mono">{data.fieldAgent}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-auto rounded-lg bg-[#065f46]/5 border border-[#065f46]/10 p-2">
+                            <div className="flex items-center gap-1 mb-1">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                    <Star
+                                        key={i}
+                                        className={`w-2.5 h-2.5 ${
+                                            i < data.stars
+                                                ? 'fill-amber-400 text-amber-400'
+                                                : 'fill-gray-100 text-gray-200'
+                                        }`}
+                                    />
+                                ))}
+                                <span className="text-[6px] font-black text-[#065f46] uppercase ml-1">Verified</span>
+                            </div>
+                            <p className="text-[6px] text-[#002f37]/70 leading-relaxed">
+                                This card is issued by AgriLync. Scan the QR on the front to confirm grower{' '}
+                                <span className="font-mono font-bold">{data.growerId}</span>. Report suspected
+                                forgery to your field agent or AgriLync support.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <FooterBand />
+        </CardShell>
+    );
+};
+
 const GrowerIdCardVisual = React.forwardRef<HTMLDivElement, GrowerIdCardVisualProps>(
-    ({ farmer, printMode = false, className = '' }, ref) => {
+    ({ farmer, printMode = false, className = '', side = 'both' }, ref) => {
         const growerId = getGrowerDisplayId(farmer);
-        const cardNumber = getDigitalCardNumber(farmer);
         const verifyUrl = buildGrowerVerifyUrl(growerId);
-        const qrPx = printMode ? 112 : 88;
-        const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=${qrPx}x${qrPx}&data=${encodeURIComponent(verifyUrl)}&bgcolor=ffffff&color=002f37&margin=2`;
+        const data = buildGrowerCardData(farmer, growerId, verifyUrl);
 
-        const profileSrc =
-            farmer.profilePicture ||
-            farmer.avatar ||
-            farmer.photo ||
-            `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(farmer.name || 'Grower')}`;
+        if (side === 'front') {
+            return (
+                <div ref={ref} className={className}>
+                    <GrowerIdCardFront data={data} printMode={printMode} />
+                </div>
+            );
+        }
 
-        const age = calcGrowerAge(farmer.dob);
-        const yearsExp = parseYearsOfExperience(farmer.yearsOfExperience);
-        const stars = experienceStarCount(yearsExp ?? 0);
-        const issueDate = formatCardIssueDate(farmer.digitalCardIssuedAt);
-
-        const district = farmer.district || farmer.region || '—';
-        const community = farmer.community || '—';
-        const fieldAgent =
-            farmer.agent?.agentId || farmer.agentId || farmer.onboardingAgentId || '—';
-
-        const widthClass = printMode ? 'w-[680px]' : 'w-[min(100vw-2rem,600px)]';
-        const headerLogoH = printMode ? 'h-[4.75rem]' : 'h-16';
-        const footerLogoH = printMode ? 'h-7' : 'h-6';
+        if (side === 'back') {
+            return (
+                <div ref={ref} className={className}>
+                    <GrowerIdCardBack data={data} printMode={printMode} />
+                </div>
+            );
+        }
 
         return (
             <div
                 ref={ref}
-                className={`grower-id-card-root relative ${widthClass} rounded-2xl flex flex-col bg-white shadow-2xl shrink-0 border border-gray-200/80 ${className}`}
-                style={{
-                    aspectRatio: '1.586 / 1',
-                    minHeight: printMode ? 430 : 378,
-                    fontFamily: '"Inter", sans-serif',
-                }}
+                className={`grower-id-card-root flex flex-col items-center gap-6 ${className}`}
             >
-                <div className="flex items-center justify-between gap-3 px-5 py-3.5 bg-[#002f37] shrink-0 rounded-t-2xl min-h-[72px]">
-                    <div className="shrink-0 min-w-[140px] flex items-center">
-                        <AgriLyncLogo
-                            variant="onDark"
-                            iconClassName={headerLogoH}
-                            className="origin-left scale-[1.15]"
-                        />
-                    </div>
-                    <div className="min-w-0 text-right">
-                        <p className="card-label text-[9px] font-black text-[#7ede56] uppercase tracking-[0.35em] leading-none">
-                            Operational Credential
-                        </p>
-                        <p className="text-[11px] font-bold text-white/80 mt-1">Grower Digital ID</p>
-                    </div>
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#7ede56]/15 border border-[#7ede56]/25 shrink-0 ml-3">
-                        <ShieldCheck className="w-3.5 h-3.5 text-[#7ede56]" />
-                        <span className="card-label text-[8px] font-black text-[#7ede56] uppercase tracking-wider">
-                            Secured
-                        </span>
-                    </div>
-                </div>
-
-                <div className="relative flex flex-1 min-h-0 overflow-hidden">
-                    <AgriLyncLogoWatermark />
-
-                    <div className="relative z-[1] w-[30%] bg-gradient-to-br from-[#065f46]/8 to-[#002f37]/5 flex flex-col items-center justify-center px-3 py-3 border-r border-gray-100">
-                        <div className="relative">
-                            <div
-                                className={`${printMode ? 'w-[110px] h-[110px]' : 'w-[88px] h-[88px]'} rounded-2xl border-[3px] border-white shadow-lg overflow-hidden bg-white`}
-                            >
-                                <img
-                                    src={profileSrc}
-                                    crossOrigin="anonymous"
-                                    alt={farmer.name}
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                            <div className="absolute -bottom-1.5 -right-1.5 bg-[#7ede56] text-[#002f37] p-1 rounded-lg shadow border-2 border-white">
-                                <ShieldCheck className="w-3.5 h-3.5" />
-                            </div>
-                        </div>
-                        <h2
-                            className="mt-2.5 text-[#002f37] font-black text-[11px] text-center leading-snug uppercase px-1 break-words max-w-full"
-                            style={{ fontFamily: 'Poppins, sans-serif' }}
-                        >
-                            {farmer.name}
-                        </h2>
-                        <div className="flex items-center gap-1 mt-2 px-2.5 py-1 bg-[#065f46]/10 rounded-full border border-[#065f46]/15">
-                            <CheckCircle2 className="w-3 h-3 text-[#065f46]" />
-                            <span className="card-label text-[8px] font-black text-[#065f46] uppercase tracking-wide">
-                                Lync Grower
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="relative z-[1] flex-1 flex min-w-0 px-3 py-3 gap-2">
-                        <div className="flex-1 grid grid-cols-2 gap-x-3 gap-y-2.5 content-start min-w-0">
-                            <div className="min-w-0">
-                                <span className="card-label text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">
-                                    Grower ID
-                                </span>
-                                <span className="card-value text-[11px] font-black text-[#002f37] font-mono leading-tight break-all">
-                                    {growerId}
-                                </span>
-                            </div>
-                            <div className="min-w-0">
-                                <span className="card-label text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">
-                                    Card Number
-                                </span>
-                                <span className="card-value text-[11px] font-black text-[#065f46] font-mono leading-tight break-all">
-                                    {cardNumber}
-                                </span>
-                            </div>
-                            <div>
-                                <span className="card-label text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">
-                                    Age
-                                </span>
-                                <span className="card-value text-[12px] font-black text-[#002f37]">
-                                    {age != null ? `${age} Years` : '—'}
-                                </span>
-                            </div>
-                            <div>
-                                <span className="card-label text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">
-                                    Years of Experience
-                                </span>
-                                <div className="flex flex-wrap items-center gap-1">
-                                    <span className="card-value text-[11px] font-black text-[#002f37]">
-                                        {yearsExp != null ? `${yearsExp} Yrs` : '—'}
-                                    </span>
-                                    <div className="flex items-center gap-0.5">
-                                        {Array.from({ length: 5 }).map((_, i) => (
-                                            <Star
-                                                key={i}
-                                                className={`w-2.5 h-2.5 ${
-                                                    i < stars
-                                                        ? 'fill-amber-400 text-amber-400'
-                                                        : 'fill-gray-100 text-gray-200'
-                                                }`}
-                                            />
-                                        ))}
-                                    </div>
-                                    <span className="text-[6px] font-black text-[#065f46] uppercase tracking-wide px-1 py-0.5 rounded bg-[#065f46]/10">
-                                        Verified
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="min-w-0">
-                                <span className="card-label text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">
-                                    Zone / District
-                                </span>
-                                <span className="card-value text-[10px] font-bold text-[#002f37] leading-snug break-words">
-                                    {district}
-                                </span>
-                            </div>
-                            <div className="min-w-0">
-                                <span className="card-label text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">
-                                    Community
-                                </span>
-                                <span className="card-value text-[10px] font-bold text-[#002f37] leading-snug break-words">
-                                    {community}
-                                </span>
-                            </div>
-                            <div>
-                                <span className="card-label text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">
-                                    Field Agent
-                                </span>
-                                <span className="card-value text-[11px] font-black text-[#002f37] font-mono">
-                                    {fieldAgent}
-                                </span>
-                            </div>
-                            <div>
-                                <span className="card-label text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">
-                                    Date Issued
-                                </span>
-                                <span className="card-value text-[11px] font-black text-[#002f37]">{issueDate}</span>
-                            </div>
-                        </div>
-
-                        <div className="shrink-0 w-[76px] flex flex-col items-center justify-end pb-1 pr-0.5">
-                            <span className="card-label text-[7px] font-black text-gray-400 uppercase tracking-widest text-center leading-tight mb-1">
-                                Scannable
-                                <br />
-                                Auth
-                            </span>
-                            <div className="bg-white p-1 rounded-lg border border-gray-200 shadow-sm">
-                                <img
-                                    src={qrSrc}
-                                    crossOrigin="anonymous"
-                                    alt={`QR code for ${growerId}`}
-                                    width={qrPx}
-                                    height={qrPx}
-                                    className="block object-contain"
-                                    style={{ width: printMode ? 72 : 56, height: printMode ? 72 : 56 }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="px-5 py-2.5 bg-[#065f46] flex items-center justify-between gap-2 shrink-0 rounded-b-2xl">
-                    <AgriLyncLogo variant="onDark" showWordmark={false} iconClassName={footerLogoH} />
-                    <span className="card-label text-[8px] font-black text-[#7ede56] uppercase tracking-[0.25em] text-center flex-1">
-                        AgriLync Digital Trust Ecosystem
-                    </span>
-                    <span className="text-[7px] font-bold text-white/50 uppercase shrink-0">v2.4</span>
-                </div>
+                <GrowerIdCardFront data={data} printMode={printMode} />
+                <GrowerIdCardBack data={data} printMode={printMode} />
             </div>
         );
     }

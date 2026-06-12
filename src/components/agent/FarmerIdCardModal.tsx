@@ -11,26 +11,26 @@ interface FarmerIdCardModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     farmer: any;
-    /** When true, fetches saved card payload from API (agent view) */
     fetchSavedCard?: boolean;
 }
 
 const PRINT_STYLES = `
-    @page { size: landscape; margin: 10mm; }
+    @page { size: portrait; margin: 12mm; }
     body {
         margin: 0;
-        padding: 16px;
+        padding: 20px;
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-items: flex-start;
         min-height: 100vh;
         background: #fff;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
-    .grower-id-card-root { box-shadow: none !important; }
-    .card-label { font-size: 10px !important; }
-    .card-value { font-size: 14px !important; line-height: 1.35 !important; }
+    .grower-id-card-root { box-shadow: none !important; gap: 24px !important; }
+    .grower-id-card-face { box-shadow: none !important; page-break-inside: avoid; }
+    .card-label { font-size: 9px !important; }
+    .card-value { font-size: 12px !important; line-height: 1.35 !important; }
 `;
 
 const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
@@ -65,7 +65,6 @@ const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
                 const status = err?.response?.status;
                 const msg = String(err?.response?.data?.message || '');
                 const routeMissing = status === 404 || msg.includes('API route not found');
-                // Use onboarding / list payload when API route is not deployed yet
                 if (routeMissing && farmer?.name) {
                     setCardFarmer(farmer);
                     setError('');
@@ -102,7 +101,7 @@ const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
                 </head>
                 <body>${content.innerHTML}</body>
                 <script>
-                    setTimeout(() => { window.print(); window.close(); }, 1400);
+                    setTimeout(() => { window.print(); window.close(); }, 1600);
                 </script>
             </html>
         `);
@@ -113,14 +112,14 @@ const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
         if (!cardRef.current) return;
         try {
             const canvas = await html2canvas(cardRef.current, {
-                scale: 3,
+                scale: 2,
                 useCORS: true,
-                backgroundColor: '#ffffff',
+                backgroundColor: '#f8fafc',
                 logging: false,
             });
             const link = document.createElement('a');
             const cardNo = displayFarmer.digitalCardNumber || growerId;
-            link.download = `AgriLync_ID_${cardNo}.png`;
+            link.download = `AgriLync_ID_${cardNo}_front_back.png`;
             link.href = canvas.toDataURL('image/png', 1.0);
             link.click();
         } catch (err) {
@@ -130,8 +129,8 @@ const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl p-0 overflow-hidden bg-transparent border-none shadow-none flex flex-col items-center z-[250]">
-                <DialogTitle className="sr-only">Official Grower ID Card</DialogTitle>
+            <DialogContent className="max-w-4xl max-h-[95vh] p-0 overflow-y-auto overflow-x-hidden bg-transparent border-none shadow-none flex flex-col items-center z-[250]">
+                <DialogTitle className="sr-only">Official Grower ID Card — Front & Back</DialogTitle>
 
                 {loading && (
                     <div className="flex items-center gap-2 text-white py-12">
@@ -152,15 +151,21 @@ const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
                             <GrowerIdCardVisual farmer={displayFarmer} printMode />
                         </div>
 
-                        <GrowerIdCardVisual ref={cardRef} farmer={displayFarmer} />
+                        <div ref={cardRef} className="py-2">
+                            <GrowerIdCardVisual farmer={displayFarmer} />
+                        </div>
 
-                        <div className="flex flex-wrap items-center justify-center gap-3 mt-6 w-full px-4">
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-white/40 mb-2">
+                            Official front & back · print on card stock
+                        </p>
+
+                        <div className="flex flex-wrap items-center justify-center gap-3 mt-2 mb-4 w-full px-4">
                             <Button
                                 onClick={handlePrint}
                                 className="bg-white/10 hover:bg-white/20 backdrop-blur-xl text-white border border-white/20 rounded-2xl px-5 h-12 font-black uppercase tracking-widest text-[10px] shadow-2xl transition-all active:scale-95"
                             >
                                 <Printer className="w-4 h-4 mr-2 text-[#7ede56]" />
-                                Print Card
+                                Print Front & Back
                             </Button>
                             <Button
                                 onClick={handleDownload}
@@ -176,7 +181,7 @@ const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
                 <Button
                     variant="ghost"
                     onClick={() => onOpenChange(false)}
-                    className="mt-2 mb-2 text-white/40 hover:text-white text-[10px] font-bold uppercase tracking-widest"
+                    className="mt-2 mb-4 text-white/40 hover:text-white text-[10px] font-bold uppercase tracking-widest"
                 >
                     Close Preview
                 </Button>

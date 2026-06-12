@@ -44,3 +44,81 @@ export const formatCardIssueDate = (value?: string | Date | null): string => {
 export const getDigitalCardNumber = (farmer?: {
     digitalCardNumber?: string;
 } | null): string => farmer?.digitalCardNumber || 'Pending';
+
+/** Card label under "Lync Grower" — Livestock Farmer, Crop Farmer, Mixed Farmer, etc. */
+export const formatDobForCard = (dob?: string | null): string => {
+    if (!dob) return '—';
+    const raw = String(dob).trim();
+    const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) {
+        const d = new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
+        if (!Number.isNaN(d.getTime())) {
+            return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+    }
+    const d = new Date(raw);
+    return Number.isNaN(d.getTime())
+        ? '—'
+        : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
+export const formatFarmTypeForCard = (farmType?: string | null): string => {
+    const raw = String(farmType || '').toLowerCase().trim();
+    if (!raw) return 'Crop Farmer';
+    if (raw.includes('livestock')) return 'Livestock Farmer';
+    if (raw.includes('mixed')) return 'Mixed Farmer';
+    if (raw.includes('aquaculture')) return 'Aquaculture Farmer';
+    if (raw.includes('crop')) return 'Crop Farmer';
+    const titled = raw.charAt(0).toUpperCase() + raw.slice(1);
+    return titled.endsWith('Farmer') ? titled : `${titled} Farmer`;
+};
+
+export type GrowerCardData = {
+    growerId: string;
+    cardNumber: string;
+    verifyUrl: string;
+    profileSrc: string;
+    name: string;
+    age: number | null;
+    yearsExp: number | null;
+    stars: number;
+    issueDate: string;
+    dobLabel: string;
+    gender: string;
+    region: string;
+    district: string;
+    community: string;
+    fieldAgent: string;
+    fieldAgentName: string;
+    farmTypeLabel: string;
+    contact: string;
+};
+
+export const buildGrowerCardData = (
+    farmer: any,
+    growerId: string,
+    verifyUrl: string
+): GrowerCardData => ({
+    growerId,
+    cardNumber: getDigitalCardNumber(farmer),
+    verifyUrl,
+    profileSrc:
+        farmer.profilePicture ||
+        farmer.avatar ||
+        farmer.photo ||
+        `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(farmer.name || 'Grower')}`,
+    name: farmer.name || 'Grower',
+    age: calcGrowerAge(farmer.dob),
+    yearsExp: parseYearsOfExperience(farmer.yearsOfExperience),
+    stars: experienceStarCount(parseYearsOfExperience(farmer.yearsOfExperience) ?? 0),
+    issueDate: formatCardIssueDate(farmer.digitalCardIssuedAt),
+    dobLabel: formatDobForCard(farmer.dob),
+    gender: farmer.gender ? String(farmer.gender) : '—',
+    region: farmer.region || '—',
+    district: farmer.district || farmer.region || '—',
+    community: farmer.community || '—',
+    fieldAgent: farmer.agent?.agentId || farmer.agentId || farmer.onboardingAgentId || '—',
+    fieldAgentName: farmer.agent?.name || '—',
+    farmTypeLabel: formatFarmTypeForCard(farmer.farmType),
+    contact: farmer.contact || '—',
+});
