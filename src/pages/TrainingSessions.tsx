@@ -924,7 +924,7 @@ Recommended Action:
       </div >
 
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="w-[95vw] md:max-w-4xl md:w-full">
           <DialogHeader>
             <DialogTitle>{selectedTraining?.title || 'Training Details'}</DialogTitle>
             <DialogDescription>

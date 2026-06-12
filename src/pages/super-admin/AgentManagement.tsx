@@ -1031,7 +1031,7 @@ const AgentManagement = () => {
                 GORGEOUS DIALOG MODAL ONBOARDING WORKSPACE - MAX-H & SCROLL OVERRIDES
                 ======================================================== */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent className={`md:max-w-[1150px] p-0 border-none rounded-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'} max-h-[96vh] overflow-y-auto [&>button]:text-white [&>button]:opacity-85 [&>button:hover]:opacity-100 [&>button]:top-5 [&>button]:right-6 [&>button]:z-50 [&>button]:scale-110`}>
+                <DialogContent className={`w-[95vw] md:max-w-[1280px] lg:max-w-[1400px] md:w-full p-0 border-none rounded-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'} max-h-[96vh] overflow-y-auto [&>button]:text-white [&>button]:opacity-85 [&>button:hover]:opacity-100 [&>button]:top-5 [&>button]:right-6 [&>button]:z-50 [&>button]:scale-110`}>
                     <DialogTitle className="sr-only">User Account Management</DialogTitle>
                     
                     {/* Header bar in deep pine brand color - with taller py-6.5 for premium spacing */}

@@ -1108,4 +1108,38 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+
+  .admin-dashboard-root .admin-overview-mobile h3,
+  .admin-dashboard-root .admin-overview-mobile .text-3xl {
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+
+  .admin-dashboard-root .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .admin-dashboard-root .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Wide admin grower profile modal — override default dialog max-width on desktop */
+@media (min-width: 768px) {
+  .admin-farmer-profile-modal {
+    width: min(98vw, 1420px) !important;
+    max-width: min(98vw, 1420px) !important;
+  }
+}
+@media (min-width: 1024px) {
+  .admin-farmer-profile-modal {
+    width: min(96vw, 1520px) !important;
+    max-width: min(96vw, 1520px) !important;
+  }
+}
+@media (min-width: 1280px) {
+  .admin-farmer-profile-modal {
+    width: min(94vw, 1600px) !important;
+    max-width: 1600px !important;
+  }
 }

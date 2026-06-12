@@ -385,7 +385,7 @@ const FieldOperationsAudit = () => {
                 SPACIOUS & BEAUTIFUL VISIT DETAILS OVERLAY - MD:MAX-W-[1100PX]
                 ======================================================== */}
             <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-                <DialogContent className={`md:max-w-[1100px] p-0 border-none rounded-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'} max-h-[96vh] overflow-y-auto [&>button]:text-white [&>button]:opacity-85 [&>button:hover]:opacity-100 [&>button]:top-5 [&>button]:right-6 [&>button]:z-50 [&>button]:scale-110`}>
+                <DialogContent className={`w-[95vw] md:max-w-[1280px] lg:max-w-[1400px] md:w-full p-0 border-none rounded-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'} max-h-[96vh] overflow-y-auto [&>button]:text-white [&>button]:opacity-85 [&>button:hover]:opacity-100 [&>button]:top-5 [&>button]:right-6 [&>button]:z-50 [&>button]:scale-110`}>
                     {selectedItem && (
                         <div className="flex flex-col">
                             

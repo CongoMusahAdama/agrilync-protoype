@@ -780,7 +780,7 @@ const InvestorMatches = () => {
 
             {/* Add Update Dialog */}
             <Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
-              <DialogContent className={`max-w-2xl max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-gray-600' : ''}`}>
+              <DialogContent className={`w-[95vw] md:max-w-5xl md:w-full max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-gray-600' : ''}`}>
                 <DialogHeader>
                   <DialogTitle className={darkMode ? 'text-white' : ''}>Add Investment Update</DialogTitle>
                   <DialogDescription className={darkMode ? 'text-gray-400' : ''}>
@@ -900,7 +900,7 @@ const InvestorMatches = () => {
 
             {/* Complaint Dialog */}
             <Dialog open={showComplaintDialog} onOpenChange={setShowComplaintDialog}>
-              <DialogContent className={`w-full max-w-4xl max-h-[80vh] overflow-y-auto rounded-2xl shadow-xl ${darkMode ? 'bg-[#01343c] border border-[#0b4f58]' : 'bg-white'}`}>
+              <DialogContent className={`w-[95vw] md:max-w-6xl md:w-full max-h-[80vh] overflow-y-auto rounded-2xl shadow-xl ${darkMode ? 'bg-[#01343c] border border-[#0b4f58]' : 'bg-white'}`}>
                 <DialogHeader className="pb-3">
                   <DialogTitle className={darkMode ? 'text-white' : ''}>Submit Complaint to Extension Agent</DialogTitle>
                   <DialogDescription className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
@@ -1024,7 +1024,7 @@ const InvestorMatches = () => {
 
             {/* Investment Details Dialog */}
             <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-              <DialogContent className={`max-w-4xl max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-gray-600' : ''}`}>
+              <DialogContent className={`w-[95vw] md:max-w-6xl md:w-full max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-gray-600' : ''}`}>
                 <DialogHeader>
                   <DialogTitle className={darkMode ? 'text-white' : ''}>
                     Investment Details - {selectedInvestmentForDetails?.investorName}
@@ -1317,7 +1317,7 @@ const InvestorMatches = () => {
 
             {/* Contact Investor Dialog */}
             <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
-              <DialogContent className={`w-full max-w-3xl max-h-[75vh] overflow-y-auto rounded-2xl shadow-xl ${darkMode ? 'bg-[#01343c] border border-[#0b4f58]' : 'bg-white'}`}>
+              <DialogContent className={`w-[95vw] md:max-w-5xl md:w-full max-h-[75vh] overflow-y-auto rounded-2xl shadow-xl ${darkMode ? 'bg-[#01343c] border border-[#0b4f58]' : 'bg-white'}`}>
                 <DialogHeader>
                   <DialogTitle className={darkMode ? 'text-white' : ''}>
                     Contact Investor - {selectedInvestmentForDetails?.investorName}

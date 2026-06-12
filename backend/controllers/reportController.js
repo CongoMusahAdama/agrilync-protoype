@@ -1,4 +1,11 @@
 const Report = require('../models/Report');
+const Farmer = require('../models/Farmer');
+const {
+    notifyAgentSupervisorIfAny,
+    notifySuperAdmins,
+    staffSms,
+    truncateSms,
+} = require('../utils/staffNotifications');
 
 // @route   POST api/reports
 // @desc    Create a new report
@@ -18,6 +25,31 @@ exports.createReport = async (req, res) => {
         });
 
         const report = await newReport.save();
+        const farmer = farmerId ? await Farmer.findById(farmerId).select('name').lean() : null;
+        const agentName = req.agent?.name || 'Field Agent';
+        const farmerName = farmer?.name || 'grower';
+        const reportMessage = `${agentName} submitted a ${type || 'field'} report for ${farmerName}.`;
+
+        await notifyAgentSupervisorIfAny(req.agent.id, {
+            title: 'Field Report Submitted',
+            message: reportMessage,
+            smsBody: staffSms(`${reportMessage} Notes: ${truncateSms(notes, 60) || 'None'}.`),
+            type: 'report',
+            priority: 'low',
+            senderName: agentName,
+        });
+
+        if (healthScore != null && Number(healthScore) < 50) {
+            await notifySuperAdmins({
+                title: 'Low Farm Health Score',
+                message: `${reportMessage} Health score: ${healthScore}.`,
+                smsBody: staffSms(`${reportMessage} Health score: ${healthScore}. Review recommended.`),
+                type: 'report',
+                priority: 'high',
+                senderName: agentName,
+            });
+        }
+
         res.json({ success: true, data: report });
     } catch (err) {
         console.error('createReport error:', err);

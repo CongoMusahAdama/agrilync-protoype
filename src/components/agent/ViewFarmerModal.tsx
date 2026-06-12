@@ -76,7 +76,7 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`max-w-6xl w-full h-[80vh] p-0 flex flex-col overflow-hidden border-0 ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-50'}`}>
+            <DialogContent className={`w-[95vw] md:max-w-7xl md:w-[min(96vw,1280px)] h-[80vh] p-0 flex flex-col overflow-hidden border-0 ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-50'}`}>
                 <DialogHeader className="sr-only">
                     <DialogTitle>Farm Details - {farm.name}</DialogTitle>
                     <DialogDescription>Full details and activity history for farmer {farmer.name}</DialogDescription>

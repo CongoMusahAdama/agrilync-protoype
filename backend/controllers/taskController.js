@@ -1,6 +1,6 @@
 const Task = require('../models/Task');
 const { sendEmail } = require('../utils/notificationService');
-const { sendSMS } = require('../utils/smsService');
+const { notifyStaffAgent, notifyAgentSupervisorIfAny, staffSms } = require('../utils/staffNotifications');
 
 // Get all tasks for an agent
 exports.getTasks = async (req, res) => {
@@ -52,8 +52,20 @@ exports.getTasks = async (req, res) => {
           });
 
           // Notify via SMS
-          const smsBody = `⏰ AGRI-LYNC REMINDER: Your field task "${task.title}" is due on ${new Date(task.dueDate).toLocaleDateString()}. Please prepare accordingly.`;
-          await sendSMS(req.agent.phoneNumber || '+233000000000', smsBody);
+          const dueLabel = new Date(task.dueDate).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+          });
+          await notifyStaffAgent({
+            agentId: req.agent.id,
+            title: 'Task Due Soon',
+            message: `Your task "${task.title}" is due on ${dueLabel}.`,
+            smsBody: staffSms(`Reminder: task "${task.title}" is due on ${dueLabel}. Location: ${task.location || 'Field site'}.`),
+            type: 'alert',
+            priority: task.priority === 'high' ? 'high' : 'medium',
+            senderName: 'AgriLync',
+          });
 
           // Mark as sent
           await Task.findByIdAndUpdate(task._id, { reminderSent: true });
@@ -96,6 +108,30 @@ exports.createTask = async (req, res) => {
     });
 
     const savedTask = await newTask.save();
+
+    const dueLabel = dueDate
+      ? new Date(dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+      : 'TBC';
+    await notifyStaffAgent({
+      agentId: req.agent.id,
+      title: 'Task Created',
+      message: `Task "${title}" was added to your list (due ${dueLabel}).`,
+      smsBody: staffSms(`New task "${title}" created. Due: ${dueLabel}. Priority: ${priority || 'normal'}.`),
+      type: 'alert',
+      priority: priority === 'high' ? 'high' : 'medium',
+      senderName: 'AgriLync',
+    });
+
+    if (priority === 'high') {
+      await notifyAgentSupervisorIfAny(req.agent.id, {
+        title: 'High-Priority Task',
+        message: `${req.agent.name || 'Agent'} created high-priority task "${title}".`,
+        smsBody: staffSms(`${req.agent.name || 'Agent'} created high-priority task "${title}" due ${dueLabel}.`),
+        type: 'alert',
+        priority: 'high',
+        senderName: req.agent.name || 'Field Agent',
+      });
+    }
 
     res.status(201).json({
       success: true,

@@ -592,7 +592,7 @@ const FarmFarmerOversight = () => {
 
             {/* Status Override Modal */}
             <Dialog open={isOverrideOpen} onOpenChange={setIsOverrideOpen}>
-                <DialogContent className={`sm:max-w-[450px] border-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+                <DialogContent className={`w-[95vw] md:max-w-2xl md:w-full border-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3 text-rose-500">
                              <Shield className="w-6 h-6" /> Change Status

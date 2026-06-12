@@ -1,4 +1,10 @@
 const SupportTicket = require('../models/SupportTicket');
+const {
+    notifySuperAdmins,
+    notifyStaffAgent,
+    staffSms,
+    truncateSms,
+} = require('../utils/staffNotifications');
 
 // @route   GET api/support/tickets
 // @desc    Get all tickets for logged-in user
@@ -86,6 +92,29 @@ exports.createTicket = async (req, res) => {
         });
 
         const ticket = await newTicket.save();
+
+        const requesterName = req.agent.name || 'Staff User';
+        await notifySuperAdmins({
+            title: 'New Support Ticket',
+            message: `${requesterName} opened ticket ${ticketId}: ${subject}`,
+            smsBody: staffSms(
+                `${requesterName} opened support ticket ${ticketId} (${priority || 'Medium'}): ` +
+                    `${truncateSms(subject, 80)}. Review in admin dashboard.`
+            ),
+            priority: priority === 'High' ? 'high' : 'medium',
+            senderName: requesterName,
+        });
+
+        await notifyStaffAgent({
+            agentId: req.agent._id || req.agent.id,
+            title: 'Support Ticket Submitted',
+            message: `Ticket ${ticketId} was submitted. Our team will respond soon.`,
+            smsBody: staffSms(`Your support ticket ${ticketId} was received. We will follow up shortly.`),
+            type: 'message',
+            priority: 'medium',
+            senderName: 'AgriLync Support',
+        });
+
         res.json(ticket);
     } catch (err) {
         console.error('createTicket error:', err.message);

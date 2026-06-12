@@ -1,6 +1,13 @@
 const Dispute = require('../models/Dispute');
 const Activity = require('../models/Activity');
 const mongoose = require('mongoose');
+const {
+    notifySuperAdmins,
+    notifyStaffAgent,
+    notifyAgentSupervisorIfAny,
+    staffSms,
+    truncateSms,
+} = require('../utils/staffNotifications');
 
 // @route   GET api/disputes
 // @desc    Get all disputes for current agent
@@ -63,6 +70,44 @@ exports.createDispute = async (req, res) => {
             description: `${type} (${severity})`
         });
 
+        const agentName = req.agent.name || 'Field Agent';
+        const farmerName = dispute.farmer?.name || farmer.name;
+        const alertMessage = `${agentName} logged dispute ${id} for ${farmerName} (${severity} · ${type}).`;
+
+        await notifySuperAdmins({
+            title: 'New Dispute Logged',
+            message: alertMessage,
+            smsBody: staffSms(
+                `${agentName} logged dispute ${id} for grower ${farmerName} (${severity}). ` +
+                    `${truncateSms(description, 80)}. Review in Escalations.`
+            ),
+            priority: severity === 'High' ? 'high' : 'medium',
+            senderName: agentName,
+        });
+
+        await notifyAgentSupervisorIfAny(req.agent.id, {
+            title: 'Agent Logged Dispute',
+            message: alertMessage,
+            smsBody: staffSms(
+                `Your agent ${agentName} logged dispute ${id} for grower ${farmerName} (${severity}).`
+            ),
+            type: 'dispute',
+            priority: severity === 'High' ? 'high' : 'medium',
+            senderName: agentName,
+        });
+
+        await notifyStaffAgent({
+            agentId: req.agent.id,
+            title: 'Dispute Submitted',
+            message: `Dispute ${id} for ${farmerName} was submitted and is pending review.`,
+            smsBody: staffSms(
+                `Your dispute ${id} for grower ${farmerName} was submitted. Admins have been alerted.`
+            ),
+            type: 'dispute',
+            priority: 'medium',
+            senderName: 'AgriLync',
+        });
+
         res.json(dispute);
     } catch (err) {
         console.error(err.message);
@@ -97,7 +142,8 @@ exports.updateDispute = async (req, res) => {
             return res.status(401).json({ msg: 'Not authorized: You can only update disputes you logged' });
         }
 
-        // Update fields if provided
+        const previousStatus = dispute.status;
+
         if (status) dispute.status = status;
         if (resolution) dispute.resolution = resolution;
 
@@ -118,8 +164,44 @@ exports.updateDispute = async (req, res) => {
 
         await dispute.save();
 
-        // Populate farmer for consistency in the response
         await dispute.populate('farmer', 'name region');
+
+        const agentName = req.agent.name || 'Field Agent';
+        const farmerName = dispute.farmer?.name || 'grower';
+
+        if (status === 'Escalated' && previousStatus !== 'Escalated') {
+            await notifySuperAdmins({
+                title: 'Dispute Escalated',
+                message: `${agentName} escalated dispute ${dispute.id} for ${farmerName}.`,
+                smsBody: staffSms(
+                    `${agentName} escalated dispute ${dispute.id} for ${farmerName}. ` +
+                        `Review urgently in Escalations.`
+                ),
+                priority: 'high',
+                senderName: agentName,
+            });
+            await notifyAgentSupervisorIfAny(dispute.agent, {
+                title: 'Dispute Escalated',
+                message: `${agentName} escalated dispute ${dispute.id} for ${farmerName}.`,
+                smsBody: staffSms(
+                    `Agent ${agentName} escalated dispute ${dispute.id} for grower ${farmerName}.`
+                ),
+                type: 'dispute',
+                priority: 'high',
+                senderName: agentName,
+            });
+        }
+
+        if (status === 'Resolved' && previousStatus !== 'Resolved') {
+            await notifyAgentSupervisorIfAny(dispute.agent, {
+                title: 'Dispute Resolved',
+                message: `Dispute ${dispute.id} for ${farmerName} was marked resolved.`,
+                smsBody: staffSms(`Dispute ${dispute.id} for grower ${farmerName} was marked resolved by ${agentName}.`),
+                type: 'dispute',
+                priority: 'medium',
+                senderName: agentName,
+            });
+        }
 
         res.json(dispute);
     } catch (err) {

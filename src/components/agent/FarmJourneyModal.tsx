@@ -554,7 +554,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
     if (loading) {
         return (
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className={`max-w-6xl w-full h-[60vh] flex items-center justify-center ${darkMode ? 'bg-[#002f37] border-white/10 text-white' : 'bg-white'}`}>
+                <DialogContent className={`w-[95vw] md:max-w-7xl md:w-[min(96vw,1280px)] h-[60vh] flex items-center justify-center ${darkMode ? 'bg-[#002f37] border-white/10 text-white' : 'bg-white'}`}>
                     <div className="flex flex-col items-center gap-4">
                         <div className="w-12 h-12 border-4 border-[#065f46]/20 border-t-[#065f46] rounded-full animate-spin" />
                         <p className={darkMode ? 'text-gray-200' : 'text-gray-500'}>Loading farm details...</p>
@@ -566,7 +566,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`max-w-6xl w-[95vw] sm:w-full max-h-[95vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white'}`}>
+            <DialogContent className={`w-[95vw] md:max-w-7xl md:w-[min(96vw,1280px)] max-h-[95vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white'}`}>
                 <DialogHeader className="mb-4">
                     <DialogTitle className={`flex items-center gap-3 text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                         <div className={`p-2 rounded-lg ${darkMode ? 'bg-[#065f46]/20 text-[#065f46]' : 'bg-[#065f46]/10 text-[#065f46]'}`}>
@@ -957,7 +957,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
 
                         {/* Add Activity Dialog Content */}
                         <Dialog open={showActivityDialog} onOpenChange={setShowActivityDialog}>
-                            <DialogContent className={`max-w-5xl w-[95vw] sm:w-full p-0 overflow-hidden flex flex-col lg:flex-row rounded-2xl sm:rounded-3xl border-none ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white shadow-2xl'}`}>
+                            <DialogContent className={`w-[95vw] md:max-w-6xl md:w-[min(96vw,1152px)] p-0 overflow-hidden flex flex-col lg:flex-row rounded-2xl sm:rounded-3xl border-none ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white shadow-2xl'}`}>
                                 <div className="flex-1 p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 overflow-y-auto max-h-[85vh]">
                                     <DialogHeader className="mb-2 sm:mb-4">
                                         <DialogTitle className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tighter">Log Stage Activity</DialogTitle>

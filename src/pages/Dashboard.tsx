@@ -1197,7 +1197,7 @@ const Dashboard = () => {
 
       {/* Welcome Modal - Shows on first login */}
       <Dialog open={showWelcomeModal} onOpenChange={setShowWelcomeModal}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="w-[95vw] md:max-w-3xl md:w-full">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
               <Leaf className="h-6 w-6 text-[#7ede56]" />
@@ -1236,7 +1236,7 @@ const Dashboard = () => {
       {/* Weather Modal - Detailed Weather Information */}
       {(userType === 'farmer' || userType === 'grower') && 'weather' in currentData && currentData.weather && (
         <Dialog open={showWeatherModal} onOpenChange={setShowWeatherModal}>
-          <DialogContent className={`max-w-6xl max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white border-gray-200'}`}>
+          <DialogContent className={`w-[95vw] md:max-w-7xl md:w-[min(96vw,1280px)] max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white border-gray-200'}`}>
             <DialogHeader className="pb-4">
               <DialogTitle className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                 {currentData.weather.location}

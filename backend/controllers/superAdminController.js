@@ -17,6 +17,13 @@ const Task = require('../models/Task');
 const FarmerDeletionRequest = require('../models/FarmerDeletionRequest');
 const { deleteFarmerCascade } = require('../utils/deleteFarmerCascade');
 const { sendPushNotification } = require('../utils/firebase');
+const {
+    notifySupervisorAssignmentPair,
+    notifyStaffAgent,
+    notifyEscalationResolved,
+    staffSms,
+    truncateSms,
+} = require('../utils/staffNotifications');
 const bcrypt = require('bcryptjs');
 
 // Helper to enforce timeout on DB operations (fail fast to mock data)
@@ -86,38 +93,6 @@ const generateStaffId = (dbRole) => {
 
 const formatSupervisorContact = (supervisor) => supervisor?.contact || supervisor?.email || '';
 
-const buildSupervisorAssignmentSms = ({ agentName, agentId, region, supervisor }) => {
-    const regionLabel = region || 'Unassigned';
-    const supervisorContact = formatSupervisorContact(supervisor) || 'not available';
-    return (
-        `Hello ${agentName}, you have been assigned a reporting supervisor on AgriLync. ` +
-        `Agent ID: ${agentId}. Region: ${regionLabel}. ` +
-        `Supervisor: ${supervisor.name} (ID: ${supervisor.agentId || 'N/A'}). Contact: ${supervisorContact}. ` +
-        `Reach them anytime from your agent dashboard.`
-    );
-};
-
-const buildSupervisorAgentAssignedSms = ({
-    supervisorName,
-    agentName,
-    agentId,
-    region,
-    agentPhone,
-    agentEmail,
-}) => {
-    const regionLabel = region || 'Unassigned';
-    const contactParts = [];
-    if (agentPhone) contactParts.push(`Phone: ${agentPhone}`);
-    if (agentEmail) contactParts.push(`Email: ${agentEmail}`);
-    const contactLine = contactParts.length ? `${contactParts.join('. ')}.` : '';
-    return (
-        `Hello ${supervisorName}, a field agent has been assigned to you on AgriLync. ` +
-        `Agent: ${agentName}. Agent ID: ${agentId}. Region: ${regionLabel}. ` +
-        `${contactLine} ` +
-        `They can reach you from their agent dashboard.`
-    ).replace(/\s+/g, ' ').trim();
-};
-
 const buildAccountCreationSms = ({ name, dbRole, agentId, region, password, loginUrl, supervisor }) => {
     const regionLabel = region || 'Unassigned';
     if (dbRole === 'supervisor') {
@@ -148,30 +123,6 @@ const buildAccountCreationSms = ({ name, dbRole, agentId, region, password, logi
             `${supervisorContact ? `. Contact: ${supervisorContact}` : ''}.`;
     }
     return message;
-};
-
-const sendSupervisorAssignmentSms = (phone, payload) => {
-    if (!phone) return;
-    const smsService = require('../utils/smsService');
-    const message = buildSupervisorAssignmentSms(payload);
-    smsService.sendSMS(phone, message).catch((err) => console.error('Supervisor assignment SMS failed:', err.message));
-};
-
-const notifySupervisorOfAgentAssignment = (supervisor, agent) => {
-    const phone = supervisor?.contact;
-    if (!phone || !agent) return;
-    const smsService = require('../utils/smsService');
-    const message = buildSupervisorAgentAssignedSms({
-        supervisorName: supervisor.name,
-        agentName: agent.name,
-        agentId: agent.agentId,
-        region: agent.region,
-        agentPhone: agent.contact,
-        agentEmail: agent.email,
-    });
-    smsService.sendSMS(phone, message).catch((err) =>
-        console.error('Supervisor agent-assignment SMS failed:', err.message)
-    );
 };
 
 // @route   GET api/super-admin/stats
@@ -971,41 +922,27 @@ exports.sendNotification = async (req, res) => {
             return res.status(404).json({ msg: 'Target agent not found' });
         }
 
-        const notification = new Notification({
+        await notifyStaffAgent({
+            agentId,
             title,
             message,
+            smsBody: staffSms(`${title}. ${message}`),
             type: type || 'message',
             priority: priority || 'medium',
-            senderRole: senderRole || req.agent.role,
-            senderName: senderName || req.agent.name,
-            agent: agentId
+            senderRole: senderRole || 'super-admin',
+            senderName: senderName || req.agent.name || 'Admin',
         });
 
-        await notification.save();
-
-        // Dispatch Push Notification (Async)
-        if (agentExists.fcmToken) {
-            sendPushNotification(agentExists.fcmToken, {
-                title: title,
-                body: message || `New ${type} from Management`,
-                data: {
-                    notificationId: notification._id.toString(),
-                    type: type || 'message'
-                }
-            }).catch(e => console.error('Push delivery failed:', e.message));
-        }
-
-        // Audit Log
         await AuditLog.create({
             action: 'SEND_NOTIFICATION',
             user: req.agent.id,
             userRole: req.agent.role,
             details: `Sent notification: ${title} to Agent: ${agentExists.name}`,
             targetResource: 'Notification',
-            targetId: notification.id
+            targetId: agentId
         });
 
-        res.json({ success: true, data: notification });
+        res.json({ success: true, msg: 'Notification sent with SMS where enabled.' });
     } catch (err) {
         console.error('Error in sendNotification:', err.message);
         res.status(500).send('Server Error');
@@ -1081,7 +1018,10 @@ exports.createUser = async (req, res) => {
         }
 
         if (dbRole === 'agent' && assignedSupervisor) {
-            notifySupervisorOfAgentAssignment(assignedSupervisor, user);
+            const agentForNotify = await Agent.findById(user._id)
+                .select('name contact agentId region email fcmToken notificationPreferences')
+                .lean();
+            await notifySupervisorAssignmentPair(agentForNotify, assignedSupervisor);
         }
 
         const supervisorDoc = assignedSupervisor || null;
@@ -1146,6 +1086,9 @@ exports.updateUser = async (req, res) => {
                 user.supervisor = null;
             }
         }
+        const previousStatus = user.status;
+        let generatedPassword = null;
+
         if (disabled !== undefined) {
             user.status = disabled === 'Yes' ? 'inactive' : 'active';
         }
@@ -1168,7 +1111,8 @@ exports.updateUser = async (req, res) => {
         }
 
         if (resetPassword) {
-            user.password = crypto.randomBytes(4).toString('hex');
+            generatedPassword = crypto.randomBytes(4).toString('hex');
+            user.password = generatedPassword;
             user.hasChangedPassword = false;
             user.isLoggedIn = false;
             user.currentSessionId = null;
@@ -1182,7 +1126,47 @@ exports.updateUser = async (req, res) => {
             assignedSupervisorDoc &&
             String(assignedSupervisorDoc._id) !== previousSupervisorId
         ) {
-            notifySupervisorOfAgentAssignment(assignedSupervisorDoc, user);
+            const agentForNotify = await Agent.findById(user._id)
+                .select('name contact agentId region email fcmToken notificationPreferences')
+                .lean();
+            await notifySupervisorAssignmentPair(agentForNotify, assignedSupervisorDoc);
+        }
+
+        const adminName = req.agent.name || 'Admin';
+        if (generatedPassword) {
+            await notifyStaffAgent({
+                agentId: user._id,
+                title: 'Password Reset',
+                message: 'An admin reset your AgriLync password. Sign in with the new password sent by SMS.',
+                smsBody: staffSms(
+                    `Your AgriLync password was reset by ${adminName}. ` +
+                        `New password: ${generatedPassword}. Change it after signing in.`
+                ),
+                priority: 'high',
+                senderName: adminName,
+            });
+        }
+
+        if (disabled !== undefined && previousStatus !== user.status) {
+            if (user.status === 'inactive') {
+                await notifyStaffAgent({
+                    agentId: user._id,
+                    title: 'Account Deactivated',
+                    message: 'Your AgriLync staff account has been deactivated by an admin.',
+                    smsBody: staffSms(`Your AgriLync account was deactivated by ${adminName}. Contact admin if this is unexpected.`),
+                    priority: 'high',
+                    senderName: adminName,
+                });
+            } else if (previousStatus === 'inactive' && user.status === 'active') {
+                await notifyStaffAgent({
+                    agentId: user._id,
+                    title: 'Account Reactivated',
+                    message: 'Your AgriLync staff account is active again.',
+                    smsBody: staffSms(`Your AgriLync account was reactivated by ${adminName}. You can sign in again.`),
+                    priority: 'medium',
+                    senderName: adminName,
+                });
+            }
         }
 
         const actorId = getRequestAgentId(req.agent);
@@ -1246,6 +1230,16 @@ exports.resetUserSession = async (req, res) => {
             return res.status(404).json({ msg: 'User not found' });
         }
 
+        const adminName = req.agent.name || 'Admin';
+        await notifyStaffAgent({
+            agentId: user._id,
+            title: 'Session Reset',
+            message: `${adminName} cleared your active login session. You can sign in again.`,
+            smsBody: staffSms(`${adminName} reset your AgriLync login session. Please sign in again if you were logged out.`),
+            priority: 'medium',
+            senderName: adminName,
+        });
+
         const actorId = getRequestAgentId(req.agent);
         if (actorId) {
             await writeAuditLog({
@@ -1274,9 +1268,20 @@ exports.deleteUser = async (req, res) => {
             return res.status(404).json({ msg: 'User not found' });
         }
 
+        const adminName = req.agent.name || 'Admin';
+        if (user.contact) {
+            await notifyStaffAgent({
+                agentDoc: user.toObject ? user.toObject() : user,
+                title: 'Account Removed',
+                message: `Your AgriLync staff account was removed by ${adminName}.`,
+                smsBody: staffSms(`Your AgriLync staff account was removed by ${adminName}. Contact admin if you need assistance.`),
+                priority: 'high',
+                senderName: adminName,
+            });
+        }
+
         await Agent.findByIdAndDelete(req.params.id);
 
-        // Create Audit Log
         await AuditLog.create({
             action: 'DELETE_USER',
             user: req.agent.id,
@@ -1306,7 +1311,6 @@ exports.updateFarmerStatus = async (req, res) => {
         farmer.status = status === 'On Track' || status === 'Active' ? 'active' : status === 'Pending' ? 'pending' : 'inactive';
         await farmer.save();
 
-        // Create Audit Log
         await AuditLog.create({
             action: 'OVERRIDE_FARMER_STATUS',
             user: req.agent.id,
@@ -1315,6 +1319,22 @@ exports.updateFarmerStatus = async (req, res) => {
             targetResource: 'Farmer',
             targetId: farmer.id
         });
+
+        const adminName = req.agent.name || 'Admin';
+        if (farmer.agent) {
+            await notifyStaffAgent({
+                agentId: farmer.agent,
+                title: 'Grower Status Updated',
+                message: `${adminName} set ${farmer.name} to ${status}.${note ? ` Note: ${truncateSms(note, 120)}` : ''}`,
+                smsBody: staffSms(
+                    `${adminName} updated grower ${farmer.name} status to ${status}.` +
+                        (note ? ` Note: ${truncateSms(note, 80)}` : '')
+                ),
+                type: 'verification',
+                priority: 'high',
+                senderName: adminName,
+            });
+        }
 
         res.json({ success: true, farmer });
     } catch (err) {
@@ -1347,6 +1367,8 @@ exports.resolveEscalation = async (req, res) => {
             targetResource: 'Escalation',
             targetId: escalation.id
         });
+
+        await notifyEscalationResolved(escalation, req.agent.name || 'Admin');
 
         res.json({ success: true, escalation });
     } catch (err) {
@@ -1780,14 +1802,16 @@ exports.reviewFarmerDeletionRequest = async (req, res) => {
             });
 
             if (agentId) {
-                await Notification.create({
+                const adminName = req.agent.name || 'Admin';
+                await notifyStaffAgent({
+                    agentId,
                     title: 'Grower Deletion Approved',
-                    message: `Admin approved removal of ${farmerName}. The grower has been permanently deleted from the system.`,
-                    type: 'alert',
+                    message: `Admin approved removal of ${farmerName}. The grower has been permanently deleted.`,
+                    smsBody:
+                        `AgriLync: Your deletion request for grower ${farmerName} was approved by ${adminName}. ` +
+                        `The grower has been permanently removed from the system.`,
                     priority: 'high',
-                    senderRole: 'super-admin',
-                    senderName: req.agent.name || 'Admin',
-                    agent: agentId,
+                    senderName: adminName,
                 });
             }
 
@@ -1815,14 +1839,16 @@ exports.reviewFarmerDeletionRequest = async (req, res) => {
         });
 
         if (agentId) {
-            await Notification.create({
+            const adminName = req.agent.name || 'Admin';
+            await notifyStaffAgent({
+                agentId,
                 title: 'Grower Deletion Rejected',
                 message: `Admin rejected deletion of ${farmerName}. Note: ${request.reviewNote}`,
-                type: 'alert',
+                smsBody:
+                    `AgriLync: Your deletion request for grower ${farmerName} was rejected by ${adminName}. ` +
+                    `Note: ${request.reviewNote}`,
                 priority: 'medium',
-                senderRole: 'super-admin',
-                senderName: req.agent.name || 'Admin',
-                agent: agentId,
+                senderName: adminName,
             });
         }
 

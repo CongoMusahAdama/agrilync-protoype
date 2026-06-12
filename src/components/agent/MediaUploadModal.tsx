@@ -184,7 +184,7 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({ open, onOpenChange,
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`max-w-2xl w-[95vw] p-0 overflow-hidden flex flex-col border-none shrink-0 ${darkMode ? 'bg-[#002f37]' : 'bg-white'} rounded-none shadow-2xl transition-all duration-500`}>
+            <DialogContent className={`w-[95vw] md:max-w-5xl md:w-full p-0 overflow-hidden flex flex-col border-none shrink-0 ${darkMode ? 'bg-[#002f37]' : 'bg-white'} rounded-none shadow-2xl transition-all duration-500`}>
                 <DialogHeader className="sr-only">
                     <DialogTitle>Upload Field Report</DialogTitle>
                     <DialogDescription>Upload images, videos, or documents to the farmer's gallery</DialogDescription>

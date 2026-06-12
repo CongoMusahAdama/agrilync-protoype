@@ -1,8 +1,13 @@
 const ScheduledVisit = require('../models/ScheduledVisit');
 const Farmer = require('../models/Farmer');
 const Activity = require('../models/Activity');
-const Notification = require('../models/Notification');
 const { sendScheduledVisitSms } = require('../utils/visitSms');
+const {
+    notifySuperAdmins,
+    notifyAgentSupervisorIfAny,
+    staffSms,
+    truncateSms,
+} = require('../utils/staffNotifications');
 
 // @route   GET api/scheduled-visits
 // @desc    Get all scheduled visits for current agent
@@ -126,6 +131,29 @@ exports.createScheduledVisit = async (req, res) => {
             console.error('createScheduledVisit SMS failed (non-fatal):', smsErr.message);
             smsResult = { sent: false, succeeded: 0, message: smsErr.message };
         }
+
+        const agentName = req.agent?.name || 'Field Agent';
+        const visitLabel = visitType === 'community-visit' ? community || 'community visit' : `${farmerIds?.length || 0} grower(s)`;
+        const visitDateLabel = visitDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        const staffMessage = `${agentName} scheduled a ${visitType || 'visit'} on ${visitDateLabel} at ${scheduledTime || '09:00'} for ${visitLabel}.`;
+
+        await notifyAgentSupervisorIfAny(agentId, {
+            title: 'Visit Scheduled',
+            message: staffMessage,
+            smsBody: staffSms(`${staffMessage} Purpose: ${truncateSms(purpose, 60) || 'Field visit'}.`),
+            type: 'event',
+            priority: 'medium',
+            senderName: agentName,
+        });
+
+        await notifySuperAdmins({
+            title: 'Field Visit Scheduled',
+            message: staffMessage,
+            smsBody: staffSms(staffMessage),
+            type: 'event',
+            priority: 'low',
+            senderName: agentName,
+        });
 
         res.json({
             success: true,
@@ -359,12 +387,26 @@ exports.updateScheduledVisit = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
 
+        const previousStatus = visit.status;
         Object.assign(visit, updates);
         visit.updatedAt = new Date();
         await visit.save();
 
         const populatedVisit = await ScheduledVisit.findById(visit._id)
             .populate('farmers', 'name contact region district community');
+
+        const agentName = req.agent?.name || 'Field Agent';
+        if (updates.status && updates.status !== previousStatus) {
+            const statusMessage = `${agentName} marked a scheduled visit as ${updates.status}.`;
+            await notifyAgentSupervisorIfAny(agentId, {
+                title: `Visit ${updates.status}`,
+                message: statusMessage,
+                smsBody: staffSms(statusMessage),
+                type: 'event',
+                priority: updates.status === 'cancelled' ? 'high' : 'medium',
+                senderName: agentName,
+            });
+        }
 
         res.json({ success: true, data: populatedVisit });
     } catch (err) {
@@ -396,6 +438,17 @@ exports.cancelScheduledVisit = async (req, res) => {
 
         visit.status = 'cancelled';
         await visit.save();
+
+        const agentName = req.agent?.name || 'Field Agent';
+        const cancelMessage = `${agentName} cancelled a scheduled field visit.`;
+        await notifyAgentSupervisorIfAny(agentId, {
+            title: 'Visit Cancelled',
+            message: cancelMessage,
+            smsBody: staffSms(cancelMessage),
+            type: 'event',
+            priority: 'high',
+            senderName: agentName,
+        });
 
         res.json({ success: true, message: 'Visit cancelled' });
     } catch (err) {

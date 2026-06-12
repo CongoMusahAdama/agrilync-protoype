@@ -60,7 +60,9 @@ import FarmFarmerOversight from "@/pages/super-admin/FarmFarmerOversight";
 import PartnershipsSummary from "@/pages/super-admin/PartnershipsSummary";
 import ReportsAnalytics from "@/pages/super-admin/ReportsAnalytics";
 import SettingsRoles from "@/pages/super-admin/SettingsRoles";
+import AdminStaffNotifications from "@/pages/super-admin/AdminStaffNotifications";
 import DashboardRedirect from "./pages/DashboardRedirect";
+import SupervisorPending from "./pages/supervisor/SupervisorPending";
 import CookieConsent from "./components/CookieConsent";
 
 // Configure QueryClient with optimized caching defaults
@@ -123,6 +125,7 @@ const App = () => (
               {/* Protected Routes */}
               <Route element={<PrivateRoute />}>
                 <Route path="/dashboard/agent/change-password" element={<ChangePassword />} />
+                <Route path="/dashboard/supervisor" element={<SupervisorPending />} />
                 <Route path="/dashboard/agent" element={<AgentDashboard />} />
                 <Route path="/dashboard/agent/profile" element={<AgentProfile />} />
                 <Route path="/dashboard/agent/farmers-management" element={<AgentFarmersManagement />} />
@@ -162,6 +165,7 @@ const App = () => (
                 <Route path="reports" element={<ReportsAnalytics />} />
                 <Route path="logs" element={<SystemLogs />} />
                 <Route path="settings" element={<SettingsRoles />} />
+                <Route path="notifications" element={<AdminStaffNotifications />} />
                 <Route path="*" element={<Overview />} />
               </Route>
 

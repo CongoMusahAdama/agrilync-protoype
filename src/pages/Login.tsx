@@ -14,6 +14,7 @@ import Swal from 'sweetalert2';
 import RegionSelectionModal from '@/components/auth/RegionSelectionModal';
 import { getRegionKey } from '@/data/ghanaRegions';
 import { persistGrowerSession } from '@/utils/authToken';
+import { getStaffDashboardPath } from '@/utils/postLoginNavigation';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -111,9 +112,13 @@ const Login = () => {
     const normalizedRegion = getRegionKey(region);
     try {
       await api.put('/agents/profile', { region: normalizedRegion });
-      setSession(pendingSession.token, { ...pendingSession.agent, region: normalizedRegion }, pendingSession.refreshToken);
+      const sessionAgent = { ...pendingSession.agent, region: normalizedRegion };
+      setSession(pendingSession.token, sessionAgent, pendingSession.refreshToken);
       setIsRegionModalOpen(false);
-      navigate('/dashboard/agent');
+      if (sessionAgent.role === 'supervisor') {
+        toast.info('Supervisor dashboard is not available yet. Please contact your administrator.');
+      }
+      navigate(getStaffDashboardPath(sessionAgent.role, sessionAgent.hasChangedPassword));
     } catch {
       toast.error('Could not save your operational region. Please try again.');
     }

@@ -19,6 +19,7 @@ const SuperAdminDashboard = () => {
         if (path.includes('/analytics') || path.includes('/reports')) return 'reports-analytics';
         if (path.includes('/logs')) return 'system-logs';
         if (path.includes('/settings')) return 'settings';
+        if (path.includes('/notifications')) return 'notifications';
         return 'dashboard';
     };
 

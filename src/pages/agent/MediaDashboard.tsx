@@ -1261,7 +1261,7 @@ const MediaDashboard: React.FC = () => {
           } 
         }}
       >
-        <DialogContent className="max-w-2xl border-none rounded-none bg-white p-0 overflow-hidden shadow-2xl">
+        <DialogContent className="w-[95vw] md:max-w-5xl md:w-full border-none rounded-none bg-white p-0 overflow-hidden shadow-2xl">
           <DialogTitle className="sr-only">Upload File</DialogTitle>
           <DialogDescription className="sr-only">Upload a media file to the library</DialogDescription>
           <div className="p-8">
@@ -1394,7 +1394,7 @@ const MediaDashboard: React.FC = () => {
 
       {/* ===== NEW ALBUM MODAL ===== */}
       <Dialog open={albumOpen} onOpenChange={(o) => { setAlbumOpen(o); if (!o) { setAlbumName(''); setAlbumDesc(''); } }}>
-        <DialogContent className="max-w-md border-none rounded-none bg-white p-0 overflow-hidden shadow-2xl">
+        <DialogContent className="w-[95vw] md:max-w-3xl md:w-full border-none rounded-none bg-white p-0 overflow-hidden shadow-2xl">
           <DialogTitle className="sr-only">New Album</DialogTitle>
           <DialogDescription className="sr-only">Create a new media album</DialogDescription>
           <div className="p-8">

@@ -244,7 +244,7 @@ const Escalations = () => {
 
             {/* Ticket Detail Modal */}
             <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-                <DialogContent className={`sm:max-w-[700px] border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+                <DialogContent className={`w-[95vw] md:max-w-5xl md:w-full border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
                     {selectedTicket && (
                         <div className="flex flex-col">
                             <div className="p-8 pb-12 bg-[#002f37] text-white relative">

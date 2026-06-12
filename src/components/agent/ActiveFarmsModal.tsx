@@ -60,7 +60,7 @@ const ActiveFarmsModal: React.FC<ActiveFarmsModalProps> = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`max-w-4xl max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-gray-100' : 'bg-white'}`}>
+            <DialogContent className={`w-[95vw] md:max-w-6xl md:w-full max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-gray-100' : 'bg-white'}`}>
                 <DialogHeader>
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-[#065f46]/10 rounded-lg">

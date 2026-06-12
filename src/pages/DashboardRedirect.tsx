@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { getStaffDashboardPath } from '@/utils/postLoginNavigation';
 
 const DashboardRedirect = () => {
     const { agent, loading } = useAuth();
@@ -8,15 +9,7 @@ const DashboardRedirect = () => {
 
     useEffect(() => {
         if (!loading && agent) {
-            if (agent.role === 'super_admin') {
-                navigate('/dashboard/super-admin', { replace: true });
-            } else if (agent.role === 'supervisor') {
-                // Future: navigate('/dashboard/supervisor', { replace: true });
-                // For now, supervisors might share agent dashboard or have their own
-                navigate('/dashboard/agent', { replace: true });
-            } else {
-                navigate('/dashboard/agent', { replace: true });
-            }
+            navigate(getStaffDashboardPath(agent.role, agent.hasChangedPassword), { replace: true });
         } else if (!loading && !agent) {
             navigate('/login', { replace: true });
         }

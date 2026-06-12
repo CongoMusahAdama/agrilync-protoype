@@ -30,6 +30,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { OPERATIONAL_REGION_OPTIONS } from '@/data/ghanaRegions';
+import { getStaffDashboardPath } from '@/utils/postLoginNavigation';
 
 const regions = OPERATIONAL_REGION_OPTIONS;
 
@@ -92,9 +93,17 @@ const AgentLogin = () => {
       }
 
       setAssignedRegion(agentRegion);
-      setSession(token, { ...agent, region: agentRegion }, refreshToken);
+      const sessionAgent = { ...agent, region: agentRegion };
+      setSession(token, sessionAgent, refreshToken);
+
+      if (agent.role === 'supervisor') {
+        toast.info('Supervisor dashboard is not available yet. Please contact your administrator.');
+        navigate(getStaffDashboardPath(agent.role, agent.hasChangedPassword));
+        return;
+      }
+
       toast.success(`Welcome back, ${agent.name.split(' ')[0]}!`);
-      navigate('/dashboard/agent');
+      navigate(getStaffDashboardPath(agent.role, agent.hasChangedPassword));
     } catch (error: any) {
       console.error('Login error:', error);
       const msg = error.response?.data?.msg || 'Authentication failed. Please check your credentials.';

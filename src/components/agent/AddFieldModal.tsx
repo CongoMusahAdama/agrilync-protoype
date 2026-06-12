@@ -187,7 +187,7 @@ const AddFieldModal: React.FC<AddFieldModalProps> = ({ open, onOpenChange, farme
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent hideCloseButton className="max-w-4xl w-[95vw] h-[90vh] md:h-[80vh] p-0 overflow-hidden border-none bg-[#f8fafc] shadow-2xl flex flex-col">
+            <DialogContent hideCloseButton className="w-[95vw] md:max-w-6xl md:w-[min(96vw,1152px)] h-[90vh] md:h-[80vh] p-0 overflow-hidden border-none bg-[#f8fafc] shadow-2xl flex flex-col">
                 <div className="sr-only">
                     <DialogTitle>Add New Field Asset</DialogTitle>
                     <DialogDescription>Register a new farming operation for {farmer?.name}</DialogDescription>

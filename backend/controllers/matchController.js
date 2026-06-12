@@ -1,5 +1,11 @@
 const Match = require('../models/Match');
 const Activity = require('../models/Activity');
+const {
+    notifySuperAdmins,
+    notifyStaffAgent,
+    notifyAgentSupervisorIfAny,
+    staffSms,
+} = require('../utils/staffNotifications');
 
 // @route   GET api/matches
 // @desc    Get all matches for current agent
@@ -68,6 +74,42 @@ exports.createMatch = async (req, res) => {
             description: `Matched farmer to ${investor} (${category})`
         });
 
+        const agentName = req.agent.name || 'Field Agent';
+        const farmerName = match.farmer?.name || farmer.name;
+
+        await notifySuperAdmins({
+            title: 'New Investor Match',
+            message: `${agentName} matched ${farmerName} with ${investor} (${category}).`,
+            smsBody: staffSms(
+                `${agentName} created match ${id} linking grower ${farmerName} to ${investor}. ` +
+                    `Value: ${value || 'N/A'}. Review in admin dashboard.`
+            ),
+            type: 'match',
+            priority: 'medium',
+            senderName: agentName,
+        });
+
+        await notifyAgentSupervisorIfAny(req.agent.id, {
+            title: 'New Investor Match',
+            message: `${agentName} matched ${farmerName} with ${investor}.`,
+            smsBody: staffSms(
+                `Your agent ${agentName} created match ${id} for grower ${farmerName} with ${investor}.`
+            ),
+            type: 'match',
+            priority: 'medium',
+            senderName: agentName,
+        });
+
+        await notifyStaffAgent({
+            agentId: req.agent.id,
+            title: 'Match Submitted',
+            message: `Match ${id} for ${farmerName} with ${investor} is pending approval.`,
+            smsBody: staffSms(`Match ${id} for grower ${farmerName} with ${investor} was submitted successfully.`),
+            type: 'match',
+            priority: 'medium',
+            senderName: 'AgriLync',
+        });
+
         res.json(match);
     } catch (err) {
         console.error(err.message);
@@ -88,6 +130,9 @@ exports.updateMatch = async (req, res) => {
             return res.status(401).json({ msg: 'Not authorized' });
         }
 
+        const previousApproval = match.approvalStatus;
+        const previousStatus = match.status;
+
         if (status) match.status = status;
         if (approvalStatus) match.approvalStatus = approvalStatus;
         if (notes) match.notes = notes;
@@ -96,6 +141,47 @@ exports.updateMatch = async (req, res) => {
         }
 
         await match.save();
+        await match.populate('farmer', 'name');
+
+        const agentName = req.agent.name || 'Field Agent';
+        const farmerName = match.farmer?.name || 'grower';
+
+        if (approvalStatus && approvalStatus !== previousApproval) {
+            const approved = approvalStatus === 'approved';
+            await notifySuperAdmins({
+                title: approved ? 'Match Approved' : 'Match Rejected',
+                message: `${agentName} ${approved ? 'approved' : 'rejected'} match ${match.id} for ${farmerName}.`,
+                smsBody: staffSms(
+                    `${agentName} ${approved ? 'approved' : 'rejected'} match ${match.id} for grower ${farmerName}.`
+                ),
+                type: 'match',
+                priority: approved ? 'medium' : 'high',
+                senderName: agentName,
+            });
+            await notifyStaffAgent({
+                agentId: match.agent,
+                title: approved ? 'Match Approved' : 'Match Rejected',
+                message: `Match ${match.id} for ${farmerName} was ${approved ? 'approved' : 'rejected'}.`,
+                smsBody: staffSms(
+                    `Match ${match.id} for grower ${farmerName} was ${approved ? 'approved' : 'rejected'} on your account.`
+                ),
+                type: 'match',
+                priority: 'medium',
+                senderName: 'AgriLync',
+            });
+        }
+
+        if (status && status !== previousStatus && ['Active', 'Completed', 'Cancelled'].includes(status)) {
+            await notifyAgentSupervisorIfAny(match.agent, {
+                title: `Match ${status}`,
+                message: `Match ${match.id} for ${farmerName} is now ${status}.`,
+                smsBody: staffSms(`Match ${match.id} for grower ${farmerName} is now ${status}.`),
+                type: 'match',
+                priority: 'medium',
+                senderName: agentName,
+            });
+        }
+
         res.json(match);
     } catch (err) {
         console.error(err.message);

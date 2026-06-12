@@ -1,6 +1,12 @@
 const FieldVisit = require('../models/FieldVisit');
 const Farmer = require('../models/Farmer');
 const Activity = require('../models/Activity');
+const {
+    notifyAgentSupervisorIfAny,
+    notifySuperAdmins,
+    staffSms,
+    truncateSms,
+} = require('../utils/staffNotifications');
 
 // @route   GET api/field-visits
 // @desc    Get all field visits for current agent
@@ -65,6 +71,25 @@ exports.logFieldVisit = async (req, res) => {
 
         const populatedVisit = await FieldVisit.findById(visit._id)
             .populate('farmer', 'name contact region district community');
+
+        const agentName = req.agent?.name || 'Field Agent';
+        const visitMessage = `${agentName} logged a field visit to ${farmer.name} (${purpose || 'Field visit'}).`;
+        await notifyAgentSupervisorIfAny(req.agent.id, {
+            title: 'Field Visit Logged',
+            message: visitMessage,
+            smsBody: staffSms(`${visitMessage} Notes: ${truncateSms(notes, 60) || 'None'}.`),
+            type: 'report',
+            priority: 'low',
+            senderName: agentName,
+        });
+        await notifySuperAdmins({
+            title: 'Field Visit Logged',
+            message: visitMessage,
+            smsBody: staffSms(visitMessage),
+            type: 'report',
+            priority: 'low',
+            senderName: agentName,
+        });
 
         res.json(populatedVisit);
     } catch (err) {

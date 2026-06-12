@@ -43,7 +43,7 @@ const ViewMatchModal: React.FC<ViewMatchModalProps> = ({ open, onOpenChange, mat
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`max-w-2xl ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : 'bg-white'}`}>
+            <DialogContent className={`w-[95vw] md:max-w-5xl md:w-full ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : 'bg-white'}`}>
                 <DialogHeader>
                     <div className="flex items-center justify-between mr-8">
                         <DialogTitle className="text-xl">Investment Match Details</DialogTitle>

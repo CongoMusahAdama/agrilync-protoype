@@ -1,9 +1,15 @@
 const Farmer = require('../models/Farmer');
 const Farm = require('../models/Farm');
 const Agent = require('../models/Agent');
-const Notification = require('../models/Notification');
 const Activity = require('../models/Activity');
 const FarmerDeletionRequest = require('../models/FarmerDeletionRequest');
+const {
+    notifySuperAdmins,
+    notifyStaffAgent,
+    notifyAgentSupervisorIfAny,
+    buildFarmerDeletionRequestAdminSms,
+    staffSms,
+} = require('../utils/staffNotifications');
 const AuditLog = require('../models/AuditLog');
 const { uploadDataUrl } = require('../utils/cloudinary');
 const dashboardService = require('../services/dashboardService');
@@ -164,13 +170,18 @@ exports.registerFarmerPublic = async (req, res) => {
         const farmer = await newFarmer.save();
 
         if (nearestAgent?._id) {
-            await Notification.create({
+            await notifyStaffAgent({
+                agentId: nearestAgent._id,
+                agentDoc: nearestAgent,
                 title: 'New Grower Verification Req.',
-                time: 'Just now',
+                message: `${farmer.name} registered and needs verification in ${farmer.region || 'your region'}.`,
+                smsBody:
+                    `AgriLync: New grower ${farmer.name} (${farmer.id || 'pending ID'}) needs verification ` +
+                    `in ${farmer.region || 'your region'}. Open your agent dashboard to review.`,
                 type: 'verification',
                 priority: 'high',
-                agent: nearestAgent._id,
-                read: false,
+                senderRole: 'super-admin',
+                senderName: 'AgriLync',
             });
         }
 
@@ -362,6 +373,34 @@ exports.addFarmer = async (req, res) => {
 
         dashboardService.invalidateCache(agentId);
 
+        const agentWithSupervisor = await Agent.findById(agentId)
+            .populate('supervisor', 'name contact email agentId region notificationPreferences fcmToken')
+            .select('name agentId region supervisor notificationPreferences')
+            .lean();
+        const agentName = req.agent?.name || agentWithSupervisor?.name || 'Field Agent';
+        await notifySuperAdmins({
+            title: 'Grower Onboarded',
+            message: `${agentName} onboarded grower ${farmer.name} in ${farmer.region || farmer.community || 'the field'}.`,
+            smsBody: staffSms(
+                `${agentName} onboarded grower ${farmer.name} (${farmer.id || 'new ID'}) in ${farmer.region || 'their region'}.`
+            ),
+            type: 'verification',
+            priority: 'medium',
+            senderName: agentName,
+        });
+
+        await notifyAgentSupervisorIfAny(agentId, {
+            title: 'Agent Onboarded Grower',
+            message: `${agentName} onboarded ${farmer.name} in ${farmer.community || farmer.region || 'the field'}.`,
+            smsBody: staffSms(
+                `Your agent ${agentName} (${agentWithSupervisor?.agentId || 'N/A'}) onboarded grower ` +
+                    `${farmer.name} in ${farmer.region || 'their region'}.`
+            ),
+            type: 'verification',
+            priority: 'medium',
+            senderName: agentName,
+        });
+
         let welcomeSms = { sent: false, succeeded: 0, message: 'Welcome SMS not attempted' };
         try {
             welcomeSms = await sendFarmerWelcomeSms(farmer, { onboardingSource: 'agent', agent: req.agent });
@@ -505,15 +544,17 @@ exports.updateFarmer = async (req, res) => {
             await ensurePrimaryFarm(farmer, farmer.agent);
         }
 
-        // Notification logic
         if (updateData.status === 'active' && canVerify) {
-            await Notification.create({
+            await notifyStaffAgent({
+                agentId,
                 title: `Grower ${farmer.name} Verified`,
-                time: 'Just now',
+                message: `${farmer.name} is now active on AgriLync.`,
+                smsBody:
+                    `AgriLync: Grower ${farmer.name} (${farmer.id || farmer.lyncId || 'N/A'}) has been verified ` +
+                    `and is now active in your portfolio.`,
                 type: 'verification',
                 priority: 'medium',
-                agent: agentId,
-                read: false
+                senderName: req.agent?.name || 'AgriLync',
             });
 
             try {
@@ -636,10 +677,36 @@ exports.resolveFlag = async (req, res) => {
         if (flag) {
             farmer.flags = farmer.flags.filter(f => f !== flag);
         } else {
-            farmer.flags = []; // Clear all flags if none specified
+            farmer.flags = [];
         }
 
         await farmer.save();
+
+        const resolverName = req.agent?.name || 'Staff';
+        const flagLabel = flag || 'all flags';
+        const isAdmin = req.agent?.role === 'super_admin';
+
+        if (isAdmin && farmer.agent) {
+            await notifyStaffAgent({
+                agentId: farmer.agent,
+                title: 'Grower Flag Cleared',
+                message: `${resolverName} cleared ${flagLabel} for grower ${farmer.name}.`,
+                smsBody: staffSms(`${resolverName} cleared ${flagLabel} for your grower ${farmer.name}.`),
+                type: 'alert',
+                priority: 'medium',
+                senderName: resolverName,
+            });
+        } else if (!isAdmin && farmer.agent) {
+            await notifyAgentSupervisorIfAny(farmer.agent, {
+                title: 'Grower Flag Cleared',
+                message: `${resolverName} cleared ${flagLabel} for grower ${farmer.name}.`,
+                smsBody: staffSms(`${resolverName} cleared ${flagLabel} for grower ${farmer.name}.`),
+                type: 'alert',
+                priority: 'low',
+                senderName: resolverName,
+            });
+        }
+
         res.json({ success: true, message: 'Flag resolved', flags: farmer.flags });
     } catch (err) {
         console.error('resolveFlag error:', err.message);
@@ -725,22 +792,34 @@ exports.requestFarmerDeletion = async (req, res) => {
             targetId: farmer._id.toString(),
         });
 
-        const admins = await Agent.find({
-            role: { $in: ['super_admin', 'supervisor'] },
-            status: { $ne: 'inactive' },
-        }).select('_id').lean();
+        const agentName = req.agent.name || 'Field Agent';
+        const alertMessage = `${agentName} requested deletion of ${farmer.name}. Reason: ${reason.slice(0, 180)}${reason.length > 180 ? '…' : ''}`;
 
-        await Promise.all(admins.map((admin) =>
-            Notification.create({
-                title: 'Grower Deletion Request',
-                message: `${req.agent.name} requested deletion of ${farmer.name}. Reason: ${reason.slice(0, 180)}${reason.length > 180 ? '…' : ''}`,
-                type: 'alert',
-                priority: 'high',
-                senderRole: 'supervisor',
-                senderName: req.agent.name || 'Field Agent',
-                agent: admin._id,
-            })
-        ));
+        await notifySuperAdmins({
+            title: 'Grower Deletion Request',
+            message: alertMessage,
+            smsBody: buildFarmerDeletionRequestAdminSms({
+                agentName,
+                farmerName: farmer.name,
+                farmerId: farmer.id || farmer.lyncId,
+                reason,
+            }),
+            priority: 'high',
+            senderRole: 'supervisor',
+            senderName: agentName,
+        });
+
+        await notifyStaffAgent({
+            agentId,
+            title: 'Deletion Request Submitted',
+            message: `Your request to delete ${farmer.name} is pending admin review.`,
+            smsBody:
+                `AgriLync: Your deletion request for grower ${farmer.name} was submitted and is pending admin approval. ` +
+                `You will be notified when an admin reviews it.`,
+            priority: 'medium',
+            senderRole: 'super-admin',
+            senderName: 'AgriLync',
+        });
 
         res.status(201).json({
             success: true,

@@ -131,7 +131,7 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`max-w-4xl w-[95vw] p-0 overflow-hidden flex flex-col h-[75vh] border-none shrink-0 ${darkMode ? 'bg-[#002f37]' : 'bg-white'} rounded-[2rem] shadow-2xl`}>
+            <DialogContent className={`w-[95vw] md:max-w-6xl md:w-full p-0 overflow-hidden flex flex-col h-[75vh] border-none shrink-0 ${darkMode ? 'bg-[#002f37]' : 'bg-white'} rounded-[2rem] shadow-2xl`}>
 
                 {/* Premium Multi-step Header */}
                 <div className={`px-8 py-7 border-b shrink-0 relative overflow-hidden ${darkMode ? 'bg-gradient-to-r from-[#0b2528] to-[#002f37] border-white/5' : 'bg-gradient-to-r from-gray-50 to-emerald-50 border-gray-100'}`}>

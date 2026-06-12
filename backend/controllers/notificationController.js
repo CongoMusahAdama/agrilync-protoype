@@ -2,6 +2,7 @@ const Notification  = require('../models/Notification');
 const Activity      = require('../models/Activity');
 const Agent         = require('../models/Agent');
 const { sendEmail, sendPush, buildEmailHTML } = require('../services/notificationService');
+const { sendSmsSafe, staffSms, smsEnabledForAgent } = require('../utils/staffNotifications');
 
 // ─── In-App: Get all notifications for current agent ─────────────────────────
 
@@ -159,6 +160,7 @@ async function _dispatchToAgent(agent, { title, message, type, priority, senderR
     // Resolve whether each channel is on — caller override wins, then agent pref, then default true
     const useEmail = channels.email !== undefined ? channels.email : prefs.email !== false;
     const usePush  = channels.push  !== undefined ? channels.push  : prefs.push  !== false;
+    const useSms   = channels.sms   !== undefined ? channels.sms   : prefs.sms   !== false;
 
     // 1. Always persist to DB (in-app notification)
     await Notification.create({
@@ -181,6 +183,11 @@ async function _dispatchToAgent(agent, { title, message, type, priority, senderR
     // 3. Push (Firebase FCM)
     if (usePush && agent.fcmToken) {
         await sendPush(agent.fcmToken, title, message, { type, priority });
+    }
+
+    // 4. SMS (mNotify)
+    if (useSms && agent.contact && smsEnabledForAgent(agent)) {
+        await sendSmsSafe(agent.contact, staffSms(`${title}. ${message}`));
     }
 }
 

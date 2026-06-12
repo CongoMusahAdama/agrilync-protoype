@@ -1,6 +1,12 @@
 const TrainingDelivery = require('../models/TrainingDelivery');
 const Activity = require('../models/Activity');
 const { sendTrainingSessionSms } = require('../utils/visitSms');
+const {
+    notifySuperAdmins,
+    notifyAgentSupervisorIfAny,
+    staffSms,
+    truncateSms,
+} = require('../utils/staffNotifications');
 
 // ─────────────────────────────────────────────────────────────
 // GET /api/training-deliveries
@@ -101,6 +107,34 @@ exports.createDelivery = async (req, res) => {
             smsResult = { sent: false, succeeded: 0, message: smsErr.message };
         }
 
+        const agentName = req.agent?.name || 'Field Agent';
+        const deliveryDateLabel = new Date(deliveryDate).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        });
+        const staffMessage =
+            `${agentName} scheduled training "${moduleTitle}" on ${deliveryDateLabel} ` +
+            `for ${farmerIds.length} grower(s) (${mode}).`;
+
+        await notifyAgentSupervisorIfAny(agentId, {
+            title: 'Training Scheduled',
+            message: staffMessage,
+            smsBody: staffSms(`${staffMessage} Venue: ${truncateSms(venue || community, 50) || 'TBC'}.`),
+            type: 'training',
+            priority: 'medium',
+            senderName: agentName,
+        });
+
+        await notifySuperAdmins({
+            title: 'Training Session Scheduled',
+            message: staffMessage,
+            smsBody: staffSms(staffMessage),
+            type: 'training',
+            priority: 'low',
+            senderName: agentName,
+        });
+
         res.status(201).json({
             success: true,
             data: populated,
@@ -163,7 +197,6 @@ exports.updateDelivery = async (req, res) => {
             req.params.id, updates, { new: true }
         ).populate('farmers', 'name id contact community region');
 
-        // Log activity
         if (updates.status === 'completed') {
             try {
                 await Activity.create({
@@ -173,6 +206,38 @@ exports.updateDelivery = async (req, res) => {
                     description: `Session marked complete · ${delivery.farmers?.length || 0} farmer(s)`
                 });
             } catch (actErr) { /* non-fatal */ }
+
+            const agentName = req.agent?.name || 'Field Agent';
+            const completeMessage = `${agentName} completed training "${delivery.moduleTitle}".`;
+            await notifyAgentSupervisorIfAny(agentId, {
+                title: 'Training Completed',
+                message: completeMessage,
+                smsBody: staffSms(completeMessage),
+                type: 'training',
+                priority: 'medium',
+                senderName: agentName,
+            });
+            await notifySuperAdmins({
+                title: 'Training Completed',
+                message: completeMessage,
+                smsBody: staffSms(completeMessage),
+                type: 'training',
+                priority: 'low',
+                senderName: agentName,
+            });
+        }
+
+        if (updates.status === 'cancelled') {
+            const agentName = req.agent?.name || 'Field Agent';
+            const cancelMessage = `${agentName} cancelled training "${delivery.moduleTitle}".`;
+            await notifyAgentSupervisorIfAny(agentId, {
+                title: 'Training Cancelled',
+                message: cancelMessage,
+                smsBody: staffSms(cancelMessage),
+                type: 'training',
+                priority: 'medium',
+                senderName: agentName,
+            });
         }
 
         res.json({ success: true, data: updated });

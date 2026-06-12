@@ -317,10 +317,17 @@ const Overview = () => {
         }
     };
 
+    const formatHealthValue = (label: string, value: string) => {
+        if (label === 'Primary Workstation' && value.length > 18) {
+            return value.replace(/\s*\/\s*/g, ' · ').slice(0, 22) + (value.length > 22 ? '…' : '');
+        }
+        return value;
+    };
+
     return (
-        <div className="space-y-8 pb-12 animate-in fade-in duration-300">
+        <div className="admin-overview-mobile space-y-4 sm:space-y-8 pb-8 sm:pb-12 animate-in fade-in duration-300 max-w-full overflow-x-hidden">
             {/* Action-First Alert Strip */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {alerts.map((alert) => (
                     <Card 
                         key={alert.type} 
@@ -330,21 +337,21 @@ const Overview = () => {
                         {alert.count > 0 && (
                             <div className={`absolute inset-0 opacity-20 pointer-events-none group-hover:opacity-30 transition-opacity ${alert.pulseColor} blur-2xl`}></div>
                         )}
-                        <CardContent className="p-5 flex items-center gap-4 relative z-10">
-                            <div className={`p-4 rounded-2xl ${alert.color} group-hover:scale-110 transition-transform`}>
-                                <alert.icon className="w-6 h-6" />
+                        <CardContent className="p-4 sm:p-5 flex items-center gap-3 sm:gap-4 relative z-10">
+                            <div className={`p-3 sm:p-4 rounded-2xl shrink-0 ${alert.color} group-hover:scale-110 transition-transform`}>
+                                <alert.icon className="w-5 h-5 sm:w-6 sm:h-6" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                    <span className="text-4xl font-black tracking-tighter leading-none">{alert.count}</span>
-                                    <div className="flex flex-col">
-                                        <h4 className={`text-[11px] font-black uppercase tracking-widest truncate ${darkMode ? 'text-white' : 'text-[#002f37]'}`}>{alert.title}</h4>
-                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tight">{alert.description}</p>
+                                <div className="flex items-start sm:items-center gap-2 sm:gap-3">
+                                    <span className="text-2xl sm:text-4xl font-black tracking-tighter leading-none shrink-0">{alert.count}</span>
+                                    <div className="flex flex-col min-w-0">
+                                        <h4 className={`text-xs sm:text-[11px] font-bold sm:font-black uppercase tracking-wide sm:tracking-widest ${darkMode ? 'text-white' : 'text-[#002f37]'}`}>{alert.title}</h4>
+                                        <p className="text-[11px] sm:text-[9px] font-medium sm:font-bold text-gray-500 sm:text-gray-400 normal-case sm:uppercase leading-snug mt-0.5">{alert.description}</p>
                                     </div>
                                 </div>
                             </div>
-                            <div className="p-2 rounded-full bg-gray-50 group-hover:bg-[#7ede56]/20 transition-colors">
-                                <ChevronRight className="w-3 h-3 text-gray-300 group-hover:text-[#002f37]" />
+                            <div className="p-2 rounded-full bg-gray-50 group-hover:bg-[#7ede56]/20 transition-colors shrink-0">
+                                <ChevronRight className="w-4 h-4 sm:w-3 sm:h-3 text-gray-300 group-hover:text-[#002f37]" />
                             </div>
                         </CardContent>
                     </Card>
@@ -392,32 +399,33 @@ const Overview = () => {
             </Sheet>
 
             {/* Compact Platform Health Bar - Slim Heartbeat Strip */}
-            <Card className={`border-none ${darkMode ? 'bg-gray-900 border border-gray-800 shadow-[0_8px_30px_rgb(0,0,0,0.4)]' : 'bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]'} overflow-hidden relative group rounded-2xl mb-8 transition-colors duration-300`}>
+            <Card className={`border-none ${darkMode ? 'bg-gray-900 border border-gray-800 shadow-[0_8px_30px_rgb(0,0,0,0.4)]' : 'bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]'} overflow-hidden relative group rounded-2xl mb-4 sm:mb-8 transition-colors duration-300`}>
                 {darkMode && <div className="absolute inset-0 bg-gradient-to-r from-[#7ede56]/5 via-transparent to-transparent opacity-50 pointer-events-none"></div>}
                 
                 <CardContent className="p-0">
-                    <div className={`flex flex-col md:flex-row items-center divide-x ${darkMode ? 'divide-white/5' : 'divide-gray-50'}`}>
-                        <div className="grid grid-cols-2 md:grid-cols-4 flex-1">
+                    <div className={`flex flex-col md:flex-row items-stretch md:items-center md:divide-x ${darkMode ? 'md:divide-white/5' : 'md:divide-gray-50'}`}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 flex-1">
                             {healthStats.map((stat, idx) => (
-                                <div key={idx} className={`px-6 py-4 flex flex-col justify-center border-r ${darkMode ? 'border-white/5 hover:bg-white/[0.02]' : 'border-gray-50 hover:bg-gray-50/50'} last:border-r-0 group/item transition-colors relative h-20`}>
-                                    <div className="flex items-center gap-2 mb-1.5">
-                                        <stat.icon className={`w-3 h-3 ${stat.color} opacity-80 group-hover/item:opacity-100 transition-opacity`} />
-                                        <span className="text-[8px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-[0.2em] leading-none">{stat.label}</span>
+                                <div key={idx} className={`px-4 sm:px-6 py-3 sm:py-4 flex flex-col justify-center border-b sm:border-b-0 sm:border-r ${darkMode ? 'border-white/5 hover:bg-white/[0.02]' : 'border-gray-100 sm:border-gray-50 hover:bg-gray-50/50'} last:border-r-0 group/item transition-colors relative min-h-[4.5rem] sm:h-20`}>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <stat.icon className={`w-3.5 h-3.5 shrink-0 ${stat.color} opacity-80`} />
+                                        <span className="text-[10px] sm:text-[8px] font-semibold sm:font-black text-gray-500 dark:text-gray-400 uppercase tracking-wide sm:tracking-[0.2em] leading-tight">{stat.label}</span>
                                     </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className={`text-xl font-black ${darkMode ? 'text-white' : 'text-[#002f37]'} tracking-tighter tabular-nums`}>{stat.value}</span>
-                                        <div className="flex items-center gap-1">
-                                            <TrendingUp className="w-2.5 h-2.5 text-[#7ede56] opacity-60" />
-                                            <span className="text-[7.5px] font-black text-[#7ede56] uppercase tracking-wider">+ {Math.floor(Math.random() * 5) + 1}%</span>
-                                        </div>
+                                    <div className="flex items-baseline gap-2 flex-wrap">
+                                        <span className={`text-base sm:text-xl font-bold sm:font-black ${darkMode ? 'text-white' : 'text-[#002f37]'} tracking-tight tabular-nums break-words line-clamp-2`}>{formatHealthValue(stat.label, String(stat.value))}</span>
+                                        {stat.label !== 'Primary Workstation' && (
+                                            <div className="flex items-center gap-1 shrink-0">
+                                                <TrendingUp className="w-2.5 h-2.5 text-[#7ede56] opacity-60" />
+                                                <span className="text-[9px] sm:text-[7.5px] font-bold sm:font-black text-[#7ede56] uppercase">+{Math.floor(Math.random() * 5) + 1}%</span>
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="absolute bottom-0 left-6 right-6 h-[1.5px] bg-[#7ede56]/0 group-hover/item:bg-[#7ede56]/40 transition-all duration-500" />
                                 </div>
                             ))}
                         </div>
                         
                         {/* Integrated Status Area */}
-                        <div className={`${darkMode ? 'bg-black/40' : 'bg-gray-50/80'} backdrop-blur-sm self-stretch flex items-center px-8 gap-10`}>
+                        <div className={`${darkMode ? 'bg-black/40' : 'bg-gray-50/80'} backdrop-blur-sm self-stretch flex items-center justify-between sm:justify-center px-4 sm:px-8 py-3 sm:py-0 gap-4 sm:gap-10`}>
                             <div className="flex items-center gap-3">
                                 <div className="relative h-1.5 w-1.5">
                                     <div className="absolute inset-0 rounded-full bg-[#7ede56] animate-ping opacity-75"></div>
@@ -435,11 +443,11 @@ const Overview = () => {
             </Card>
 
             {/* Stat Cards - Decision Drivers */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
                 {statCards.map((card, index) => (
                     <Card
                         key={index}
-                        className={`${card.color} border-none shadow-premium hover:-translate-y-2 transition-all duration-500 cursor-pointer relative overflow-hidden h-40 group`}
+                        className={`${card.color} border-none shadow-premium hover:-translate-y-2 transition-all duration-500 cursor-pointer relative overflow-hidden h-32 sm:h-40 group`}
                         onClick={() => navigate(card.path)}
                     >
                         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -469,15 +477,15 @@ const Overview = () => {
 
             {/* Operations Control Center - Tabbed Interface */}
             <Tabs defaultValue="ops" className="w-full">
-                <TabsList className="bg-gray-100 dark:bg-black/20 p-1 rounded-2xl h-14 mb-8">
-                    <TabsTrigger value="ops" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-8 h-full data-[state=active]:bg-[#002f37] data-[state=active]:text-[#7ede56] shadow-sm transition-all flex gap-3">
-                        <Globe className="w-4 h-4" /> Regional Distribution
+                <TabsList className="bg-gray-100 dark:bg-black/20 p-1 rounded-xl sm:rounded-2xl h-auto sm:h-14 mb-4 sm:mb-8 w-full flex overflow-x-auto no-scrollbar gap-1">
+                    <TabsTrigger value="ops" className="rounded-lg sm:rounded-xl font-semibold sm:font-black uppercase text-xs sm:text-[10px] tracking-wide sm:tracking-widest px-4 sm:px-8 py-2.5 sm:py-0 sm:h-full shrink-0 data-[state=active]:bg-[#002f37] data-[state=active]:text-[#7ede56] shadow-sm transition-all flex gap-2 sm:gap-3">
+                        <Globe className="w-4 h-4 shrink-0" /> <span className="whitespace-nowrap">Regions</span>
                     </TabsTrigger>
-                    <TabsTrigger value="queue" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-8 h-full data-[state=active]:bg-[#002f37] data-[state=active]:text-[#7ede56] shadow-sm transition-all flex gap-3">
-                        <Zap className="w-4 h-4" /> Workflow Queue
+                    <TabsTrigger value="queue" className="rounded-lg sm:rounded-xl font-semibold sm:font-black uppercase text-xs sm:text-[10px] tracking-wide sm:tracking-widest px-4 sm:px-8 py-2.5 sm:py-0 sm:h-full shrink-0 data-[state=active]:bg-[#002f37] data-[state=active]:text-[#7ede56] shadow-sm transition-all flex gap-2 sm:gap-3">
+                        <Zap className="w-4 h-4 shrink-0" /> <span className="whitespace-nowrap">Queue</span>
                     </TabsTrigger>
-                    <TabsTrigger value="intelligence" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-8 h-full data-[state=active]:bg-[#002f37] data-[state=active]:text-[#7ede56] shadow-sm transition-all flex gap-3">
-                        <Activity className="w-4 h-4" /> Platform Intelligence
+                    <TabsTrigger value="intelligence" className="rounded-lg sm:rounded-xl font-semibold sm:font-black uppercase text-xs sm:text-[10px] tracking-wide sm:tracking-widest px-4 sm:px-8 py-2.5 sm:py-0 sm:h-full shrink-0 data-[state=active]:bg-[#002f37] data-[state=active]:text-[#7ede56] shadow-sm transition-all flex gap-2 sm:gap-3">
+                        <Activity className="w-4 h-4 shrink-0" /> <span className="whitespace-nowrap">Intel</span>
                     </TabsTrigger>
                 </TabsList>
 

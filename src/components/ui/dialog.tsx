@@ -40,7 +40,8 @@ const DialogContent = React.forwardRef<
       className={cn(
         "fixed z-50 grid w-full gap-4 border bg-background shadow-lg duration-200",
         /* Desktop: centered modal */
-        "md:left-[50%] md:top-[50%] md:max-w-lg md:translate-x-[-50%] md:translate-y-[-50%] md:p-6",
+        "md:left-[50%] md:top-[50%] md:w-[min(94vw,56rem)] md:max-w-4xl md:translate-x-[-50%] md:translate-y-[-50%] md:p-6",
+        "lg:max-w-5xl lg:w-[min(92vw,64rem)]",
         "md:data-[state=open]:animate-in md:data-[state=closed]:animate-out",
         "md:data-[state=closed]:fade-out-0 md:data-[state=open]:fade-in-0",
         "md:data-[state=closed]:zoom-out-95 md:data-[state=open]:zoom-in-95",

@@ -483,7 +483,7 @@ const DisputeManagement: React.FC = () => {
 
         {/* Log New Dispute Dialog */}
         <Dialog open={showNewDisputeDialog} onOpenChange={setShowNewDisputeDialog}>
-          <DialogContent className={`max-w-2xl ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : 'bg-white'}`}>
+          <DialogContent className={`w-[95vw] md:max-w-5xl md:w-full ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : 'bg-white'}`}>
             <DialogHeader>
               <DialogTitle className={`text-2xl ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                 Log New Dispute

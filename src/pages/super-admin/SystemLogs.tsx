@@ -258,7 +258,7 @@ const SystemLogs = () => {
 
             {/* Log Detail Modal */}
             <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-                <DialogContent className={`sm:max-w-[650px] border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+                <DialogContent className={`w-[95vw] md:max-w-5xl md:w-full border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
                     {selectedLog && (
                         <div>
                             <div className="bg-[#002f37] p-8 text-white relative">

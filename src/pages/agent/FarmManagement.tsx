@@ -1929,7 +1929,7 @@ const FarmManagement: React.FC = () => {
 
             {/* Field Visit Modal - Premium Style */}
             <Dialog open={fieldVisitModalOpen} onOpenChange={setFieldVisitModalOpen}>
-                <DialogContent className={`max-w-2xl p-0 overflow-hidden border-0 ${darkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
+                <DialogContent className={`w-[95vw] md:max-w-5xl md:w-full p-0 overflow-hidden border-0 ${darkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
                     <div className="bg-[#065f46] p-6 text-white relative">
                         <DialogHeader>
                             <DialogTitle className="text-2xl font-bold flex items-center gap-3">
@@ -2185,7 +2185,7 @@ const FarmManagement: React.FC = () => {
             </Dialog>
 
             <Dialog open={visitDetailModalOpen} onOpenChange={setVisitDetailModalOpen}>
-                <DialogContent className={`max-w-2xl max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-white/10 text-white' : ''}`}>
+                <DialogContent className={`w-[95vw] md:max-w-5xl md:w-full max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-white/10 text-white' : ''}`}>
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-3">
                             <Badge variant="outline" className={`text-xs font-mono ${darkMode ? 'bg-white/5 border-white/10 text-emerald-400' : 'bg-gray-50 text-emerald-600'}`}>

@@ -47,9 +47,9 @@ const DetailField = ({
     value?: React.ReactNode;
     darkMode: boolean;
 }) => (
-    <div className={`p-3 rounded-xl border ${darkMode ? 'bg-gray-900/60 border-gray-800' : 'bg-gray-50 border-gray-100'}`}>
-        <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">{label}</p>
-        <p className={`text-sm font-bold mt-1 break-words ${darkMode ? 'text-gray-100' : 'text-[#002f37]'}`}>
+    <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-900/60 border-gray-800' : 'bg-gray-50 border-gray-100'}`}>
+        <p className="text-xs font-semibold text-gray-500">{label}</p>
+        <p className={`text-base font-medium mt-1.5 leading-snug break-words ${darkMode ? 'text-gray-100' : 'text-[#002f37]'}`}>
             {value ?? '—'}
         </p>
     </div>
@@ -117,7 +117,7 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className={`max-w-6xl w-[95vw] h-[min(92vh,900px)] p-0 flex flex-col overflow-hidden border-none shadow-2xl ${
+                className={`admin-farmer-profile-modal w-[95vw] md:!max-w-[min(98vw,1420px)] lg:!max-w-[min(96vw,1520px)] xl:!max-w-[1600px] md:!w-[min(98vw,1420px)] lg:!w-[min(96vw,1520px)] h-[min(92vh,920px)] p-0 flex flex-col overflow-hidden border-none shadow-2xl ${
                     darkMode ? 'bg-gray-950 text-white' : 'bg-white'
                 }`}
             >
@@ -143,20 +143,20 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
                                     <h2 className="text-xl font-black uppercase tracking-tight truncate">
                                         {farmer?.name || summaryFarmer.name}
                                     </h2>
-                                    <Badge className={`${getStatusColor(summaryFarmer.status)} border-none text-[9px] font-black`}>
+                                    <Badge className={`${getStatusColor(summaryFarmer.status)} border-none text-xs font-semibold`}>
                                         {summaryFarmer.status}
                                     </Badge>
                                 </div>
-                                <p className="text-[11px] font-mono text-[#7ede56] mt-1">
+                                <p className="text-sm font-mono text-[#7ede56] mt-1">
                                     {farmer?.id || `ID ${String(summaryFarmer.id).slice(-8)}`}
                                 </p>
-                                <div className="flex flex-wrap gap-3 mt-2 text-[10px] font-bold uppercase tracking-wider text-white/70">
-                                    <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{farmer?.contact || summaryFarmer.phone}</span>
+                                <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2 text-sm text-white/80">
+                                    <span className="flex items-center gap-1.5"><Phone className="w-4 h-4 shrink-0" />{farmer?.contact || summaryFarmer.phone}</span>
                                     {(farmer?.email || summaryFarmer.email) && (
-                                        <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{farmer?.email || summaryFarmer.email}</span>
+                                        <span className="flex items-center gap-1.5"><Mail className="w-4 h-4 shrink-0" />{farmer?.email || summaryFarmer.email}</span>
                                     )}
-                                    <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{farmer?.region || summaryFarmer.region}</span>
-                                    <span className="flex items-center gap-1"><User className="w-3 h-3" />{farmer?.agent?.name || summaryFarmer.agentName || 'Unassigned'}</span>
+                                    <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 shrink-0" />{farmer?.region || summaryFarmer.region}</span>
+                                    <span className="flex items-center gap-1.5"><User className="w-4 h-4 shrink-0" />{farmer?.agent?.name || summaryFarmer.agentName || 'Unassigned'}</span>
                                 </div>
                             </div>
                         </div>
@@ -164,7 +164,7 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="border-white/20 bg-white/5 text-white hover:bg-white/10 font-black text-[10px] uppercase tracking-widest h-10"
+                                className="border-white/20 bg-white/5 text-white hover:bg-white/10 font-semibold text-sm h-10"
                                 onClick={handleExportJson}
                                 disabled={loading}
                             >
@@ -172,7 +172,7 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
                             </Button>
                             <Button
                                 size="sm"
-                                className="bg-[#7ede56] text-[#002f37] hover:bg-[#6bcb4b] font-black text-[10px] uppercase tracking-widest h-10"
+                                className="bg-[#7ede56] text-[#002f37] hover:bg-[#6bcb4b] font-semibold text-sm h-10"
                                 onClick={handleExportPdf}
                                 disabled={loading}
                             >
@@ -185,32 +185,37 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
                 {loading ? (
                     <div className="flex-1 flex flex-col items-center justify-center gap-3 text-gray-400">
                         <Loader2 className="w-8 h-8 animate-spin text-[#7ede56]" />
-                        <p className="text-[10px] font-black uppercase tracking-widest">Loading full grower record…</p>
+                        <p className="text-sm font-medium text-gray-500">Loading grower details…</p>
                     </div>
                 ) : (
                     <Tabs defaultValue="profile" className="flex-1 flex flex-col min-h-0">
-                        <div className={`px-6 border-b shrink-0 ${darkMode ? 'border-gray-800 bg-gray-900/40' : 'border-gray-100 bg-gray-50/80'}`}>
-                            <TabsList className="bg-transparent h-11 gap-6 p-0">
-                                {['profile', 'farm', 'journey', 'activity'].map((tab) => (
+                        <div className={`px-4 sm:px-6 py-3 border-b shrink-0 ${darkMode ? 'border-gray-800 bg-gray-900/40' : 'border-gray-100 bg-gray-50/80'}`}>
+                            <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto gap-2 p-1.5 rounded-xl bg-white/80 dark:bg-gray-900/80 border border-gray-200/80 dark:border-gray-800">
+                                {[
+                                    { id: 'profile', label: 'Profile' },
+                                    { id: 'farm', label: 'Farm & Map' },
+                                    { id: 'journey', label: 'Farm Journey' },
+                                    { id: 'activity', label: 'Visits' },
+                                ].map((tab) => (
                                     <TabsTrigger
-                                        key={tab}
-                                        value={tab}
-                                        className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#7ede56] data-[state=active]:text-[#7ede56] bg-transparent px-0 text-[10px] font-black uppercase tracking-widest capitalize"
+                                        key={tab.id}
+                                        value={tab.id}
+                                        className="min-h-[44px] px-3 py-2.5 rounded-lg text-sm font-semibold text-gray-600 dark:text-gray-400 data-[state=active]:bg-[#002f37] data-[state=active]:text-white data-[state=active]:shadow-sm whitespace-normal leading-tight text-center"
                                     >
-                                        {tab === 'profile' ? 'Full Profile' : tab === 'farm' ? 'Farm & Map' : tab === 'journey' ? 'Farm Journey' : 'Visits & Logs'}
+                                        {tab.label}
                                     </TabsTrigger>
                                 ))}
                             </TabsList>
                         </div>
 
                         <ScrollArea className="flex-1">
-                            <div className="p-6">
+                            <div className="p-4 sm:p-6">
                                 <TabsContent value="profile" className="mt-0 space-y-6">
                                     <section>
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
+                                        <h3 className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-3 flex items-center gap-2">
                                             <User className="w-4 h-4" /> Personal & Identity
                                         </h3>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                                             <DetailField darkMode={darkMode} label="Ghana Card" value={farmer?.ghanaCardNumber} />
                                             <DetailField darkMode={darkMode} label="Gender" value={farmer?.gender} />
                                             <DetailField darkMode={darkMode} label="Date of Birth" value={farmer?.dob} />
@@ -223,10 +228,10 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
                                     </section>
 
                                     <section>
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
+                                        <h3 className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-3 flex items-center gap-2">
                                             <Tractor className="w-4 h-4" /> Production Profile
                                         </h3>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                                             <DetailField darkMode={darkMode} label="Farm Type" value={farmer?.farmType} />
                                             <DetailField darkMode={darkMode} label="Farm Size" value={farmer?.farmSize != null ? `${farmer.farmSize} acres` : undefined} />
                                             <DetailField darkMode={darkMode} label="Experience" value={farmer?.yearsOfExperience != null ? `${farmer.yearsOfExperience} years` : undefined} />
@@ -240,10 +245,10 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
 
                                     {(farmer?.trainingModules?.length > 0) && (
                                         <section>
-                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Training Modules</h3>
+                                            <h3 className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-3">Training Modules</h3>
                                             <div className="flex flex-wrap gap-2">
                                                 {farmer.trainingModules.map((m: string) => (
-                                                    <Badge key={m} className="bg-[#7ede56]/10 text-[#065f46] border-[#7ede56]/20 text-[9px] font-black">{m}</Badge>
+                                                    <Badge key={m} className="bg-[#7ede56]/10 text-[#065f46] border-[#7ede56]/20 text-xs font-medium">{m}</Badge>
                                                 ))}
                                             </div>
                                         </section>
@@ -251,18 +256,18 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
 
                                     {(farmer?.idCardFront || farmer?.idCardBack) && (
                                         <section>
-                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">KYC Documents</h3>
+                                            <h3 className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-3">KYC Documents</h3>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 {farmer.idCardFront && (
                                                     <a href={farmer.idCardFront} target="_blank" rel="noreferrer" className="block rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:opacity-90">
                                                         <img src={farmer.idCardFront} alt="ID front" className="w-full h-40 object-cover" />
-                                                        <p className="text-[9px] font-black uppercase p-2 text-center text-gray-500">Ghana Card — Front</p>
+                                                        <p className="text-xs font-medium p-2 text-center text-gray-500">Ghana Card — Front</p>
                                                     </a>
                                                 )}
                                                 {farmer.idCardBack && (
                                                     <a href={farmer.idCardBack} target="_blank" rel="noreferrer" className="block rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:opacity-90">
                                                         <img src={farmer.idCardBack} alt="ID back" className="w-full h-40 object-cover" />
-                                                        <p className="text-[9px] font-black uppercase p-2 text-center text-gray-500">Ghana Card — Back</p>
+                                                        <p className="text-xs font-medium p-2 text-center text-gray-500">Ghana Card — Back</p>
                                                     </a>
                                                 )}
                                             </div>
@@ -273,25 +278,25 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
                                 <TabsContent value="farm" className="mt-0 space-y-6">
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                         <div>
-                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Registered Farms</h3>
+                                            <h3 className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-3">Registered Farms</h3>
                                             {farms.length === 0 ? (
                                                 <p className="text-sm text-gray-400 font-medium">No farm parcels linked yet.</p>
                                             ) : (
                                                 <div className="space-y-3">
                                                     {farms.map((farm: any) => (
                                                         <div key={farm._id} className={`p-4 rounded-xl border ${darkMode ? 'border-gray-800 bg-gray-900/50' : 'border-gray-100 bg-gray-50'}`}>
-                                                            <p className="font-black text-sm">{farm.name || `${farmer?.name}'s Farm`}</p>
-                                                            <p className="text-[10px] text-gray-500 mt-1 uppercase font-bold">
-                                                                {farm.crop || farm.crops || summaryFarmer.crop} · {farm.size || farm.acreage || farmer?.farmSize || '—'} ac
+                                                            <p className="font-semibold text-base">{farm.name || `${farmer?.name}'s Farm`}</p>
+                                                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                                {farm.crop || farm.crops || summaryFarmer.crop} · {farm.size || farm.acreage || farmer?.farmSize || '—'} acres
                                                             </p>
-                                                            <p className="text-[10px] text-gray-400 mt-1">{farm.location || farm.community || farmer?.community}</p>
+                                                            <p className="text-sm text-gray-500 mt-1">{farm.location || farm.community || farmer?.community}</p>
                                                         </div>
                                                     ))}
                                                 </div>
                                             )}
                                         </div>
                                         <div>
-                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
+                                            <h3 className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-3 flex items-center gap-2">
                                                 <Navigation className="w-4 h-4" /> GPS Location
                                             </h3>
                                             <div className="aspect-video rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900 relative">
@@ -315,7 +320,7 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    className="mt-3 w-full font-black text-[10px] uppercase tracking-widest"
+                                                    className="mt-3 w-full font-semibold text-sm"
                                                     onClick={() => window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank')}
                                                 >
                                                     Open in Google Maps
@@ -326,10 +331,10 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
                                 </TabsContent>
 
                                 <TabsContent value="journey" className="mt-0">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
+                                    <h3 className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-4 flex flex-wrap items-center gap-2">
                                         <Sprout className="w-4 h-4" /> Seasonal Farm Journey
                                         {farmer?.currentStage && (
-                                            <Badge className="ml-2 bg-amber-500/10 text-amber-600 border-none text-[8px]">Current: {farmer.currentStage}</Badge>
+                                            <Badge className="bg-amber-500/10 text-amber-600 border-none text-xs">Current: {farmer.currentStage}</Badge>
                                         )}
                                     </h3>
                                     <div className="relative">
@@ -344,12 +349,12 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
                                                         <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center mb-2 ${isCompleted ? 'bg-[#7ede56] text-[#002f37]' : isCurrent ? 'bg-amber-400 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`}>
                                                             {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <div className="w-2 h-2 rounded-full bg-current" />}
                                                         </div>
-                                                        <p className={`text-[10px] font-black uppercase ${isCompleted ? 'text-[#7ede56]' : isCurrent ? 'text-amber-500' : 'text-gray-400'}`}>{stage}</p>
-                                                        <p className="text-[9px] font-bold text-gray-400 mt-1">
+                                                        <p className={`text-sm font-semibold capitalize ${isCompleted ? 'text-[#7ede56]' : isCurrent ? 'text-amber-500' : 'text-gray-500'}`}>{stage}</p>
+                                                        <p className="text-xs text-gray-500 mt-1">
                                                             {data?.date ? new Date(data.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Pending'}
                                                         </p>
                                                         {data?.notes && (
-                                                            <p className="text-[9px] text-gray-500 mt-2 line-clamp-3">{data.notes}</p>
+                                                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-4">{data.notes}</p>
                                                         )}
                                                     </div>
                                                 );
@@ -360,7 +365,7 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
 
                                 <TabsContent value="activity" className="mt-0 space-y-6">
                                     <section>
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
+                                        <h3 className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-3 flex items-center gap-2">
                                             <History className="w-4 h-4" /> Field Visits ({fieldVisits.length})
                                         </h3>
                                         {fieldVisits.length === 0 ? (
@@ -371,13 +376,13 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
                                                     <div key={v._id} className={`flex gap-3 p-3 rounded-xl border ${darkMode ? 'border-gray-800' : 'border-gray-100'}`}>
                                                         <div className="w-1 bg-[#7ede56] rounded-full shrink-0" />
                                                         <div>
-                                                            <p className="text-sm font-bold">{v.purpose || 'Field inspection'}</p>
-                                                            <p className="text-[10px] text-gray-400 font-bold uppercase flex items-center gap-1 mt-0.5">
-                                                                <Calendar className="w-3 h-3" />
+                                                            <p className="text-base font-semibold">{v.purpose || 'Field inspection'}</p>
+                                                            <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-1">
+                                                                <Calendar className="w-4 h-4 shrink-0" />
                                                                 {v.date ? new Date(v.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : '—'}
                                                                 {v.status && ` · ${v.status}`}
                                                             </p>
-                                                            {v.notes && <p className="text-xs text-gray-500 mt-1">{v.notes}</p>}
+                                                            {v.notes && <p className="text-sm text-gray-600 dark:text-gray-400 mt-1.5">{v.notes}</p>}
                                                         </div>
                                                     </div>
                                                 ))}
@@ -387,12 +392,12 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
 
                                     {scheduledVisits.length > 0 && (
                                         <section>
-                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Scheduled Visits</h3>
+                                            <h3 className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-3">Scheduled Visits</h3>
                                             <div className="space-y-2">
                                                 {scheduledVisits.map((v: any) => (
-                                                    <div key={v._id} className={`p-3 rounded-xl border text-sm ${darkMode ? 'border-gray-800' : 'border-gray-100'}`}>
-                                                        <span className="font-bold">{v.purpose}</span>
-                                                        <span className="text-gray-400 text-[10px] ml-2 uppercase font-bold">
+                                                    <div key={v._id} className={`p-4 rounded-xl border text-sm ${darkMode ? 'border-gray-800' : 'border-gray-100'}`}>
+                                                        <span className="font-semibold text-base">{v.purpose}</span>
+                                                        <span className="text-gray-500 text-sm ml-2">
                                                             {v.scheduledDate ? new Date(v.scheduledDate).toLocaleDateString('en-GB') : ''} {v.scheduledTime}
                                                         </span>
                                                     </div>
@@ -406,12 +411,12 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
                     </Tabs>
                 )}
 
-                <div className={`px-6 py-4 border-t flex justify-between gap-3 shrink-0 ${darkMode ? 'border-gray-800 bg-gray-900/60' : 'border-gray-100 bg-gray-50'}`}>
-                    <Button variant="outline" className="font-black text-[10px] uppercase tracking-widest h-11" onClick={() => onOpenChange(false)}>
+                <div className={`px-4 sm:px-6 py-4 border-t flex flex-col-reverse sm:flex-row justify-between gap-3 shrink-0 ${darkMode ? 'border-gray-800 bg-gray-900/60' : 'border-gray-100 bg-gray-50'}`}>
+                    <Button variant="outline" className="font-semibold text-sm h-11 w-full sm:w-auto" onClick={() => onOpenChange(false)}>
                         Close
                     </Button>
                     <Button
-                        className="bg-[#002f37] text-[#7ede56] hover:bg-[#001c21] font-black text-[10px] uppercase tracking-widest h-11"
+                        className="bg-[#002f37] text-[#7ede56] hover:bg-[#001c21] font-semibold text-sm h-11 w-full sm:w-auto"
                         onClick={() => { onOpenChange(false); onChangeStatus(); }}
                     >
                         <Shield className="w-4 h-4 mr-2" /> Change Status

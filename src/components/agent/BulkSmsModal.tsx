@@ -213,7 +213,7 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent hideCloseButton className="max-w-5xl w-[95vw] h-[95vh] md:h-[85vh] flex flex-col p-0 overflow-hidden border border-white/20 bg-[#FDFCFB]/80 backdrop-blur-3xl rounded-none shadow-[0_50px_100px_-20px_rgba(0,47,47,0.25)] z-[200] selection:bg-[#7ede56]/30">
+            <DialogContent hideCloseButton className="w-[95vw] md:max-w-6xl md:w-[min(96vw,1152px)] h-[95vh] md:h-[85vh] flex flex-col p-0 overflow-hidden border border-white/20 bg-[#FDFCFB]/80 backdrop-blur-3xl rounded-none shadow-[0_50px_100px_-20px_rgba(0,47,47,0.25)] z-[200] selection:bg-[#7ede56]/30">
                 
                 {/* Modern Header - High Contrast */}
                 <div className="bg-[#002f37] text-white p-6 md:p-10 relative shrink-0 overflow-hidden">

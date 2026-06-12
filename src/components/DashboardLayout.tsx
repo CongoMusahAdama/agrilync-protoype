@@ -50,11 +50,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     hideHeaderOnMobile = false
 }) => {
     const { userType: paramUserType } = useParams();
-    const userType = explicitUserType || paramUserType;
     const navigate = useNavigate();
     const { darkMode, toggleDarkMode } = useDarkMode();
     const isMobile = useIsMobile();
     const { agent } = useAuth();
+    const userType =
+        explicitUserType ||
+        paramUserType ||
+        (agent?.role === 'super_admin' ? 'super-admin' : agent?.role === 'agent' ? 'agent' : undefined);
     const queryClient = useQueryClient();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -87,15 +90,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     // Check if any queries are fetching to show preloader
     const isFetching = queryClient.isFetching() > 0;
 
+    const isSuperAdmin = userType === 'super-admin' || agent?.role === 'super_admin';
+    const receivesStaffNotifications = userType === 'agent' || isSuperAdmin;
+
     const { data: notifications = [] } = useQuery({
         queryKey: ['notifications'],
         queryFn: async () => {
             const res = await api.get('/notifications');
-            return res.data;
+            return Array.isArray(res.data) ? res.data : (res.data?.data || []);
         },
-        enabled: userType === 'agent',
+        enabled: receivesStaffNotifications,
         staleTime: DASHBOARD_POLL_INTERVAL_MS,
-        refetchInterval: userType === 'agent' && !addFarmerModalOpen ? DASHBOARD_POLL_INTERVAL_MS : false,
+        refetchInterval: receivesStaffNotifications && !addFarmerModalOpen ? DASHBOARD_POLL_INTERVAL_MS : false,
         refetchIntervalInBackground: false,
     });
 
@@ -149,9 +155,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
     const effectiveSubtitle = description || subtitle;
     const currentTitle = title || 'Dashboard';
-    const activeNotifications = userType === 'agent' ? notifications : agentNotifications;
-    const isSuperAdmin = userType === 'super-admin';
-    const isAgent = userType === 'agent';
+    const activeNotifications = receivesStaffNotifications ? notifications : agentNotifications;
+    const isAgent = userType === 'agent' && agent?.role !== 'super_admin';
 
     const handleSidebarNavigate = (item: string) => {
         setMobileSidebarOpen(false);
@@ -246,11 +251,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                         <span className="text-[15px] font-black text-[#002f37] truncate leading-tight mt-0.5">
                                             {currentTitle}
                                         </span>
-                                        {effectiveSubtitle && (
-                                            <span className="text-[10px] font-semibold text-gray-400 truncate">
-                                                {effectiveSubtitle}
-                                            </span>
-                                        )}
+                                        <span className="text-[10px] font-medium text-gray-500 mt-0.5">
+                                            Open menu (top left) for all admin sections
+                                        </span>
                                     </div>
                                 )}
                                 {/* Premium Search Bar */}
@@ -333,7 +336,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                                 <Button 
                                                     variant="ghost" 
                                                     className="w-full text-[10px] font-black uppercase tracking-[0.2em] text-[#065f46] hover:bg-white h-10 rounded-xl"
-                                                    onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/notifications-center' : `/dashboard/${userType}/notifications`)}
+                                                    onClick={() =>
+                                                        navigate(
+                                                            isSuperAdmin
+                                                                ? '/dashboard/super-admin/notifications'
+                                                                : userType === 'agent'
+                                                                  ? '/dashboard/agent/notifications-center'
+                                                                  : `/dashboard/${userType}/notifications`
+                                                        )
+                                                    }
                                                 >
                                                     View All Notifications
                                                 </Button>
@@ -433,15 +444,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
                     {/* Main Content Area */}
                     <main
-                        className={`flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 md:p-8 ${
-                            isMobile ? (isSuperAdmin ? 'pb-28' : 'pb-24') : 'pb-8'
-                        }`}
+                        className={`flex-1 overflow-y-auto overflow-x-hidden ${
+                            isSuperAdmin && isMobile ? 'p-3 sm:p-6 md:p-8 pb-6' : 'p-4 sm:p-6 md:p-8'
+                        } ${isMobile && !isSuperAdmin ? 'pb-24' : !isMobile ? 'pb-8' : ''}`}
                     >
                         {children}
                     </main>
 
-                    {/* Mobile Bottom Navigation - Redesigned for Premium Look */}
-                    {isMobile && (
+                    {/* Mobile bottom nav — agents/growers only; super admin uses header menu */}
+                    {isMobile && !isSuperAdmin && (
                         <div className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pointer-events-none">
                             <div
                                 className={`pointer-events-auto flex items-center justify-between px-3 py-1.5 rounded-[1.75rem] shadow-[0_20px_50px_-12px_rgba(0,47,55,0.25)] border backdrop-blur-md ${

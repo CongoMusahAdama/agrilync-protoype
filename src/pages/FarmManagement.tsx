@@ -722,7 +722,7 @@ const FarmManagement = () => {
 
       {/* Stage Details Dialog - Enhanced with Activity Tracking */}
       <Dialog open={showStageDialog} onOpenChange={setShowStageDialog}>
-        <DialogContent className={`${darkMode ? 'bg-[#002f37] border-gray-600' : ''} max-w-4xl max-h-[90vh] overflow-y-auto`}>
+        <DialogContent className={`${darkMode ? 'bg-[#002f37] border-gray-600' : ''} w-[95vw] md:max-w-6xl md:w-full max-h-[90vh] overflow-y-auto`}>
           <DialogHeader>
             <DialogTitle className={darkMode ? 'text-white' : ''}>
               {selectedStage ? `${selectedStage.charAt(0).toUpperCase() + selectedStage.slice(1)} Stage - Track Your Activities` : 'Stage Details'}
@@ -940,7 +940,7 @@ const FarmManagement = () => {
 
       {/* Create Farm Project Dialog - Enhanced */}
       <Dialog open={showCreateProjectDialog} onOpenChange={setShowCreateProjectDialog}>
-        <DialogContent className={`${darkMode ? 'bg-[#002f37] border-gray-600' : ''} max-w-4xl max-h-[85vh] overflow-y-auto`}>
+        <DialogContent className={`${darkMode ? 'bg-[#002f37] border-gray-600' : ''} w-[95vw] md:max-w-6xl md:w-full max-h-[85vh] overflow-y-auto`}>
           <DialogHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-lg ${darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10'}`}>
