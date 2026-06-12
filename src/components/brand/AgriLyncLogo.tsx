@@ -84,7 +84,7 @@ export const AgriLyncLogoWatermark: React.FC<{ className?: string }> = ({ classN
                     img.src = AGRILYNC_LOGO_ALT_SRC;
                 }
             }}
-            className="absolute left-1/2 top-[50%] -translate-x-1/2 -translate-y-1/2 w-[82%] max-w-[420px] opacity-[0.09] object-contain select-none"
+            className="absolute left-[58%] top-[50%] -translate-x-1/2 -translate-y-1/2 w-[72%] max-w-[380px] opacity-[0.08] object-contain select-none"
             draggable={false}
         />
     </div>
