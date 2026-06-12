@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckCircle2, ShieldCheck, Star } from 'lucide-react';
-import AgriLyncLogo from '@/components/brand/AgriLyncLogo';
+import AgriLyncLogo, { AgriLyncLogoWatermark } from '@/components/brand/AgriLyncLogo';
 import { buildGrowerVerifyUrl, getGrowerDisplayId } from '@/utils/growerId';
 import {
     calcGrowerAge,
@@ -22,8 +22,8 @@ const GrowerIdCardVisual = React.forwardRef<HTMLDivElement, GrowerIdCardVisualPr
         const growerId = getGrowerDisplayId(farmer);
         const cardNumber = getDigitalCardNumber(farmer);
         const verifyUrl = buildGrowerVerifyUrl(growerId);
-        const qrSize = printMode ? 160 : 120;
-        const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(verifyUrl)}&bgcolor=ffffff&color=002f37&margin=1`;
+        const qrPx = printMode ? 112 : 88;
+        const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=${qrPx}x${qrPx}&data=${encodeURIComponent(verifyUrl)}&bgcolor=ffffff&color=002f37&margin=2`;
 
         const profileSrc =
             farmer.profilePicture ||
@@ -42,15 +42,21 @@ const GrowerIdCardVisual = React.forwardRef<HTMLDivElement, GrowerIdCardVisualPr
             farmer.agent?.agentId || farmer.agentId || farmer.onboardingAgentId || '—';
 
         const widthClass = printMode ? 'w-[680px]' : 'w-[min(100vw-2rem,600px)]';
+        const headerLogoH = printMode ? 'h-12' : 'h-10';
+        const footerLogoH = printMode ? 'h-7' : 'h-6';
 
         return (
             <div
                 ref={ref}
-                className={`grower-id-card-root relative ${widthClass} rounded-2xl overflow-hidden flex flex-col bg-white shadow-2xl shrink-0 border border-gray-200/80 ${className}`}
-                style={{ aspectRatio: '1.586 / 1', fontFamily: '"Inter", sans-serif' }}
+                className={`grower-id-card-root relative ${widthClass} rounded-2xl flex flex-col bg-white shadow-2xl shrink-0 border border-gray-200/80 ${className}`}
+                style={{
+                    aspectRatio: '1.586 / 1',
+                    minHeight: printMode ? 430 : 378,
+                    fontFamily: '"Inter", sans-serif',
+                }}
             >
-                <div className="flex items-center justify-between px-5 py-3 bg-[#002f37] shrink-0">
-                    <AgriLyncLogo variant="onDark" iconClassName={printMode ? 'h-11 w-11' : 'h-9 w-9'} />
+                <div className="flex items-center justify-between px-5 py-3 bg-[#002f37] shrink-0 rounded-t-2xl">
+                    <AgriLyncLogo variant="onDark" iconClassName={headerLogoH} />
                     <div className="min-w-0 text-right">
                         <p className="card-label text-[9px] font-black text-[#7ede56] uppercase tracking-[0.35em] leading-none">
                             Operational Credential
@@ -65,11 +71,13 @@ const GrowerIdCardVisual = React.forwardRef<HTMLDivElement, GrowerIdCardVisualPr
                     </div>
                 </div>
 
-                <div className="flex flex-1 min-h-0">
-                    <div className="w-[32%] bg-gradient-to-br from-[#065f46]/8 to-[#002f37]/5 flex flex-col items-center justify-center px-3 py-4 border-r border-gray-100">
+                <div className="relative flex flex-1 min-h-0 overflow-hidden">
+                    <AgriLyncLogoWatermark />
+
+                    <div className="relative z-[1] w-[30%] bg-gradient-to-br from-[#065f46]/8 to-[#002f37]/5 flex flex-col items-center justify-center px-3 py-3 border-r border-gray-100">
                         <div className="relative">
                             <div
-                                className={`${printMode ? 'w-[120px] h-[120px]' : 'w-[96px] h-[96px]'} rounded-2xl border-[3px] border-white shadow-lg overflow-hidden bg-white`}
+                                className={`${printMode ? 'w-[110px] h-[110px]' : 'w-[88px] h-[88px]'} rounded-2xl border-[3px] border-white shadow-lg overflow-hidden bg-white`}
                             >
                                 <img
                                     src={profileSrc}
@@ -79,25 +87,25 @@ const GrowerIdCardVisual = React.forwardRef<HTMLDivElement, GrowerIdCardVisualPr
                                 />
                             </div>
                             <div className="absolute -bottom-1.5 -right-1.5 bg-[#7ede56] text-[#002f37] p-1 rounded-lg shadow border-2 border-white">
-                                <ShieldCheck className="w-4 h-4" />
+                                <ShieldCheck className="w-3.5 h-3.5" />
                             </div>
                         </div>
                         <h2
-                            className="mt-3 text-[#002f37] font-black text-xs text-center leading-snug uppercase px-1 break-words max-w-full"
+                            className="mt-2.5 text-[#002f37] font-black text-[11px] text-center leading-snug uppercase px-1 break-words max-w-full"
                             style={{ fontFamily: 'Poppins, sans-serif' }}
                         >
                             {farmer.name}
                         </h2>
-                        <div className="flex items-center gap-1 mt-2 px-2.5 py-1 bg-[#065f46]/8 rounded-full">
+                        <div className="flex items-center gap-1 mt-2 px-2.5 py-1 bg-[#065f46]/10 rounded-full border border-[#065f46]/15">
                             <CheckCircle2 className="w-3 h-3 text-[#065f46]" />
                             <span className="card-label text-[8px] font-black text-[#065f46] uppercase tracking-wide">
-                                Verified Partner
+                                Lync Grower
                             </span>
                         </div>
                     </div>
 
-                    <div className="flex-1 px-4 py-3 flex flex-col justify-between min-w-0">
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                    <div className="relative z-[1] flex-1 flex min-w-0 px-3 py-3 gap-2">
+                        <div className="flex-1 grid grid-cols-2 gap-x-3 gap-y-2.5 content-start min-w-0">
                             <div className="min-w-0">
                                 <span className="card-label text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">
                                     Grower ID
@@ -126,15 +134,15 @@ const GrowerIdCardVisual = React.forwardRef<HTMLDivElement, GrowerIdCardVisualPr
                                 <span className="card-label text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">
                                     Years of Experience
                                 </span>
-                                <div className="flex flex-wrap items-center gap-1.5">
-                                    <span className="card-value text-[12px] font-black text-[#002f37]">
+                                <div className="flex flex-wrap items-center gap-1">
+                                    <span className="card-value text-[11px] font-black text-[#002f37]">
                                         {yearsExp != null ? `${yearsExp} Yrs` : '—'}
                                     </span>
                                     <div className="flex items-center gap-0.5">
                                         {Array.from({ length: 5 }).map((_, i) => (
                                             <Star
                                                 key={i}
-                                                className={`w-3 h-3 ${
+                                                className={`w-2.5 h-2.5 ${
                                                     i < stars
                                                         ? 'fill-amber-400 text-amber-400'
                                                         : 'fill-gray-100 text-gray-200'
@@ -142,24 +150,24 @@ const GrowerIdCardVisual = React.forwardRef<HTMLDivElement, GrowerIdCardVisualPr
                                             />
                                         ))}
                                     </div>
-                                    <span className="text-[7px] font-black text-[#065f46] uppercase tracking-wide px-1.5 py-0.5 rounded bg-[#065f46]/10">
+                                    <span className="text-[6px] font-black text-[#065f46] uppercase tracking-wide px-1 py-0.5 rounded bg-[#065f46]/10">
                                         Verified
                                     </span>
                                 </div>
                             </div>
-                            <div className="min-w-0 col-span-1">
+                            <div className="min-w-0">
                                 <span className="card-label text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">
                                     Zone / District
                                 </span>
-                                <span className="card-value text-[11px] font-bold text-[#002f37] leading-snug break-words">
+                                <span className="card-value text-[10px] font-bold text-[#002f37] leading-snug break-words">
                                     {district}
                                 </span>
                             </div>
-                            <div className="min-w-0 col-span-1">
+                            <div className="min-w-0">
                                 <span className="card-label text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">
                                     Community
                                 </span>
-                                <span className="card-value text-[11px] font-bold text-[#002f37] leading-snug break-words">
+                                <span className="card-value text-[10px] font-bold text-[#002f37] leading-snug break-words">
                                     {community}
                                 </span>
                             </div>
@@ -179,24 +187,29 @@ const GrowerIdCardVisual = React.forwardRef<HTMLDivElement, GrowerIdCardVisualPr
                             </div>
                         </div>
 
-                        <div className="flex items-end justify-end mt-2 pt-2 border-t border-gray-100">
-                            <div className="text-right">
-                                <span className="card-label text-[8px] font-black text-gray-400 uppercase tracking-widest block">
-                                    Scannable Auth
-                                </span>
+                        <div className="shrink-0 w-[76px] flex flex-col items-center justify-end pb-1 pr-0.5">
+                            <span className="card-label text-[7px] font-black text-gray-400 uppercase tracking-widest text-center leading-tight mb-1">
+                                Scannable
+                                <br />
+                                Auth
+                            </span>
+                            <div className="bg-white p-1 rounded-lg border border-gray-200 shadow-sm">
                                 <img
                                     src={qrSrc}
                                     crossOrigin="anonymous"
                                     alt={`QR code for ${growerId}`}
-                                    className={`${printMode ? 'w-20 h-20' : 'w-16 h-16'} object-contain ml-auto mt-1`}
+                                    width={qrPx}
+                                    height={qrPx}
+                                    className="block object-contain"
+                                    style={{ width: printMode ? 72 : 56, height: printMode ? 72 : 56 }}
                                 />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="px-5 py-2.5 bg-[#065f46] flex items-center justify-between gap-2 shrink-0">
-                    <AgriLyncLogo variant="onDark" showWordmark={false} iconClassName="h-5 w-5" />
+                <div className="px-5 py-2.5 bg-[#065f46] flex items-center justify-between gap-2 shrink-0 rounded-b-2xl">
+                    <AgriLyncLogo variant="onDark" showWordmark={false} iconClassName={footerLogoH} />
                     <span className="card-label text-[8px] font-black text-[#7ede56] uppercase tracking-[0.25em] text-center flex-1">
                         AgriLync Digital Trust Ecosystem
                     </span>
