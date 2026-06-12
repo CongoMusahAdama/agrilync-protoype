@@ -37,9 +37,9 @@ const AgriLyncLogo: React.FC<AgriLyncLogoProps> = ({
                     alt="AgriLync"
                     crossOrigin="anonymous"
                     onError={handleError}
-                    className={`${heightClass} w-auto object-contain object-left ${
+                    className={`${heightClass} w-auto max-w-none object-contain object-left ${
                         onDark ? 'brightness-0 invert' : ''
-                    } ${!showWordmark ? 'max-w-[32px]' : ''}`}
+                    } ${!showWordmark ? 'max-w-[36px]' : ''}`}
                     draggable={false}
                 />
             </div>

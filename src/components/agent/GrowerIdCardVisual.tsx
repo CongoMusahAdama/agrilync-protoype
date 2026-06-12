@@ -42,7 +42,7 @@ const GrowerIdCardVisual = React.forwardRef<HTMLDivElement, GrowerIdCardVisualPr
             farmer.agent?.agentId || farmer.agentId || farmer.onboardingAgentId || '—';
 
         const widthClass = printMode ? 'w-[680px]' : 'w-[min(100vw-2rem,600px)]';
-        const headerLogoH = printMode ? 'h-12' : 'h-10';
+        const headerLogoH = printMode ? 'h-[4.75rem]' : 'h-16';
         const footerLogoH = printMode ? 'h-7' : 'h-6';
 
         return (
@@ -55,8 +55,14 @@ const GrowerIdCardVisual = React.forwardRef<HTMLDivElement, GrowerIdCardVisualPr
                     fontFamily: '"Inter", sans-serif',
                 }}
             >
-                <div className="flex items-center justify-between px-5 py-3 bg-[#002f37] shrink-0 rounded-t-2xl">
-                    <AgriLyncLogo variant="onDark" iconClassName={headerLogoH} />
+                <div className="flex items-center justify-between gap-3 px-5 py-3.5 bg-[#002f37] shrink-0 rounded-t-2xl min-h-[72px]">
+                    <div className="shrink-0 min-w-[140px] flex items-center">
+                        <AgriLyncLogo
+                            variant="onDark"
+                            iconClassName={headerLogoH}
+                            className="origin-left scale-[1.15]"
+                        />
+                    </div>
                     <div className="min-w-0 text-right">
                         <p className="card-label text-[9px] font-black text-[#7ede56] uppercase tracking-[0.35em] leading-none">
                             Operational Credential
