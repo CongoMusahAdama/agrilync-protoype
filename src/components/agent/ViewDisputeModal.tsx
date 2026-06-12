@@ -177,7 +177,7 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`w-[95vw] md:max-w-6xl md:w-full max-h-[90vh] overflow-hidden flex flex-col p-0 border-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-6xl md:w-full max-md:h-full max-md:max-h-[100dvh] md:max-h-[90vh] overflow-hidden flex flex-col p-0 border-none shadow-2xl max-md:rounded-none ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
                 <VisuallyHidden>
                     <DialogTitle>Dispute Details - {dispute?.id}</DialogTitle>
                     <DialogDescription>Viewing detailed information for dispute {dispute?.id}</DialogDescription>

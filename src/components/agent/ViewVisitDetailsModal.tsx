@@ -80,7 +80,7 @@ const ViewVisitDetailsModal: React.FC<ViewVisitDetailsModalProps> = ({ open, onO
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`w-[95vw] md:max-w-3xl md:w-full ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : 'bg-white'}`}>
+            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-3xl md:w-full max-md:max-h-[100dvh] overflow-y-auto max-md:rounded-none ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : 'bg-white'}`}>
                 <DialogHeader>
                     <div className="flex items-center gap-2 mb-2">
                         <Calendar className="h-6 w-6 text-[#065f46]" />

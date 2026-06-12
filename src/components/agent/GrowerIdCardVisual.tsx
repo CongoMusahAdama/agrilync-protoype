@@ -89,16 +89,19 @@ const CardShell = ({
     children,
     printMode,
     label,
+    faceId,
 }: {
     children: React.ReactNode;
     printMode: boolean;
     label?: string;
+    faceId?: 'front' | 'back';
 }) => (
     <div className="flex flex-col items-center gap-1.5">
         {label && !printMode && (
             <span className="text-[9px] font-black uppercase tracking-[0.25em] text-white/50">{label}</span>
         )}
         <div
+            data-card-face={faceId}
             className={`grower-id-card-face relative rounded-xl flex flex-col bg-white border border-gray-200/90 shadow-xl overflow-hidden ${
                 printMode ? 'w-[680px]' : 'w-[min(100vw-2rem,580px)]'
             }`}
@@ -119,28 +122,29 @@ const GrowerIdCardFront = ({ data, printMode }: { data: GrowerCardData; printMod
     const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=${qrPx}x${qrPx}&data=${encodeURIComponent(data.verifyUrl)}&bgcolor=ffffff&color=002f37&margin=2`;
 
     return (
-        <CardShell printMode={printMode} label="Front">
+        <CardShell printMode={printMode} label="Front" faceId="front">
             <HeaderBand printMode={printMode} />
             <div className="relative z-[2] flex-1 flex min-h-0">
                 <AgriLyncLogoWatermark className="z-0" />
 
-                {/* Photo — overlaps header band but stays inside card bounds (no clip) */}
+                {/* Photo — sits slightly into header; kept inside card so nothing is clipped */}
                 <div
-                    className={`absolute z-30 left-[5%] top-0 ${
-                        printMode ? '-translate-y-[38px]' : '-translate-y-[34px]'
+                    className={`absolute z-30 left-[6%] ${
+                        printMode ? 'top-[10px] -translate-y-[16px]' : 'top-[12px] -translate-y-[14px]'
                     }`}
                 >
                     <div className="relative">
-                    <div
-                        className={`${
-                            printMode ? 'w-[104px] h-[104px]' : 'w-[92px] h-[92px]'
-                        } rounded-full border-[4px] border-white shadow-xl overflow-hidden bg-[#eef3f1] ring-2 ring-[#065f46]/25`}
-                    >
-                        <img
-                            src={data.profileSrc}
-                            crossOrigin="anonymous"
-                            alt={data.name}
-                            className="w-full h-full object-cover object-center block"
+                        <div
+                            className={`${
+                                printMode ? 'w-[100px] h-[100px]' : 'w-[90px] h-[90px]'
+                            } rounded-full border-[4px] border-white shadow-xl overflow-hidden bg-[#eef3f1] ring-2 ring-[#065f46]/25`}
+                        >
+                            <img
+                                src={data.profileSrc}
+                                crossOrigin="anonymous"
+                                alt={data.name}
+                                className="w-full h-full object-cover block scale-[1.02]"
+                                style={{ objectPosition: '50% 18%' }}
                             onError={(e) => {
                                 const img = e.currentTarget;
                                 if (!img.dataset.fallback) {
@@ -157,7 +161,7 @@ const GrowerIdCardFront = ({ data, printMode }: { data: GrowerCardData; printMod
                 </div>
 
                 {/* Left column — reserved space below photo */}
-                <div className="relative z-10 w-[30%] shrink-0 flex flex-col items-center px-2 pb-2 pt-[50px]">
+                <div className="relative z-10 w-[30%] shrink-0 flex flex-col items-center px-2 pb-2 pt-[54px]">
                     <div className="flex flex-col items-center gap-1 w-full px-0.5">
                         <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#065f46]/10 rounded-full border border-[#065f46]/15">
                             <CheckCircle2 className="w-2.5 h-2.5 text-[#065f46] shrink-0" strokeWidth={2.5} />
@@ -239,7 +243,7 @@ const GrowerIdCardBack = ({ data, printMode }: { data: GrowerCardData; printMode
     )}&scale=2&height=8&includetext=false&backgroundcolor=ffffff`;
 
     return (
-        <CardShell printMode={printMode} label="Back">
+        <CardShell printMode={printMode} label="Back" faceId="back">
             <HeaderBand printMode={printMode} />
             <div className="relative flex-1 flex min-h-0 overflow-hidden z-[2]">
                 <AgriLyncLogoWatermark className="z-0" />

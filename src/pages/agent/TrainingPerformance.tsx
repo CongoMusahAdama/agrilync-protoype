@@ -435,6 +435,7 @@ export const TrainingPerformanceContent = () => {
               </Button>
             </div>
             <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} overflow-hidden`}>
+                <div className="agent-table-scroll">
                 <Table>
                   <TableHeader className="bg-[#065f46]">
                     <TableRow className="border-none hover:bg-transparent">
@@ -579,6 +580,7 @@ export const TrainingPerformanceContent = () => {
                     )}
                   </TableBody>
                 </Table>
+                </div>
             </Card>
           </section>
 
@@ -588,6 +590,7 @@ export const TrainingPerformanceContent = () => {
               <h2 className={`section-title ${darkMode ? 'text-white' : 'text-gray-900'}`}>Incoming Consultation Requests</h2>
             </div>
             <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} overflow-hidden`}>
+                <div className="agent-table-scroll">
                 <Table>
                   <TableHeader className="bg-[#065f46]">
                     <TableRow className="border-none hover:bg-transparent">
@@ -689,6 +692,7 @@ export const TrainingPerformanceContent = () => {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
             </Card>
           </section>
 
@@ -787,6 +791,7 @@ export const TrainingPerformanceContent = () => {
               </Button>
             </div>
             <Card className={`${darkMode ? 'bg-gray-900/40 border-gray-800' : 'bg-white border-gray-100'} overflow-hidden shadow-sm`}>
+              <div className="agent-table-scroll">
               <Table>
                 <TableHeader className="bg-[#065f46]">
                   <TableRow className="border-none hover:bg-transparent">
@@ -895,6 +900,7 @@ export const TrainingPerformanceContent = () => {
                   )}
                 </TableBody>
               </Table>
+              </div>
             </Card>
           </section>
 

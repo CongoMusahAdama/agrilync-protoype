@@ -144,6 +144,39 @@ const InvestorFarmerMatches: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent className="p-0">
+            {/* Mobile match cards */}
+            <div className="md:hidden p-4 space-y-3">
+              {filteredMatches.map((match) => (
+                <div key={match.id} className="p-4 rounded-xl border border-gray-100 bg-white shadow-sm">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <span className="text-[10px] font-black text-gray-400 font-mono">{match.id}</span>
+                    <Badge className={`border-none font-black text-[9px] uppercase ${getStatusStyle(match.status)}`}>{match.status}</Badge>
+                  </div>
+                  <p className="text-sm font-black text-[#002f37]">{match.farmer}</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase">{match.farmType}</p>
+                  <p className="text-xs text-gray-600 mt-1">Investor: {match.investor}</p>
+                  <p className="text-sm font-bold text-emerald-700 mt-1">{match.value}</p>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    <Badge variant="outline" className={`border-none text-[9px] ${match.documents.farmerSignature ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-300'}`}>FMR</Badge>
+                    <Badge variant="outline" className={`border-none text-[9px] ${match.documents.investorSignature ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-300'}`}>INV</Badge>
+                    <Badge variant="outline" className={`border-none text-[9px] ${match.documents.agentApproval ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-300'}`}>AGT</Badge>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    {match.approvalStatus === 'pending' ? (
+                      <Button className="w-full bg-[#002f37] hover:bg-[#065f46] text-white text-[10px] font-black h-9 rounded-lg uppercase">
+                        <UserCheck className="h-3.5 w-3.5 mr-1" /> Verify Now
+                      </Button>
+                    ) : (
+                      <Button variant="ghost" size="sm" className="w-full h-9 bg-emerald-50 text-emerald-600">
+                        <Eye className="h-3.5 w-3.5 mr-1" /> Profile
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden md:block agent-table-scroll">
             <Table>
               <TableHeader className="bg-[#065f46]">
                 <TableRow className="hover:bg-transparent border-none">
@@ -216,6 +249,7 @@ const InvestorFarmerMatches: React.FC = () => {
                 ))}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
 

@@ -193,7 +193,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onOpenChange, onTaskA
 
     return (
         <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) resetForm(); }}>
-            <DialogContent className={`w-[95vw] md:max-w-4xl md:w-full ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-gray-100' : 'bg-white'}`}>
+            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-4xl md:w-full max-md:max-h-[100dvh] overflow-y-auto max-md:rounded-none ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-gray-100' : 'bg-white'}`}>
                 <DialogHeader>
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 bg-[#065f46]/10 rounded-xl">

@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Download, Printer, Loader2 } from 'lucide-react';
-import html2canvas from 'html2canvas';
 import GrowerIdCardVisual from '@/components/agent/GrowerIdCardVisual';
 import { getGrowerDisplayId } from '@/utils/growerId';
+import { preloadCardImages, triggerCardDownloads } from '@/utils/growerCardExport';
 import api from '@/utils/api';
 
 interface FarmerIdCardModalProps {
@@ -15,22 +15,31 @@ interface FarmerIdCardModalProps {
 }
 
 const PRINT_STYLES = `
-    @page { size: portrait; margin: 12mm; }
+    @page { size: A4 portrait; margin: 14mm; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     body {
         margin: 0;
-        padding: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        min-height: 100vh;
+        padding: 0;
         background: #fff;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
+        font-family: Inter, sans-serif;
     }
-    .grower-id-card-root { box-shadow: none !important; gap: 24px !important; }
-    .grower-id-card-face { box-shadow: none !important; page-break-inside: avoid; }
-    .card-label { font-size: 9px !important; }
-    .card-value { font-size: 12px !important; line-height: 1.35 !important; }
+    .grower-id-card-root {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 18mm !important;
+        padding: 8mm 0 !important;
+    }
+    .grower-id-card-face {
+        box-shadow: none !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        width: 85.6mm !important;
+        min-height: 54mm !important;
+        aspect-ratio: 1.586 / 1 !important;
+    }
+    .card-label { font-size: 7pt !important; }
+    .card-value { font-size: 9pt !important; line-height: 1.35 !important; }
 `;
 
 const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
@@ -39,10 +48,10 @@ const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
     farmer,
     fetchSavedCard = false,
 }) => {
-    const cardRef = useRef<HTMLDivElement>(null);
     const printRef = useRef<HTMLDivElement>(null);
     const [cardFarmer, setCardFarmer] = useState<any>(farmer);
     const [loading, setLoading] = useState(false);
+    const [exporting, setExporting] = useState(false);
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -83,10 +92,14 @@ const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
 
     const growerId = getGrowerDisplayId(cardFarmer || farmer);
     const displayFarmer = cardFarmer || farmer;
+    const cardNo = displayFarmer.digitalCardNumber || growerId;
+    const exportBaseName = `AgriLync_ID_${cardNo}`.replace(/[^\w.-]+/g, '_');
 
-    const handlePrint = () => {
+    const handlePrint = async () => {
         const content = printRef.current;
         if (!content) return;
+
+        await preloadCardImages(content);
 
         const printWindow = window.open('', '_blank');
         if (!printWindow) return;
@@ -101,7 +114,19 @@ const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
                 </head>
                 <body>${content.innerHTML}</body>
                 <script>
-                    setTimeout(() => { window.print(); window.close(); }, 1600);
+                    (function () {
+                        var imgs = Array.prototype.slice.call(document.images || []);
+                        var waits = imgs.map(function (img) {
+                            if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+                            return new Promise(function (resolve) {
+                                img.onload = img.onerror = resolve;
+                                setTimeout(resolve, 5000);
+                            });
+                        });
+                        Promise.all(waits).then(function () {
+                            setTimeout(function () { window.print(); window.close(); }, 500);
+                        });
+                    })();
                 </script>
             </html>
         `);
@@ -109,27 +134,21 @@ const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
     };
 
     const handleDownload = async () => {
-        if (!cardRef.current) return;
+        const content = printRef.current;
+        if (!content) return;
+        setExporting(true);
         try {
-            const canvas = await html2canvas(cardRef.current, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: '#f8fafc',
-                logging: false,
-            });
-            const link = document.createElement('a');
-            const cardNo = displayFarmer.digitalCardNumber || growerId;
-            link.download = `AgriLync_ID_${cardNo}_front_back.png`;
-            link.href = canvas.toDataURL('image/png', 1.0);
-            link.click();
+            await triggerCardDownloads(content, exportBaseName);
         } catch (err) {
             console.error('Download failed:', err);
+        } finally {
+            setExporting(false);
         }
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl max-h-[95vh] p-0 overflow-y-auto overflow-x-hidden bg-transparent border-none shadow-none flex flex-col items-center z-[250]">
+            <DialogContent className="agent-modal-mobile w-full max-w-4xl max-md:max-w-full max-md:h-full max-md:max-h-[100dvh] md:max-h-[95vh] p-0 overflow-y-auto overflow-x-hidden bg-transparent border-none shadow-none flex flex-col items-center z-[250] max-md:rounded-none">
                 <DialogTitle className="sr-only">Official Grower ID Card — Front & Back</DialogTitle>
 
                 {loading && (
@@ -147,16 +166,21 @@ const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
 
                 {!loading && !error && (
                     <>
-                        <div className="sr-only" aria-hidden ref={printRef}>
+                        {/* High-res capture + print source (CR80 proportions) */}
+                        <div
+                            className="fixed -left-[10000px] top-0 w-[680px] pointer-events-none"
+                            aria-hidden
+                            ref={printRef}
+                        >
                             <GrowerIdCardVisual farmer={displayFarmer} printMode />
                         </div>
 
-                        <div ref={cardRef} className="py-2">
+                        <div className="py-2">
                             <GrowerIdCardVisual farmer={displayFarmer} />
                         </div>
 
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-white/40 mb-2">
-                            Official front & back · print on card stock
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-white/40 mb-2 text-center px-4">
+                            Official front & back · download saves two PNG files (front + back)
                         </p>
 
                         <div className="flex flex-wrap items-center justify-center gap-3 mt-2 mb-4 w-full px-4">
@@ -169,10 +193,15 @@ const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
                             </Button>
                             <Button
                                 onClick={handleDownload}
-                                className="bg-[#7ede56] hover:bg-[#6bc947] text-[#002f37] rounded-2xl px-5 h-12 font-black uppercase tracking-widest text-[10px] shadow-[0_10px_20px_-5px_rgba(126,222,86,0.5)] transition-all active:scale-95"
+                                disabled={exporting}
+                                className="bg-[#7ede56] hover:bg-[#6bc947] text-[#002f37] rounded-2xl px-5 h-12 font-black uppercase tracking-widest text-[10px] shadow-[0_10px_20px_-5px_rgba(126,222,86,0.5)] transition-all active:scale-95 disabled:opacity-60"
                             >
-                                <Download className="w-4 h-4 mr-2" />
-                                Download PNG
+                                {exporting ? (
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Download className="w-4 h-4 mr-2" />
+                                )}
+                                {exporting ? 'Preparing…' : 'Download Cards'}
                             </Button>
                         </div>
                     </>

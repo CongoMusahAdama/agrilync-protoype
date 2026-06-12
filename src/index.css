@@ -1086,6 +1086,39 @@
     font-size: 16px !important;
   }
 
+  .agent-dashboard-root main {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  /* Full-screen agent modals on small viewports */
+  .agent-dashboard-root .agent-modal-mobile {
+    width: 100% !important;
+    max-width: 100vw !important;
+    height: 100% !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+  }
+
+  /* Horizontal scroll fallback for tables without a mobile card layout */
+  .agent-dashboard-root .agent-table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .agent-dashboard-root .agent-table-scroll > table {
+    min-width: 640px;
+  }
+
+  .agent-dashboard-root .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .agent-dashboard-root .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
   .admin-dashboard-root {
     touch-action: manipulation;
     -webkit-text-size-adjust: 100%;

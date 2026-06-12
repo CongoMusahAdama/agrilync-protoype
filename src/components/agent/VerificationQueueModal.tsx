@@ -76,7 +76,7 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent hideCloseButton className={`max-w-5xl p-0 overflow-hidden border-0 shadow-2xl ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
+            <DialogContent hideCloseButton className={`agent-modal-mobile w-full sm:max-w-5xl p-0 overflow-hidden border-0 shadow-2xl max-md:rounded-none max-md:h-full max-md:max-h-[100dvh] flex flex-col ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
                 <div className="bg-gradient-to-r from-[#065f46] to-[#044a36] p-8 text-white relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-12 -mb-12 blur-xl" />
@@ -105,8 +105,63 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
                     </button>
                 </div>
 
-                <div className="p-6">
-                    <div className={`rounded-2xl border ${darkMode ? 'border-white/10 bg-black/20' : 'border-gray-200 bg-white'} overflow-hidden shadow-sm`}>
+                <div className="p-4 md:p-6 flex-1 overflow-y-auto min-h-0">
+                    {/* Mobile cards */}
+                    <div className="md:hidden space-y-3">
+                        {pendingFarmers.length === 0 ? (
+                            <div className="text-center py-16">
+                                <p className="font-black text-gray-400 uppercase tracking-widest text-sm">No pending growers</p>
+                            </div>
+                        ) : pendingFarmers.map((f: any) => (
+                            <div key={f._id} className={`p-4 rounded-xl border ${darkMode ? 'border-white/10 bg-black/20' : 'border-gray-200 bg-white'}`}>
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${darkMode ? 'bg-[#065f46]/20' : 'bg-[#065f46] text-white'}`}>
+                                        {f.profilePicture || f.avatar ? (
+                                            <img src={f.profilePicture || f.avatar} alt={f.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="font-black text-xs uppercase">{f.name?.split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase()}</span>
+                                        )}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className={`font-bold text-sm truncate ${darkMode ? 'text-gray-100' : 'text-[#002f37]'}`}>{f.name}</p>
+                                        <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{f.contact}</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                                    <div>
+                                        <span className="text-[10px] uppercase tracking-widest text-gray-400">Zone</span>
+                                        <p className={`font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{f.community}</p>
+                                    </div>
+                                    <div>
+                                        <span className="text-[10px] uppercase tracking-widest text-gray-400">Onboarded</span>
+                                        <p className={`font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            {f.createdAt ? new Date(f.createdAt).toLocaleDateString() : '—'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200 dark:border-white/10">
+                                    <Button size="sm" variant="outline" onClick={() => onView(f)} className="flex-1 min-w-[calc(50%-4px)] h-9">
+                                        <Eye className="w-3.5 h-3.5 mr-1" /> View
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={() => onEdit(f)} className="flex-1 min-w-[calc(50%-4px)] h-9">
+                                        <Edit className="w-3.5 h-3.5 mr-1" /> Edit
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        disabled={isVerifying === f._id}
+                                        onClick={() => handleApprove(f)}
+                                        className="w-full h-10 bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold"
+                                    >
+                                        {isVerifying === f._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserCheck className="w-4 h-4 mr-1" />}
+                                        Approve Grower
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className={`hidden md:block rounded-2xl border ${darkMode ? 'border-white/10 bg-black/20' : 'border-gray-200 bg-white'} overflow-hidden shadow-sm`}>
+                        <div className="agent-table-scroll max-h-[50vh]">
                         <Table className="border-collapse">
                             <TableHeader className="bg-[#002f37] sticky top-0 z-10">
                                 <TableRow className="border-none hover:bg-transparent">
@@ -211,6 +266,7 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
                                 )}
                             </TableBody>
                         </Table>
+                        </div>
                     </div>
                 </div>
 

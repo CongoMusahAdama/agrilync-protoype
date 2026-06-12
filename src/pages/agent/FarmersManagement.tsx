@@ -156,7 +156,7 @@ const FarmersManagement: React.FC = () => {
                 className={`pl-9 ${inputClass}`}
               />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <Select value={selectedDistrict} onValueChange={(val) => { setSelectedDistrict(val); setSelectedCommunity('all'); }}>
                 <SelectTrigger className={`w-full sm:w-40 ${selectTriggerClass}`}>
                   <MapPin className={`mr-2 h-4 w-4 ${darkMode ? 'text-gray-300' : 'text-gray-400'}`} />
@@ -210,7 +210,84 @@ const FarmersManagement: React.FC = () => {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="overflow-x-auto">
+          {/* Mobile card list */}
+          <div className="md:hidden space-y-3">
+            {loading ? (
+              <p className="text-center py-12 text-gray-400">Loading farmers...</p>
+            ) : filteredFarmers.length === 0 ? (
+              <p className="text-center py-12 text-gray-400">No farmers found</p>
+            ) : filteredFarmers.map((farmer: any) => (
+              <div
+                key={farmer._id}
+                className={`p-4 rounded-xl border ${darkMode ? 'bg-[#0b2528]/50 border-gray-700' : 'bg-white border-gray-100 shadow-sm'}`}
+              >
+                <div className="flex items-start gap-3 mb-3">
+                  <Avatar className="h-11 w-11 border-2 border-slate-200 shadow-sm shrink-0">
+                    <AvatarImage
+                      src={farmer.profilePicture || farmer.avatar || farmer.photo || farmer.picture || farmer.image || farmer.profile_picture}
+                      alt={farmer.name}
+                      className="object-cover bg-white"
+                    />
+                    <AvatarFallback className="bg-emerald-50 text-[#002f37] font-black text-xs uppercase">
+                      {farmer.name?.split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className={`font-bold truncate ${tableCellClass}`}>{farmer.name}</div>
+                    <div className={`text-xs mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {farmer.region} · {farmer.community}
+                    </div>
+                  </div>
+                  <Badge className={`capitalize shrink-0 ${statusStyles[farmer.status]}`}>{farmer.status}</Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                  <div>
+                    <span className={`text-[10px] uppercase tracking-widest ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Farm Type</span>
+                    <div className={`font-medium ${tableCellClass}`}>{farmer.farmType || '—'}</div>
+                  </div>
+                  <div>
+                    <span className={`text-[10px] uppercase tracking-widest ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Investment</span>
+                    <div className={`font-medium ${tableCellClass}`}>{farmer.investmentStatus || '—'}</div>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedFarmer(farmer);
+                      setUploadReportModalOpen(true);
+                    }}
+                    className={`flex-1 min-w-[calc(50%-4px)] h-9 rounded-lg flex items-center justify-center gap-1.5 ${darkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Report</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleViewFarmer(farmer)}
+                    className={`flex-1 min-w-[calc(50%-4px)] h-9 rounded-lg flex items-center justify-center gap-1.5 ${darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">View</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEditFarmer(farmer)}
+                    className={`flex-1 min-w-[calc(50%-4px)] h-9 rounded-lg flex items-center justify-center gap-1.5 ${darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600'}`}
+                  >
+                    <Edit className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Edit</span>
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block agent-table-scroll">
             <Table>
               <TableHeader className="bg-[#065f46]">
                 <TableRow className="border-none hover:bg-transparent">

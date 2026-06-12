@@ -396,8 +396,46 @@ const DisputeManagement: React.FC = () => {
         </div>
 
         {/* 4. Disputes Table */}
-        <Card className={`transition-colors ${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}`}>
+            <Card className={`transition-colors ${darkMode ? 'bg-[#002f37] border-gray-600' : 'bg-white'}`}>
           <CardContent className="p-0">
+            {/* Mobile cards */}
+            <div className="md:hidden p-4 space-y-3">
+              {filteredDisputes.map((dispute: any) => (
+                <div
+                  key={dispute.id}
+                  className={`p-4 rounded-xl border cursor-pointer ${darkMode ? 'border-gray-700 bg-[#0b2528]/50' : 'border-gray-100 bg-white shadow-sm'}`}
+                  onClick={() => handleViewDetails(dispute)}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <span className={`font-bold text-sm ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{dispute.id}</span>
+                    <Badge className={`border shrink-0 ${getStatusColor(dispute.status)}`}>{dispute.status}</Badge>
+                  </div>
+                  <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{dispute.farmer?.name || 'Unknown Farmer'}</p>
+                  <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>vs {dispute.investor || 'Unknown Investor'}</p>
+                  <div className="flex flex-wrap gap-2 mt-3 text-xs">
+                    <span className={getSeverityColor(dispute.severity)}>{dispute.severity}</span>
+                    <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>· {dispute.type}</span>
+                    <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>· {dispute.dateLogged}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`w-full mt-3 h-9 ${darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}
+                    onClick={(e) => { e.stopPropagation(); handleViewDetails(dispute); }}
+                  >
+                    <Eye className="h-3.5 w-3.5 mr-1" /> View Details
+                  </Button>
+                </div>
+              ))}
+              {filteredDisputes.length === 0 && (
+                <div className={`py-16 text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  <AlertCircle className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                  <p>No disputes found</p>
+                </div>
+              )}
+            </div>
+
+            <div className="hidden md:block agent-table-scroll">
             <Table>
               <TableHeader className="bg-[#065f46]">
                 <TableRow className="border-none hover:bg-transparent">
@@ -472,6 +510,7 @@ const DisputeManagement: React.FC = () => {
                 )}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
 

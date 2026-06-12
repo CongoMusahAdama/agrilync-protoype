@@ -1152,7 +1152,80 @@ const FarmManagement: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="overflow-auto max-h-[65vh] relative">
+                                {/* Mobile grower cards */}
+                                <div className="md:hidden p-4 space-y-3 max-h-[70vh] overflow-y-auto">
+                                    {filteredFarmers.map((farmer: any, index: number) => (
+                                        <div
+                                            key={farmer._id || farmer.id || `farmer-m-${index}`}
+                                            className={`p-4 rounded-xl border ${darkMode ? 'border-white/10 bg-white/5' : 'border-gray-100 bg-white shadow-sm'}`}
+                                        >
+                                            <div className="flex items-start gap-3 mb-3">
+                                                {farmer.profilePicture || farmer.avatar || farmer.photo || farmer.picture || farmer.image || farmer.profile_picture ? (
+                                                    <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0 border-2 border-white dark:border-[#124b53]">
+                                                        <img src={farmer.profilePicture || farmer.avatar || farmer.photo || farmer.picture || farmer.image || farmer.profile_picture} alt={farmer.name} className="w-full h-full object-cover" />
+                                                    </div>
+                                                ) : (
+                                                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xs font-bold text-white shrink-0 ${farmer.displayStatus === 'Completed' ? 'bg-emerald-500' : farmer.displayStatus === 'Pending' ? 'bg-amber-500' : 'bg-indigo-500'}`}>
+                                                        {farmer.name?.split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase()}
+                                                    </div>
+                                                )}
+                                                <div className="min-w-0 flex-1">
+                                                    <p className={`font-bold text-sm truncate ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{farmer.name}</p>
+                                                    <p className={`text-xs font-mono ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{getDisplayId(farmer)}</p>
+                                                    <p className={`text-xs mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{farmer.contact || 'N/A'}</p>
+                                                </div>
+                                                <Badge className={`shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${farmer.displayStatus === 'Completed' ? 'bg-emerald-500/10 text-emerald-500' : farmer.displayStatus === 'Pending' ? 'bg-amber-500/10 text-amber-500' : 'bg-indigo-500/10 text-indigo-500'}`}>
+                                                    {farmer.displayStatus}
+                                                </Badge>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                                                <div>
+                                                    <span className="text-[10px] uppercase tracking-widest text-gray-400">Location</span>
+                                                    <p className={`font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{farmer.region}</p>
+                                                    <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{farmer.community}</p>
+                                                </div>
+                                                <div>
+                                                    <span className="text-[10px] uppercase tracking-widest text-gray-400">Last Visit</span>
+                                                    <p className={`font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                        {farmer.lastVisit ? new Date(farmer.lastVisit).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200 dark:border-white/10">
+                                                <Button size="sm" variant="ghost" onClick={() => handleViewFarmer(farmer)} className={`flex-1 min-w-[calc(33%-4px)] h-9 ${darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                                                    <Eye className="w-3.5 h-3.5 mr-1" /> View
+                                                </Button>
+                                                <Button size="sm" variant="ghost" onClick={() => handleEditFarmer(farmer)} className={`flex-1 min-w-[calc(33%-4px)] h-9 ${darkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
+                                                    <Edit className="w-3.5 h-3.5 mr-1" /> Edit
+                                                </Button>
+                                                <Button size="sm" variant="ghost" onClick={() => { setSelectedFarmer(farmer); setJourneyModalOpen(true); }} className={`flex-1 min-w-[calc(33%-4px)] h-9 ${darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                                                    <Leaf className="w-3.5 h-3.5 mr-1" /> Track
+                                                </Button>
+                                                <Button size="sm" variant="ghost" onClick={() => { setSelectedFarmer(farmer); setUploadReportModalOpen(true); }} className={`flex-1 min-w-[calc(50%-4px)] h-9 ${darkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                                                    <FileText className="w-3.5 h-3.5 mr-1" /> Report
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() => handleRequestFarmerDeletion(farmer)}
+                                                    disabled={pendingDeletionByFarmerId.has((farmer._id || farmer.id)?.toString())}
+                                                    className={`flex-1 min-w-[calc(50%-4px)] h-9 ${pendingDeletionByFarmerId.has((farmer._id || farmer.id)?.toString()) ? 'opacity-40' : darkMode ? 'bg-rose-500/10 text-rose-400' : 'bg-rose-50 text-rose-600'}`}
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {filteredFarmers.length === 0 && (
+                                        <div className={`text-center py-16 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            <Users className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                                            <p className="text-sm">No growers match your filters</p>
+                                            <Button variant="ghost" size="sm" onClick={resetFilters} className="text-emerald-600 mt-2">Reset filters</Button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="overflow-auto max-h-[65vh] relative hidden md:block">
                                     <Table>
                                         <TableHeader className="sticky top-0 z-20 bg-[#065f46] shadow-md">
                                             <TableRow className="border-none hover:bg-transparent">
@@ -1244,7 +1317,7 @@ const FarmManagement: React.FC = () => {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-right">
-                                                        <div className="flex items-center justify-end gap-2 flex-wrap min-w-[320px]">
+                                                        <div className="flex items-center justify-end gap-2 flex-wrap min-w-0 md:min-w-[320px]">
                                                             <Button
                                                                 size="sm"
                                                                 variant="ghost"
@@ -1598,7 +1671,7 @@ const FarmManagement: React.FC = () => {
                                 </div>
                             </CardHeader>
                             <CardContent className="p-0 sm:p-6 sm:pt-0">
-                                <div className="overflow-x-auto relative custom-scrollbar">
+                                <div className="agent-table-scroll overflow-x-auto relative custom-scrollbar">
                                     <Table className="min-w-[800px] lg:min-w-full">
                                         <TableHeader className="sticky top-0 z-20 bg-[#065f46] shadow-md">
                                             <TableRow className="border-none hover:bg-transparent">
@@ -1702,7 +1775,7 @@ const FarmManagement: React.FC = () => {
                                     </Badge>
                                 </div>
 
-                                <div className="overflow-auto max-h-[65vh]">
+                                <div className="agent-table-scroll overflow-auto max-h-[65vh]">
                                     <Table className={`border ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
                                         <TableHeader className="sticky top-0 z-20 bg-[#065f46] shadow-md">
                                             <TableRow className="border-none hover:bg-transparent">
@@ -1804,7 +1877,7 @@ const FarmManagement: React.FC = () => {
                                     </Badge>
                                 </div>
 
-                                <div className="overflow-x-auto relative custom-scrollbar">
+                                <div className="agent-table-scroll overflow-x-auto relative custom-scrollbar">
                                     <Table className={`border ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
                                         <TableHeader className="bg-[#065f46] shadow-md">
                                             <TableRow className="border-none hover:bg-transparent">

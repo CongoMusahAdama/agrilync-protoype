@@ -82,7 +82,7 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`w-[95vw] md:max-w-7xl md:w-[min(96vw,1280px)] h-[80vh] p-0 flex flex-col overflow-hidden border-0 ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-50'}`}>
+            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-7xl md:w-[min(96vw,1280px)] max-md:h-full max-md:max-h-[100dvh] md:h-[80vh] p-0 flex flex-col overflow-hidden border-0 max-md:rounded-none ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-50'}`}>
                 <DialogHeader className="sr-only">
                     <DialogTitle>Farm Details - {farm.name}</DialogTitle>
                     <DialogDescription>Full details and activity history for farmer {farmer.name}</DialogDescription>
@@ -116,31 +116,31 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 w-full md:w-auto">
+                    <div className="grid grid-cols-2 gap-2 w-full md:flex md:items-center md:gap-2 md:w-auto">
                         <Button 
-                            className="flex-1 md:flex-none bg-[#065f46] text-white hover:bg-[#065f46]/90 font-black h-11 px-6 rounded-xl border-none shadow-lg shadow-[#065f46]/20 flex items-center gap-2 uppercase tracking-widest text-[11px]"
+                            className="w-full md:flex-none bg-[#065f46] text-white hover:bg-[#065f46]/90 font-black h-11 px-3 md:px-6 rounded-xl border-none shadow-lg shadow-[#065f46]/20 flex items-center justify-center gap-2 uppercase tracking-widest text-[10px] md:text-[11px]"
                             onClick={() => onNewVisit && onNewVisit(farmer)}
                         >
                             <Plus className="h-4 w-4" /> New Visit
                         </Button>
                         <Button 
                             variant="outline" 
-                            className={`flex-1 md:flex-none h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[11px] flex items-center gap-2 ${darkMode ? 'border-white/10 text-white hover:bg-white/5' : 'border-gray-200 text-[#002f37] hover:bg-gray-50'}`}
+                            className={`w-full md:flex-none h-11 px-3 md:px-6 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-[11px] flex items-center justify-center gap-2 ${darkMode ? 'border-white/10 text-white hover:bg-white/5' : 'border-gray-200 text-[#002f37] hover:bg-gray-50'}`}
                             onClick={() => onUploadMedia && onUploadMedia(farmer)}
                         >
-                            <Camera className="h-4 w-4" /> Upload Media
+                            <Camera className="h-4 w-4 shrink-0" /> <span className="truncate">Upload</span>
                         </Button>
                         <Button 
                             variant="outline" 
-                            className={`flex-1 md:flex-none h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[11px] flex items-center gap-2 ${darkMode ? 'border-[#7ede56]/30 text-[#7ede56] hover:bg-[#7ede56]/5' : 'border-[#065f46]/30 text-[#065f46] hover:bg-[#065f46]/5'}`}
+                            className={`w-full md:flex-none h-11 px-3 md:px-6 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-[11px] flex items-center justify-center gap-2 ${darkMode ? 'border-[#7ede56]/30 text-[#7ede56] hover:bg-[#7ede56]/5' : 'border-[#065f46]/30 text-[#065f46] hover:bg-[#065f46]/5'}`}
                             onClick={() => onAddField && onAddField(farmer)}
                         >
-                            <Map className="h-4 w-4" /> Add Field
+                            <Map className="h-4 w-4 shrink-0" /> Add Field
                         </Button>
                         {isActiveGrower && (
                             <Button
                                 variant="outline"
-                                className={`flex-1 md:flex-none h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[11px] flex items-center gap-2 ${darkMode ? 'border-white/15 text-white hover:bg-white/5' : 'border-[#002f37]/20 text-[#002f37] hover:bg-gray-50'}`}
+                                className={`w-full md:flex-none h-11 px-3 md:px-6 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-[11px] flex items-center justify-center gap-2 ${darkMode ? 'border-white/15 text-white hover:bg-white/5' : 'border-[#002f37]/20 text-[#002f37] hover:bg-gray-50'}`}
                                 onClick={() => setIdCardOpen(true)}
                             >
                                 <IdCard className="h-4 w-4" /> ID Card
