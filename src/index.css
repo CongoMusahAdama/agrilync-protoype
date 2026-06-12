@@ -1143,3 +1143,23 @@
     max-width: 1600px !important;
   }
 }
+
+/* Wide grower onboarding modal — overrides default dialog max-width on desktop */
+@media (min-width: 768px) {
+  .grower-onboarding-modal {
+    width: min(98vw, 1420px) !important;
+    max-width: min(98vw, 1420px) !important;
+  }
+}
+@media (min-width: 1024px) {
+  .grower-onboarding-modal {
+    width: min(96vw, 1520px) !important;
+    max-width: min(96vw, 1520px) !important;
+  }
+}
+@media (min-width: 1280px) {
+  .grower-onboarding-modal {
+    width: min(94vw, 1600px) !important;
+    max-width: 1600px !important;
+  }
+}

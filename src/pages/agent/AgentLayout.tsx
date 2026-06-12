@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import api from '@/utils/api';
+import { DASHBOARD_POLL_INTERVAL_MS } from '@/data/dashboardConfig';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { playSuccessSound } from '@/utils/audio';
@@ -76,6 +79,17 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
   const { agent } = useAuth();
   const [profileSheetOpen, setProfileSheetOpen] = useState(false);
 
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const res = await api.get('/notifications');
+      return Array.isArray(res.data) ? res.data : (res.data?.data || []);
+    },
+    staleTime: DASHBOARD_POLL_INTERVAL_MS,
+    refetchInterval: DASHBOARD_POLL_INTERVAL_MS,
+  });
+  const unreadAlertCount = notifications.filter((n: { read?: boolean }) => !n.read).length;
+
   return (
     <DashboardLayout
       userType="agent"
@@ -113,7 +127,11 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
               >
                 <Bell className="h-6 w-6 text-[#002f37]" />
               </Button>
-              <span className="absolute top-2 right-2 h-2.5 w-2.5 bg-rose-500 rounded-full border-2 border-white"></span>
+              {unreadAlertCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-white flex items-center justify-center text-[10px] font-black text-white shadow-sm leading-none z-10">
+                  {unreadAlertCount > 99 ? '99+' : unreadAlertCount}
+                </span>
+              )}
             </div>
 
             {/* Profile Popover - Floats from top like provided image */}

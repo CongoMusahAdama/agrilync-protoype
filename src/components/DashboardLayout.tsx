@@ -156,6 +156,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const effectiveSubtitle = description || subtitle;
     const currentTitle = title || 'Dashboard';
     const activeNotifications = receivesStaffNotifications ? notifications : agentNotifications;
+    const unreadAlertCount = activeNotifications.filter((n) => !n.read).length;
     const isAgent = userType === 'agent' && agent?.role !== 'super_admin';
 
     const handleSidebarNavigate = (item: string) => {
@@ -296,8 +297,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                             >
                                                 <Bell className="h-[20px] w-[20px] stroke-[3px] transition-transform group-active:scale-90" />
                                                 <span className="hidden xl:inline text-[11px] font-black uppercase tracking-[0.1em] opacity-80 group-hover:opacity-100">Alerts</span>
-                                                {activeNotifications.filter(n => !n.read).length > 0 && (
-                                                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#7ede56] border-2 border-white shadow-sm animate-pulse"></span>
+                                                {unreadAlertCount > 0 && (
+                                                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-white flex items-center justify-center text-[10px] font-black text-white shadow-sm leading-none z-10">
+                                                        {unreadAlertCount > 99 ? '99+' : unreadAlertCount}
+                                                    </span>
                                                 )}
                                             </Button>
                                         </DropdownMenuTrigger>
@@ -307,7 +310,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                                     <h3 className="text-sm font-black uppercase tracking-widest">Notifications</h3>
                                                     <p className="text-[10px] font-bold text-[#7ede56] uppercase tracking-widest mt-0.5">Alerts & Updates</p>
                                                 </div>
-                                                <Badge className="bg-[#7ede56]/20 text-[#7ede56] border-none text-[9px] font-black">{activeNotifications.filter(n => !n.read).length} NEW</Badge>
+                                                <Badge className="bg-red-500 text-white border-none text-[9px] font-black min-w-[22px] justify-center">
+                                                    {unreadAlertCount} NEW
+                                                </Badge>
                                             </div>
                                             <div className="max-h-[400px] overflow-y-auto divide-y divide-gray-50">
                                                 {activeNotifications.length > 0 ? (

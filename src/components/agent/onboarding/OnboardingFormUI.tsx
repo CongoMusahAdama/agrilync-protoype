@@ -130,7 +130,7 @@ interface SidebarProps {
 }
 
 export const OnboardingSidebar: React.FC<SidebarProps> = ({ steps, currentStep, onStepClick }) => (
-  <div className="hidden lg:flex w-[280px] xl:w-[300px] shrink-0 bg-white border-r border-gray-100 flex-col">
+  <div className="hidden lg:flex w-[260px] xl:w-[280px] shrink-0 bg-white border-r border-gray-100 flex-col">
     <div className="px-6 pt-8 pb-6 border-b border-gray-50">
       <div className="flex items-center gap-3 mb-4">
         <div className="h-10 w-10 rounded-xl bg-[#065f46] flex items-center justify-center shadow-sm">

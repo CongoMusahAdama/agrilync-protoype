@@ -659,8 +659,8 @@ const AgentDashboard: React.FC = () => {
                   <img src="/lovable-uploads/notifs.png" alt="Notifications" className="h-6 w-6 object-contain" />
                 </Button>
                 {unreadNotifications > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 bg-white rounded-full border-2 border-red-500 flex items-center justify-center text-[10px] font-black text-red-600 shadow-sm z-10">
-                    {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-white flex items-center justify-center text-[10px] font-black text-white shadow-sm z-10 leading-none">
+                    {unreadNotifications > 99 ? '99+' : unreadNotifications}
                   </span>
                 )}
               </div>

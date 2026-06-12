@@ -595,7 +595,10 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         <>
         <Dialog open={open} onOpenChange={onOpenChange}>
             {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-            <DialogContent hideCloseButton className="max-w-[100vw] sm:max-w-[96vw] lg:max-w-[min(1280px,94vw)] xl:max-w-[min(1360px,92vw)] w-full h-[100dvh] sm:h-[92dvh] lg:h-[88vh] p-0 overflow-hidden border-none bg-[#f4f7f6] shadow-2xl z-[150] rounded-none sm:rounded-2xl">
+            <DialogContent
+                hideCloseButton
+                className="grower-onboarding-modal max-w-[100vw] w-full h-[100dvh] sm:h-[92dvh] lg:h-[88vh] p-0 overflow-hidden border-none bg-[#f4f7f6] shadow-2xl z-[150] rounded-none sm:rounded-2xl"
+            >
                 <div className="sr-only">
                     <DialogTitle>{isEditMode ? 'Grower Profile Update' : 'New Grower Registration'}</DialogTitle>
                     <DialogDescription>{isEditMode ? 'Editing existing grower profile' : 'Form for onboarding a new grower'}</DialogDescription>
@@ -707,7 +710,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                         <OnboardingFieldLabel>Date of birth</OnboardingFieldLabel>
                                                         <Input type="date" className={ONBOARDING_INPUT} value={formData.dob} onChange={(e) => handleInputChange('dob', e.target.value)} disabled={!isEditable} />
                                                     </div>
-                                                    <div className="space-y-2 sm:col-span-1">
+                                                    <div className="space-y-2 sm:col-span-2 lg:col-span-3">
                                                         <OnboardingFieldLabel>Ghana Card number</OnboardingFieldLabel>
                                                         <Input placeholder="GHA-000000000-0" className={`${ONBOARDING_INPUT} font-mono`} value={formData.ghanaCardNumber} onChange={(e) => handleInputChange('ghanaCardNumber', e.target.value.toUpperCase())} disabled={!isEditable} onPaste={(e) => e.preventDefault()} onDrop={(e) => e.preventDefault()} />
                                                     </div>
