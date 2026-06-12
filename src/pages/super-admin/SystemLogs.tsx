@@ -46,6 +46,7 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import api from '@/utils/api';
+import { parseApiList } from '@/utils/parseApiList';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import CountUp from '@/components/CountUp';
 import { useNavigate } from 'react-router-dom';
@@ -81,12 +82,8 @@ const SystemLogs = () => {
 
     const fetchLogs = async () => {
         try {
-            const res = await api.get('/super-admin/logs');
-            if (res.data) {
-                setLogs(res.data);
-            } else {
-                setLogs([]);
-            }
+            const res = await api.get('/super-admin/logs', { params: { limit: 200 } });
+            setLogs(parseApiList<SystemLog>(res.data));
         } catch (err) {
             console.error('Failed to fetch logs:', err);
             setLogs([]);
@@ -208,7 +205,7 @@ const SystemLogs = () => {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="p-0 overflow-x-auto">
+                <CardContent className="p-0 admin-table-scroll">
                     <table className="w-full text-left whitespace-nowrap">
                         <thead>
                             <tr className="bg-[#002f37] text-white text-[10px] font-black uppercase tracking-widest">
@@ -258,7 +255,7 @@ const SystemLogs = () => {
 
             {/* Log Detail Modal */}
             <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-                <DialogContent className={`w-[95vw] md:max-w-5xl md:w-full border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+                <DialogContent className={`admin-modal-mobile w-[95vw] md:max-w-5xl md:w-full border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
                     {selectedLog && (
                         <div>
                             <div className="bg-[#002f37] p-8 text-white relative">

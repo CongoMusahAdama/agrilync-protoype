@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, Bell, Settings, Users, UserRoundPlus, LayoutGrid, Leaf, Bot, Search, LogOut, BarChart3, GraduationCap, Zap, MapPin, Sprout } from 'lucide-react';
+import { Menu, Bell, Settings, Users, UserRoundPlus, LayoutGrid, Leaf, Bot, Search, LogOut, BarChart3, GraduationCap, Zap, MapPin, Sprout, Activity } from 'lucide-react';
 import DashboardSidebar from './DashboardSidebar';
 import { getDashboardNavRoute } from '@/utils/dashboardNavigation';
 import Preloader from './ui/Preloader';
@@ -27,6 +27,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { agentNotifications } from '@/pages/agent/agent-data';
 import { requestNotificationPermission, onMessageListener } from '@/lib/firebase';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
+import { playNotificationBeep } from '@/utils/audio';
+import OfflineBanner from '@/components/agent/OfflineBanner';
+import InstallPwaPrompt from '@/components/agent/InstallPwaPrompt';
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -125,6 +129,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         // Set up live listener for in-app popups
                         onMessageListener().then((payload: any) => {
                             if (payload?.notification) {
+                                playNotificationBeep();
                                 toast.info(payload.notification.title, {
                                     description: payload.notification.body,
                                     duration: 6000,
@@ -146,18 +151,26 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         }
     }, [location.pathname, agent, userType, navigate, queryClient]);
 
-    // Portaled modals render on document.body — tag body so mobile form CSS applies there too
+    // Portaled modals render on document.body — tag body so mobile form/modal CSS applies there too
     useEffect(() => {
-        if (userType !== 'agent') return;
-        document.body.classList.add('agent-dashboard-active');
-        return () => document.body.classList.remove('agent-dashboard-active');
-    }, [userType]);
+        if (userType === 'agent') {
+            document.body.classList.add('agent-dashboard-active');
+            return () => document.body.classList.remove('agent-dashboard-active');
+        }
+        if (isSuperAdmin) {
+            document.body.classList.add('admin-dashboard-active');
+            return () => document.body.classList.remove('admin-dashboard-active');
+        }
+        return undefined;
+    }, [userType, isSuperAdmin]);
 
     const effectiveSubtitle = description || subtitle;
     const currentTitle = title || 'Dashboard';
     const activeNotifications = receivesStaffNotifications ? notifications : agentNotifications;
     const unreadAlertCount = activeNotifications.filter((n) => !n.read).length;
     const isAgent = userType === 'agent' && agent?.role !== 'super_admin';
+
+    useNotificationSound(receivesStaffNotifications ? notifications : [], receivesStaffNotifications);
 
     const handleSidebarNavigate = (item: string) => {
         setMobileSidebarOpen(false);
@@ -227,8 +240,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 <div className={`flex-1 flex flex-col overflow-hidden transition-colors bg-[#f8fafc]`}>
                     {/* Top Header */}
                     {! (isMobile && hideHeaderOnMobile) && (
-                        <header className="bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 md:px-8 py-0 sticky top-0 z-40 shadow-sm">
-                        <div className="flex items-center justify-between h-[68px]">
+                        <header className={`bg-white/95 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-40 shadow-sm ${
+                            isMobile && isSuperAdmin ? 'px-3 pt-[env(safe-area-inset-top)]' : 'px-6 md:px-8'
+                        } py-0`}>
+                        <div className={`flex items-center justify-between ${isMobile && isSuperAdmin ? 'h-14' : 'h-[68px]'}`}>
 
                             {/* Left: Mobile menu + Search */}
                             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -246,14 +261,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                 )}
                                 {isMobile && isSuperAdmin && (
                                     <div className="flex flex-col min-w-0 flex-1 md:hidden">
-                                        <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[#7ede56] leading-none">
-                                            Super Admin
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#7ede56] leading-none">
+                                            AgriLync Admin
                                         </span>
-                                        <span className="text-[15px] font-black text-[#002f37] truncate leading-tight mt-0.5">
+                                        <span className="text-base font-black text-[#002f37] truncate leading-tight mt-0.5">
                                             {currentTitle}
-                                        </span>
-                                        <span className="text-[10px] font-medium text-gray-500 mt-0.5">
-                                            Open menu (top left) for all admin sections
                                         </span>
                                     </div>
                                 )}
@@ -284,8 +296,51 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
                             {/* Right: Actions + Profile */}
                             {/* Right: Actions + Profile - Redesigned for Premium Look */}
-                            <div className="flex items-center gap-3 sm:gap-5 shrink-0">
+                            <div className="flex items-center gap-2 sm:gap-5 shrink-0">
                                 {headerActions}
+                                {/* Mobile alerts — super admin */}
+                                {isMobile && isSuperAdmin && (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-10 w-10 rounded-xl bg-[#065f46]/8 hover:bg-[#065f46]/12 relative shrink-0"
+                                            >
+                                                <Bell className="h-5 w-5 text-[#065f46]" />
+                                                {unreadAlertCount > 0 && (
+                                                    <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-[9px] font-black text-white flex items-center justify-center">
+                                                        {unreadAlertCount > 9 ? '9+' : unreadAlertCount}
+                                                    </span>
+                                                )}
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-[min(92vw,360px)] rounded-2xl border-gray-100 shadow-2xl p-0 overflow-hidden">
+                                            <div className="bg-[#002f37] p-4 text-white">
+                                                <h3 className="text-xs font-black uppercase tracking-widest">Alerts</h3>
+                                            </div>
+                                            <div className="max-h-[50vh] overflow-y-auto divide-y divide-gray-50">
+                                                {activeNotifications.slice(0, 5).map((n, i) => (
+                                                    <DropdownMenuItem key={i} className="p-3 gap-3 cursor-pointer">
+                                                        <p className="text-[11px] font-black uppercase leading-tight">{n.title}</p>
+                                                    </DropdownMenuItem>
+                                                ))}
+                                                {activeNotifications.length === 0 && (
+                                                    <p className="p-6 text-center text-[10px] font-bold text-gray-400 uppercase">No alerts</p>
+                                                )}
+                                            </div>
+                                            <div className="p-3 border-t">
+                                                <Button
+                                                    variant="ghost"
+                                                    className="w-full text-[10px] font-black uppercase text-[#065f46] h-10 rounded-xl"
+                                                    onClick={() => navigate('/dashboard/super-admin/notifications')}
+                                                >
+                                                    View All
+                                                </Button>
+                                            </div>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                )}
                                 {/* Action Group: Notifications & Global Settings - Redesigned with Text Labels */}
                                 <div className="hidden md:flex items-center bg-[#f8fafc] rounded-full p-1 border border-gray-100/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] gap-1">
                                     <DropdownMenu>
@@ -450,19 +505,24 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     {/* Main Content Area */}
                     <main
                         className={`flex-1 overflow-y-auto overflow-x-hidden ${
-                            isSuperAdmin && isMobile ? 'p-3 sm:p-6 md:p-8 pb-6' : 'p-4 sm:p-6 md:p-8'
-                        } ${isMobile && !isSuperAdmin ? 'pb-24' : !isMobile ? 'pb-8' : ''}`}
+                            isSuperAdmin && isMobile ? 'p-3 sm:p-6 md:p-8' : 'p-4 sm:p-6 md:p-8'
+                        } ${
+                            isMobile
+                                ? 'pb-[max(6.5rem,calc(5.5rem+env(safe-area-inset-bottom)))]'
+                                : 'pb-8'
+                        }`}
                     >
+                        {isAgent && <OfflineBanner />}
                         {children}
                     </main>
 
-                    {/* Mobile bottom nav — agents/growers only; super admin uses header menu */}
-                    {isMobile && !isSuperAdmin && (
-                        <div className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pointer-events-none">
+                    {/* Mobile bottom navigation */}
+                    {isMobile && (
+                        <div className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pointer-events-none admin-mobile-bottom-nav">
                             <div
-                                className={`pointer-events-auto flex items-center justify-between px-3 py-1.5 rounded-[1.75rem] shadow-[0_20px_50px_-12px_rgba(0,47,55,0.25)] border backdrop-blur-md ${
+                                className={`pointer-events-auto flex items-end justify-between px-2 sm:px-3 py-2 rounded-[1.75rem] shadow-[0_20px_50px_-12px_rgba(0,47,55,0.25)] border backdrop-blur-md ${
                                     isSuperAdmin
-                                        ? 'bg-[#002f37]/96 border-[#7ede56]/20'
+                                        ? 'bg-[#002f37]/98 border-[#7ede56]/25'
                                         : darkMode
                                           ? 'bg-[#002f37]/95 border-gray-700'
                                           : 'bg-white/95 border-gray-100'
@@ -528,41 +588,58 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                 ) : isSuperAdmin ? (
                                     <>
                                         <button
+                                            type="button"
                                             onClick={() => navigate('/dashboard/super-admin')}
-                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${mobileNavBtn(activeSidebarItem === 'dashboard')}`}
+                                            className={`admin-mobile-nav-item flex flex-col items-center gap-0.5 flex-1 min-w-0 py-1 transition-all ${mobileNavBtn(activeSidebarItem === 'dashboard')}`}
                                         >
-                                            <LayoutGrid className={`h-6 w-6 ${mobileNavBtn(activeSidebarItem === 'dashboard')}`} />
-                                            <span className={`text-[9px] font-black uppercase ${mobileNavBtn(activeSidebarItem === 'dashboard')}`}>Home</span>
+                                            <div className={`p-2 rounded-xl ${activeSidebarItem === 'dashboard' ? 'bg-[#7ede56]/15' : ''}`}>
+                                                <LayoutGrid className="h-5 w-5" />
+                                            </div>
+                                            <span className="text-[8px] font-black uppercase truncate max-w-full">Home</span>
                                         </button>
                                         <button
+                                            type="button"
                                             onClick={() => navigate('/dashboard/super-admin/regions')}
-                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${mobileNavBtn(activeSidebarItem === 'regional-performance')}`}
+                                            className={`admin-mobile-nav-item flex flex-col items-center gap-0.5 flex-1 min-w-0 py-1 transition-all ${mobileNavBtn(activeSidebarItem === 'regional-performance')}`}
                                         >
-                                            <MapPin className={`h-6 w-6 ${mobileNavBtn(activeSidebarItem === 'regional-performance')}`} />
-                                            <span className={`text-[9px] font-black uppercase ${mobileNavBtn(activeSidebarItem === 'regional-performance')}`}>Regions</span>
+                                            <div className={`p-2 rounded-xl ${activeSidebarItem === 'regional-performance' ? 'bg-[#7ede56]/15' : ''}`}>
+                                                <MapPin className="h-5 w-5" />
+                                            </div>
+                                            <span className="text-[8px] font-black uppercase truncate max-w-full">Regions</span>
                                         </button>
-                                        <div className="relative -top-6 px-1 flex flex-col items-center">
+                                        <div className="relative -top-5 px-0.5 flex flex-col items-center shrink-0">
                                             <button
-                                                onClick={() => navigate('/dashboard/super-admin/agents')}
-                                                className="h-16 w-16 rounded-full bg-[#002f37] border-[4px] border-[#7ede56] shadow-[0_15px_30px_-10px_rgba(0,47,55,0.45)] flex flex-col items-center justify-center active:scale-90 transition-all"
+                                                type="button"
+                                                onClick={() => navigate('/dashboard/super-admin/audit')}
+                                                className={`h-[3.75rem] w-[3.75rem] rounded-full border-[3px] shadow-[0_12px_28px_-8px_rgba(0,47,55,0.5)] flex flex-col items-center justify-center active:scale-90 transition-all ${
+                                                    activeSidebarItem === 'field-audit'
+                                                        ? 'bg-[#7ede56] border-white text-[#002f37]'
+                                                        : 'bg-[#002f37] border-[#7ede56] text-[#7ede56]'
+                                                }`}
                                             >
-                                                <Users className="h-6 w-6 text-[#7ede56] stroke-[2.5px]" />
-                                                <span className="text-[7px] font-black text-[#7ede56] uppercase tracking-tight mt-0.5">Users</span>
+                                                <Activity className="h-5 w-5 stroke-[2.5px]" />
+                                                <span className="text-[6px] font-black uppercase tracking-tight mt-0.5">Audit</span>
                                             </button>
                                         </div>
                                         <button
+                                            type="button"
                                             onClick={() => navigate('/dashboard/super-admin/oversight')}
-                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${mobileNavBtn(activeSidebarItem === 'farm-oversight')}`}
+                                            className={`admin-mobile-nav-item flex flex-col items-center gap-0.5 flex-1 min-w-0 py-1 transition-all ${mobileNavBtn(activeSidebarItem === 'farm-oversight')}`}
                                         >
-                                            <Sprout className={`h-6 w-6 ${mobileNavBtn(activeSidebarItem === 'farm-oversight')}`} />
-                                            <span className={`text-[9px] font-black uppercase ${mobileNavBtn(activeSidebarItem === 'farm-oversight')}`}>Farms</span>
+                                            <div className={`p-2 rounded-xl ${activeSidebarItem === 'farm-oversight' ? 'bg-[#7ede56]/15' : ''}`}>
+                                                <Sprout className="h-5 w-5" />
+                                            </div>
+                                            <span className="text-[8px] font-black uppercase truncate max-w-full">Farms</span>
                                         </button>
                                         <button
+                                            type="button"
                                             onClick={() => setMobileSidebarOpen(true)}
-                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${mobileNavBtn(mobileSidebarOpen)}`}
+                                            className={`admin-mobile-nav-item flex flex-col items-center gap-0.5 flex-1 min-w-0 py-1 transition-all ${mobileNavBtn(mobileSidebarOpen)}`}
                                         >
-                                            <Menu className={`h-6 w-6 ${mobileNavBtn(mobileSidebarOpen)}`} />
-                                            <span className={`text-[9px] font-black uppercase ${mobileNavBtn(mobileSidebarOpen)}`}>Menu</span>
+                                            <div className={`p-2 rounded-xl ${mobileSidebarOpen ? 'bg-[#7ede56]/15' : ''}`}>
+                                                <Menu className="h-5 w-5" />
+                                            </div>
+                                            <span className="text-[8px] font-black uppercase truncate max-w-full">More</span>
                                         </button>
                                     </>
                                 ) : (
@@ -622,7 +699,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
             {/* Global Modals for Agent */}
             {userType === 'agent' && (
-                <AddFarmerModal open={addFarmerModalOpen} onOpenChange={setAddFarmerModalOpen} />
+                <>
+                    <AddFarmerModal open={addFarmerModalOpen} onOpenChange={setAddFarmerModalOpen} />
+                    <InstallPwaPrompt />
+                </>
             )}
         </div>
     );

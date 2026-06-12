@@ -36,11 +36,12 @@ const {
 } = require('../controllers/superAdminController');
 const auth = require('../middleware/auth');
 
-// Middleware to check if user is super_admin
+// Super-admin routes are restricted to super_admin only.
+// Supervisors use /dashboard/supervisor (dedicated dashboard — separate routes TBD).
 const isSuperAdmin = async (req, res, next) => {
     try {
-        if (req.agent.role !== 'super_admin' && req.agent.role !== 'supervisor') {
-            return res.status(403).json({ msg: 'Access denied.' });
+        if (req.agent.role !== 'super_admin') {
+            return res.status(403).json({ msg: 'Super Admin access required.' });
         }
         next();
     } catch (err) {
@@ -62,7 +63,6 @@ router.post('/users', createUser);
 router.put('/users/:id', updateUser);
 router.post('/users/:id/reset-session', resetUserSession);
 router.delete('/users/:id', deleteUser);
-router.get('/users-list', getUsersList);
 router.get('/escalations', getEscalations);
 router.put('/escalations/:id/resolve', resolveEscalation); // Resolve escalation route
 router.get('/audit-logs', getSystemLogs);

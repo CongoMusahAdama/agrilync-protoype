@@ -1,35 +1,56 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const Agent = require('./models/Agent');
+const { generateUniqueStaffId, isValidStaffId } = require('./utils/generateAgentId');
 
 const MONGO_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/agrilync';
 
 async function updateAgentIds() {
+    let exitCode = 0;
     try {
         await mongoose.connect(MONGO_URI);
-        console.log('Connected to MongoDB for ID migration...');
+        console.log('Connected to MongoDB for agent ID migration...');
 
-        const agents = await Agent.find({});
-        console.log(`Found ${agents.length} agents to process.`);
+        const agents = await Agent.find({}).select('email agentId role');
+        console.log(`Found ${agents.length} staff record(s) to process.`);
 
-        const generateAgentId = () => 'LYG' + Math.floor(1000000 + Math.random() * 9000000);
+        const bulkOps = [];
 
-        for (let agent of agents) {
-            if (!agent.agentId || !agent.agentId.startsWith('LYG') || agent.agentId.length !== 10) {
-                const oldId = agent.agentId;
-                agent.agentId = generateAgentId();
-                await agent.save();
-                console.log(`Updated agent ${agent.email}: ${oldId} -> ${agent.agentId}`);
-            } else {
-                console.log(`Skipping agent ${agent.email}: already has valid ID ${agent.agentId}`);
+        for (const agent of agents) {
+            const dbRole = agent.role || 'agent';
+            const needsUpdate =
+                !agent.agentId || !isValidStaffId(dbRole, agent.agentId);
+
+            if (!needsUpdate) {
+                console.log(`Skipping ${agent.email}: valid ID ${agent.agentId}`);
+                continue;
             }
+
+            const oldId = agent.agentId;
+            const newId = await generateUniqueStaffId(Agent, dbRole);
+            bulkOps.push({
+                updateOne: {
+                    filter: { _id: agent._id },
+                    update: { $set: { agentId: newId } },
+                },
+            });
+            console.log(`Queued ${agent.email}: ${oldId || '(none)'} -> ${newId}`);
         }
 
-        console.log('Migration completed successfully!');
+        if (bulkOps.length > 0) {
+            const result = await Agent.bulkWrite(bulkOps);
+            console.log(`Updated ${result.modifiedCount} agent ID(s).`);
+        } else {
+            console.log('No agent IDs required updating.');
+        }
+
+        console.log('Migration completed successfully.');
     } catch (err) {
+        exitCode = 1;
         console.error('Migration error:', err);
     } finally {
-        mongoose.disconnect();
+        await mongoose.disconnect();
+        process.exit(exitCode);
     }
 }
 

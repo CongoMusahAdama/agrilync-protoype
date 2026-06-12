@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOfflineOptional } from '@/contexts/OfflineContext';
+import { submitOrQueue, isBrowserOnline } from '@/lib/offline';
 import Swal from 'sweetalert2';
 import { createWorker } from 'tesseract.js';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
@@ -56,6 +58,9 @@ interface AddFarmerModalProps {
 
 const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenChange, onSuccess, farmer, isEditMode }) => {
     const { agent } = useAuth();
+    const offline = useOfflineOptional();
+    const refreshOfflineState = offline?.refreshOfflineState ?? (async () => undefined);
+    const isOnline = offline?.isOnline ?? isBrowserOnline();
 
     // Pre-compute a flat, unique, sorted list of languages for the language selector
     const getLanguagesForRegion = (region: string): string[] => {
@@ -450,13 +455,51 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
     const queryClient = useQueryClient();
 
     const addFarmerMutation = useMutation({
-        mutationFn: async (payload: any) => {
-            if (isEditMode && farmer?._id) return api.put(`/farmers/${farmer._id}`, payload);
-            return api.post('/farmers', payload);
+        mutationFn: async (payload: Record<string, unknown>) => {
+            if (isEditMode && farmer?._id) {
+                const res = await api.put(`/farmers/${farmer._id}`, payload);
+                return { kind: 'online' as const, data: res.data };
+            }
+
+            const result = await submitOrQueue({
+                type: 'farmer',
+                method: 'POST',
+                url: '/farmers',
+                payload,
+                label: `Grower onboarding — ${String(payload.name || 'New grower')}`,
+            });
+
+            if (result.status === 'queued') {
+                return { kind: 'queued' as const, name: String(payload.name || 'Grower') };
+            }
+
+            return { kind: 'online' as const, data: result.data };
         },
         retry: false,
-        onSuccess: async (response: any) => {
-            const savedFarmer = response.data;
+        onSuccess: async (result: { kind: 'online' | 'queued'; data?: unknown; name?: string }) => {
+            if (result.kind === 'queued') {
+                await refreshOfflineState();
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Saved on Device',
+                    html: `<p style="font-size:18px;color:#065f46;font-weight:800;">Grower profile saved offline.</p>
+                        <p style="font-size:14px;color:#374151;margin-top:12px;"><b>${result.name}</b> will be registered when you have signal.</p>
+                        <p style="font-size:12px;color:#6b7280;margin-top:10px;">Lync ID, welcome SMS, and ID card will be available after sync.</p>`,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#065f46',
+                    timer: 6000,
+                    timerProgressBar: true,
+                });
+                onOpenChange?.(false);
+                resetNewFarmerForm();
+                onSuccess?.();
+                return;
+            }
+
+            const savedFarmer = result.data as {
+                id?: string;
+                sms?: { sent?: boolean; recipientCount?: number; message?: string };
+            };
             const lyncId = savedFarmer?.id || 'Pending';
             const sms = savedFarmer?.sms;
             const smsSent = Boolean(sms?.sent && (sms?.recipientCount ?? 0) > 0);
@@ -473,6 +516,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
             queryClient.invalidateQueries({ queryKey: ['agentFarmers'] });
             queryClient.invalidateQueries({ queryKey: ['farmers'] });
+            queryClient.invalidateQueries({ queryKey: ['agentFarmersDirectory'] });
             setFinalizedFarmer(savedFarmer);
             setIsIdCardModalOpen(true);
             onOpenChange?.(false);
@@ -496,6 +540,16 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
 
     const handleSubmit = async () => {
         if (submitLockRef.current || addFarmerMutation.isPending) return;
+
+        if (isEditMode && !isOnline) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Offline',
+                text: 'Editing a grower profile requires internet. You can onboard new growers offline and sync later.',
+                confirmButtonColor: '#065f46',
+            });
+            return;
+        }
 
         if (!agent?.id && !agent?.agentId) {
             Swal.fire({ icon: 'error', title: 'Session Error', text: 'Your agent session could not be verified. Please log out and sign in again.', confirmButtonColor: '#002f37' });
@@ -617,6 +671,11 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                     <span className="text-[#065f46] font-medium">{steps[step - 1].label}</span>
                                     <span className="hidden sm:inline text-gray-400"> · {steps[step - 1].sub}</span>
                                 </p>
+                                {!isEditMode && !isOnline && (
+                                    <p className="text-[10px] font-black uppercase tracking-wide text-amber-700 mt-1.5">
+                                        Offline mode — will sync when online
+                                    </p>
+                                )}
                             </div>
                             <button
                                 type="button"
@@ -1146,7 +1205,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                         <Loader2 className="h-5 w-5 animate-spin" />
                                     ) : (
                                         <>
-                                            {step < 4 ? 'Continue' : isEditMode ? 'Save' : 'Complete onboarding'}
+                                            {step < 4 ? 'Continue' : isEditMode ? 'Save' : isOnline ? 'Complete onboarding' : 'Save offline'}
                                             {step < 4 && <ChevronRight className="h-4 w-4 ml-1.5" />}
                                         </>
                                     )}

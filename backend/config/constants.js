@@ -52,5 +52,10 @@ module.exports = {
     // Cache TTLs
     CACHE_TTL: {
         DASHBOARD: 300, // 5 minutes
-    }
+    },
+
+    // Super-admin API defaults
+    DB_QUERY_TIMEOUT_MS: 10000,
+    DEFAULT_PAGE_SIZE: 50,
+    MAX_PAGE_SIZE: 200,
 };

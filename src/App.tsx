@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { DarkModeProvider } from "./contexts/DarkModeContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { OfflineProvider } from "./contexts/OfflineContext";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
@@ -37,6 +38,7 @@ import AgentNotificationsCenter from "./pages/agent/AgentNotifications";
 import AgentMediaDashboard from "./pages/agent/MediaDashboard";
 import AgentTasksDashboard from "./pages/agent/TasksDashboard";
 import AgentPerformance from "./pages/agent/AgentPerformance";
+import OfflineFieldGuide from "./pages/agent/OfflineFieldGuide";
 import ChangePassword from "./pages/agent/ChangePassword";
 import PrivateRoute from "./contexts/PrivateRoute";
 import FarmAnalytics from "./pages/FarmAnalytics";
@@ -97,6 +99,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <DarkModeProvider>
       <AuthProvider>
+        <OfflineProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
@@ -140,6 +143,7 @@ const App = () => (
                 <Route path="/dashboard/agent/tasks" element={<AgentTasksDashboard />} />
                 <Route path="/dashboard/agent/media" element={<AgentMediaDashboard />} />
                 <Route path="/dashboard/agent/performance" element={<AgentPerformance />} />
+                <Route path="/dashboard/agent/offline-guide" element={<OfflineFieldGuide />} />
                 <Route path="/dashboard/grower/profile" element={<GrowerProfile />} />
                 <Route path="/dashboard/farmer/profile" element={<GrowerProfile />} />
                 <Route path="/dashboard/:userType" element={<Dashboard />} />
@@ -177,6 +181,7 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
+        </OfflineProvider>
       </AuthProvider>
     </DarkModeProvider>
   </QueryClientProvider>

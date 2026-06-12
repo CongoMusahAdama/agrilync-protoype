@@ -75,6 +75,9 @@ const agentSchema = new mongoose.Schema({
 
 // Indexing for performance
 agentSchema.index({ fcmToken: 1 });
+agentSchema.index({ role: 1, status: 1 });
+agentSchema.index({ role: 1, region: 1 });
+agentSchema.index({ role: 1, 'stats.farmersOnboarded': -1 });
 
 // Hash password before saving
 agentSchema.pre('save', async function () {

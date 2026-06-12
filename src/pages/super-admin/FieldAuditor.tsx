@@ -33,6 +33,7 @@ import {
     Check
 } from 'lucide-react';
 import api from '@/utils/api';
+import { parseApiList } from '@/utils/parseApiList';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { toast } from 'sonner';
 import {
@@ -61,15 +62,15 @@ const FieldOperationsAudit = () => {
         const fetchAuditData = async () => {
             try {
                 const [visitsRes, mediaRes, trainingRes, tasksRes] = await Promise.all([
-                    api.get('/super-admin/visits').catch(() => ({ data: [] })),
-                    api.get('/super-admin/media').catch(() => ({ data: [] })),
-                    api.get('/super-admin/training').catch(() => ({ data: [] })),
-                    api.get('/super-admin/tasks').catch(() => ({ data: [] }))
+                    api.get('/super-admin/visits', { params: { limit: 200 } }).catch(() => ({ data: { data: [] } })),
+                    api.get('/super-admin/media', { params: { limit: 200 } }).catch(() => ({ data: { data: [] } })),
+                    api.get('/super-admin/training', { params: { limit: 200 } }).catch(() => ({ data: [] })),
+                    api.get('/super-admin/tasks', { params: { limit: 200 } }).catch(() => ({ data: { data: [] } })),
                 ]);
-                setVisits(visitsRes.data || []);
-                setMedia(mediaRes.data || []);
-                setTraining(trainingRes.data || []);
-                setTasks(tasksRes.data || []);
+                setVisits(parseApiList(visitsRes.data));
+                setMedia(parseApiList(mediaRes.data));
+                setTraining(Array.isArray(trainingRes.data) ? trainingRes.data : parseApiList(trainingRes.data));
+                setTasks(parseApiList(tasksRes.data));
             } catch (err) {
                 console.error('Failed to fetch field operations audit data:', err);
             } finally {
@@ -131,7 +132,7 @@ const FieldOperationsAudit = () => {
                 {/* VISITS TAB */}
                 <TabsContent value="visits" className="mt-0 space-y-4">
                     <Card className={`border-none shadow-premium overflow-hidden rounded-none ${darkMode ? 'bg-gray-955' : 'bg-white'}`}>
-                        <CardContent className="p-0 overflow-x-auto">
+                        <CardContent className="p-0 admin-table-scroll">
                             {visits.length === 0 && !loading ? (
                                 <div className="flex flex-col items-center justify-center py-20 text-center">
                                     <MapPin className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
@@ -299,13 +300,13 @@ const FieldOperationsAudit = () => {
                 {/* TRAINING TAB */}
                 <TabsContent value="training" className="mt-0">
                     <Card className={`border-none shadow-premium overflow-hidden rounded-none ${darkMode ? 'bg-gray-955' : 'bg-white'}`}>
-                        <CardContent className="p-0 overflow-x-auto">
+                        <CardContent className="p-0 admin-table-scroll">
                             {training.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-20 text-center">
                                     <GraduationCap className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
                                     <p className="text-sm font-black uppercase tracking-widest text-gray-400">No training sessions recorded yet</p>
                                     <p className="text-[10px] font-bold uppercase tracking-wider text-gray-300 mt-1">
-                                        Training records will appear here once agents enrol and complete sessions
+                                        Sessions appear here when agents schedule field training for growers
                                     </p>
                                 </div>
                             ) : (
@@ -317,17 +318,19 @@ const FieldOperationsAudit = () => {
                                             <th className="p-4">Course / Module</th>
                                             <th className="p-4">Category & Mode</th>
                                             <th className="p-4 text-center">Status</th>
-                                            <th className="p-4 text-right">Certificate</th>
+                                            <th className="p-4 text-right">Growers</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                                         {training.map((t: any) => {
                                             const statusColor = {
                                                 Completed: 'bg-[#7ede56]/10 text-[#7ede56]',
+                                                Scheduled: 'bg-amber-500/10 text-amber-600',
                                                 Ongoing: 'bg-blue-500/10 text-blue-500',
                                                 Registered: 'bg-amber-500/10 text-amber-500',
                                                 Missed: 'bg-rose-500/10 text-rose-500',
-                                            }[t.status as 'Completed' | 'Ongoing' | 'Registered' | 'Missed'] || 'bg-gray-100 text-gray-500';
+                                                Cancelled: 'bg-rose-500/10 text-rose-500',
+                                            }[t.status as 'Completed' | 'Scheduled' | 'Ongoing' | 'Registered' | 'Missed' | 'Cancelled'] || 'bg-gray-100 text-gray-500';
 
                                             return (
                                                 <tr key={t.id} className="hover:bg-[#7ede56]/5 transition-colors group">
@@ -359,16 +362,12 @@ const FieldOperationsAudit = () => {
                                                         </Badge>
                                                     </td>
                                                     <td className="p-4 text-right">
-                                                        {t.certificate ? (
-                                                            <div className="flex items-center justify-end gap-1.5">
-                                                                <Badge className="bg-[#7ede56] text-[#002f37] font-black text-[7px] px-2 py-0 h-5">ISSUED</Badge>
-                                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-500">
-                                                                    <Download className="w-3.5 h-3.5" />
-                                                                </Button>
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">— Pending</span>
-                                                        )}
+                                                        <div className="flex flex-col items-end gap-0.5">
+                                                            <span className="text-xs font-black text-[#002f37]">{t.growerCount ?? 0}</span>
+                                                            {t.smsSent && (
+                                                                <span className="text-[8px] font-bold text-[#7ede56] uppercase">SMS sent</span>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             );
@@ -385,7 +384,7 @@ const FieldOperationsAudit = () => {
                 SPACIOUS & BEAUTIFUL VISIT DETAILS OVERLAY - MD:MAX-W-[1100PX]
                 ======================================================== */}
             <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-                <DialogContent className={`w-[95vw] md:max-w-[1280px] lg:max-w-[1400px] md:w-full p-0 border-none rounded-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'} max-h-[96vh] overflow-y-auto [&>button]:text-white [&>button]:opacity-85 [&>button:hover]:opacity-100 [&>button]:top-5 [&>button]:right-6 [&>button]:z-50 [&>button]:scale-110`}>
+                <DialogContent className={`admin-modal-mobile w-[95vw] md:max-w-[1280px] lg:max-w-[1400px] md:w-full p-0 border-none rounded-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'} max-h-[96vh] overflow-y-auto [&>button]:text-white [&>button]:opacity-85 [&>button:hover]:opacity-100 [&>button]:top-5 [&>button]:right-6 [&>button]:z-50 [&>button]:scale-110`}>
                     {selectedItem && (
                         <div className="flex flex-col">
                             

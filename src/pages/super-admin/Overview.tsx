@@ -64,7 +64,8 @@ const Overview = () => {
         topPerformers: [],
         lowEngagement: [],
         pendingKYCList: [],
-        criticalAlertsList: []
+        criticalAlertsList: [],
+        atRiskFarmsList: [],
     });
     const [loading, setLoading] = useState(true);
     const [drawerType, setDrawerType] = useState<string | null>(null);
@@ -144,7 +145,7 @@ const Overview = () => {
         { label: 'Active Logins', value: stats?.activeLogins || '0', icon: Users, color: 'text-[#7ede56]' },
         { label: 'Failed Logins', value: stats?.failedLogins || '0', icon: ShieldAlert, color: 'text-rose-500' },
         { label: 'Primary Workstation', value: stats?.primaryWorkstation || 'Android / Mobile', icon: Smartphone, color: 'text-blue-500' },
-        { label: 'System Concurrency', value: stats?.systemConcurrency || '0%', icon: Activity, color: 'text-purple-500' },
+        { label: 'Avg Session Today', value: stats?.avgSessionDuration || '0m', icon: Activity, color: 'text-purple-500' },
     ];
 
     const statCards = [
@@ -152,7 +153,7 @@ const Overview = () => {
         { title: 'Total Farmers', value: stats?.totalFarmers?.toLocaleString() || '0', subtitle: 'Active Producers', icon: Sprout, color: 'bg-[#4f46e5]', path: '/dashboard/super-admin/oversight' },
         { title: 'Active Regions', value: stats?.totalRegions || '0', subtitle: 'Regions Covered', icon: Globe, color: 'bg-teal-600', path: '/dashboard/super-admin/regions' },
         { title: 'Pending Approvals', value: stats?.pendingApprovals || '0', subtitle: 'Across verifications & escalations', icon: Clock, color: 'bg-amber-500', path: '/dashboard/super-admin/escalations' },
-        { title: 'At-Risk Farms', value: stats?.atRiskFarms || '0', subtitle: 'Require immediate follow-up', icon: AlertTriangle, color: 'bg-red-600', path: '/dashboard/super-admin/oversight' },
+        { title: 'At-Risk Farms', value: stats?.atRiskFarms || '0', subtitle: 'Tap to see why follow-up is needed', icon: AlertTriangle, color: 'bg-red-600', path: '/dashboard/super-admin/oversight', drawerType: 'at-risk-farms' },
         { title: 'Scheduled Training', value: stats?.scheduledTraining || '0', subtitle: 'Agent-led field sessions', icon: BookOpen, color: 'bg-[#002f37]', path: '/dashboard/super-admin/audit?tab=training' },
     ];
 
@@ -187,6 +188,30 @@ const Overview = () => {
 
     const handleQuickAction = (type: string) => {
         setDrawerType(type);
+    };
+
+    const drawerMeta = (() => {
+        const alert = alerts.find((a) => a.type === drawerType);
+        if (alert) {
+            return { title: alert.title, subtitle: `Action required for ${drawerType?.replace(/-/g, ' ')} protocol` };
+        }
+        if (drawerType === 'at-risk-farms') {
+            return {
+                title: 'At-Risk Farms',
+                subtitle: 'Review why each grower needs immediate follow-up',
+            };
+        }
+        return { title: drawerType || '', subtitle: '' };
+    })();
+
+    const handleStatCardClick = (card: { path?: string; drawerType?: string }) => {
+        if (card.drawerType) {
+            setDrawerType(card.drawerType);
+            return;
+        }
+        if (card.path) {
+            navigate(card.path);
+        }
     };
 
     const renderDrawerContent = () => {
@@ -283,6 +308,60 @@ const Overview = () => {
                         )}
                     </div>
                 );
+            case 'at-risk-farms':
+                return (
+                    <div className="space-y-6 pt-6">
+                        {stats?.atRiskFarmsList && stats.atRiskFarmsList.length > 0 ? (
+                            stats.atRiskFarmsList.map((farm: any) => (
+                                <div key={farm.id} className="p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-black/5 space-y-3">
+                                    <div className="flex justify-between items-start gap-3">
+                                        <div className="min-w-0">
+                                            <h4 className="text-sm font-black uppercase tracking-tight truncate">{farm.growerName}</h4>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase truncate">
+                                                {farm.farmName} · {farm.region}
+                                            </p>
+                                            {farm.community && (
+                                                <p className="text-[9px] font-bold text-gray-400 uppercase mt-0.5">{farm.community}</p>
+                                            )}
+                                        </div>
+                                        <Badge className="bg-amber-500/10 text-amber-600 border-none font-black text-[8px] shrink-0">
+                                            {String(farm.status || 'At Risk').toUpperCase()}
+                                        </Badge>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 text-[9px] font-bold text-gray-500 uppercase">
+                                        <span className="px-2 py-1 rounded-lg bg-white dark:bg-black/20">Agent: {farm.agent}</span>
+                                        {farm.crop && farm.crop !== '—' && (
+                                            <span className="px-2 py-1 rounded-lg bg-white dark:bg-black/20">Crop: {farm.crop}</span>
+                                        )}
+                                        {typeof farm.visitCount === 'number' && (
+                                            <span className="px-2 py-1 rounded-lg bg-white dark:bg-black/20">
+                                                Visits: {farm.visitCount}/{farm.visitTarget ?? 2}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <p className="text-[9px] font-black text-rose-500 uppercase tracking-widest">Why at risk</p>
+                                        {(farm.reasons || []).map((reason: string, idx: number) => (
+                                            <div
+                                                key={idx}
+                                                className="flex items-start gap-2 bg-rose-500/5 p-2.5 rounded-lg border border-rose-500/10"
+                                            >
+                                                <AlertTriangle className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
+                                                <p className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase leading-snug">
+                                                    {reason}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="py-12 text-center text-xs font-black uppercase text-gray-400 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl">
+                                No at-risk farms right now. All growers are on track.
+                            </div>
+                        )}
+                    </div>
+                );
             case 'escalations':
                 return (
                     <div className="space-y-6 pt-6">
@@ -360,7 +439,7 @@ const Overview = () => {
 
             {/* Quick Action Drawer */}
             <Sheet open={!!drawerType} onOpenChange={(val) => !val && setDrawerType(null)}>
-                <SheetContent hideCloseButton className="sm:max-w-md border-none shadow-2xl p-0 overflow-hidden bg-white dark:bg-gray-950">
+                <SheetContent hideCloseButton className="admin-drawer-mobile sm:max-w-md border-none shadow-2xl p-0 overflow-hidden bg-white dark:bg-gray-950">
                     <div className="bg-[#002f37] p-8 text-white relative">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 -mr-16 -mt-16 rounded-full blur-3xl"></div>
                         <SheetHeader className="relative z-10 text-left">
@@ -371,10 +450,10 @@ const Overview = () => {
                                 </Button>
                             </div>
                             <SheetTitle className="text-3xl font-black text-white uppercase tracking-tighter">
-                                {alerts.find(a => a.type === drawerType)?.title}
+                                {drawerMeta.title}
                             </SheetTitle>
                             <SheetDescription className="text-[10px] font-black text-[#7ede56] uppercase tracking-[0.2em] mt-1 italic">
-                                Action required for {drawerType?.replace('-', ' ')} protocol
+                                {drawerMeta.subtitle}
                             </SheetDescription>
                         </SheetHeader>
                     </div>
@@ -387,12 +466,19 @@ const Overview = () => {
                         <Button 
                             className="w-full h-14 bg-[#002f37] hover:bg-black text-white font-black uppercase text-[11px] tracking-widest rounded-2xl shadow-xl flex gap-3 group"
                             onClick={() => {
-                                const path = alerts.find(a => a.type === drawerType)?.title.toLowerCase().includes('agent') ? '/dashboard/super-admin/agents' : '/dashboard/super-admin/oversight';
+                                const path = drawerType === 'at-risk-farms'
+                                    ? '/dashboard/super-admin/oversight'
+                                    : alerts.find((a) => a.type === drawerType)?.title.toLowerCase().includes('agent')
+                                        ? '/dashboard/super-admin/agents'
+                                        : '/dashboard/super-admin/oversight';
                                 navigate(path);
                                 setDrawerType(null);
                             }}
                         >
-                            View Full Resolution Center <ExternalLink className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                            {drawerType === 'at-risk-farms'
+                                ? 'View Full Farm Oversight'
+                                : 'View Full Resolution Center'}{' '}
+                            <ExternalLink className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                         </Button>
                     </div>
                 </SheetContent>
@@ -448,7 +534,7 @@ const Overview = () => {
                     <Card
                         key={index}
                         className={`${card.color} border-none shadow-premium hover:-translate-y-2 transition-all duration-500 cursor-pointer relative overflow-hidden h-32 sm:h-40 group`}
-                        onClick={() => navigate(card.path)}
+                        onClick={() => handleStatCardClick(card)}
                     >
                         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         <CardHeader className="p-5 pb-0 relative z-20 flex flex-row items-center justify-between space-y-0">

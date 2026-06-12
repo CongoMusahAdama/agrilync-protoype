@@ -43,6 +43,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import api from '@/utils/api';
+import { parseApiList } from '@/utils/parseApiList';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import CountUp from '@/components/CountUp';
 import { toast } from 'sonner';
@@ -64,10 +65,8 @@ const Escalations = () => {
 
     const fetchTickets = async () => {
         try {
-            const res = await api.get('/super-admin/escalations');
-            if (res.data) {
-                setTickets(res.data);
-            }
+            const res = await api.get('/super-admin/escalations', { params: { limit: 200 } });
+            setTickets(parseApiList(res.data));
         } catch (err) {
             console.error('Failed to fetch tickets:', err);
             setTickets([]);
@@ -244,7 +243,7 @@ const Escalations = () => {
 
             {/* Ticket Detail Modal */}
             <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-                <DialogContent className={`w-[95vw] md:max-w-5xl md:w-full border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+                <DialogContent className={`admin-modal-mobile w-[95vw] md:max-w-5xl md:w-full border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
                     {selectedTicket && (
                         <div className="flex flex-col">
                             <div className="p-8 pb-12 bg-[#002f37] text-white relative">

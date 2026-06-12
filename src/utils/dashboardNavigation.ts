@@ -12,6 +12,7 @@ export const getDashboardNavRoute = (userType: string, itemId: string): string |
         'farmers-management': '/dashboard/agent/farmers-management',
         'media-gallery': '/dashboard/agent/media',
         performance: '/dashboard/agent/performance',
+        'offline-field-guide': '/dashboard/agent/offline-guide',
     };
 
     const superAdminRoutes: Record<string, string> = {

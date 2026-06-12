@@ -744,11 +744,18 @@ const AgentProfile: React.FC = () => {
           <div className="space-y-6 animate-fade-in">
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
+                  { title: 'Offline & PWA Field Guide', desc: 'Install the app, download grower data, work offline, sync in town', icon: <Wifi className="h-6 w-6" />, route: '/dashboard/agent/offline-guide' },
                   { title: 'Grower Onboarding', desc: 'Step-by-step guide to registering new farmers', icon: <UserCheck className="h-6 w-6" /> },
                   { title: 'Visit & Documentation', desc: 'How to log visits and capture field evidence', icon: <Camera className="h-6 w-6" /> },
                   { title: 'Commission Payouts', desc: 'Understanding your earnings and withdrawal process', icon: <Coins className="h-6 w-6" /> }
                 ].map((guide, idx) => (
-                  <Card key={idx} className="p-6 rounded-[32px] border-none shadow-xl hover:shadow-2xl transition-all cursor-pointer bg-white group">
+                  <Card
+                    key={idx}
+                    className="p-6 rounded-[32px] border-none shadow-xl hover:shadow-2xl transition-all cursor-pointer bg-white group"
+                    onClick={() => {
+                      if ('route' in guide && guide.route) navigate(guide.route as string);
+                    }}
+                  >
                     <div className="h-14 w-14 rounded-2xl bg-[#002f37]/5 flex items-center justify-center text-[#002f37] group-hover:bg-[#7EDE56] group-hover:text-[#002f37] transition-all mb-4">
                       {guide.icon}
                     </div>
@@ -761,12 +768,18 @@ const AgentProfile: React.FC = () => {
                 <h3 className="text-xl font-black font-montserrat text-[#002F37] uppercase tracking-tight mb-8">Frequently Asked Questions</h3>
                 <div className="space-y-4">
                   {[
-                    "How do I update a farmer's contact information?",
+                    "How do I use AgriLync offline in the village?",
                     "What should I do if my GPS isn't locking?",
                     "Where can I find my monthly performance bonus?",
                     "Offline sync is taking too long, what's wrong?"
                   ].map((q, i) => (
-                    <div key={i} className="p-4 rounded-2xl border border-gray-50 flex items-center justify-between group hover:border-[#7EDE56] cursor-pointer">
+                    <div
+                      key={i}
+                      className="p-4 rounded-2xl border border-gray-50 flex items-center justify-between group hover:border-[#7EDE56] cursor-pointer"
+                      onClick={() => {
+                        if (i === 0) navigate('/dashboard/agent/offline-guide');
+                      }}
+                    >
                       <p className="text-[13px] font-bold text-gray-600 font-inter group-hover:text-[#002f37]">{q}</p>
                       <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-[#002f37]" />
                     </div>
@@ -870,14 +883,20 @@ const AgentProfile: React.FC = () => {
                   {[
                     { id: 'personal-info', title: 'My Account', desc: 'Manage your history and mapping', icon: <User className="w-4 h-4 text-white" /> },
                     { id: 'commission', title: 'Earnings & Payouts', desc: 'Monitor monthly growth and bonuses', icon: <Coins className="w-4 h-4 text-white" /> },
-                    { id: 'display', title: 'Offline access', desc: 'Field data and local storage settings', icon: <RefreshCw className="w-4 h-4 text-white" /> },
+                    { id: 'display', title: 'Offline access', desc: 'Install app & field data guide', icon: <RefreshCw className="w-4 h-4 text-white" />, route: '/dashboard/agent/offline-guide' },
                     { id: 'security', title: 'Security & Access', desc: 'Customize how your account works', icon: <Lock className="w-4 h-4 text-white" /> },
                     { id: 'knowledge', title: 'Knowledge base', desc: 'Best practices, FAQs and guides', icon: <FileText className="w-4 h-4 text-white" /> },
                     { id: 'support', title: 'Help and support', desc: "Get help with any issue you face", icon: <AlertTriangle className="w-4 h-4 text-white" /> },
                   ].map((item) => (
                     <button 
                       key={item.id} 
-                      onClick={() => setActivePanel(item.id)} 
+                      onClick={() => {
+                        if ('route' in item && item.route) {
+                          navigate(item.route as string);
+                          return;
+                        }
+                        setActivePanel(item.id);
+                      }} 
                       className="w-full flex items-center gap-4 p-5 bg-white border border-gray-100 rounded-[1.5rem] shadow-sm active:bg-gray-50 transition-all text-left group normal-case"
                     >
                       <div className="h-11 w-11 rounded-full flex items-center justify-center bg-black text-white shrink-0">

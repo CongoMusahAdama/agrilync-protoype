@@ -5,7 +5,6 @@ import api from '@/utils/api';
 import { DASHBOARD_POLL_INTERVAL_MS } from '@/data/dashboardConfig';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { playSuccessSound } from '@/utils/audio';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -63,6 +62,8 @@ interface AgentLayoutProps {
   headerActions?: React.ReactNode;
   children: React.ReactNode;
   hideTopBar?: boolean;
+  /** Center page content in the main area on tablet/desktop */
+  centerContent?: boolean;
 }
 
 const AgentLayout: React.FC<AgentLayoutProps> = ({
@@ -71,7 +72,8 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
   subtitle,
   headerActions,
   children,
-  hideTopBar = false
+  hideTopBar = false,
+  centerContent = false,
 }) => {
   const { darkMode, toggleDarkMode } = useDarkMode();
   const isMobile = useIsMobile();
@@ -99,7 +101,11 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({
       headerActions={headerActions}
       hideHeaderOnMobile={true}
     >
-      <div className="space-y-6 px-2 py-4 pb-24 sm:px-6 sm:py-8 sm:pb-8">
+      <div
+        className={`space-y-6 px-2 py-4 pb-24 sm:px-6 sm:py-8 sm:pb-8 ${
+          centerContent ? 'w-full flex flex-col items-center' : ''
+        }`}
+      >
         {isMobile && !hideTopBar && (
           <div className="sticky top-[-1px] z-50 bg-[#f8fafc]/95 backdrop-blur-md px-1 py-4 mb-6 -mx-2 border-b border-gray-100/50 flex items-center justify-between">
             <div className="flex items-center gap-3 ml-2">

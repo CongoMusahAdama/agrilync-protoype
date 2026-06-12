@@ -3,7 +3,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 // Import all models to ensure schemas are registered
-let Farmer, Farm, Match, Dispute, Notification, Activity, Report, Training, AgentTraining;
+let Farmer, Farm, Match, Dispute, Notification, Activity, Report, AuditLog, Training, AgentTraining, Agent, FieldVisit, ScheduledVisit, Escalation;
 try {
     Farmer = require('./models/Farmer');
     Farm = require('./models/Farm');
@@ -13,6 +13,10 @@ try {
     Activity = require('./models/Activity');
     Report = require('./models/Report');
     AuditLog = require('./models/AuditLog');
+    Agent = require('./models/Agent');
+    FieldVisit = require('./models/FieldVisit');
+    ScheduledVisit = require('./models/ScheduledVisit');
+    Escalation = require('./models/Escalation');
     const TrainingModels = require('./models/Training');
     Training = TrainingModels.Training;
     AgentTraining = TrainingModels.AgentTraining;
@@ -69,6 +73,18 @@ const createIndexes = async () => {
         console.log('Indexing Trainings...');
         await Training.createIndexes();
         await AgentTraining.createIndexes();
+
+        console.log('Indexing Agents...');
+        await Agent.createIndexes();
+
+        console.log('Indexing FieldVisits...');
+        await FieldVisit.createIndexes();
+
+        console.log('Indexing ScheduledVisits...');
+        await ScheduledVisit.createIndexes();
+
+        console.log('Indexing Escalations...');
+        await Escalation.createIndexes();
 
         console.log('✅ All indexes created successfully!');
         process.exit(0);

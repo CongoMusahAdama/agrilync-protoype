@@ -117,7 +117,7 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className={`admin-farmer-profile-modal w-[95vw] md:!max-w-[min(98vw,1420px)] lg:!max-w-[min(96vw,1520px)] xl:!max-w-[1600px] md:!w-[min(98vw,1420px)] lg:!w-[min(96vw,1520px)] h-[min(92vh,920px)] p-0 flex flex-col overflow-hidden border-none shadow-2xl ${
+                className={`admin-modal-mobile admin-farmer-profile-modal w-[95vw] md:!max-w-[min(98vw,1420px)] lg:!max-w-[min(96vw,1520px)] xl:!max-w-[1600px] md:!w-[min(98vw,1420px)] lg:!w-[min(96vw,1520px)] h-[min(92vh,920px)] p-0 flex flex-col overflow-hidden border-none shadow-2xl ${
                     darkMode ? 'bg-gray-950 text-white' : 'bg-white'
                 }`}
             >

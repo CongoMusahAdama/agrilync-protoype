@@ -71,6 +71,13 @@ import CountUp from '@/components/CountUp';
 import { playSuccessSound } from '@/utils/audio';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { format } from 'date-fns';
+import {
+    normalizeAlbumName,
+    resolveItemAlbum,
+    isAlbumPlaceholder,
+    isMediaInsideAlbum,
+    albumsMatch,
+} from '@/utils/mediaAlbumUtils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/api';
 import Swal from 'sweetalert2';
@@ -260,82 +267,105 @@ const MediaDashboard: React.FC = () => {
   };
 
   const albums = useMemo(() => {
-    const albumMap = new Map();
+    const albumMap = new Map<string, { name: string; count: number; thumbnail: string | null; latest: string }>();
+
     (mediaItems || []).forEach((item: any) => {
-      // Robustly identify album name - prioritize explicit album field
-      const albumName = item.album || (item.name.startsWith('[Album] ') ? item.name.replace('[Album] ', '') : null);
-      if (albumName) {
-        if (!albumMap.has(albumName)) {
-          albumMap.set(albumName, {
-            name: albumName,
-            count: 0,
-            thumbnail: (item.url !== 'album-placeholder' && item.type === 'Photo') ? (item.thumbnail || item.url) : null,
-            latest: item.createdAt || new Date().toISOString()
-          });
-        }
-        const album = albumMap.get(albumName);
-        
-        // Count actual assets (excluding the album placeholder itself)
-        if (item.url !== 'album-placeholder') {
-            album.count++;
-        }
-        
-        // Update thumbnail with latest actual photo
-        const itemDate = new Date(item.createdAt || 0);
-        const albumDate = new Date(album.latest || 0);
-        
-        if (item.url !== 'album-placeholder' && item.type === 'Photo' && (item.thumbnail || item.url)) {
-            if (!album.thumbnail || itemDate >= albumDate) {
-                album.thumbnail = item.thumbnail || item.url;
-            }
-        }
-        
-        if (itemDate > albumDate) {
-            album.latest = item.createdAt;
+      const albumKey = resolveItemAlbum(item);
+      if (!albumKey) return;
+
+      const normalized = normalizeAlbumName(albumKey);
+      if (!albumMap.has(normalized)) {
+        albumMap.set(normalized, {
+          name: normalized,
+          count: 0,
+          thumbnail:
+            !isAlbumPlaceholder(item) && item.type === 'Photo'
+              ? item.thumbnail || item.url
+              : null,
+          latest: item.createdAt || new Date().toISOString(),
+        });
+      }
+
+      const album = albumMap.get(normalized)!;
+
+      if (!isAlbumPlaceholder(item)) {
+        album.count++;
+      }
+
+      const itemDate = new Date(item.createdAt || 0);
+      const albumDate = new Date(album.latest || 0);
+
+      if (
+        !isAlbumPlaceholder(item) &&
+        item.type === 'Photo' &&
+        (item.thumbnail || item.url)
+      ) {
+        if (!album.thumbnail || itemDate >= albumDate) {
+          album.thumbnail = item.thumbnail || item.url;
         }
       }
+
+      if (itemDate > albumDate) {
+        album.latest = item.createdAt;
+      }
     });
+
     return Array.from(albumMap.values());
   }, [mediaItems]);
 
+  const filteredAlbums = useMemo(() => {
+    if (currentAlbum) return [];
+    const lowerQuery = searchQuery.toLowerCase();
+    return albums.filter(
+      (album) => !searchQuery || album.name.toLowerCase().includes(lowerQuery)
+    );
+  }, [albums, searchQuery, currentAlbum]);
+
   const filteredMedia = useMemo(() => {
     return (mediaItems || []).filter((item: any) => {
-      // If we are currently browsing an album...
+      if (isAlbumPlaceholder(item)) return false;
+
       if (currentAlbum) {
-          // Hide all placeholders for the album itself...
-          if (item.url === 'album-placeholder') return false;
-          // Only show items that match this album name exactly (ignoring case)
-          const albumName = item.album || item.name.replace('[Album] ', '');
-          if (albumName.toLowerCase() !== currentAlbum.toLowerCase()) return false;
-          return true;
+        return albumsMatch(resolveItemAlbum(item), currentAlbum);
       }
 
-      const matchesTab = activeTab === 'All' || 
-                         (activeTab === 'KYC Docs' ? item.type === 'KYC Doc' : 
-                          activeTab === 'Harvests' ? item.type === 'Harvest' :
-                          activeTab === 'Photos' ? (item.type === 'Photo' && !item.name.startsWith('[Album]')) :
-                          activeTab === 'Videos' ? item.type === 'Video' : false);
-      
-      // If Albums tab is active, we handle it separately in the render
+      if (isMediaInsideAlbum(item)) return false;
+
+      const matchesTab =
+        activeTab === 'All' ||
+        (activeTab === 'KYC Docs'
+          ? item.type === 'KYC Doc'
+          : activeTab === 'Harvests'
+            ? item.type === 'Harvest'
+            : activeTab === 'Photos'
+              ? item.type === 'Photo'
+              : activeTab === 'Videos'
+                ? item.type === 'Video'
+                : false);
+
       if (activeTab === 'Albums') return false;
 
       const farmName = typeof item.farm === 'object' ? item.farm?.name : item.farm;
       const lowerQuery = searchQuery.toLowerCase();
-      const matchesSearch = item.name.toLowerCase().includes(lowerQuery) || 
-                            (farmName && String(farmName).toLowerCase().includes(lowerQuery)) ||
-                            (item.album && item.album.toLowerCase().includes(lowerQuery));
-      
-      const effectiveRegion = (agent?.region || "Ashanti").toLowerCase().replace(' region', '').trim();
-      const itemRegion = (item.region || "").toLowerCase().replace(' region', '').trim();
-      
-      // Lenient filtering: If item has no region set, we show it (it belongs to the agent who uploaded it)
+      const itemAlbum = resolveItemAlbum(item);
+      const matchesSearch =
+        item.name.toLowerCase().includes(lowerQuery) ||
+        (farmName && String(farmName).toLowerCase().includes(lowerQuery)) ||
+        (itemAlbum && itemAlbum.toLowerCase().includes(lowerQuery));
+
+      const effectiveRegion = (agent?.region || 'Ashanti').toLowerCase().replace(' region', '').trim();
+      const itemRegion = (item.region || '').toLowerCase().replace(' region', '').trim();
+
       const matchesRegion = !itemRegion || !effectiveRegion || itemRegion === effectiveRegion;
       const matchesDistrict = selectedDistrict === 'all' || !item.district || item.district === selectedDistrict;
-      const matchesCommunity = selectedCommunity === 'all' || !item.community || item.community === selectedCommunity;
+      const matchesCommunity =
+        selectedCommunity === 'all' || !item.community || item.community === selectedCommunity;
 
       return matchesTab && matchesSearch && matchesRegion && matchesDistrict && matchesCommunity;
     });
   }, [mediaItems, activeTab, searchQuery, agent?.region, selectedDistrict, selectedCommunity, currentAlbum]);
+
+  const showFolderCardsOnGrid = !currentAlbum && activeTab !== 'Albums' && filteredAlbums.length > 0;
 
   const stats = [
     { label: 'Total Files', value: statsData?.totalFiles || '0', icon: HardDrive, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -476,7 +506,7 @@ const MediaDashboard: React.FC = () => {
         size: sizeStr,
         format: uploadFile.name.split('.').pop()?.toUpperCase(),
         farmName: uploadForm.farm?.trim() || undefined,
-        album: uploadForm.album || undefined,
+        album: normalizeAlbumName(uploadForm.album) || undefined,
         status: 'Synced',
         community: agent?.community,
         district: agent?.district,
@@ -813,30 +843,49 @@ const MediaDashboard: React.FC = () => {
                     </Button>
                   </div>
                 )}
+                {showFolderCardsOnGrid &&
+                  filteredAlbums.map((album: any) => (
+                    <div
+                      key={`folder-${album.name}`}
+                      className="group relative aspect-square rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 cursor-pointer flex flex-col"
+                      onClick={() => {
+                        setCurrentAlbum(album.name);
+                        setSearchQuery('');
+                      }}
+                    >
+                      <div className="flex-1 bg-gray-50 flex items-center justify-center p-4 min-h-0">
+                        {album.thumbnail ? (
+                          <img
+                            src={album.thumbnail}
+                            alt={album.name}
+                            className="w-full h-full object-cover rounded-xl shadow-lg transform group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="text-[#065f46]/20 group-hover:text-[#065f46]/40 transition-colors">
+                            <Folder className="h-16 w-16" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-3 bg-white border-t border-gray-50">
+                        <p className="text-[10px] font-black text-[#002f37] uppercase tracking-tighter line-clamp-2 text-center">
+                          {album.name}
+                        </p>
+                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center mt-1">
+                          {album.count} {album.count === 1 ? 'Asset' : 'Assets'}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 {filteredMedia.map((item: any) => {
                   const itemType = (item.type || 'Photo').toLowerCase();
                   const itemName = (item.name || '').toLowerCase();
-                  const isAlbum = item.url === 'album-placeholder' || itemName.startsWith('[album]') || itemType === 'album';
                   const isPdf = itemName.endsWith('.pdf') || item.format === 'PDF';
                   const isExcel = itemName.endsWith('.xlsx') || itemName.endsWith('.xls') || itemName.endsWith('.csv') || item.format?.includes('XLS');
                   const isWord = itemName.endsWith('.docx') || itemName.endsWith('.doc') || item.format?.includes('DOC');
                   const isDocument = isPdf || isExcel || isWord || itemType === 'kyc doc' || itemType === 'document' || item.format === 'PDF';
 
                   const handleItemClick = () => {
-                        if (isAlbum) {
-                          const albumName = item.album || item.name.replace('[Album] ', '');
-                          setCurrentAlbum(albumName);
-                          setActiveTab('All');
-                          Swal.fire({
-                            icon: 'info',
-                            title: 'Folder Opened',
-                            text: `Opening folder: ${albumName}`,
-                            toast: true,
-                            position: 'bottom-right',
-                            showConfirmButton: false,
-                            timer: 3000
-                          });
-                        } else if (isDocument) {
+                        if (isDocument) {
                           handleOpenMedia(item);
                         } else {
                           setSelectedMedia(item);
@@ -881,10 +930,7 @@ const MediaDashboard: React.FC = () => {
                           let bgColorClass = "bg-gradient-to-br from-gray-50 to-gray-200";
                           let iconColorClass = "text-gray-400";
                           
-                          if (isAlbum) {
-                            bgColorClass = "bg-gradient-to-br from-emerald-50 to-emerald-100";
-                            iconColorClass = "text-emerald-500/50";
-                          } else if (isPdf) {
+                          if (isPdf) {
                             bgColorClass = "bg-gradient-to-br from-rose-50 to-rose-100";
                             iconColorClass = "text-rose-500/50";
                           } else if (isExcel) {
@@ -897,9 +943,7 @@ const MediaDashboard: React.FC = () => {
 
                           return (
                             <div className={`w-full h-full flex flex-col items-center justify-center p-6 text-center ${bgColorClass}`}>
-                              {isAlbum ? (
-                                <Folder className={`h-12 w-12 ${iconColorClass} mb-2 group-hover:scale-110 transition-transform`} />
-                              ) : isDocument ? (
+                              {isDocument ? (
                                 <FileText className={`h-10 w-10 ${iconColorClass} mb-2 group-hover:scale-110 transition-transform`} />
                               ) : (
                                 <ImageIcon className={`h-10 w-10 ${iconColorClass} mb-2 group-hover:scale-110 transition-transform`} />
@@ -917,10 +961,10 @@ const MediaDashboard: React.FC = () => {
                             <p className="text-white text-[11px] font-black leading-tight line-clamp-1">
                               {typeof item.farm === 'object' ? item.farm?.name : (item.farm || 'General')}
                             </p>
-                            {typeBadge(isAlbum ? 'Photo' : item.type)}
+                            {typeBadge(item.type)}
                           </div>
                           <p className="text-[#95f0a1] text-[9px] font-bold uppercase tracking-widest">
-                            {isAlbum ? 'FOLDER' : (item.createdAt ? format(new Date(item.createdAt), 'dd MMM yyyy') : 'Recently')}
+                            {item.createdAt ? format(new Date(item.createdAt), 'dd MMM yyyy') : 'Recently'}
                           </p>
                         </div>
                       </div>

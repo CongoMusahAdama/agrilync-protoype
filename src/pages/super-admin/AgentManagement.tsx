@@ -34,6 +34,7 @@ import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import api from '@/utils/api';
+import { parseApiList } from '@/utils/parseApiList';
 import { isCustomAvatar } from '@/utils/avatar';
 import { getCommunitiesForRegion } from '@/data/ghanaRegions';
 
@@ -99,12 +100,11 @@ const AgentManagement = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const res = await api.get('/super-admin/users');
-                if (res.data) {
-                    setUsers(res.data);
-                    if (res.data.length > 0) {
-                        setSelectedAccessUserId(res.data[0].id);
-                    }
+                const res = await api.get('/super-admin/users', { params: { limit: 500 } });
+                const list = parseApiList<UserRecord>(res.data);
+                setUsers(list);
+                if (list.length > 0) {
+                    setSelectedAccessUserId(list[0].id);
                 }
             } catch (err) {
                 console.error('Failed to fetch users:', err);
@@ -681,7 +681,7 @@ const AgentManagement = () => {
 
                     {/* Clean Directory Table */}
                     <Card className={`border-none shadow-premium overflow-hidden rounded-none ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white'}`}>
-                        <div className="p-0 overflow-x-auto">
+                        <div className="p-0 admin-table-scroll">
                             <table className="w-full text-left border-collapse whitespace-nowrap">
                                 <thead>
                                     <tr className="text-[12px] md:text-[13px] font-black uppercase tracking-wider text-white bg-[#002f37]">
@@ -937,7 +937,7 @@ const AgentManagement = () => {
                         </div>
 
                         <Card className="border-none shadow-md overflow-hidden rounded-none">
-                            <div className="p-0 overflow-x-auto">
+                            <div className="p-0 admin-table-scroll">
                                 <table className="w-full text-left border-collapse whitespace-nowrap">
                                     <thead>
                                         <tr className="text-[12px] md:text-[13px] font-black uppercase tracking-wider text-white bg-[#002f37]">
@@ -1031,7 +1031,7 @@ const AgentManagement = () => {
                 GORGEOUS DIALOG MODAL ONBOARDING WORKSPACE - MAX-H & SCROLL OVERRIDES
                 ======================================================== */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent className={`w-[95vw] md:max-w-[1280px] lg:max-w-[1400px] md:w-full p-0 border-none rounded-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'} max-h-[96vh] overflow-y-auto [&>button]:text-white [&>button]:opacity-85 [&>button:hover]:opacity-100 [&>button]:top-5 [&>button]:right-6 [&>button]:z-50 [&>button]:scale-110`}>
+                <DialogContent className={`admin-modal-mobile w-[95vw] md:max-w-[1280px] lg:max-w-[1400px] md:w-full p-0 border-none rounded-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'} max-h-[96vh] overflow-y-auto [&>button]:text-white [&>button]:opacity-85 [&>button:hover]:opacity-100 [&>button]:top-5 [&>button]:right-6 [&>button]:z-50 [&>button]:scale-110`}>
                     <DialogTitle className="sr-only">User Account Management</DialogTitle>
                     
                     {/* Header bar in deep pine brand color - with taller py-6.5 for premium spacing */}

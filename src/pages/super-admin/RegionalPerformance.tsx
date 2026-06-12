@@ -9,7 +9,7 @@ import {
 import {
     Users, TrendingUp, AlertTriangle, Briefcase, ChevronDown, LayoutGrid, LayoutList,
     Download, TrendingDown, MapPin, Activity, Sprout, Coins, X, CheckCircle2, Navigation,
-    AlertCircle, ChevronUp
+    AlertCircle, ChevronUp, BookOpen
 } from 'lucide-react';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
@@ -120,15 +120,20 @@ export default function RegionalPerformance() {
             <Card className={`border-none ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-[#002f37]'} shadow-premium overflow-hidden relative rounded-2xl`}>
                 <div className="absolute inset-0 bg-gradient-to-r from-[#7ede56]/10 via-transparent to-transparent opacity-50 pointer-events-none"></div>
                 <CardContent className="p-0">
-                    <div className={`grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x ${darkMode ? 'divide-white/5' : 'divide-white/10'}`}>
+                    <div className={`grid grid-cols-2 lg:grid-cols-5 divide-y lg:divide-y-0 lg:divide-x ${darkMode ? 'divide-white/5' : 'divide-white/10'}`}>
                         {summaryStats && summaryStats.length > 0 ? (
                             summaryStats.map((stat, idx) => {
-                                const IconComp = stat.label?.toLowerCase()?.includes('farmer') ? Users :
-                                                 stat.label?.toLowerCase()?.includes('capital') ? Coins :
-                                                 stat.label?.toLowerCase()?.includes('track') ? Activity : Briefcase;
-                                const colorClass = stat.label?.toLowerCase()?.includes('farmer') ? 'text-blue-500' :
-                                                   stat.label?.toLowerCase()?.includes('capital') ? 'text-amber-500' :
-                                                   stat.label?.toLowerCase()?.includes('track') ? 'text-[#7ede56]' : 'text-purple-500';
+                                const label = stat.label?.toLowerCase() || '';
+                                const IconComp = label.includes('training') ? BookOpen :
+                                                 label.includes('farmer') || label.includes('agent') ? Users :
+                                                 label.includes('capital') ? Coins :
+                                                 label.includes('track') ? Activity :
+                                                 label.includes('risk') ? AlertTriangle : Briefcase;
+                                const colorClass = label.includes('training') ? 'text-teal-400' :
+                                                   label.includes('farmer') || label.includes('agent') ? 'text-blue-500' :
+                                                   label.includes('capital') ? 'text-amber-500' :
+                                                   label.includes('track') ? 'text-[#7ede56]' :
+                                                   label.includes('risk') ? 'text-rose-400' : 'text-purple-500';
                                 return (
                                     <div key={idx} className={`p-6 flex flex-col justify-center relative group/item transition-colors ${darkMode ? 'hover:bg-white/[0.02]' : 'hover:bg-white/5'}`}>
                                         <div className="flex items-center gap-2 mb-2">
@@ -222,7 +227,7 @@ export default function RegionalPerformance() {
                             </div>
                         ) : selectedRegion ? (
                             <>
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                                     <div className="p-4 rounded-xl bg-gray-50 dark:bg-white/5">
                                         <p className="text-[9px] font-black uppercase text-gray-400 mb-1">Lead Supervisor</p>
                                         <p className="text-sm font-black">{selectedRegion.leadSupervisor || '—'}</p>
@@ -239,6 +244,10 @@ export default function RegionalPerformance() {
                                         <p className="text-[9px] font-black uppercase text-gray-400 mb-1">Farmers Onboarded</p>
                                         <p className="text-sm font-black">{selectedRegion.farmersOnboarded ?? selectedRegion.farmers ?? 0}</p>
                                     </div>
+                                    <div className="p-4 rounded-xl bg-gray-50 dark:bg-white/5">
+                                        <p className="text-[9px] font-black uppercase text-gray-400 mb-1">Field Training</p>
+                                        <p className="text-sm font-black text-teal-600">{selectedRegion.scheduledTraining ?? 0}</p>
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                                     <div className="space-y-4">
@@ -247,7 +256,12 @@ export default function RegionalPerformance() {
                                             <div key={i} className="flex justify-between items-center bg-gray-50 dark:bg-white/5 p-3 rounded-xl">
                                                 <div>
                                                     <p className="text-xs font-black uppercase">{ag.name}</p>
-                                                    <p className="text-[9px] font-bold text-gray-400 uppercase">Sync: {ag.lastSync}</p>
+                                                    <p className="text-[9px] font-bold text-gray-400 uppercase">
+                                                        Sync: {ag.lastSync}
+                                                        {typeof ag.scheduledTraining === 'number' && (
+                                                            <> · {ag.scheduledTraining} training</>
+                                                        )}
+                                                    </p>
                                                 </div>
                                                 <Badge variant="outline" className="text-[9px] font-black">{ag.kpi} KPI</Badge>
                                             </div>
@@ -348,6 +362,7 @@ export default function RegionalPerformance() {
                                     <div className="flex justify-between items-center pt-2">
                                         <div className="flex flex-col gap-0.5">
                                             <span className="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1.5"><Briefcase className="w-3 h-3 text-blue-400" /> {region.agents} Active Agents</span>
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1.5"><BookOpen className="w-3 h-3 text-teal-500" /> {region.scheduledTraining ?? 0} Field Training</span>
                                             {region.atRiskFarms > 0 ? (
                                                 <span className="text-[9px] font-black text-amber-500 uppercase flex items-center gap-1.5"><AlertTriangle className="w-3 h-3" /> {region.atRiskFarms} At-Risk Farms</span>
                                             ) : (
@@ -372,7 +387,7 @@ export default function RegionalPerformance() {
                 </div>
             ) : (
                 <Card className={`border-none shadow-premium overflow-hidden ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white'}`}>
-                    <div className="overflow-x-auto custom-scrollbar">
+                    <div className="admin-table-scroll custom-scrollbar">
                         <table className="w-full text-left whitespace-nowrap">
                             <thead>
                                 <tr className="bg-[#002f37] text-white text-[9px] font-black uppercase tracking-widest">

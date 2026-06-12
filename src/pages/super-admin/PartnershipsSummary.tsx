@@ -31,6 +31,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import api from '@/utils/api';
+import { parseApiList } from '@/utils/parseApiList';
 import CountUp from '@/components/CountUp';
 
 interface Partnership {
@@ -63,8 +64,8 @@ const PartnershipsSummary = () => {
     useEffect(() => {
         const fetchPartnerships = async () => {
             try {
-                const res = await api.get('/super-admin/partnerships');
-                const data = Array.isArray(res.data) ? res.data : [];
+                const res = await api.get('/super-admin/partnerships', { params: { limit: 500 } });
+                const data = parseApiList<Partnership>(res.data);
                 setPartnerships(data);
                 setStats({
                     total: data.length,
@@ -375,7 +376,7 @@ const PartnershipsSummary = () => {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="p-0 overflow-x-auto">
+                <CardContent className="p-0 admin-table-scroll">
                     <table className="w-full text-left border-collapse whitespace-nowrap">
                         <thead>
                             <tr className="bg-[#002f37] text-white text-[10px] font-bold uppercase tracking-widest">

@@ -13,10 +13,14 @@ const FieldVisit = require('../models/FieldVisit');
 const ScheduledVisit = require('../models/ScheduledVisit');
 const Media = require('../models/Media');
 const { Training, AgentTraining } = require('../models/Training');
+const TrainingDelivery = require('../models/TrainingDelivery');
 const Task = require('../models/Task');
+const performanceService = require('../services/performanceService');
+const { PERFORMANCE_TARGETS, DB_QUERY_TIMEOUT_MS, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } = require('../config/constants');
 const FarmerDeletionRequest = require('../models/FarmerDeletionRequest');
 const { deleteFarmerCascade } = require('../utils/deleteFarmerCascade');
 const { sendPushNotification } = require('../utils/firebase');
+const { generateUniqueStaffId } = require('../utils/generateAgentId');
 const {
     notifySupervisorAssignmentPair,
     notifyStaffAgent,
@@ -24,10 +28,15 @@ const {
     staffSms,
     truncateSms,
 } = require('../utils/staffNotifications');
-const bcrypt = require('bcryptjs');
 
-// Helper to enforce timeout on DB operations (fail fast to mock data)
-const withTimeout = (promise, ms = 10000) => {
+const parsePagination = (query, { defaultLimit = DEFAULT_PAGE_SIZE, maxLimit = MAX_PAGE_SIZE } = {}) => {
+    const page = Math.max(1, parseInt(query.page, 10) || 1);
+    const limit = Math.min(maxLimit, Math.max(1, parseInt(query.limit, 10) || defaultLimit));
+    return { page, limit, skip: (page - 1) * limit };
+};
+
+// Helper to enforce timeout on DB operations (fail fast)
+const withTimeout = (promise, ms = DB_QUERY_TIMEOUT_MS) => {
     return Promise.race([
         promise,
         new Promise((_, reject) =>
@@ -81,41 +90,29 @@ const resolveSupervisorAssignment = async (supervisorId, role) => {
     return supervisor;
 };
 
-const generateStaffId = (dbRole) => {
-    if (dbRole === 'supervisor') {
-        return `SUP-${Math.floor(1000 + Math.random() * 9000)}`;
-    }
-    if (dbRole === 'super_admin') {
-        return `SA-${Math.floor(100 + Math.random() * 900)}`;
-    }
-    return `LYC${Math.floor(10000 + Math.random() * 90000)}`;
-};
-
 const formatSupervisorContact = (supervisor) => supervisor?.contact || supervisor?.email || '';
 
-const buildAccountCreationSms = ({ name, dbRole, agentId, region, password, loginUrl, supervisor }) => {
+const buildAccountCreationSms = ({ name, dbRole, agentId, region, loginUrl, supervisor }) => {
     const regionLabel = region || 'Unassigned';
+    const securityNote = 'Your temporary password was set by an administrator — contact them if you need it. You must change it on first login.';
     if (dbRole === 'supervisor') {
         return (
             `Hello ${name}, your AgriLync Supervisor account has been created. ` +
             `Supervisor ID: ${agentId}. Region: ${regionLabel}. ` +
-            `Login at ${loginUrl} using your email or phone and password: ${password}. ` +
-            `You must update your password on first login.`
+            `Login at ${loginUrl} using your email or phone. ${securityNote}`
         );
     }
     if (dbRole === 'super_admin') {
         return (
             `Hello ${name}, your AgriLync Admin account has been created. ` +
             `Staff ID: ${agentId}. Region: ${regionLabel}. ` +
-            `Login at ${loginUrl} using your email or phone and password: ${password}. ` +
-            `You must update your password on first login.`
+            `Login at ${loginUrl} using your email or phone. ${securityNote}`
         );
     }
     let message =
         `Hello ${name}, your AgriLync account has been successfully created by an Admin. ` +
         `Agent ID: ${agentId}. Region: ${regionLabel}. ` +
-        `Login at ${loginUrl} using your email or phone number and password: ${password}. ` +
-        `You will be required to update your password upon first login.`;
+        `Login at ${loginUrl} using your email or phone number. ${securityNote}`;
     if (supervisor) {
         const supervisorContact = formatSupervisorContact(supervisor);
         message +=
@@ -128,8 +125,6 @@ const buildAccountCreationSms = ({ name, dbRole, agentId, region, password, logi
 // @route   GET api/super-admin/stats
 // @desc    Get high-level dashboard stats
 exports.getDashboardStats = async (req, res) => {
-    const timerLabel = `getDashboardStats-${Date.now()}`;
-    console.time(timerLabel);
     try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -171,7 +166,7 @@ exports.getDashboardStats = async (req, res) => {
                 .sort({ createdAt: 1 })
                 .limit(1000), // Safety limit to avoid slow response on large logs
             Match.distinct('investor'), // Get unique investors
-            Farmer.find({ status: 'pending' }).limit(5).populate('agent', 'name').lean(),
+            Farmer.find({ status: 'pending' }).limit(5).populate('agent', 'name').select('name region profileCompleteness agent').lean(),
             Escalation.find({ status: { $ne: 'resolved' } }).sort({ createdAt: -1 }).limit(5).populate('farmerId', 'name').lean(),
             Agent.find({ role: 'agent' }).sort({ "stats.farmersOnboarded": -1 }).limit(5).select('name region avatar stats').lean(),
             Agent.find({ role: 'agent' }).sort({ "stats.farmersOnboarded": 1 }).limit(5).select('name region avatar stats').lean(),
@@ -223,7 +218,7 @@ exports.getDashboardStats = async (req, res) => {
             name: f.name,
             region: f.region,
             agent: f.agent?.name || 'Unassigned',
-            kyc: Math.floor(Math.random() * (95 - 75 + 1) + 75)
+            kyc: typeof f.profileCompleteness === 'number' ? f.profileCompleteness : 0,
         }));
 
         const criticalAlertsList = criticalEscalationsListRaw.map(e => ({
@@ -259,15 +254,19 @@ exports.getDashboardStats = async (req, res) => {
             farmers: r.farmers || 0
         }));
 
-        const activeFarmsCount = await Farm.countDocuments({ status: { $in: ['active', 'Active'] } });
-        const atRiskFarmsCount = await Farm.countDocuments({ status: { $in: ['at-risk', 'At Risk', 'At-Risk'] } });
-        const offTrackFarmsCount = await Farm.countDocuments({ status: { $in: ['suspended', 'Suspended', 'inactive', 'Inactive'] } });
-        const scheduledTrainingCount = await AgentTraining.countDocuments();
+        const [atRiskFarmsList, scheduledTrainingCount, offTrackFarmersCount] = await Promise.all([
+            buildAtRiskFarmsList(),
+            TrainingDelivery.countDocuments({ status: { $ne: 'cancelled' } }),
+            Farmer.countDocuments({ status: 'inactive' }),
+        ]);
+
+        const atRiskFarmsCount = atRiskFarmsList.length;
+        const onTrackFarmersCount = Math.max(0, totalFarmers - atRiskFarmsCount - offTrackFarmersCount);
 
         const farmHealth = {
-            onTrack: activeFarmsCount || Math.floor(totalFarms * 0.8) || 15,
-            atRisk: atRiskFarmsCount || Math.floor(totalFarms * 0.15) || 2,
-            offTrack: offTrackFarmsCount || Math.floor(totalFarms * 0.05) || 1
+            onTrack: onTrackFarmersCount,
+            atRisk: atRiskFarmsCount,
+            offTrack: offTrackFarmersCount,
         };
 
         const pendingKYCCount = await Farmer.countDocuments({ status: 'pending' });
@@ -298,17 +297,15 @@ exports.getDashboardStats = async (req, res) => {
             reportsCount: reportsCount,
             todayLogins: todayLogins.length,
             avgSessionDuration: `${avgSessionDuration}m`,
-            systemUptime: '99.99%',
-            avgProcessTime: '1.4s',
             pendingVerificationsCount: pendingKYCCount,
             inactiveAgentsCount: inactiveAgentsCount,
             criticalEscalationsCount: criticalAlerts,
-            activeLogins: todayLogins.length || 1,
+            activeLogins: todayLogins.length,
             failedLogins: 0,
             primaryWorkstation: 'Android Mobile / Tablet',
-            systemConcurrency: '94.2%',
             pendingApprovals: pendingKYCCount + criticalAlerts,
-            atRiskFarms: atRiskFarmsCount || 2,
+            atRiskFarms: atRiskFarmsCount,
+            atRiskFarmsList,
             scheduledTraining: scheduledTrainingCount,
             farmersVerifiedThisWeek: await Farmer.countDocuments({ status: 'active', createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } }),
             farmHealth,
@@ -319,7 +316,6 @@ exports.getDashboardStats = async (req, res) => {
             inactiveAgentsList,
             regionalDistribution
         });
-        console.timeEnd(timerLabel);
     } catch (err) {
         console.error('Error fetching dashboard stats:', err.message);
         if (err.message.includes('DB_TIMEOUT')) {
@@ -327,9 +323,11 @@ exports.getDashboardStats = async (req, res) => {
         }
         console.error(err.stack);
         res.status(500).json({ msg: 'Database connection issue. Could not fetch statistics.' });
-        console.timeEnd(timerLabel);
     }
 };
+
+const normalizeRegionKey = (regionName) =>
+    (regionName || '').replace(/\s+Region$/i, '').trim().toLowerCase();
 
 const regionNameVariants = (regionName) => {
     const normalized = (regionName || '').replace(/\s+Region$/i, '').trim();
@@ -373,45 +371,230 @@ const mapFarmerPerformanceStatus = (farmer) => {
     return 'On Track';
 };
 
+const deriveAtRiskReasons = (farmer, farm, visitsThisMonth) => {
+    if (!farmer) return [];
+    const reasons = [];
+    const visitTarget = Math.ceil(PERFORMANCE_TARGETS.VISIT_FREQUENCY);
+
+    if (farmer.status === 'pending') {
+        reasons.push('Pending KYC / grower verification');
+    }
+    if (farmer.investmentStatus === 'At Risk') {
+        reasons.push('Investment partnership flagged at risk');
+    }
+    if (farmer.currentStage === 'maintenance') {
+        reasons.push('Farm in maintenance stage — agronomic review needed');
+    }
+    if (farmer.status === 'active') {
+        if (!(farmer.idCardFront && farmer.idCardBack)) {
+            reasons.push('Missing ID card documentation');
+        }
+        if (!(farmer.farmLocation?.lat && farmer.farmLocation?.lng)) {
+            reasons.push('GPS farm location not synced');
+        }
+        if (visitsThisMonth === 0) {
+            reasons.push('No field visits recorded this month');
+        } else if (visitsThisMonth < visitTarget) {
+            reasons.push(`Low visit compliance (${visitsThisMonth}/${visitTarget} visits this month)`);
+        }
+    }
+    if (farm?.status === 'needs-attention') {
+        reasons.push('Farm flagged needs attention by field agent');
+    }
+    if (farm?.reportStatus === 'Flagged') {
+        reasons.push('Farm report flagged for review');
+    }
+
+    return reasons;
+};
+
+const buildAtRiskFarmsList = async () => {
+    const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const visitTarget = Math.ceil(PERFORMANCE_TARGETS.VISIT_FREQUENCY);
+
+    const [flaggedFarmers, needsAttentionFarms, visitAgg, syncIssueFarmers] = await Promise.all([
+        withTimeout(
+            Farmer.find({
+                $or: [
+                    { status: 'pending' },
+                    { investmentStatus: 'At Risk' },
+                    { currentStage: 'maintenance' },
+                ],
+            })
+                .select('name region community district status investmentStatus currentStage idCardFront idCardBack farmLocation farmType agent')
+                .populate('agent', 'name')
+                .lean()
+        ),
+        withTimeout(
+            Farm.find({ $or: [{ status: 'needs-attention' }, { reportStatus: 'Flagged' }] })
+                .select('name crop status reportStatus farmer agent')
+                .populate('farmer', 'name region community district status investmentStatus currentStage idCardFront idCardBack farmLocation farmType agent')
+                .populate('agent', 'name')
+                .lean()
+        ),
+        withTimeout(
+            FieldVisit.aggregate([
+                { $match: { date: { $gte: monthStart } } },
+                { $group: { _id: '$farmer', count: { $sum: 1 } } },
+            ])
+        ),
+        withTimeout(
+            Farmer.find({
+                status: 'active',
+                $or: [
+                    { idCardFront: { $in: [null, ''] } },
+                    { idCardBack: { $in: [null, ''] } },
+                    { 'farmLocation.lat': { $exists: false } },
+                    { 'farmLocation.lng': { $exists: false } },
+                    { 'farmLocation.lat': null },
+                    { 'farmLocation.lng': null },
+                ],
+            })
+                .select('name region community district status investmentStatus currentStage idCardFront idCardBack farmLocation farmType agent')
+                .populate('agent', 'name')
+                .limit(500)
+                .lean()
+        ),
+    ]);
+
+    const visitedIds = (visitAgg || []).map((v) => v._id).filter(Boolean);
+    const lowVisitIds = (visitAgg || [])
+        .filter((v) => v.count < visitTarget)
+        .map((v) => v._id)
+        .filter(Boolean);
+
+    const farmerSelect =
+        'name region community district status investmentStatus currentStage idCardFront idCardBack farmLocation farmType agent';
+
+    const [zeroVisitFarmers, lowVisitFarmers] = await Promise.all([
+        withTimeout(
+            Farmer.find({ status: 'active', _id: { $nin: visitedIds } })
+                .select(farmerSelect)
+                .populate('agent', 'name')
+                .limit(500)
+                .lean()
+        ),
+        lowVisitIds.length
+            ? withTimeout(
+                  Farmer.find({ status: 'active', _id: { $in: lowVisitIds } })
+                      .select(farmerSelect)
+                      .populate('agent', 'name')
+                      .limit(500)
+                      .lean()
+              )
+            : Promise.resolve([]),
+    ]);
+
+    const visitMap = new Map((visitAgg || []).map((v) => [v._id?.toString(), v.count]));
+    const entriesByKey = new Map();
+
+    const addEntry = (farmer, farm) => {
+        if (!farmer?._id) return;
+        const farmerId = farmer._id.toString();
+        const visitsThisMonth = visitMap.get(farmerId) || 0;
+        const reasons = deriveAtRiskReasons(farmer, farm, visitsThisMonth);
+        if (reasons.length === 0) return;
+
+        const existing = entriesByKey.get(farmerId);
+        const mergedReasons = existing
+            ? [...new Set([...existing.reasons, ...reasons])]
+            : reasons;
+
+        entriesByKey.set(farmerId, {
+            id: farmerId,
+            farmName: farm?.name || `${farmer.farmType || 'Farm'} — ${farmer.name}`,
+            growerName: farmer.name,
+            region: farmer.region || 'Unknown',
+            community: farmer.community || farmer.district || '',
+            agent: farmer.agent?.name || farm?.agent?.name || 'Unassigned',
+            status: mapFarmerPerformanceStatus(farmer),
+            reasons: mergedReasons,
+            visitCount: visitsThisMonth,
+            visitTarget,
+            crop: farm?.crop || farmer.farmType || '—',
+        });
+    };
+
+    (flaggedFarmers || []).forEach((farmer) => addEntry(farmer, null));
+    (needsAttentionFarms || []).forEach((farm) => addEntry(farm.farmer, farm));
+    (syncIssueFarmers || []).forEach((farmer) => addEntry(farmer, null));
+    (zeroVisitFarmers || []).forEach((farmer) => addEntry(farmer, null));
+    (lowVisitFarmers || []).forEach((farmer) => addEntry(farmer, null));
+
+    const reasonPriority = (reasons) => {
+        if (reasons.some((r) => /investment|flagged|no field visits/i.test(r))) return 0;
+        if (reasons.some((r) => /pending|maintenance|needs attention|gps|visit compliance/i.test(r))) return 1;
+        return 2;
+    };
+
+    return Array.from(entriesByKey.values()).sort(
+        (a, b) => reasonPriority(a.reasons) - reasonPriority(b.reasons)
+    );
+};
+
 const buildRegionalList = async () => {
-    const stats = await withTimeout(Agent.aggregate([
-        {
-            $group: {
-                _id: '$region',
-                agentCount: { $sum: 1 },
-                farmersCount: { $sum: '$stats.farmersOnboarded' },
-                farmsCount: { $sum: '$stats.activeFarms' },
+    const [stats, trainingStats] = await Promise.all([
+        withTimeout(Agent.aggregate([
+            {
+                $group: {
+                    _id: '$region',
+                    agentCount: { $sum: 1 },
+                    farmersCount: { $sum: '$stats.farmersOnboarded' },
+                    farmsCount: { $sum: '$stats.activeFarms' },
+                },
             },
-        },
-    ]));
+        ])),
+        withTimeout(
+            TrainingDelivery.aggregate([
+                { $match: { status: { $ne: 'cancelled' } } },
+                {
+                    $lookup: {
+                        from: 'agents',
+                        localField: 'agent',
+                        foreignField: '_id',
+                        as: 'agentInfo',
+                    },
+                },
+                { $unwind: { path: '$agentInfo', preserveNullAndEmptyArrays: true } },
+                {
+                    $group: {
+                        _id: '$agentInfo.region',
+                        scheduledTraining: { $sum: 1 },
+                    },
+                },
+            ])
+        ),
+    ]);
+
+    const trainingByRegion = new Map();
+    (trainingStats || []).forEach((row) => {
+        const key = normalizeRegionKey(row._id);
+        if (!key) return;
+        trainingByRegion.set(key, (trainingByRegion.get(key) || 0) + (row.scheduledTraining || 0));
+    });
 
     const dbRegions = stats.map((r, i) => {
         const totalFarms = r.farmsCount || 0;
         const atRisk = Math.max(0, Math.floor(totalFarms * 0.1));
         const onTrackRate = totalFarms > 0 ? Math.round(((totalFarms - atRisk) / totalFarms) * 100) : 100;
+        const regionName = r._id || 'Unknown Region';
 
         return enrichRegionSummary({
             id: (i + 1).toString(),
-            name: r._id || 'Unknown Region',
+            name: regionName,
             agents: r.agentCount || 0,
             farmers: r.farmersCount || 0,
             activeFarms: totalFarms,
             atRiskFarms: atRisk,
             onTrackRate,
+            scheduledTraining: trainingByRegion.get(normalizeRegionKey(regionName)) || 0,
             capitalMatched: `GH₵ ${(r.farmersCount * 3500).toLocaleString()}`,
             leadSupervisor: 'Lead Supervisor',
             isOperational: true,
         });
     });
 
-    const defaultRegions = [
-        { id: '1', name: 'Bono Ahafo Region', agents: 4, farmers: 120, activeFarms: 142, atRiskFarms: 3, onTrackRate: 92, capitalMatched: 'GH₵ 420,000', leadSupervisor: 'Ernest Osei', isOperational: true },
-        { id: '2', name: 'Northern Region', agents: 6, farmers: 210, activeFarms: 198, atRiskFarms: 12, onTrackRate: 78, capitalMatched: 'GH₵ 680,000', leadSupervisor: 'Abdul-Rahman Ali', isOperational: true },
-        { id: '3', name: 'Ashanti Region', agents: 8, farmers: 340, activeFarms: 312, atRiskFarms: 8, onTrackRate: 88, capitalMatched: 'GH₵ 1,200,000', leadSupervisor: 'Kofi Mensah', isOperational: true },
-        { id: '4', name: 'Volta Region', agents: 3, farmers: 95, activeFarms: 88, atRiskFarms: 2, onTrackRate: 94, capitalMatched: 'GH₵ 290,000', leadSupervisor: 'Dzifa Amenu', isOperational: true },
-    ].map(enrichRegionSummary);
-
-    return dbRegions.length > 0 ? dbRegions : defaultRegions;
+    return dbRegions;
 };
 
 // @route   GET api/super-admin/regional-performance
@@ -422,21 +605,32 @@ exports.getRegionalPerformance = async (req, res) => {
 
         const totalAgents = finalRegions.reduce((sum, r) => sum + r.agents, 0);
         const totalAtRisk = finalRegions.reduce((sum, r) => sum + r.atRiskFarms, 0);
+        const totalScheduledTraining = finalRegions.reduce((sum, r) => sum + (r.scheduledTraining || 0), 0);
         const avgOnTrackRate = Math.round(
             finalRegions.reduce((sum, r) => sum + r.onTrackRate, 0) / finalRegions.length
         );
 
         const summaryStats = [
-            { label: 'Active Regions', value: finalRegions.length.toString(), trend: '+12% vs last year', isPositive: true },
-            { label: 'Total Field Agents', value: totalAgents.toString(), trend: '+4 this month', isPositive: true },
-            { label: 'Overall On-Track Rate', value: `${avgOnTrackRate}%`, trend: '+1.8% vs last week', isPositive: true },
-            { label: 'At-Risk Farms', value: totalAtRisk.toString(), trend: '-4 vs yesterday', isPositive: true },
+            { label: 'Active Regions', value: finalRegions.length.toString(), trend: null, isPositive: true },
+            { label: 'Total Field Agents', value: totalAgents.toString(), trend: null, isPositive: true },
+            { label: 'Overall On-Track Rate', value: `${avgOnTrackRate}%`, trend: null, isPositive: true },
+            { label: 'At-Risk Farms', value: totalAtRisk.toString(), trend: null, isPositive: true },
+            { label: 'Agent-Led Training', value: totalScheduledTraining.toString(), trend: 'From field deliveries', isPositive: true },
         ];
 
-        const alerts = [
-            { id: 'alt-1', region: 'Northern Region', text: 'Low visit compliance recorded in Savelugu district.', severity: 'amber' },
-            { id: 'alt-2', region: 'Ashanti Region', text: 'Pest outbreak flagged in Ejura communities.', severity: 'red' },
-        ];
+        const alerts = await Escalation.find({ status: { $ne: 'resolved' }, priority: { $in: ['critical', 'high'] } })
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .select('region message priority')
+            .lean()
+            .then((rows) =>
+                rows.map((e, i) => ({
+                    id: e._id?.toString() || `alt-${i}`,
+                    region: e.region || 'Unknown',
+                    text: e.message || 'Escalation flagged',
+                    severity: e.priority === 'critical' ? 'red' : 'amber',
+                }))
+            );
 
         res.json({
             summaryStats,
@@ -477,13 +671,97 @@ exports.getRegionalPerformanceDetail = async (req, res) => {
             ),
         ]);
 
-        const agentsList = agents.map((agent) => ({
-            name: agent.name,
-            lastSync: agent.updatedAt
-                ? new Date(agent.updatedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-                : 'N/A',
-            kpi: `${Math.min(100, (agent.stats?.farmersOnboarded || 0) * 8 + 20)}%`,
-        }));
+        const agentIds = agents.map((a) => a._id);
+        const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const visitTarget = Math.ceil(PERFORMANCE_TARGETS.VISIT_FREQUENCY);
+
+        const [farmerStats, visitStats, trainingStats] = await Promise.all([
+            Farmer.aggregate([
+                { $match: { agent: { $in: agentIds } } },
+                {
+                    $group: {
+                        _id: '$agent',
+                        total: { $sum: 1 },
+                        active: { $sum: { $cond: [{ $eq: ['$status', 'active'] }, 1, 0] } },
+                        verified: {
+                            $sum: {
+                                $cond: [
+                                    { $or: [{ $eq: ['$status', 'active'] }, { $eq: ['$verificationConfirmed', true] }] },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        female: { $sum: { $cond: [{ $eq: [{ $toLower: { $ifNull: ['$gender', ''] } }, 'female'] }, 1, 0] } },
+                        male: { $sum: { $cond: [{ $eq: [{ $toLower: { $ifNull: ['$gender', ''] } }, 'male'] }, 1, 0] } },
+                        profileComplete: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $ne: [{ $ifNull: ['$idCardFront', ''] }, ''] },
+                                            { $ne: [{ $ifNull: ['$idCardBack', ''] }, ''] },
+                                            { $gt: [{ $ifNull: ['$farmLocation.lat', 0] }, 0] },
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                    },
+                },
+            ]),
+            FieldVisit.aggregate([
+                { $match: { agent: { $in: agentIds }, date: { $gte: monthStart } } },
+                { $group: { _id: '$agent', visitCount: { $sum: 1 } } },
+            ]),
+            TrainingDelivery.aggregate([
+                { $match: { agent: { $in: agentIds }, status: { $ne: 'cancelled' } } },
+                { $group: { _id: '$agent', count: { $sum: 1 } } },
+            ]),
+        ]);
+
+        const farmerByAgent = new Map(farmerStats.map((r) => [r._id.toString(), r]));
+        const visitsByAgent = new Map(visitStats.map((r) => [r._id.toString(), r.visitCount]));
+        const trainingByAgent = new Map(trainingStats.map((r) => [r._id.toString(), r.count]));
+
+        const agentsList = agents.map((agent) => {
+            const key = agent._id.toString();
+            const stats = farmerByAgent.get(key) || { total: 0, active: 0, verified: 0, female: 0, male: 0, profileComplete: 0 };
+            const totalFarmers = stats.total || 0;
+            const visitCount = visitsByAgent.get(key) || 0;
+            const avgVisitsPerFarmer = totalFarmers > 0 ? parseFloat((visitCount / totalFarmers).toFixed(1)) : 0;
+            const syncRate = totalFarmers ? Math.round((stats.profileComplete / totalFarmers) * 100) : 0;
+
+            const kpis = performanceService.calculateKpis({
+                totalFarmers,
+                activeFarmers: stats.active || 0,
+                verifiedFarmers: stats.verified || 0,
+                avgVisitsPerFarmer,
+                syncRate,
+                femaleCount: stats.female || 0,
+                maleCount: stats.male || 0,
+            });
+            const overallScore = performanceService.calculateOverallScore(kpis);
+
+            return {
+                name: agent.name,
+                agentId: agent.agentId,
+                lastSync: agent.updatedAt
+                    ? new Date(agent.updatedAt).toLocaleDateString('en-GB', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                      })
+                    : 'N/A',
+                kpi: `${overallScore}%`,
+                scheduledTraining: trainingByAgent.get(key) || 0,
+                visitCompliance: totalFarmers
+                    ? Math.min(100, Math.round((avgVisitsPerFarmer / visitTarget) * 100))
+                    : 0,
+            };
+        });
 
         const farmerRows = farmers.map((farmer) => ({
             name: farmer.name,
@@ -528,108 +806,87 @@ exports.getRegionalPerformanceDetail = async (req, res) => {
 // @desc    Get all agents with activity stats
 exports.getAgentAccountability = async (req, res) => {
     try {
-        const agents = await withTimeout(Agent.find({ role: 'agent' })
-            .select('name region isLoggedIn currentSessionId stats updatedAt status agentId')
-            .sort({ updatedAt: -1 }));
-        
+        const agents = await withTimeout(
+            Agent.find({ role: 'agent' })
+                .select('name region isLoggedIn currentSessionId stats updatedAt status agentId')
+                .sort({ updatedAt: -1 })
+                .lean()
+        );
+
         if (!agents || agents.length === 0) {
             return res.json([]);
         }
 
-        const mappedAgents = agents.map(agent => ({
-            id: agent._id,
-            name: agent.name,
-            agentId: agent.agentId,
-            region: agent.region,
-            lastSync: agent.updatedAt,
-            // Mocking these metrics for now until full accountability system is live
-            dataQuality: Math.floor(Math.random() * (98 - 75 + 1) + 75),
-            visitCompliance: Math.floor(Math.random() * (95 - 60 + 1) + 60),
-            corrections: Math.floor(Math.random() * 10),
-            commission: (agent.stats?.farmersOnboarded || 0) * 50,
-            farmers: agent.stats?.farmersOnboarded || 0,
-            status: agent.status === 'active' ? 'Active' : 'At Risk'
-        }));
+        const agentIds = agents.map((a) => a._id);
+        const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const visitTarget = Math.ceil(PERFORMANCE_TARGETS.VISIT_FREQUENCY);
+
+        const [farmerStats, visitStats] = await Promise.all([
+            Farmer.aggregate([
+                { $match: { agent: { $in: agentIds } } },
+                {
+                    $group: {
+                        _id: '$agent',
+                        total: { $sum: 1 },
+                        profileComplete: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $ne: [{ $ifNull: ['$idCardFront', ''] }, ''] },
+                                            { $ne: [{ $ifNull: ['$idCardBack', ''] }, ''] },
+                                            { $gt: [{ $ifNull: ['$farmLocation.lat', 0] }, 0] },
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                    },
+                },
+            ]),
+            FieldVisit.aggregate([
+                { $match: { agent: { $in: agentIds }, date: { $gte: monthStart } } },
+                { $group: { _id: '$agent', visitCount: { $sum: 1 } } },
+            ]),
+        ]);
+
+        const farmerByAgent = new Map(farmerStats.map((r) => [r._id.toString(), r]));
+        const visitsByAgent = new Map(visitStats.map((r) => [r._id.toString(), r.visitCount]));
+
+        const mappedAgents = agents.map((agent) => {
+            const key = agent._id.toString();
+            const stats = farmerByAgent.get(key) || { total: 0, profileComplete: 0 };
+            const totalFarmers = stats.total || agent.stats?.farmersOnboarded || 0;
+            const visitCount = visitsByAgent.get(key) || 0;
+            const avgVisits = totalFarmers > 0 ? visitCount / totalFarmers : 0;
+            const dataQuality = totalFarmers
+                ? Math.round((stats.profileComplete / totalFarmers) * 100)
+                : 0;
+            const visitCompliance = totalFarmers
+                ? Math.min(100, Math.round((avgVisits / visitTarget) * 100))
+                : 0;
+
+            return {
+                id: agent._id,
+                name: agent.name,
+                agentId: agent.agentId,
+                region: agent.region,
+                lastSync: agent.updatedAt,
+                dataQuality,
+                visitCompliance,
+                corrections: 0,
+                commission: (agent.stats?.farmersOnboarded || 0) * 50,
+                farmers: agent.stats?.farmersOnboarded || 0,
+                status: agent.status === 'active' ? 'Active' : 'At Risk',
+            };
+        });
 
         res.json(mappedAgents);
     } catch (err) {
         console.error('Error in getAgentAccountability:', err);
-        res.json([]);
-    }
-};
-
-// @route   POST api/super-admin/users
-// @desc    Create a new Supervisor or Agent
-exports.createUser = async (req, res) => {
-    const { name, email, password, role, region, contact, communities, enableMultipleLogin, avatar } = req.body;
-
-    try {
-        let user = await Agent.findOne({ email });
-        if (user) {
-            return res.status(400).json({ msg: 'User already exists' });
-        }
-
-        const defaultPassword = password?.trim() || crypto.randomBytes(4).toString('hex');
-
-        // Auto-generate ID based on role
-        const dbRole = role === 'Supervisor' ? 'supervisor' : 'agent';
-        let agentId;
-        if (dbRole === 'agent') {
-            const randomId = Math.floor(10000 + Math.random() * 90000);
-            agentId = `LYC${randomId}`;
-        } else {
-            const prefix = dbRole === 'supervisor' ? 'SUP' : 'AGT';
-            const randomId = Math.floor(1000 + Math.random() * 9000);
-            agentId = `${prefix}-${randomId}`;
-        }
-
-        user = new Agent({
-            name,
-            email,
-            password: defaultPassword,
-            role: dbRole,
-            region,
-            contact,
-            districts: communities || [],
-            agentId,
-            createdBy: req.agent.id,
-            status: 'active',
-            hasChangedPassword: false,
-            enableMultipleLogin: enableMultipleLogin || false,
-            avatar: avatar?.trim() || ''
-        });
-
-        // Password hashing is handled in pre-save middleware
-        await user.save();
-
-        // Create Audit Log
-        await AuditLog.create({
-            action: 'CREATE_USER',
-            user: req.agent.id,
-            userRole: req.agent.role,
-            details: `Created new ${dbRole}: ${name}`,
-            targetResource: 'Agent',
-            targetId: user.id
-        });
-
-        res.json({
-            id: user._id.toString(),
-            name: user.name,
-            email: user.email,
-            phone: user.contact || '',
-            role: user.role === 'supervisor' ? 'Supervisor' : 'Lync Agent',
-            region: user.region,
-            communities: user.districts || [],
-            passwordChanged: 'No',
-            disabled: 'No',
-            staffAccountNumber: user.agentId,
-            avatar: user.avatar,
-            enableMultipleLogin: user.enableMultipleLogin,
-            authorised: true
-        });
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        res.status(500).json({ msg: 'Failed to load agent accountability data' });
     }
 };
 
@@ -637,7 +894,11 @@ exports.createUser = async (req, res) => {
 // @desc    Get filtered escalations
 exports.getEscalations = async (req, res) => {
     try {
-        const escalations = await withTimeout(Escalation.find().sort({ createdAt: -1 }).lean());
+        const { page, limit, skip } = parsePagination(req.query);
+        const [escalations, total] = await Promise.all([
+            withTimeout(Escalation.find().sort({ createdAt: -1 }).skip(skip).limit(limit).lean()),
+            Escalation.countDocuments(),
+        ]);
         
         const mappedEscalations = escalations.map(e => {
             let category = 'System';
@@ -670,10 +931,10 @@ exports.getEscalations = async (req, res) => {
             };
         });
 
-        res.json(mappedEscalations);
+        res.json({ page, limit, total, data: mappedEscalations });
     } catch (err) {
         console.error('Error in getEscalations:', err);
-        res.json([]);
+        res.status(500).json({ msg: 'Failed to load escalations', data: [] });
     }
 };
 
@@ -681,11 +942,18 @@ exports.getEscalations = async (req, res) => {
 // @desc    Get system logs
 exports.getSystemLogs = async (req, res) => {
     try {
-        const logs = await withTimeout(AuditLog.find()
-            .populate('user', 'name role')
-            .sort({ createdAt: -1 })
-            .limit(100)
-            .lean());
+        const { page, limit, skip } = parsePagination(req.query, { defaultLimit: 100, maxLimit: 200 });
+        const [logs, total] = await Promise.all([
+            withTimeout(
+                AuditLog.find()
+                    .populate('user', 'name role')
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit)
+                    .lean()
+            ),
+            AuditLog.countDocuments(),
+        ]);
 
         const mappedLogs = logs.map(l => {
             let severity = 'Low';
@@ -707,27 +975,28 @@ exports.getSystemLogs = async (req, res) => {
             };
         });
 
-        const defaultLogs = [
-            { id: "log-5501", action: "USER_AUTH_LOGIN", user: "Ernest Osei", severity: "Low", status: "Success", timestamp: new Date(Date.now() - 600 * 1000), details: "Successful session creation for supervisor Ernest Osei", resource: "AuthSession" },
-            { id: "log-5502", action: "OVERRIDE_FARMER_STATUS", user: "Super Admin", severity: "High", status: "Success", timestamp: new Date(Date.now() - 3600 * 1000), details: "Manual override triggered for Farmer Boundary Mapping", resource: "FarmerRegistry" }
-        ];
-
-        res.json(mappedLogs.length > 0 ? mappedLogs : defaultLogs);
+        res.json({ page, limit, total, data: mappedLogs });
     } catch (err) {
         console.error('Error in getSystemLogs:', err);
-        res.json([]);
+        res.status(500).json({ msg: 'Failed to load system logs', data: [] });
     }
 };
 // @route   GET api/super-admin/farms
 // @desc    Get all farms with details
 exports.getFarmsOversight = async (req, res) => {
     try {
-        const farms = await withTimeout(Farm.find()
-            .populate('farmerId', 'name region')
-            .populate('agentId', 'name')
-            .sort({ createdAt: -1 }));
-
-        if (farms.length === 0) throw new Error('Empty');
+        const { page, limit, skip } = parsePagination(req.query);
+        const [farms, total] = await Promise.all([
+            withTimeout(
+                Farm.find()
+                    .populate('farmerId', 'name region')
+                    .populate('agentId', 'name')
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit)
+            ),
+            Farm.countDocuments(),
+        ]);
 
         const mappedFarms = farms.map(f => ({
             id: f._id,
@@ -736,15 +1005,15 @@ exports.getFarmsOversight = async (req, res) => {
             region: f.farmerId?.region || 'N/A',
             agent: f.agentId?.name || 'Unassigned',
             status: f.status || 'Active',
-            compliance: 'High',
-            crop: f.cropType || 'Rice',
-            maturity: '75%'
+            compliance: f.reportStatus || '—',
+            crop: f.cropType || '—',
+            maturity: f.growthStage || '—',
         }));
 
-        res.json(mappedFarms);
+        res.json({ page, limit, total, data: mappedFarms });
     } catch (err) {
         console.error('Error in getFarmsOversight:', err);
-        res.json([]);
+        res.status(500).json({ msg: 'Failed to load farms', data: [] });
     }
 };
 
@@ -752,12 +1021,18 @@ exports.getFarmsOversight = async (req, res) => {
 // @desc    Get all active partnerships
 exports.getPartnershipsSummary = async (req, res) => {
     try {
-        const matches = await withTimeout(Match.find()
-            .populate('farmerId', 'name region')
-            .populate('farmId', 'farmName')
-            .sort({ createdAt: -1 }));
-
-        if (matches.length === 0) throw new Error('Empty');
+        const { page, limit, skip } = parsePagination(req.query);
+        const [matches, total] = await Promise.all([
+            withTimeout(
+                Match.find()
+                    .populate('farmerId', 'name region')
+                    .populate('farmId', 'farmName')
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit)
+            ),
+            Match.countDocuments(),
+        ]);
 
         const mappedMatches = matches.map(m => ({
             id: m._id,
@@ -767,14 +1042,13 @@ exports.getPartnershipsSummary = async (req, res) => {
             amount: m.amount || 0,
             status: m.status || 'Ongoing',
             region: m.farmerId?.region || 'N/A',
-            maturity: '45%',
-            start: m.createdAt ? m.createdAt.toISOString().split('T')[0] : '2026-01-01'
+            start: m.createdAt ? m.createdAt.toISOString().split('T')[0] : null,
         }));
 
-        res.json(mappedMatches);
+        res.json({ page, limit, total, data: mappedMatches });
     } catch (err) {
         console.error('Error in getPartnershipsSummary:', err);
-        res.json([]);
+        res.status(500).json({ msg: 'Failed to load partnerships', data: [] });
     }
 };
 
@@ -808,13 +1082,21 @@ exports.getSupervisors = async (req, res) => {
 // @desc    Get all supervisors and agents (with pagination)
 exports.getUsersList = async (req, res) => {
     try {
+        const { page, limit, skip } = parsePagination(req.query);
         const roleQuery = { role: { $in: ['supervisor', 'agent', 'super_admin'] } };
 
-        const dbUsers = await withTimeout(Agent.find(roleQuery)
-            .select('name email role region status agentId contact districts avatar hasChangedPassword supervisor enableMultipleLogin')
-            .populate('supervisor', 'name contact')
-            .sort({ role: 1, name: 1 })
-            .lean());
+        const [dbUsers, total] = await Promise.all([
+            withTimeout(
+                Agent.find(roleQuery)
+                    .select('name email role region status agentId contact districts avatar hasChangedPassword supervisor enableMultipleLogin')
+                    .populate('supervisor', 'name contact')
+                    .sort({ role: 1, name: 1 })
+                    .skip(skip)
+                    .limit(limit)
+                    .lean()
+            ),
+            Agent.countDocuments(roleQuery),
+        ]);
 
         const mappedUsers = dbUsers.map(u => ({
             id: u._id.toString(),
@@ -834,10 +1116,10 @@ exports.getUsersList = async (req, res) => {
             authorised: true
         }));
 
-        res.json(mappedUsers);
+        res.json({ page, limit, total, data: mappedUsers });
     } catch (err) {
         console.error('Error in getUsersList:', err);
-        res.json([]);
+        res.status(500).json({ msg: 'Failed to load users', data: [] });
     }
 };
 
@@ -845,22 +1127,26 @@ exports.getUsersList = async (req, res) => {
 // @desc    Get all farmers with contact and investor information
 exports.getAllFarmers = async (req, res) => {
     try {
-        const farmers = await withTimeout(
-            Farmer.find()
-                .select('name email contact region farmSize cropsGrown status investmentInterest investmentStatus avatar')
-                .populate('agent', 'name')
-                .sort({ createdAt: -1 })
-                .lean()
-        );
+        const { page, limit, skip } = parsePagination(req.query);
 
-        if (farmers.length === 0) throw new Error('Empty');
+        const [farmers, total] = await Promise.all([
+            withTimeout(
+                Farmer.find()
+                    .select('name email contact region farmSize cropsGrown status investmentInterest investmentStatus avatar createdAt profileCompleteness')
+                    .populate('agent', 'name')
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit)
+                    .lean()
+            ),
+            Farmer.countDocuments(),
+        ]);
 
-        // Transform data to match frontend expectations
-        const transformedFarmers = farmers.map((farmer, index) => ({
+        const transformedFarmers = farmers.map((farmer) => ({
             id: farmer._id,
             name: farmer.name,
-            email: farmer.email || `${farmer.name.toLowerCase().replace(/\s+/g, '.')}@agrilync.com`,
-            phone: farmer.contact || '+233 24 000 0000',
+            email: farmer.email || '',
+            phone: farmer.contact || '',
             region: farmer.region,
             farmName: `${farmer.name}'s Farm`,
             crop: farmer.cropsGrown || 'Mixed Crops',
@@ -868,15 +1154,18 @@ exports.getAllFarmers = async (req, res) => {
             status: farmer.status === 'active' ? 'Active' : farmer.status === 'inactive' ? 'Inactive' : 'Pending',
             hasInvestor: farmer.investmentStatus === 'Matched' || farmer.investmentStatus === 'Active',
             investorName: farmer.investmentStatus === 'Matched' || farmer.investmentStatus === 'Active' ? 'Investment Partner' : null,
-            matchDate: farmer.investmentStatus === 'Matched' || farmer.investmentStatus === 'Active' ? new Date(farmer.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : null,
+            matchDate: farmer.investmentStatus === 'Matched' || farmer.investmentStatus === 'Active'
+                ? new Date(farmer.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                : null,
             agentName: farmer.agent?.name || 'Unassigned',
-            avatar: farmer.avatar || null
+            avatar: farmer.avatar || null,
+            profileCompleteness: farmer.profileCompleteness ?? 0,
         }));
 
-        res.json(transformedFarmers);
+        res.json({ page, limit, total, data: transformedFarmers });
     } catch (err) {
         console.error('Error in getAllFarmers:', err);
-        res.json([]);
+        res.status(500).json({ msg: 'Failed to load farmers', data: [] });
     }
 };
 
@@ -1003,7 +1292,7 @@ exports.createUser = async (req, res) => {
         }
 
         const generatedPassword = crypto.randomBytes(4).toString('hex');
-        const finalAgentId = staffAccountNumber?.trim() || generateStaffId(dbRole);
+        const finalAgentId = staffAccountNumber?.trim() || (await generateUniqueStaffId(Agent, dbRole));
 
         user = new Agent({
             name,
@@ -1045,7 +1334,6 @@ exports.createUser = async (req, res) => {
                 dbRole,
                 agentId: finalAgentId,
                 region,
-                password: generatedPassword,
                 loginUrl: agentLoginUrl,
                 supervisor: assignedSupervisor || null,
             });
@@ -1172,10 +1460,10 @@ exports.updateUser = async (req, res) => {
             await notifyStaffAgent({
                 agentId: user._id,
                 title: 'Password Reset',
-                message: 'An admin reset your AgriLync password. Sign in with the new password sent by SMS.',
+                message: 'An admin reset your AgriLync password. Contact your administrator for the new temporary password, then change it after signing in.',
                 smsBody: staffSms(
                     `Your AgriLync password was reset by ${adminName}. ` +
-                        `New password: ${generatedPassword}. Change it after signing in.`
+                        `Contact your administrator for your temporary password. Change it after signing in.`
                 ),
                 priority: 'high',
                 senderName: adminName,
@@ -1416,56 +1704,37 @@ exports.resolveEscalation = async (req, res) => {
 // @desc    Get all field visits with details
 exports.getVisits = async (req, res) => {
     try {
-        const visits = await withTimeout(FieldVisit.find()
-            .populate('agent', 'name')
-            .populate('farmer', 'name region')
-            .sort({ date: -1 })
-            .lean());
+        const { page, limit, skip } = parsePagination(req.query);
+        const [visits, total] = await Promise.all([
+            withTimeout(
+                FieldVisit.find()
+                    .populate('agent', 'name')
+                    .populate('farmer', 'name region')
+                    .sort({ date: -1 })
+                    .skip(skip)
+                    .limit(limit)
+                    .lean()
+            ),
+            FieldVisit.countDocuments(),
+        ]);
 
         const mappedVisits = visits.map(v => ({
             id: v._id.toString(),
             date: v.date,
             agent: v.agent?.name || 'Lync Agent',
             farmer: v.farmer?.name || 'Verified Grower',
-            region: v.farmer?.region || 'Bono Ahafo Region',
+            region: v.farmer?.region || '—',
             purpose: v.purpose || 'Farm Monitoring',
             status: v.status || 'Completed',
-            notes: v.notes || 'Routine crop health monitoring visit.',
+            notes: v.notes || '',
             challenges: v.challenges || 'None',
-            images: v.visitImages && v.visitImages.length > 0 ? v.visitImages : ['https://images.unsplash.com/photo-1593113598332-cd288d649433?w=600']
+            images: v.visitImages && v.visitImages.length > 0 ? v.visitImages : [],
         }));
 
-        const defaultVisits = [
-            {
-                id: "vst-001",
-                date: new Date(Date.now() - 3600 * 1000),
-                agent: "Sarkodie Osei",
-                farmer: "Kwesi Appiah",
-                region: "Bono Ahafo Region",
-                purpose: "Crop Assessment",
-                status: "Completed",
-                notes: "Inspected maize leaves, found healthy maturity. Advised on second fertilizer application.",
-                challenges: "None",
-                images: ["https://images.unsplash.com/photo-1593113598332-cd288d649433?w=600"]
-            },
-            {
-                id: "vst-002",
-                date: new Date(Date.now() - 24 * 3600 * 1000),
-                agent: "Mohammed Ibrahim",
-                farmer: "Abiba Mahama",
-                region: "Northern Region",
-                purpose: "Boundary Mapping",
-                status: "Completed",
-                notes: "Finished GPS tracking for 3.5 acres sorghum plot. Mapping synced with system.",
-                challenges: "Poor cellular network at farm edge, sync completed upon return.",
-                images: ["https://images.unsplash.com/photo-1592982537447-6f2a6a0c7c18?w=600"]
-            }
-        ];
-
-        res.json(mappedVisits.length > 0 ? mappedVisits : defaultVisits);
+        res.json({ page, limit, total, data: mappedVisits });
     } catch (err) {
         console.error('Error in getVisits:', err);
-        res.json([]);
+        res.status(500).json({ msg: 'Failed to load visits', data: [] });
     }
 };
 
@@ -1473,10 +1742,18 @@ exports.getVisits = async (req, res) => {
 // @desc    Get all field media files
 exports.getMedia = async (req, res) => {
     try {
-        const media = await withTimeout(Media.find()
-            .populate('agent', 'name')
-            .sort({ createdAt: -1 })
-            .lean());
+        const { page, limit, skip } = parsePagination(req.query);
+        const [media, total] = await Promise.all([
+            withTimeout(
+                Media.find()
+                    .populate('agent', 'name')
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit)
+                    .lean()
+            ),
+            Media.countDocuments(),
+        ]);
 
         // Helper: attempt to make a Cloudinary URL public by switching delivery type
         const fixCloudinaryUrl = (url) => {
@@ -1510,41 +1787,62 @@ exports.getMedia = async (req, res) => {
             };
         });
 
-        res.json(mappedMedia);
+        res.json({ page, limit, total, data: mappedMedia });
     } catch (err) {
         console.error('Error in getMedia:', err);
-        res.json([]);
+        res.status(500).json({ msg: 'Failed to load media', data: [] });
     }
 };
 
 // @route   GET api/super-admin/training
-// @desc    Get training audit statistics
+// @desc    Get agent-led training delivery sessions (field training scheduled by agents)
 exports.getTraining = async (req, res) => {
     try {
-        const trainings = await withTimeout(AgentTraining.find()
-            .populate('agent', 'name region')
-            .populate('training', 'title category date mode trainer description')
-            .sort({ createdAt: -1 })
-            .lean());
+        const { page, limit, skip } = parsePagination(req.query);
+        const [deliveries, total] = await Promise.all([
+            withTimeout(
+                TrainingDelivery.find({ status: { $ne: 'cancelled' } })
+                    .populate('agent', 'name region agentId')
+                    .populate('farmers', 'name id community')
+                    .sort({ deliveryDate: -1 })
+                    .skip(skip)
+                    .limit(limit)
+                    .lean()
+            ),
+            TrainingDelivery.countDocuments({ status: { $ne: 'cancelled' } }),
+        ]);
 
-        const mappedTrainings = trainings.map(t => ({
-            id: t._id.toString(),
-            date: t.training?.date || t.createdAt?.toISOString().split('T')[0] || 'Unknown',
-            trainee: t.agent?.name || 'Lync Agent',
-            region: t.agent?.region || null,
-            agent: t.agent?.name || 'Lync Agent',
-            course: t.training?.title || 'General Training',
-            category: t.training?.category || 'General',
-            mode: t.training?.mode || 'In-Person',
-            trainer: t.training?.trainer || 'Facilitator',
-            status: t.status || 'Registered',
-            certificate: t.certificate || false
-        }));
+        const mappedTrainings = deliveries.map((t) => {
+            const statusMap = {
+                scheduled: 'Scheduled',
+                completed: 'Completed',
+                cancelled: 'Cancelled',
+            };
+            return {
+                id: t._id.toString(),
+                date: t.deliveryDate
+                    ? new Date(t.deliveryDate).toISOString().split('T')[0]
+                    : t.createdAt?.toISOString().split('T')[0] || 'Unknown',
+                trainee: t.agent?.name || 'Field Agent',
+                region: t.agent?.region || t.community || null,
+                agent: t.agent?.name || 'Field Agent',
+                course: t.moduleTitle || 'Training Module',
+                category: t.moduleSubtitle || 'AgriLync Field Module',
+                mode: t.mode || 'In-Person Farm Visit',
+                trainer: t.agent?.name || 'Field Agent',
+                status: statusMap[t.status] || 'Scheduled',
+                certificate: t.status === 'completed',
+                growerCount: Array.isArray(t.farmers) ? t.farmers.length : 0,
+                community: t.community || '',
+                smsSent: Boolean(t.smsSent),
+                deliveryTime: t.deliveryTime || '',
+            };
+        });
 
-        res.json(mappedTrainings);
+        res.json({ page, limit, total, data: mappedTrainings });
     } catch (err) {
         console.error('Error in getTraining:', err);
-        res.json([]);
+        res.status(500).json({ msg: 'Failed to load training sessions', data: [] });
     }
 };
 
@@ -1552,31 +1850,33 @@ exports.getTraining = async (req, res) => {
 // @desc    Get field task/mission assignments
 exports.getTasks = async (req, res) => {
     try {
-        const tasks = await withTimeout(Task.find()
-            .populate('agent', 'name region')
-            .sort({ dueDate: 1 })
-            .lean());
+        const { page, limit, skip } = parsePagination(req.query);
+        const [tasks, total] = await Promise.all([
+            withTimeout(
+                Task.find()
+                    .populate('agent', 'name region')
+                    .sort({ dueDate: 1 })
+                    .skip(skip)
+                    .limit(limit)
+                    .lean()
+            ),
+            Task.countDocuments(),
+        ]);
 
         const mappedTasks = tasks.map(t => ({
             id: t._id.toString(),
             priority: t.priority === 'urgent' ? 'High' : 'Low',
-            dueDate: t.dueDate ? t.dueDate.toISOString().split('T')[0] : '2026-05-30',
+            dueDate: t.dueDate ? t.dueDate.toISOString().split('T')[0] : null,
             title: t.title || 'General Farm Verification',
             agent: t.agent?.name || 'Lync Agent',
-            region: t.agent?.region || 'Bono Ahafo Region',
+            region: t.agent?.region || '—',
             progress: t.status === 'done' ? 100 : t.status === 'in-progress' ? 50 : 0
         }));
 
-        const defaultTasks = [
-            { id: "tsk-001", priority: "High", dueDate: "2026-05-22", title: "Conduct Soil Health Verification", agent: "Sarkodie Osei", region: "Bono Ahafo Region", progress: 50 },
-            { id: "tsk-002", priority: "Low", dueDate: "2026-05-25", title: "Obtain New Harvest Photos", agent: "Mohammed Ibrahim", region: "Northern Region", progress: 0 },
-            { id: "tsk-003", priority: "High", dueDate: "2026-05-20", title: "KYC Dispute Resolution", agent: "Abdul-Rahman Ali", region: "Ashanti Region", progress: 100 }
-        ];
-
-        res.json(mappedTasks.length > 0 ? mappedTasks : defaultTasks);
+        res.json({ page, limit, total, data: mappedTasks });
     } catch (err) {
         console.error('Error in getTasks:', err);
-        res.json([]);
+        res.status(500).json({ msg: 'Failed to load tasks', data: [] });
     }
 };
 

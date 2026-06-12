@@ -51,4 +51,8 @@ const FieldVisitSchema = new mongoose.Schema({
     }
 });
 
+FieldVisitSchema.index({ date: -1 });
+FieldVisitSchema.index({ agent: 1, date: -1 });
+FieldVisitSchema.index({ farmer: 1, date: -1 });
+
 module.exports = mongoose.models.FieldVisit || mongoose.model('FieldVisit', FieldVisitSchema);

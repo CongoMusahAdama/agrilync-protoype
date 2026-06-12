@@ -19,7 +19,8 @@ import {
     Users,
     ShieldAlert,
     GraduationCap,
-    Scale
+    Scale,
+    CloudOff,
 } from 'lucide-react';
 import SidebarProfileCard from './SidebarProfileCard';
 import { useAuth } from '@/contexts/AuthContext';
@@ -96,6 +97,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             items: [
                 { id: 'tasks-alerts', label: 'Tasks', icon: Briefcase },
                 { id: 'notifications', label: 'Notifications', icon: Bell },
+                { id: 'offline-field-guide', label: 'Offline Field Guide', icon: CloudOff },
             ]
         },
         {

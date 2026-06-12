@@ -31,6 +31,7 @@ import {
 import FarmerIdCardModal from '@/components/agent/FarmerIdCardModal';
 import { formatCardIssueDate } from '@/utils/growerCard';
 import api from '@/utils/api';
+import { parseApiList } from '@/utils/parseApiList';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import { useDarkMode } from '@/contexts/DarkModeContext';
@@ -76,12 +77,8 @@ const FarmFarmerOversight = () => {
 
     const fetchFarmers = async () => {
         try {
-            const res = await api.get('/super-admin/farmers');
-            if (res.data) {
-                setFarmers(res.data);
-            } else {
-                setFarmers([]);
-            }
+            const res = await api.get('/super-admin/farmers', { params: { limit: 500 } });
+            setFarmers(parseApiList(res.data));
         } catch (err) {
             console.error('Failed to fetch farmers:', err);
             setFarmers([]);
@@ -350,7 +347,7 @@ const FarmFarmerOversight = () => {
 
                 <TabsContent value="all" className="mt-0">
                     <Card className={`border-none shadow-premium overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
-                        <CardContent className="p-0 overflow-x-auto">
+                        <CardContent className="p-0 admin-table-scroll">
                             <table className="w-full text-left border-collapse whitespace-nowrap">
                                 <thead>
                                     <tr className="bg-[#002f37] text-white text-[10px] font-bold uppercase tracking-widest">
@@ -585,7 +582,7 @@ const FarmFarmerOversight = () => {
                             <CardHeader>
                                 <CardTitle className="text-sm font-black uppercase tracking-widest text-gray-500">Recent Review History</CardTitle>
                             </CardHeader>
-                            <CardContent className="p-0 overflow-x-auto">
+                            <CardContent className="p-0 admin-table-scroll">
                                 <table className="w-full text-left text-sm">
                                     <thead>
                                         <tr className="text-[10px] font-black uppercase tracking-widest text-gray-400 border-b">
@@ -628,7 +625,7 @@ const FarmFarmerOversight = () => {
                                 All digital credentials generated for successfully onboarded growers
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="p-0 overflow-x-auto">
+                        <CardContent className="p-0 admin-table-scroll">
                             {loadingIdCards ? (
                                 <div className="py-16 text-center text-sm text-gray-400 font-bold uppercase tracking-widest">
                                     Loading cards…
@@ -717,7 +714,7 @@ const FarmFarmerOversight = () => {
 
             {/* Status Override Modal */}
             <Dialog open={isOverrideOpen} onOpenChange={setIsOverrideOpen}>
-                <DialogContent className={`w-[95vw] md:max-w-2xl md:w-full border-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+                <DialogContent className={`admin-modal-mobile w-[95vw] md:max-w-2xl md:w-full border-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3 text-rose-500">
                              <Shield className="w-6 h-6" /> Change Status

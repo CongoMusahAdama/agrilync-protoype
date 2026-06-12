@@ -1,42 +1,85 @@
 
 /**
+ * Shared Web Audio context — unlocked on first user gesture so background alerts can play.
+ */
+let sharedCtx: AudioContext | null = null;
+
+const getAudioContext = (): AudioContext | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+        if (!sharedCtx) {
+            sharedCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        }
+        if (sharedCtx.state === 'suspended') {
+            void sharedCtx.resume();
+        }
+        return sharedCtx;
+    } catch {
+        return null;
+    }
+};
+
+if (typeof window !== 'undefined') {
+    const unlock = () => getAudioContext();
+    window.addEventListener('pointerdown', unlock, { once: true, passive: true });
+    window.addEventListener('keydown', unlock, { once: true });
+}
+
+const playTone = (
+    audioCtx: AudioContext,
+    freq: number,
+    startTime: number,
+    duration: number,
+    volume: number,
+    type: OscillatorType = 'sine'
+) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, startTime);
+
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(volume, startTime + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start(startTime);
+    osc.stop(startTime + duration);
+};
+
+/**
  * A soft, professional harmonic chime for successful actions.
- * Optimized for a 'premium' feel with soft attacks and resonant decay.
  */
 export const playSuccessSound = () => {
     try {
-        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        
-        const playNote = (freq: number, startTime: number, duration: number, volume: number) => {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, startTime);
-            
-            // Envelope
-            gain.gain.setValueAtTime(0, startTime);
-            gain.gain.linearRampToValueAtTime(volume, startTime + 0.02); // Quick but soft attack
-            gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-            
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            osc.start(startTime);
-            osc.stop(startTime + duration);
-        };
+        const audioCtx = getAudioContext();
+        if (!audioCtx) return;
 
         const now = audioCtx.currentTime;
-        
-        // Two-note elegant ascending chime (E6 to A6)
-        // High frequencies give a 'crystal' clear feel
-        playNote(1318.51, now, 0.8, 0.15);      // E6
-        playNote(1760.00, now + 0.1, 1.0, 0.12); // A6
-        
+        playTone(audioCtx, 1318.51, now, 0.8, 0.15);
+        playTone(audioCtx, 1760.0, now + 0.1, 1.0, 0.12);
     } catch (e) {
         console.warn('Audio feedback failed', e);
     }
 };
 
-// Removed click sounds per user request for a quieter experience
+/**
+ * Pleasant two-tone alert for new system notifications.
+ */
+export const playNotificationBeep = () => {
+    try {
+        const audioCtx = getAudioContext();
+        if (!audioCtx) return;
+
+        const now = audioCtx.currentTime;
+        playTone(audioCtx, 880, now, 0.22, 0.14);
+        playTone(audioCtx, 1174.66, now + 0.18, 0.28, 0.12);
+    } catch (e) {
+        console.warn('Notification beep failed', e);
+    }
+};
+
 export const playClickSound = () => {};

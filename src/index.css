@@ -1134,26 +1134,103 @@
 
   .admin-dashboard-root main {
     max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  body.admin-dashboard-active,
+  .admin-dashboard-root {
+    overflow-x: hidden;
   }
 
   .admin-dashboard-root input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
   .admin-dashboard-root select,
   .admin-dashboard-root textarea,
-  .admin-dashboard-root [role="combobox"] {
+  .admin-dashboard-root [role="combobox"],
+  body.admin-dashboard-active input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+  body.admin-dashboard-active select,
+  body.admin-dashboard-active textarea,
+  body.admin-dashboard-active [role="combobox"] {
     font-size: 16px !important;
   }
 
-  .admin-dashboard-root table {
-    display: block;
-    max-width: 100%;
+  /* Scrollable data tables */
+  .admin-dashboard-root .admin-table-scroll,
+  .admin-dashboard-root .overflow-x-auto {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    max-width: 100%;
   }
 
+  .admin-dashboard-root .admin-table-scroll > table {
+    min-width: 640px;
+  }
+
+  .admin-dashboard-root table {
+    width: 100%;
+  }
+
+  /* Full-screen admin modals & sheets on small viewports */
+  body.admin-dashboard-active .admin-modal-mobile,
+  .admin-dashboard-root .admin-modal-mobile,
+  body.admin-dashboard-active .admin-farmer-profile-modal {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.admin-dashboard-active .admin-drawer-mobile {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+
+  /* Stack dialog / sheet footer actions on mobile */
+  body.admin-dashboard-active .admin-action-row,
+  .admin-dashboard-root .admin-action-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.5rem !important;
+  }
+
+  body.admin-dashboard-active .admin-action-row > *,
+  .admin-dashboard-root .admin-action-row > * {
+    width: 100% !important;
+    min-height: 44px;
+  }
+
+  /* Horizontally scrollable tab bars */
+  .admin-dashboard-root [role="tablist"],
+  body.admin-dashboard-active [role="tablist"] {
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    justify-content: flex-start !important;
+  }
+
+  .admin-dashboard-root [role="tablist"] [role="tab"],
+  body.admin-dashboard-active [role="tablist"] [role="tab"] {
+    flex-shrink: 0;
+    min-height: 44px;
+  }
+
+  /* Overview stat cards — slightly shorter on small phones */
   .admin-dashboard-root .admin-overview-mobile h3,
   .admin-dashboard-root .admin-overview-mobile .text-3xl {
     font-size: 1.5rem;
     line-height: 1.2;
+  }
+
+  .admin-dashboard-root .admin-overview-mobile .h-32 {
+    height: 7.5rem;
+  }
+
+  /* Bottom nav tap targets */
+  .admin-dashboard-root .admin-mobile-nav-item {
+    min-height: 44px;
+    touch-action: manipulation;
   }
 
   .admin-dashboard-root .no-scrollbar::-webkit-scrollbar {

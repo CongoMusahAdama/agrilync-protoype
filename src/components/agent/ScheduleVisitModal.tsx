@@ -9,6 +9,8 @@ import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
 import Swal from 'sweetalert2';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOffline } from '@/contexts/OfflineContext';
+import { cacheFarmers, submitOrQueue, fetchAllAgentFarmers, type CachedFarmer } from '@/lib/offline';
 import {
     Calendar,
     MapPin,
@@ -34,6 +36,7 @@ interface ScheduleVisitModalProps {
 const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenChange, onSuccess, farmer }) => {
     const { darkMode } = useDarkMode();
     const { agent } = useAuth();
+    const { isOnline, cachedFarmers, refreshOfflineState } = useOffline();
     const queryClient = useQueryClient();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,14 +75,15 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
     const { data: farmersBatch } = useQuery({
         queryKey: ['agentFarmersDirectory'],
         queryFn: async () => {
-            const res = await api.get('/farmers?limit=1000');
-            return res.data.data || [];
+            const all = await fetchAllAgentFarmers();
+            await cacheFarmers(all);
+            return all;
         },
         staleTime: 5 * 60 * 1000,
-        enabled: open,
+        enabled: open && isOnline,
     });
 
-    const farmers = (farmersBatch || []) as Array<{ _id?: string; id?: string; name?: string; ghanaCardNumber?: string; community?: string }>;
+    const farmers = ((isOnline ? farmersBatch : cachedFarmers) || []) as Array<{ _id?: string; id?: string; name?: string; ghanaCardNumber?: string; community?: string }>;
     const filteredFarmers = useMemo(
         () => farmers.filter((f) => {
             const id = f._id || f.id;
@@ -112,10 +116,33 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
 
     const createVisitMutation = useMutation({
         mutationFn: async (data: Record<string, unknown>) => {
-            const res = await api.post('/scheduled-visits', data);
-            return res.data;
+            const result = await submitOrQueue({
+                type: 'scheduled-visit',
+                method: 'POST',
+                url: '/scheduled-visits',
+                payload: data,
+                label: `Scheduled visit — ${String(data.purpose || 'Field visit')}`,
+            });
+            if (result.status === 'queued') return { queued: true as const };
+            return result.data;
         },
-        onSuccess: async (result: { sms?: { sent?: boolean; recipientCount?: number } }) => {
+        onSuccess: async (result: { queued?: boolean; sms?: { sent?: boolean; recipientCount?: number } }) => {
+            if (result?.queued) {
+                await refreshOfflineState();
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Saved on Device',
+                    text: 'Visit saved offline. It will sync automatically when you have signal.',
+                    confirmButtonColor: '#065f46',
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+                queryClient.invalidateQueries({ queryKey: ['scheduledVisits'] });
+                handleClose();
+                onSuccess?.();
+                return;
+            }
+
             const smsCount = result?.sms?.recipientCount ?? 0;
             const smsSent = Boolean(result?.sms?.sent && smsCount > 0);
             await Swal.fire({
@@ -210,12 +237,12 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent hideCloseButton className="max-w-4xl w-full md:w-[95vw] p-0 overflow-hidden flex flex-col h-full max-h-[100dvh] md:h-[75vh] border-none bg-white dark:bg-[#002f37] rounded-none shadow-2xl">
+            <DialogContent hideCloseButton className="agent-modal-mobile max-w-4xl w-full md:w-[95vw] p-0 overflow-hidden flex flex-col h-full max-h-[100dvh] md:h-[75vh] border-none bg-white dark:bg-[#002f37] rounded-none md:rounded-lg shadow-2xl">
                 <DialogTitle className="sr-only">Schedule Field Visit</DialogTitle>
                 <DialogDescription className="sr-only">Log a new field visit for inspection or support.</DialogDescription>
 
                 {/* Header — dark green, same as Log Field Visit */}
-                <div className="relative bg-[#065f46] px-6 py-5 flex items-start justify-between shrink-0 overflow-hidden">
+                <div className="relative bg-[#065f46] px-4 sm:px-6 py-4 sm:py-5 flex items-start justify-between shrink-0 overflow-hidden">
                     <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.6) 1px, transparent 0)', backgroundSize: '18px 18px' }} />
                     <div className="relative z-10 w-full pr-10">
                         <div className="flex items-center gap-3 mb-1">
@@ -230,14 +257,14 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
                     </div>
                     <button 
                         onClick={handleClose} 
-                        className="absolute right-6 top-6 z-10 p-2 rounded-xl bg-black/20 hover:bg-black/40 text-white transition-all backdrop-blur-md border border-white/10"
+                        className="absolute right-4 sm:right-6 top-4 sm:top-6 z-10 p-2 rounded-xl bg-black/20 hover:bg-black/40 text-white transition-all backdrop-blur-md border border-white/10"
                     >
                         <X className="h-4 w-4" />
                     </button>
                 </div>
 
                 {/* Scrollable body */}
-                <div className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
+                <div className="flex-1 overflow-y-auto px-4 sm:px-7 py-4 sm:py-6 space-y-5">
 
                     {/* Growers — single or group */}
                     <div className="space-y-3">
@@ -251,21 +278,21 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
                             </span>
                         </div>
                         <div className="rounded-2xl border border-gray-100 dark:border-white/10 overflow-hidden bg-white dark:bg-white/5">
-                            <div className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/10">
-                                <div className="relative flex-1">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 px-3 py-2.5 bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/10">
+                                <div className="relative flex-1 min-w-0">
                                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
                                     <input
                                         type="text"
                                         placeholder="Search grower name, ID or community..."
                                         value={farmerSearch}
                                         onChange={(e) => setFarmerSearch(e.target.value)}
-                                        className="w-full h-9 pl-8 pr-3 text-xs font-semibold rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 outline-none focus:border-[#065f46]"
+                                        className="w-full h-10 sm:h-9 pl-8 pr-3 text-xs font-semibold rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 outline-none focus:border-[#065f46]"
                                     />
                                 </div>
                                 <button
                                     type="button"
                                     onClick={toggleAllFarmers}
-                                    className={`whitespace-nowrap text-[10px] font-black uppercase tracking-wide px-3 py-2 rounded-xl border transition-all ${allFarmersSelected ? 'bg-[#065f46] text-white border-[#065f46]' : 'bg-white dark:bg-white/5 text-gray-500 border-gray-200 dark:border-white/10'}`}
+                                    className={`w-full sm:w-auto shrink-0 text-[10px] font-black uppercase tracking-wide px-3 py-2.5 sm:py-2 rounded-xl border transition-all ${allFarmersSelected ? 'bg-[#065f46] text-white border-[#065f46]' : 'bg-white dark:bg-white/5 text-gray-500 border-gray-200 dark:border-white/10'}`}
                                 >
                                     {allFarmersSelected ? 'Deselect All' : 'Select All'}
                                 </button>
@@ -440,23 +467,31 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ open, onOpenCha
                 </div>
 
                 {/* Footer */}
-                <div className="px-7 py-5 border-t border-gray-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-gray-50 dark:bg-[#0b2528]/60">
+                <div className="px-4 sm:px-7 py-4 sm:py-5 border-t border-gray-100 dark:border-white/5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0 bg-gray-50 dark:bg-[#0b2528]/60 pb-[max(1rem,env(safe-area-inset-bottom))]">
                     <Button
                         variant="ghost"
                         onClick={handleClose}
-                        className="text-gray-500 hover:text-gray-800 dark:hover:text-white font-bold text-[11px] uppercase tracking-widest h-11 px-5 rounded-xl"
+                        className="w-full sm:w-auto order-2 sm:order-1 justify-center sm:justify-start text-gray-500 hover:text-gray-800 dark:hover:text-white font-bold text-[11px] uppercase tracking-widest h-11 px-5 rounded-xl"
                     >
                         <X className="h-3.5 w-3.5 mr-2" /> Cancel
                     </Button>
                     <Button
                         onClick={handleSubmit}
                         disabled={createVisitMutation.isPending}
-                        className="bg-[#065f46] hover:bg-[#065f46]/90 text-white h-12 px-10 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-emerald-900/20 border-none transition-all active:scale-95"
+                        className="w-full sm:w-auto order-1 sm:order-2 justify-center bg-[#065f46] hover:bg-[#065f46]/90 text-white h-12 px-6 sm:px-10 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-emerald-900/20 border-none transition-all active:scale-95"
                     >
-                        {createVisitMutation.isPending
-                            ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Syncing Log...</>
-                            : <><Send className="h-4 w-4 mr-2" />Finalize Visit Log</>
-                        }
+                        {createVisitMutation.isPending ? (
+                            <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Saving…
+                            </>
+                        ) : (
+                            <>
+                                <Send className="h-4 w-4 mr-2" />
+                                <span className="sm:hidden">Save Visit Log</span>
+                                <span className="hidden sm:inline">Finalize Visit Log</span>
+                            </>
+                        )}
                     </Button>
                 </div>
             </DialogContent>

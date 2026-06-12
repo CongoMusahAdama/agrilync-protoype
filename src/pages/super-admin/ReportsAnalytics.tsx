@@ -264,7 +264,7 @@ const ReportsAnalytics = () => {
 
             {/* Report Preview Modal */}
             <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-                <DialogContent className={`w-[95vw] md:max-w-5xl md:w-full border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+                <DialogContent className={`admin-modal-mobile w-[95vw] md:max-w-5xl md:w-full border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
                     {selectedReport && (
                         <div>
                             <div className="bg-[#002f37] p-8 text-white relative">

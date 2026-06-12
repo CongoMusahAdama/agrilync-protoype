@@ -12,6 +12,8 @@ import AgentLayout from './AgentLayout';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import CountUp from '@/components/CountUp';
 import { playSuccessSound } from '@/utils/audio';
+import { submitOrQueue } from '@/lib/offline';
+import { useOffline } from '@/contexts/OfflineContext';
 import AddFarmerModal from '@/components/agent/AddFarmerModal';
 import ViewFarmerModal from '@/components/agent/ViewFarmerModal';
 import UploadReportModal from '@/components/agent/UploadReportModal';
@@ -88,6 +90,7 @@ const MetricCardSkeleton = () => (
 const FarmManagement: React.FC = () => {
     const { darkMode } = useDarkMode();
     const { agent } = useAuth();
+    const { refreshOfflineState } = useOffline();
     const location = useLocation();
 
     // All useState hooks must be declared at the top, before any useQuery or conditional logic
@@ -803,11 +806,61 @@ const FarmManagement: React.FC = () => {
         mutationFn: async (visitData: any) => {
             if (visitForm.isEditing && visitForm.editingId) {
                 return api.put(`/field-visits/${visitForm.editingId}`, visitData);
-            } else {
-                return api.post('/field-visits', visitData);
             }
+            const result = await submitOrQueue({
+                type: 'field-visit',
+                method: 'POST',
+                url: '/field-visits',
+                payload: visitData,
+                label: `Field visit — ${visitData.purpose || 'Inspection'}`,
+            });
+            if (result.status === 'queued') return { queued: true as const };
+            return result.data;
         },
-        onSuccess: async () => {
+        onSuccess: async (data: any) => {
+            if (data?.queued) {
+                await refreshOfflineState();
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Saved on Device',
+                    html: `
+                        <div style="text-align: center; padding: 10px 0;">
+                            <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
+                                Field visit saved offline. It will sync when you have signal.
+                            </p>
+                        </div>
+                    `,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#065f46',
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+                queryClient.invalidateQueries({ queryKey: ['fieldVisits'] });
+                setFieldVisitModalOpen(false);
+                setVisitForm({
+                    farmerId: '',
+                    farmerName: '',
+                    lyncId: '',
+                    phone: '',
+                    date: new Date().toISOString().split('T')[0],
+                    time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+                    hoursSpent: '1',
+                    purpose: '',
+                    otherPurpose: '',
+                    notes: '',
+                    stage: '',
+                    observations: '',
+                    recommendations: '',
+                    photos: [],
+                    challenges: '',
+                    status: 'Completed',
+                    isEditing: false,
+                    editingId: '',
+                });
+                setVisitImages([]);
+                return;
+            }
+
             await Swal.fire({
                 icon: 'success',
                 title: 'Success!',

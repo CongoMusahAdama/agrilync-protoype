@@ -157,7 +157,7 @@ const AgentAccountability = () => {
 
             {/* Accountability Table */}
             <Card className={`border-none shadow-premium overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
-                <CardContent className="p-0 overflow-x-auto">
+                <CardContent className="p-0 admin-table-scroll">
                     <table className="w-full text-left border-collapse whitespace-nowrap">
                         <thead>
                             <tr className="bg-[#002f37] text-white text-[10px] font-bold uppercase tracking-widest">
@@ -233,7 +233,7 @@ const AgentAccountability = () => {
 
             {/* Flag Modal */}
             <Dialog open={isFlagModalOpen} onOpenChange={setIsFlagModalOpen}>
-                <DialogContent className={`w-[95vw] md:max-w-3xl md:w-full border-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+                <DialogContent className={`admin-modal-mobile w-[95vw] md:max-w-3xl md:w-full border-none shadow-2xl ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3 text-rose-500">
                              <ShieldAlert className="w-6 h-6" /> Flag Agent
@@ -264,7 +264,7 @@ const AgentAccountability = () => {
 
             {/* Commission Calculator Modal */}
             <Dialog open={isCommissionModalOpen} onOpenChange={setIsCommissionModalOpen}>
-                <DialogContent className={`w-[95vw] md:max-w-4xl md:w-full border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+                <DialogContent className={`admin-modal-mobile w-[95vw] md:max-w-4xl md:w-full border-none shadow-2xl p-0 overflow-hidden ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
                     {selectedAgent && (
                         <div>
                             <div className="bg-[#002f37] p-8 text-white">
