@@ -82,15 +82,15 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-7xl md:w-[min(96vw,1280px)] max-md:h-full max-md:max-h-[100dvh] md:h-[80vh] p-0 flex flex-col overflow-hidden border-0 max-md:rounded-none ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-50'}`}>
+            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-7xl md:w-[min(96vw,1280px)] max-md:h-full max-md:max-h-[100dvh] md:h-[88vh] md:max-h-[920px] p-0 flex flex-col overflow-hidden border-0 max-md:rounded-none md:rounded-lg ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-50'}`}>
                 <DialogHeader className="sr-only">
                     <DialogTitle>Farm Details - {farm.name}</DialogTitle>
                     <DialogDescription>Full details and activity history for farmer {farmer.name}</DialogDescription>
                 </DialogHeader>
 
                 {/* Top Action Header */}
-                <div className={`p-4 md:p-6 border-b flex flex-col md:flex-row items-start md:items-center justify-between gap-4 ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white border-gray-200'}`}>
-                    <div className="flex items-center gap-4">
+                <div className={`p-4 md:p-6 pr-12 md:pr-14 border-b shrink-0 flex flex-col gap-4 ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white border-gray-200'}`}>
+                    <div className="flex items-start gap-4 min-w-0">
                         <div className="h-16 w-16 rounded-2xl overflow-hidden shadow-2xl border-2 border-[#065f46]/20 bg-white/10 flex items-center justify-center shrink-0">
                             {farmer.profilePicture || farmer.avatar ? (
                                 <img src={farmer.profilePicture || farmer.avatar} alt={farmer.name} className="w-full h-full object-cover" />
@@ -100,39 +100,41 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                                 </div>
                             )}
                         </div>
-                        <div>
-                            <h1 className={`text-2xl font-black tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>{farm.name}</h1>
-                            <div className="flex flex-wrap items-center gap-3 mt-1 text-sm text-gray-500">
-                                <span className="font-bold text-[#065f46] flex items-center gap-1.5 px-3 py-1 bg-[#065f46]/5 rounded-full">
-                                    <Phone className="h-3.5 w-3.5" /> {farmer.name}
+                        <div className="min-w-0 flex-1">
+                            <h1 className={`text-xl md:text-2xl font-black tracking-tight truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>{farm.name}</h1>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-gray-500">
+                                <span className="font-bold text-[#065f46] flex items-center gap-1.5 px-3 py-1 bg-[#065f46]/5 rounded-full max-w-full">
+                                    <Phone className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{farmer.name}</span>
                                 </span>
-                                <span className="text-gray-300">•</span>
+                                <span className="text-gray-300 hidden sm:inline">•</span>
                                 <span className="font-bold text-[#065f46] uppercase tracking-widest text-[10px]">{getGrowerDisplayId(farmer)}</span>
-                                <span className="text-gray-300">•</span>
+                                <span className="text-gray-300 hidden sm:inline">•</span>
                                 <span className="font-bold text-gray-400 uppercase tracking-widest text-[10px]">{farmer.region}</span>
-                                <span className="text-gray-300">•</span>
+                                <span className="text-gray-300 hidden sm:inline">•</span>
                                 <Badge variant="secondary" className="text-[10px] uppercase font-black bg-[#065f46] text-white rounded-lg border-none">{farm.status}</Badge>
                             </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 w-full md:flex md:items-center md:gap-2 md:w-auto">
+                    <div className="grid grid-cols-2 gap-2 w-full md:flex md:flex-wrap md:items-center md:justify-end md:gap-2">
                         <Button 
-                            className="w-full md:flex-none bg-[#065f46] text-white hover:bg-[#065f46]/90 font-black h-11 px-3 md:px-6 rounded-xl border-none shadow-lg shadow-[#065f46]/20 flex items-center justify-center gap-2 uppercase tracking-widest text-[10px] md:text-[11px]"
+                            className="w-full md:w-auto md:flex-none bg-[#065f46] text-white hover:bg-[#065f46]/90 font-black h-11 px-3 md:px-6 rounded-xl border-none shadow-lg shadow-[#065f46]/20 flex items-center justify-center gap-2 uppercase tracking-widest text-[10px] md:text-[11px] shrink-0"
                             onClick={() => onNewVisit && onNewVisit(farmer)}
                         >
                             <Plus className="h-4 w-4" /> New Visit
                         </Button>
                         <Button 
                             variant="outline" 
-                            className={`w-full md:flex-none h-11 px-3 md:px-6 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-[11px] flex items-center justify-center gap-2 ${darkMode ? 'border-white/10 text-white hover:bg-white/5' : 'border-gray-200 text-[#002f37] hover:bg-gray-50'}`}
+                            className={`w-full md:w-auto md:flex-none h-11 px-3 md:px-6 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-[11px] flex items-center justify-center gap-2 shrink-0 ${darkMode ? 'border-white/10 text-white hover:bg-white/5' : 'border-gray-200 text-[#002f37] hover:bg-gray-50'}`}
                             onClick={() => onUploadMedia && onUploadMedia(farmer)}
                         >
-                            <Camera className="h-4 w-4 shrink-0" /> <span className="truncate">Upload</span>
+                            <Camera className="h-4 w-4 shrink-0" />
+                            <span className="md:hidden">Upload</span>
+                            <span className="hidden md:inline">Upload Media</span>
                         </Button>
                         <Button 
                             variant="outline" 
-                            className={`w-full md:flex-none h-11 px-3 md:px-6 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-[11px] flex items-center justify-center gap-2 ${darkMode ? 'border-[#7ede56]/30 text-[#7ede56] hover:bg-[#7ede56]/5' : 'border-[#065f46]/30 text-[#065f46] hover:bg-[#065f46]/5'}`}
+                            className={`w-full md:w-auto md:flex-none h-11 px-3 md:px-6 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-[11px] flex items-center justify-center gap-2 shrink-0 ${darkMode ? 'border-[#7ede56]/30 text-[#7ede56] hover:bg-[#7ede56]/5' : 'border-[#065f46]/30 text-[#065f46] hover:bg-[#065f46]/5'}`}
                             onClick={() => onAddField && onAddField(farmer)}
                         >
                             <Map className="h-4 w-4 shrink-0" /> Add Field
@@ -140,7 +142,7 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                         {isActiveGrower && (
                             <Button
                                 variant="outline"
-                                className={`w-full md:flex-none h-11 px-3 md:px-6 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-[11px] flex items-center justify-center gap-2 ${darkMode ? 'border-white/15 text-white hover:bg-white/5' : 'border-[#002f37]/20 text-[#002f37] hover:bg-gray-50'}`}
+                                className={`w-full md:w-auto md:flex-none h-11 px-3 md:px-6 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-[11px] flex items-center justify-center gap-2 shrink-0 ${darkMode ? 'border-white/15 text-white hover:bg-white/5' : 'border-[#002f37]/20 text-[#002f37] hover:bg-gray-50'}`}
                                 onClick={() => setIdCardOpen(true)}
                             >
                                 <IdCard className="h-4 w-4" /> ID Card
@@ -152,9 +154,9 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                     </div>
                 </div>
 
-                <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+                <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
                     {/* Left Panel: Health & KPIs */}
-                    <div className={`w-full md:w-[300px] shrink-0 p-6 border-b md:border-b-0 md:border-r flex flex-col gap-8 overflow-y-auto ${darkMode ? 'bg-[#0b2528] border-white/5' : 'bg-white border-gray-200'}`}>
+                    <div className={`w-full md:w-[280px] lg:w-[300px] shrink-0 p-4 md:p-6 border-b md:border-b-0 md:border-r flex flex-col gap-4 md:gap-5 overflow-y-auto min-h-0 ${darkMode ? 'bg-[#0b2528] border-white/5' : 'bg-white border-gray-200'}`}>
                         {/* Health Gauge */}
                         <div className="flex flex-col items-center text-center">
                             <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-6">Farm Health Score</h3>
@@ -227,10 +229,10 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                     </div>
 
                     {/* Main Content: Tabs */}
-                    <div className="flex-1 flex flex-col overflow-hidden">
-                        <Tabs defaultValue="overview" className="flex-1 flex flex-col" onValueChange={setActiveDetailTab}>
-                            <div className={`px-6 pt-2 border-b ${darkMode ? 'bg-[#002f37] border-white/5' : 'bg-white border-gray-200'}`}>
-                                <TabsList className="bg-transparent h-12 w-full justify-start gap-8 p-0">
+                    <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+                        <Tabs defaultValue="overview" className="flex-1 min-h-0 flex flex-col" onValueChange={setActiveDetailTab}>
+                            <div className={`px-4 md:px-6 pt-2 border-b shrink-0 ${darkMode ? 'bg-[#002f37] border-white/5' : 'bg-white border-gray-200'}`}>
+                                <TabsList className="bg-transparent h-12 w-full justify-start gap-4 md:gap-8 p-0 overflow-x-auto no-scrollbar">
                                     <TabsTrigger value="overview" className="bg-transparent border-b-2 border-transparent data-[state=active]:border-[#065f46] data-[state=active]:text-[#065f46] rounded-none px-0 h-12 text-sm font-bold uppercase tracking-widest">Overview</TabsTrigger>
                                     <TabsTrigger value="timeline" className="bg-transparent border-b-2 border-transparent data-[state=active]:border-[#065f46] data-[state=active]:text-[#065f46] rounded-none px-0 h-12 text-sm font-bold uppercase tracking-widest">Timeline</TabsTrigger>
                                     <TabsTrigger value="visits" className="bg-transparent border-b-2 border-transparent data-[state=active]:border-[#065f46] data-[state=active]:text-[#065f46] rounded-none px-0 h-12 text-sm font-bold uppercase tracking-widest">Visits</TabsTrigger>
@@ -238,7 +240,8 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                                 </TabsList>
                             </div>
 
-                            <ScrollArea className="flex-1">
+                            <div className="flex-1 min-h-0 overflow-hidden">
+                            <ScrollArea className="h-full">
                                 <div className="p-6 md:p-8">
                                     <TabsContent value="overview" className="mt-0 space-y-8">
                                         <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -368,6 +371,7 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                                     </TabsContent>
                                 </div>
                             </ScrollArea>
+                            </div>
                         </Tabs>
                     </div>
                 </div>

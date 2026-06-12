@@ -1068,6 +1068,14 @@
   border-width: 2px;
 }
 
+.agent-dashboard-root .no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.agent-dashboard-root .no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Agent dashboard — mobile field use (prevent iOS Safari auto-zoom on form focus) */
 @media (max-width: 767px) {
   .agent-dashboard-root,
