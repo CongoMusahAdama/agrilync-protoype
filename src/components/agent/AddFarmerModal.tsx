@@ -457,7 +457,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         retry: false,
         onSuccess: async (response: any) => {
             const savedFarmer = response.data;
-            const lyncId = savedFarmer?.id || savedFarmer?.ghanaCardNumber || 'N/A';
+            const lyncId = savedFarmer?.id || 'Pending';
             const sms = savedFarmer?.sms;
             const smsSent = Boolean(sms?.sent && (sms?.recipientCount ?? 0) > 0);
             const smsLine = !isEditMode && sms
@@ -1175,6 +1175,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                 }
             }}
             farmer={finalizedFarmer}
+            fetchSavedCard={Boolean(finalizedFarmer?._id)}
         />
         </>
     );

@@ -24,6 +24,22 @@ const {
     buildPendingQueueQuery,
     agentCanVerifyFarmer,
 } = require('../utils/agentAssignment');
+const { issueDigitalCardIfNeeded } = require('../utils/generateGrowerCard');
+
+const calcAgeFromDob = (dob) => {
+    if (!dob) return null;
+    const raw = String(dob).trim();
+    const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const birth = iso
+        ? new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]))
+        : new Date(raw);
+    if (Number.isNaN(birth.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age -= 1;
+    return age >= 0 && age < 130 ? age : null;
+};
 
 const resolveAgentId = (agent) => agent?._id || agent?.id || null;
 
@@ -52,7 +68,7 @@ exports.getFarmers = async (req, res) => {
 
         const [farmers, total] = await Promise.all([
             Farmer.find(query)
-                .select('name id status region district community farmType contact createdAt ghanaCardNumber profilePicture investmentStatus')
+                .select('name id status region district community farmType contact createdAt ghanaCardNumber profilePicture investmentStatus dob yearsOfExperience digitalCardNumber digitalCardIssuedAt onboardingAgentId')
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
@@ -72,6 +88,98 @@ exports.getFarmers = async (req, res) => {
         });
     } catch (err) {
         console.error('getFarmers error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+// @route   GET api/farmers/public/verify/:lyncId
+// @desc    Public grower profile for ID card QR verification (no auth)
+exports.getPublicGrowerProfile = async (req, res) => {
+    try {
+        const lookup = decodeURIComponent(String(req.params.lyncId || '')).trim().toUpperCase();
+        if (!lookup) {
+            return res.status(400).json({ success: false, message: 'Grower ID is required.' });
+        }
+
+        const farmer = await Farmer.findOne({ id: lookup })
+            .select('-password -idCardFront -idCardBack -ghanaCardNumber -email -contact -imageHash')
+            .populate('agent', 'name agentId contact')
+            .lean();
+
+        if (!farmer || farmer.status === 'inactive') {
+            return res.status(404).json({ success: false, message: 'Grower not found or inactive.' });
+        }
+
+        res.json({
+            success: true,
+            grower: {
+                name: farmer.name,
+                lyncId: farmer.id,
+                digitalCardNumber: farmer.digitalCardNumber || null,
+                age: calcAgeFromDob(farmer.dob),
+                yearsOfExperience: farmer.yearsOfExperience ?? null,
+                region: farmer.region || '—',
+                district: farmer.district || '—',
+                community: farmer.community || '—',
+                farmType: farmer.farmType || '—',
+                status: farmer.status,
+                profilePicture: farmer.profilePicture,
+                fieldAgent: farmer.agent?.name || '—',
+                fieldAgentId: farmer.agent?.agentId || farmer.onboardingAgentId || '—',
+                verified: farmer.status === 'active',
+                cardIssuedAt: farmer.digitalCardIssuedAt || null,
+                memberSince: farmer.createdAt,
+            },
+        });
+    } catch (err) {
+        console.error('getPublicGrowerProfile error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+// @route   GET api/farmers/:id/id-card
+// @desc    Saved grower ID card payload (issues card serial if missing for active growers)
+exports.getFarmerIdCard = async (req, res) => {
+    try {
+        const farmer = await Farmer.findById(req.params.id)
+            .select('-password -idCardFront -idCardBack')
+            .populate('agent', 'name agentId');
+
+        if (!farmer) {
+            return res.status(404).json({ success: false, message: 'Farmer not found' });
+        }
+
+        const agentId = resolveAgentId(req.agent);
+        const isAssignedAgent =
+            farmer.agent && agentId && farmer.agent._id.toString() === agentId.toString();
+        if (!isAssignedAgent) {
+            return res.status(401).json({ success: false, message: 'Not authorized to view this ID card' });
+        }
+
+        if (farmer.status !== 'active') {
+            return res.status(400).json({
+                success: false,
+                message: 'Digital ID card is available after the grower is fully onboarded (active).',
+            });
+        }
+
+        const hadCard = Boolean(farmer.digitalCardNumber);
+        await issueDigitalCardIfNeeded(farmer);
+        if (!hadCard && farmer.digitalCardNumber) {
+            await farmer.save();
+        }
+
+        const payload = farmer.toObject ? farmer.toObject() : farmer;
+        res.json({
+            success: true,
+            farmer: {
+                ...payload,
+                dob: payload.dob || null,
+                yearsOfExperience: payload.yearsOfExperience ?? null,
+            },
+        });
+    } catch (err) {
+        console.error('getFarmerIdCard error:', err.message);
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };

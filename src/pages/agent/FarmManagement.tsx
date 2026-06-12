@@ -483,9 +483,9 @@ const FarmManagement: React.FC = () => {
     };
 
     const getDisplayId = (farmer: any) => {
-        if (farmer.id) return farmer.id;
-        const baseId = farmer.ghanaCardNumber || String(farmer._id).replace(/\D/g, '').padEnd(7, '0').slice(0, 7);
-        return `LYG-${baseId}`;
+        const id = String(farmer?.id || farmer?.lyncId || '').trim();
+        if (id && !id.includes('GHA')) return id;
+        return id || 'Pending';
     };
 
     const handleVerifyFarmer = async (farmer: any) => {

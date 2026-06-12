@@ -26,7 +26,10 @@ import {
     Shield,
     Trash2,
     Clock3,
+    IdCard,
 } from 'lucide-react';
+import FarmerIdCardModal from '@/components/agent/FarmerIdCardModal';
+import { formatCardIssueDate } from '@/utils/growerCard';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
@@ -60,10 +63,15 @@ const FarmFarmerOversight = () => {
     const [overrideData, setOverrideData] = useState({ status: '', note: '' });
     const [deletionRequests, setDeletionRequests] = useState<any[]>([]);
     const [loadingDeletionRequests, setLoadingDeletionRequests] = useState(true);
+    const [idCards, setIdCards] = useState<any[]>([]);
+    const [loadingIdCards, setLoadingIdCards] = useState(true);
+    const [idCardModalOpen, setIdCardModalOpen] = useState(false);
+    const [cardFarmer, setCardFarmer] = useState<any>(null);
 
     useEffect(() => {
         fetchFarmers();
         fetchDeletionRequests();
+        fetchIdCards();
     }, []);
 
     const fetchFarmers = async () => {
@@ -79,6 +87,18 @@ const FarmFarmerOversight = () => {
             setFarmers([]);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchIdCards = async () => {
+        try {
+            const res = await api.get('/super-admin/grower-id-cards', { params: { limit: 200 } });
+            setIdCards(Array.isArray(res.data?.data) ? res.data.data : []);
+        } catch (err) {
+            console.error('Failed to fetch grower ID cards:', err);
+            setIdCards([]);
+        } finally {
+            setLoadingIdCards(false);
         }
     };
 
@@ -258,6 +278,21 @@ const FarmFarmerOversight = () => {
     const pendingFarmers = farmers.filter(f => f.status === 'Pending Verification');
     const allRegisteredFarmers = farmers.filter(f => f.status !== 'Pending Verification');
     const pendingDeletionRequests = deletionRequests.filter((r) => r.status === 'pending');
+    const filteredIdCards = idCards.filter((card) => {
+        if (!searchTerm.trim()) return true;
+        const q = searchTerm.toLowerCase();
+        return (
+            card.name?.toLowerCase().includes(q) ||
+            card.id?.toLowerCase().includes(q) ||
+            card.digitalCardNumber?.toLowerCase().includes(q) ||
+            card.region?.toLowerCase().includes(q)
+        );
+    });
+
+    const openIdCard = (card: any) => {
+        setCardFarmer({ ...card, _id: card._id });
+        setIdCardModalOpen(true);
+    };
 
     return (
         <div className="space-y-8 pb-12 animate-in fade-in duration-300">
@@ -296,6 +331,9 @@ const FarmFarmerOversight = () => {
                         <TabsTrigger value="deletions" className="rounded-lg font-black uppercase text-[10px] tracking-widest px-8 data-[state=active]:bg-rose-500 data-[state=active]:text-white transition-all relative">
                             Deletion Requests ({pendingDeletionRequests.length})
                             {pendingDeletionRequests.length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-600 text-white text-[8px] flex items-center justify-center rounded-full animate-pulse border-2 border-white dark:border-gray-900">{pendingDeletionRequests.length}</span>}
+                        </TabsTrigger>
+                        <TabsTrigger value="id-cards" className="rounded-lg font-black uppercase text-[10px] tracking-widest px-8 data-[state=active]:bg-[#002f37] data-[state=active]:text-[#7ede56] transition-all">
+                            Digital ID Cards ({idCards.length})
                         </TabsTrigger>
                     </TabsList>
                     
@@ -578,7 +616,94 @@ const FarmFarmerOversight = () => {
                         </Card>
                     )}
                 </TabsContent>
+
+                <TabsContent value="id-cards" className="mt-0">
+                    <Card className={`border-none shadow-premium overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
+                        <CardHeader className="border-b border-gray-100 dark:border-gray-800">
+                            <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                                <IdCard className="w-4 h-4 text-[#7ede56]" />
+                                Issued Grower ID Cards
+                            </CardTitle>
+                            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">
+                                All digital credentials generated for successfully onboarded growers
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-0 overflow-x-auto">
+                            {loadingIdCards ? (
+                                <div className="py-16 text-center text-sm text-gray-400 font-bold uppercase tracking-widest">
+                                    Loading cards…
+                                </div>
+                            ) : (
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-[#002f37] text-white text-[10px] font-bold uppercase tracking-widest">
+                                            <th className="p-4">Grower</th>
+                                            <th className="p-4">Grower ID</th>
+                                            <th className="p-4">Card Number</th>
+                                            <th className="p-4">Region</th>
+                                            <th className="p-4">Field Agent</th>
+                                            <th className="p-4">Issued</th>
+                                            <th className="p-4 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                        {filteredIdCards.length > 0 ? (
+                                            filteredIdCards.map((card) => (
+                                                <tr key={card._id} className="hover:bg-[#7ede56]/5 transition-colors">
+                                                    <td className="p-4">
+                                                        <div className="flex items-center gap-3">
+                                                            {card.profilePicture ? (
+                                                                <img
+                                                                    src={card.profilePicture}
+                                                                    alt={card.name}
+                                                                    className="w-10 h-10 rounded-xl object-cover border border-[#7ede56]/20"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm bg-[#7ede56]/10 text-[#7ede56] uppercase">
+                                                                    {card.name?.[0] || '?'}
+                                                                </div>
+                                                            )}
+                                                            <span className="font-black uppercase text-sm tracking-tight">{card.name}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4 font-mono text-xs font-bold text-[#065f46]">{card.id}</td>
+                                                    <td className="p-4 font-mono text-xs font-black text-[#002f37]">{card.digitalCardNumber}</td>
+                                                    <td className="p-4 text-[10px] font-black uppercase text-gray-500">{card.region}</td>
+                                                    <td className="p-4 text-[10px] font-black uppercase">{card.agent?.name || '—'}</td>
+                                                    <td className="p-4 text-xs text-gray-500">{formatCardIssueDate(card.digitalCardIssuedAt)}</td>
+                                                    <td className="p-4 text-right">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="h-9 rounded-lg font-black uppercase text-[9px] tracking-widest"
+                                                            onClick={() => openIdCard(card)}
+                                                        >
+                                                            <Eye className="w-3.5 h-3.5 mr-1.5" />
+                                                            View / Print
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={7} className="p-12 text-center text-[11px] font-black uppercase tracking-[0.2em] text-gray-400">
+                                                    No ID cards issued yet
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
             </Tabs>
+
+            <FarmerIdCardModal
+                open={idCardModalOpen}
+                onOpenChange={setIdCardModalOpen}
+                farmer={cardFarmer}
+            />
 
             <AdminFarmerProfileModal
                 open={isProfileOpen}

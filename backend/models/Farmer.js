@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 //farmers table
 const farmerSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    id: { type: String, unique: true, sparse: true }, // Primary system ID (Ghana Card or LYG-XXXX)
+    id: { type: String, unique: true, sparse: true }, // Auto-generated AgriLync grower ID (LYG-########)
     password: { type: String, required: false }, // Optional - will be auto-generated if not provided
     region: { type: String, required: true },
     district: { type: String, required: true },
@@ -113,7 +113,11 @@ const farmerSchema = new mongoose.Schema({
     },
     investmentReadinessScore: {
         type: Number, // calculated later by system/admin
-    }
+    },
+    /** Dedicated serial printed on the grower ID card (AGL-C-########) */
+    digitalCardNumber: { type: String, unique: true, sparse: true, index: true },
+    digitalCardIssuedAt: { type: Date },
+    digitalCardGenerated: { type: Boolean, default: false },
 }, { timestamps: true });
 
 // Indexing for performance
@@ -121,12 +125,20 @@ farmerSchema.index({ agent: 1, status: 1, region: 1 });
 farmerSchema.index({ status: 1, region: 1 });
 farmerSchema.index({ verificationAgent: 1, status: 1 });
 
+const {
+    isGhanaCardDerivedGrowerId,
+    generateUniqueGrowerId,
+} = require('../utils/generateGrowerId');
+const { issueDigitalCardIfNeeded } = require('../utils/generateGrowerCard');
+
 // Internal ID and Password Generation
 farmerSchema.pre('save', async function () {
-    // 1. System ID (id field) - Standardized prefix: LYG-
-    if (!this.id || !this.id.startsWith('LYG')) {
-        const baseId = this.ghanaCardNumber || this._id.toString().replace(/\D/g, '').padEnd(7, '0').slice(0, 7);
-        this.id = `LYG-${baseId}`;
+    if (!this.id || isGhanaCardDerivedGrowerId(this.id, this.ghanaCardNumber)) {
+        this.id = await generateUniqueGrowerId(this.constructor);
+    }
+
+    if (this.status === 'active') {
+        await issueDigitalCardIfNeeded(this);
     }
 
     // 2. Password - Generate random if not provided

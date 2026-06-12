@@ -1,12 +1,12 @@
 const { dispatchBulkGrowerSms } = require('./bulkGrowerSms');
 
-/** AgriLync grower ID (LYG-…) — same as on the farmer ID card */
+const { isValidGrowerSystemId } = require('./generateGrowerId');
+
+/** AgriLync grower ID (LYG-########) — same as on the farmer ID card; never Ghana Card. */
 const resolveGrowerId = (farmer) => {
-    if (farmer?.id && String(farmer.id).trim()) return String(farmer.id).trim();
-    if (farmer?.ghanaCardNumber) {
-        const card = String(farmer.ghanaCardNumber).trim().toUpperCase();
-        return card.startsWith('LYG-') ? card : `LYG-${card}`;
-    }
+    const id = farmer?.id ? String(farmer.id).trim().toUpperCase() : '';
+    if (id && isValidGrowerSystemId(id)) return id;
+    if (id && id.startsWith('LYG-') && !id.includes('GHA')) return id;
     return '';
 };
 

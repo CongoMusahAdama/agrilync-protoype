@@ -64,6 +64,7 @@ import AdminStaffNotifications from "@/pages/super-admin/AdminStaffNotifications
 import DashboardRedirect from "./pages/DashboardRedirect";
 import SupervisorPending from "./pages/supervisor/SupervisorPending";
 import CookieConsent from "./components/CookieConsent";
+import GrowerVerify from "./pages/GrowerVerify";
 
 // Configure QueryClient with optimized caching defaults
 const queryClient = new QueryClient({
@@ -113,6 +114,7 @@ const App = () => (
               <Route path="/team" element={<Team />} />
               <Route path="/team/:memberId" element={<TeamMemberProfile />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/verify/grower/:lyncId" element={<GrowerVerify />} />
               <Route path="/agent-mobile-preview" element={<AgentMobilePreview />} />
               <Route path="/login" element={<Login />} />
               <Route path="/agent/login" element={<AgentLogin />} />

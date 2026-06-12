@@ -16,6 +16,7 @@ const {
     getUsersList,
     getSupervisors,
     getAllFarmers,
+    getGrowerIdCards,
     getFarmerDetails,
     updateFarmerStatus,
     resolveEscalation,
@@ -69,6 +70,7 @@ router.get('/logs', getSystemLogs); // Added alias for frontend
 router.get('/farms', getFarmsOversight);
 router.get('/partnerships', getPartnershipsSummary);
 router.get('/farmers', getAllFarmers); // New route for farmers
+router.get('/grower-id-cards', getGrowerIdCards);
 router.get('/farmers/:id', getFarmerDetails); // Get deep details
 router.put('/farmers/:id/status', updateFarmerStatus); // Override status route
 router.get('/farmer-deletion-requests', getFarmerDeletionRequests);

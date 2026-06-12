@@ -880,6 +880,41 @@ exports.getAllFarmers = async (req, res) => {
     }
 };
 
+// @route   GET api/super-admin/grower-id-cards
+// @desc    Registry of digital ID cards issued to onboarded growers
+exports.getGrowerIdCards = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+        const skip = (page - 1) * limit;
+        const search = String(req.query.search || '').trim();
+
+        const query = { digitalCardGenerated: true, status: 'active' };
+        if (search) {
+            const re = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+            query.$or = [{ name: re }, { id: re }, { digitalCardNumber: re }, { region: re }];
+        }
+
+        const [data, total] = await Promise.all([
+            Farmer.find(query)
+                .select(
+                    'name id digitalCardNumber digitalCardIssuedAt region district community dob yearsOfExperience profilePicture agent onboardingAgentId status'
+                )
+                .populate('agent', 'name agentId')
+                .sort({ digitalCardIssuedAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Farmer.countDocuments(query),
+        ]);
+
+        res.json({ success: true, page, limit, total, data });
+    } catch (err) {
+        console.error('Error in getGrowerIdCards:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
 // @route   GET api/super-admin/farmers/:id
 // @desc    Get detailed farmer profile, visits, and KYC
 exports.getFarmerDetails = async (req, res) => {

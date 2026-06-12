@@ -13,6 +13,8 @@ const {
     sendBulkSms,
     getAgentDeletionRequests,
     requestFarmerDeletion,
+    getPublicGrowerProfile,
+    getFarmerIdCard,
 } = require('../controllers/farmerController');
 const auth = require('../middleware/auth');
 
@@ -23,7 +25,9 @@ router.get('/deletion-requests', auth, getAgentDeletionRequests);
 router.post('/bulk-sms', auth, sendBulkSms);
 router.post('/', auth, addFarmer);
 router.post('/public/register', registerFarmerPublic);
+router.get('/public/verify/:lyncId', getPublicGrowerProfile);
 router.post('/auth/login', growerLogin);
+router.get('/:id/id-card', auth, getFarmerIdCard);
 router.get('/:id', auth, getFarmerById);
 router.put('/:id', auth, updateFarmer);
 router.put('/:id/resolve-flag', auth, resolveFlag);

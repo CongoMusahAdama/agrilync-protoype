@@ -10,9 +10,11 @@ import {
     MapPin, Phone, MessageSquare, X, Map,
     Sprout, Activity, ClipboardList, Image as ImageIcon,
     History, AlertTriangle, CheckCircle2, MoreHorizontal,
-    Plus, Edit, Star, Camera, Video
+    Plus, Edit, Star, Camera, Video, IdCard
 } from 'lucide-react';
 import api from '@/utils/api';
+import FarmerIdCardModal from '@/components/agent/FarmerIdCardModal';
+import { getGrowerDisplayId } from '@/utils/growerId';
 
 interface ViewFarmerModalProps {
     open: boolean;
@@ -29,6 +31,10 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
     const [media, setMedia] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [activeDetailTab, setActiveDetailTab] = useState('overview');
+    const [idCardOpen, setIdCardOpen] = useState(false);
+
+    const isActiveGrower =
+        farmer?.status === 'active' || String(farmer?.status || '').toLowerCase() === 'active';
 
     const fetchFarms = useCallback(async () => {
         if (!farmer?._id) return;
@@ -101,7 +107,7 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                                     <Phone className="h-3.5 w-3.5" /> {farmer.name}
                                 </span>
                                 <span className="text-gray-300">•</span>
-                                <span className="font-bold text-[#065f46] uppercase tracking-widest text-[10px]">{farmer.id || `LYG-${farmer.ghanaCardNumber || String(farmer._id).replace(/\D/g, '').padEnd(7, '0').slice(0, 7)}`}</span>
+                                <span className="font-bold text-[#065f46] uppercase tracking-widest text-[10px]">{getGrowerDisplayId(farmer)}</span>
                                 <span className="text-gray-300">•</span>
                                 <span className="font-bold text-gray-400 uppercase tracking-widest text-[10px]">{farmer.region}</span>
                                 <span className="text-gray-300">•</span>
@@ -131,6 +137,15 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                         >
                             <Map className="h-4 w-4" /> Add Field
                         </Button>
+                        {isActiveGrower && (
+                            <Button
+                                variant="outline"
+                                className={`flex-1 md:flex-none h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[11px] flex items-center gap-2 ${darkMode ? 'border-white/15 text-white hover:bg-white/5' : 'border-[#002f37]/20 text-[#002f37] hover:bg-gray-50'}`}
+                                onClick={() => setIdCardOpen(true)}
+                            >
+                                <IdCard className="h-4 w-4" /> ID Card
+                            </Button>
+                        )}
                         <Button variant="ghost" size="icon" className={`hidden md:flex ${darkMode ? 'text-gray-400' : ''}`}>
                             <Edit className="h-4 w-4" />
                         </Button>
@@ -370,6 +385,13 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({ open, onOpenChange, f
                     </div>
                 </div>
             </DialogContent>
+
+            <FarmerIdCardModal
+                open={idCardOpen}
+                onOpenChange={setIdCardOpen}
+                farmer={farmer}
+                fetchSavedCard
+            />
         </Dialog>
     );
 };
