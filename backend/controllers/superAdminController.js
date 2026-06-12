@@ -65,13 +65,113 @@ const resolveSupervisorAssignment = async (supervisorId, role) => {
         _id: supervisorId,
         role: 'supervisor',
         status: { $ne: 'inactive' },
-    }).select('_id name').lean();
+    }).select('name contact email agentId region').lean();
     if (!supervisor) {
         const err = new Error('Selected supervisor was not found or is inactive.');
         err.status = 400;
         throw err;
     }
-    return supervisor._id;
+    return supervisor;
+};
+
+const generateStaffId = (dbRole) => {
+    if (dbRole === 'supervisor') {
+        return `SUP-${Math.floor(1000 + Math.random() * 9000)}`;
+    }
+    if (dbRole === 'super_admin') {
+        return `SA-${Math.floor(100 + Math.random() * 900)}`;
+    }
+    return `LYC${Math.floor(10000 + Math.random() * 90000)}`;
+};
+
+const formatSupervisorContact = (supervisor) => supervisor?.contact || supervisor?.email || '';
+
+const buildSupervisorAssignmentSms = ({ agentName, agentId, region, supervisor }) => {
+    const regionLabel = region || 'Unassigned';
+    const supervisorContact = formatSupervisorContact(supervisor) || 'not available';
+    return (
+        `Hello ${agentName}, you have been assigned a reporting supervisor on AgriLync. ` +
+        `Agent ID: ${agentId}. Region: ${regionLabel}. ` +
+        `Supervisor: ${supervisor.name} (ID: ${supervisor.agentId || 'N/A'}). Contact: ${supervisorContact}. ` +
+        `Reach them anytime from your agent dashboard.`
+    );
+};
+
+const buildSupervisorAgentAssignedSms = ({
+    supervisorName,
+    agentName,
+    agentId,
+    region,
+    agentPhone,
+    agentEmail,
+}) => {
+    const regionLabel = region || 'Unassigned';
+    const contactParts = [];
+    if (agentPhone) contactParts.push(`Phone: ${agentPhone}`);
+    if (agentEmail) contactParts.push(`Email: ${agentEmail}`);
+    const contactLine = contactParts.length ? `${contactParts.join('. ')}.` : '';
+    return (
+        `Hello ${supervisorName}, a field agent has been assigned to you on AgriLync. ` +
+        `Agent: ${agentName}. Agent ID: ${agentId}. Region: ${regionLabel}. ` +
+        `${contactLine} ` +
+        `They can reach you from their agent dashboard.`
+    ).replace(/\s+/g, ' ').trim();
+};
+
+const buildAccountCreationSms = ({ name, dbRole, agentId, region, password, loginUrl, supervisor }) => {
+    const regionLabel = region || 'Unassigned';
+    if (dbRole === 'supervisor') {
+        return (
+            `Hello ${name}, your AgriLync Supervisor account has been created. ` +
+            `Supervisor ID: ${agentId}. Region: ${regionLabel}. ` +
+            `Login at ${loginUrl} using your email or phone and password: ${password}. ` +
+            `You must update your password on first login.`
+        );
+    }
+    if (dbRole === 'super_admin') {
+        return (
+            `Hello ${name}, your AgriLync Admin account has been created. ` +
+            `Staff ID: ${agentId}. Region: ${regionLabel}. ` +
+            `Login at ${loginUrl} using your email or phone and password: ${password}. ` +
+            `You must update your password on first login.`
+        );
+    }
+    let message =
+        `Hello ${name}, your AgriLync account has been successfully created by an Admin. ` +
+        `Agent ID: ${agentId}. Region: ${regionLabel}. ` +
+        `Login at ${loginUrl} using your email or phone number and password: ${password}. ` +
+        `You will be required to update your password upon first login.`;
+    if (supervisor) {
+        const supervisorContact = formatSupervisorContact(supervisor);
+        message +=
+            ` Your reporting supervisor is ${supervisor.name} (ID: ${supervisor.agentId || 'N/A'})` +
+            `${supervisorContact ? `. Contact: ${supervisorContact}` : ''}.`;
+    }
+    return message;
+};
+
+const sendSupervisorAssignmentSms = (phone, payload) => {
+    if (!phone) return;
+    const smsService = require('../utils/smsService');
+    const message = buildSupervisorAssignmentSms(payload);
+    smsService.sendSMS(phone, message).catch((err) => console.error('Supervisor assignment SMS failed:', err.message));
+};
+
+const notifySupervisorOfAgentAssignment = (supervisor, agent) => {
+    const phone = supervisor?.contact;
+    if (!phone || !agent) return;
+    const smsService = require('../utils/smsService');
+    const message = buildSupervisorAgentAssignedSms({
+        supervisorName: supervisor.name,
+        agentName: agent.name,
+        agentId: agent.agentId,
+        region: agent.region,
+        agentPhone: agent.contact,
+        agentEmail: agent.email,
+    });
+    smsService.sendSMS(phone, message).catch((err) =>
+        console.error('Supervisor agent-assignment SMS failed:', err.message)
+    );
 };
 
 // @route   GET api/super-admin/stats
@@ -930,9 +1030,8 @@ exports.createUser = async (req, res) => {
             return res.status(assignErr.status || 400).json({ msg: assignErr.message });
         }
 
-        // Generate a random 8-character password
-        const crypto = require('crypto');
         const generatedPassword = crypto.randomBytes(4).toString('hex');
+        const finalAgentId = staffAccountNumber?.trim() || generateStaffId(dbRole);
 
         user = new Agent({
             name,
@@ -944,8 +1043,8 @@ exports.createUser = async (req, res) => {
             status: disabled === 'Yes' ? 'inactive' : 'active',
             password: generatedPassword,
             hasChangedPassword: false, // Force password update on first login
-            agentId: staffAccountNumber,
-            supervisor: assignedSupervisor,
+            agentId: finalAgentId,
+            supervisor: assignedSupervisor?._id || null,
             enableMultipleLogin:
                 role === 'super_admin' || role === 'Super Admin' || role === 'supervisor' || role === 'Supervisor'
                     ? true
@@ -965,19 +1064,27 @@ exports.createUser = async (req, res) => {
             targetId: user.id
         });
 
-        // Send SMS via smsService
         if (phone) {
             const smsService = require('../utils/smsService');
             const frontendUrl = process.env.FRONTEND_URL || 'https://agrilync.com';
             const agentLoginUrl = `${frontendUrl.replace(/\/$/, '')}/agent/login`;
-            const message = `Hello ${name}, your AgriLync account has been successfully created by an Admin. Login at ${agentLoginUrl} using your email or phone number and password: ${generatedPassword}. You will be required to update your password upon first login.`;
-            smsService.sendSMS(phone, message).catch(err => console.error('Account creation SMS failed:', err.message));
+            const message = buildAccountCreationSms({
+                name,
+                dbRole,
+                agentId: finalAgentId,
+                region,
+                password: generatedPassword,
+                loginUrl: agentLoginUrl,
+                supervisor: assignedSupervisor || null,
+            });
+            smsService.sendSMS(phone, message).catch((err) => console.error('Account creation SMS failed:', err.message));
         }
 
+        if (dbRole === 'agent' && assignedSupervisor) {
+            notifySupervisorOfAgentAssignment(assignedSupervisor, user);
+        }
 
-        const supervisorDoc = assignedSupervisor
-            ? await Agent.findById(assignedSupervisor).select('name contact').lean()
-            : null;
+        const supervisorDoc = assignedSupervisor || null;
 
         res.json({
             id: user._id.toString(),
@@ -1022,14 +1129,16 @@ exports.updateUser = async (req, res) => {
         if (region !== undefined) user.region = region || user.region;
         if (communities !== undefined) user.districts = communities;
 
+        const previousSupervisorId = user.supervisor ? String(user.supervisor) : '';
+        let assignedSupervisorDoc = null;
         const effectiveRole = role !== undefined ? toDbRole(role) : user.role;
         if (supervisorId !== undefined || role !== undefined) {
             if (effectiveRole === 'agent') {
                 try {
-                    user.supervisor = await resolveSupervisorAssignment(
-                        supervisorId !== undefined ? supervisorId : user.supervisor,
-                        'agent'
-                    );
+                    const targetSupervisorId =
+                        supervisorId !== undefined ? supervisorId : previousSupervisorId || null;
+                    assignedSupervisorDoc = await resolveSupervisorAssignment(targetSupervisorId, 'agent');
+                    user.supervisor = assignedSupervisorDoc._id;
                 } catch (assignErr) {
                     return res.status(assignErr.status || 400).json({ msg: assignErr.message });
                 }
@@ -1067,6 +1176,14 @@ exports.updateUser = async (req, res) => {
         }
 
         await user.save();
+
+        if (
+            effectiveRole === 'agent' &&
+            assignedSupervisorDoc &&
+            String(assignedSupervisorDoc._id) !== previousSupervisorId
+        ) {
+            notifySupervisorOfAgentAssignment(assignedSupervisorDoc, user);
+        }
 
         const actorId = getRequestAgentId(req.agent);
         if (actorId) {

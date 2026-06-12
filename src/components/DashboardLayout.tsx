@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu, Bell, Sun, Moon, Home, MapPin, BarChart3, Settings, Plus, Users, UserPlus, UserRoundPlus, LayoutGrid, ListTodo, UserCircle, Calendar, Leaf, Bot, AlertTriangle, Search, LogOut, Briefcase, Image as ImageIcon, RefreshCw, GraduationCap, Zap } from 'lucide-react';
+import { Menu, Bell, Settings, Users, UserRoundPlus, LayoutGrid, Leaf, Bot, Search, LogOut, BarChart3, GraduationCap, Zap, MapPin, Sprout } from 'lucide-react';
 import DashboardSidebar from './DashboardSidebar';
+import { getDashboardNavRoute } from '@/utils/dashboardNavigation';
 import Preloader from './ui/Preloader';
 import AddFarmerModal from './agent/AddFarmerModal';
 import { Badge } from './ui/badge';
@@ -149,52 +150,56 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const effectiveSubtitle = description || subtitle;
     const currentTitle = title || 'Dashboard';
     const activeNotifications = userType === 'agent' ? notifications : agentNotifications;
+    const isSuperAdmin = userType === 'super-admin';
+    const isAgent = userType === 'agent';
+
+    const handleSidebarNavigate = (item: string) => {
+        setMobileSidebarOpen(false);
+        const route = getDashboardNavRoute(userType || '', item);
+        if (route) navigate(route);
+    };
+
+    const mobileNavBtn = (active: boolean) => {
+        if (isSuperAdmin) return active ? 'text-[#7ede56]' : 'text-white/45';
+        if (active) return darkMode ? 'text-[#7ede56]' : 'text-[#065f46]';
+        return 'text-[#002f37]/40';
+    };
 
     return (
-        <div className={`h-screen overflow-hidden font-inter ${userType === 'agent' ? 'agent-dashboard-root' : ''} ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
+        <div
+            className={`h-screen overflow-hidden font-inter ${
+                isAgent ? 'agent-dashboard-root' : isSuperAdmin ? 'admin-dashboard-root' : ''
+            } ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}
+        >
             {/* Full-page preloader only on initial app boot if needed, otherwise rely on skeletons */}
             {/* Preloader removed to improve perceived performance */}
             <div className="flex h-full">
                 {/* Mobile Sidebar */}
                 {isMobile && (
                     <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-                        <SheetContent side="left" className={`w-[280px] p-0 ${darkMode ? 'bg-white' : 'bg-[#002f37]'}`}>
+                        <SheetContent
+                            side="left"
+                            hideCloseButton
+                            className={`w-[min(320px,88vw)] max-w-[320px] p-0 border-none bg-[#002f37] text-white`}
+                        >
                             <SheetHeader className="sr-only">
-                                <SheetTitle>Navigation Menu</SheetTitle>
+                                <SheetTitle>{isSuperAdmin ? 'Admin Navigation' : 'Navigation Menu'}</SheetTitle>
                                 <SheetDescription>Access different sections of the dashboard</SheetDescription>
                             </SheetHeader>
+                            {isSuperAdmin && (
+                                <div className="px-5 pt-5 pb-3 border-b border-white/10">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#7ede56]">AgriLync Command</p>
+                                    <h2 className="text-lg font-black text-white mt-1">Super Admin</h2>
+                                    <p className="text-[11px] font-medium text-white/50 mt-0.5">Platform control & oversight</p>
+                                </div>
+                            )}
                             <DashboardSidebar
                                 userType={userType || ''}
                                 sidebarCollapsed={false}
                                 setSidebarCollapsed={() => { }}
                                 activeSidebarItem={activeSidebarItem}
                                 isMobile={true}
-                                onNavigate={(item) => {
-                                    setMobileSidebarOpen(false);
-                                    const routes: Record<string, string> = {
-                                        'dashboard': userType === 'agent' ? '/dashboard/agent' : `/dashboard/${userType}`,
-                                        'settings': userType === 'agent' ? '/dashboard/agent/profile' : `/dashboard/${userType}/settings`,
-                                        'farm-analytics': `/dashboard/${userType}/farm-analytics`,
-                                        'investor-matches': userType === 'agent' ? '/dashboard/agent/investor-farmer-matches' : `/dashboard/${userType}/investor-matches`,
-                                        'training-sessions': userType === 'agent' ? '/dashboard/agent/training-performance' : `/dashboard/${userType}/training-sessions`,
-                                        'farm-management': userType === 'agent' ? '/dashboard/agent/farm-management' : `/dashboard/${userType}/farm-management`,
-                                        'tasks-alerts': '/dashboard/agent/tasks',
-                                        'notifications': userType === 'agent' ? '/dashboard/agent/notifications-center' : `/dashboard/${userType}/notifications`,
-                                        'farmers-management': '/dashboard/agent/farmers-management',
-                                        'media-gallery': '/dashboard/agent/media',
-                                        'performance': userType === 'agent' ? '/dashboard/agent/performance' : `/dashboard/${userType}/performance`,
-                                        // Super Admin Routes
-                                        'regional-performance': '/dashboard/super-admin/regions',
-                                        'agent-management': '/dashboard/super-admin/agents',
-                                        'farm-oversight': '/dashboard/super-admin/oversight',
-                                        'escalations': '/dashboard/super-admin/escalations',
-                                        'reports-analytics': '/dashboard/super-admin/analytics',
-                                        'system-logs': '/dashboard/super-admin/logs',
-                                    };
-                                    if (routes[item]) {
-                                        navigate(routes[item]);
-                                    }
-                                }}
+                                onNavigate={handleSidebarNavigate}
                             />
                         </SheetContent>
                     </Sheet>
@@ -220,14 +225,39 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         <div className="flex items-center justify-between h-[68px]">
 
                             {/* Left: Mobile menu + Search */}
-                            <div className="flex items-center gap-4 flex-1 min-w-0">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
                                 {isMobile && (
-                                    <Button variant="ghost" size="icon" onClick={() => setMobileSidebarOpen(true)} className="md:hidden -ml-2 shrink-0">
-                                        <Menu className="h-5 w-5 text-gray-600" />
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => setMobileSidebarOpen(true)}
+                                        className={`md:hidden -ml-2 shrink-0 h-10 w-10 rounded-xl ${
+                                            isSuperAdmin ? 'bg-[#065f46]/10 hover:bg-[#065f46]/15' : ''
+                                        }`}
+                                    >
+                                        <Menu className={`h-5 w-5 ${isSuperAdmin ? 'text-[#065f46]' : 'text-gray-600'}`} />
                                     </Button>
                                 )}
+                                {isMobile && isSuperAdmin && (
+                                    <div className="flex flex-col min-w-0 flex-1 md:hidden">
+                                        <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[#7ede56] leading-none">
+                                            Super Admin
+                                        </span>
+                                        <span className="text-[15px] font-black text-[#002f37] truncate leading-tight mt-0.5">
+                                            {currentTitle}
+                                        </span>
+                                        {effectiveSubtitle && (
+                                            <span className="text-[10px] font-semibold text-gray-400 truncate">
+                                                {effectiveSubtitle}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
                                 {/* Premium Search Bar */}
-                                <form onSubmit={handleSearch} className="hidden md:flex relative max-w-sm w-full group">
+                                <form
+                                    onSubmit={handleSearch}
+                                    className={`${isSuperAdmin ? 'hidden' : 'hidden md:flex'} relative max-w-sm w-full group`}
+                                >
                                     <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                                         <Search className="h-4 w-4 text-gray-400 group-focus-within:text-[#065f46] transition-colors duration-200" />
                                     </div>
@@ -315,7 +345,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                         variant="ghost"
                                         size="sm"
                                         className="h-9 rounded-full text-gray-400 hover:text-[#065f46] hover:bg-white transition-all shadow-none group px-4 gap-2.5"
-                                        onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/profile' : `/dashboard/${userType}/settings`)}
+                                        onClick={() => {
+                                            const route = getDashboardNavRoute(userType || '', 'settings');
+                                            if (route) navigate(route);
+                                        }}
                                     >
                                         <Settings className="h-[20px] w-[20px] stroke-[3px] transition-transform group-active:scale-90" />
                                         <span className="hidden xl:inline text-[11px] font-black uppercase tracking-[0.1em] opacity-80 group-hover:opacity-100">Support</span>
@@ -361,7 +394,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                             <p className="text-[13px] font-bold text-[#002f37] truncate">{agent?.email || 'authenticated_user'}</p>
                                         </div>
                                         <DropdownMenuGroup className="space-y-0.5">
-                                            <DropdownMenuItem onClick={() => navigate(userType === 'agent' ? '/dashboard/agent/profile' : `/dashboard/${userType}/settings`)} className="rounded-xl px-3 py-2.5 gap-3 cursor-pointer group hover:bg-[#065f46]/5 hover:text-[#065f46] transition-all">
+                                            <DropdownMenuItem
+                                                onClick={() => {
+                                                    const route = getDashboardNavRoute(userType || '', 'settings');
+                                                    if (route) navigate(route);
+                                                }}
+                                                className="rounded-xl px-3 py-2.5 gap-3 cursor-pointer group hover:bg-[#065f46]/5 hover:text-[#065f46] transition-all"
+                                            >
                                                 <div className="p-1.5 bg-gray-50 rounded-lg group-hover:bg-white transition-colors">
                                                     <Users className="h-4 w-4 text-gray-500 group-hover:text-[#065f46]" />
                                                 </div>
@@ -393,14 +432,26 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     )}
 
                     {/* Main Content Area */}
-                    <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pb-24 sm:pb-8">
+                    <main
+                        className={`flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 md:p-8 ${
+                            isMobile ? (isSuperAdmin ? 'pb-28' : 'pb-24') : 'pb-8'
+                        }`}
+                    >
                         {children}
                     </main>
 
                     {/* Mobile Bottom Navigation - Redesigned for Premium Look */}
                     {isMobile && (
-                        <div className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-3 pointer-events-none">
-                            <div className={`pointer-events-auto flex items-center justify-between px-3 py-1.5 rounded-[1.75rem] shadow-[0_20px_50px_-12px_rgba(0,47,55,0.25)] border ${darkMode ? 'bg-[#002f37]/95 border-gray-700 backdrop-blur-md' : 'bg-white/95 border-gray-100 backdrop-blur-md'}`}>
+                        <div className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pointer-events-none">
+                            <div
+                                className={`pointer-events-auto flex items-center justify-between px-3 py-1.5 rounded-[1.75rem] shadow-[0_20px_50px_-12px_rgba(0,47,55,0.25)] border backdrop-blur-md ${
+                                    isSuperAdmin
+                                        ? 'bg-[#002f37]/96 border-[#7ede56]/20'
+                                        : darkMode
+                                          ? 'bg-[#002f37]/95 border-gray-700'
+                                          : 'bg-white/95 border-gray-100'
+                                }`}
+                            >
                                 {userType === 'grower' ? (
                                     <>
                                         {/* Home */}
@@ -458,12 +509,50 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                             <span className={`text-[10px] font-bold ${activeSidebarItem === 'settings' ? 'text-[#7ede56]' : 'text-gray-400'}`}>Profile</span>
                                         </button>
                                     </>
+                                ) : isSuperAdmin ? (
+                                    <>
+                                        <button
+                                            onClick={() => navigate('/dashboard/super-admin')}
+                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${mobileNavBtn(activeSidebarItem === 'dashboard')}`}
+                                        >
+                                            <LayoutGrid className={`h-6 w-6 ${mobileNavBtn(activeSidebarItem === 'dashboard')}`} />
+                                            <span className={`text-[9px] font-black uppercase ${mobileNavBtn(activeSidebarItem === 'dashboard')}`}>Home</span>
+                                        </button>
+                                        <button
+                                            onClick={() => navigate('/dashboard/super-admin/regions')}
+                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${mobileNavBtn(activeSidebarItem === 'regional-performance')}`}
+                                        >
+                                            <MapPin className={`h-6 w-6 ${mobileNavBtn(activeSidebarItem === 'regional-performance')}`} />
+                                            <span className={`text-[9px] font-black uppercase ${mobileNavBtn(activeSidebarItem === 'regional-performance')}`}>Regions</span>
+                                        </button>
+                                        <div className="relative -top-6 px-1 flex flex-col items-center">
+                                            <button
+                                                onClick={() => navigate('/dashboard/super-admin/agents')}
+                                                className="h-16 w-16 rounded-full bg-[#002f37] border-[4px] border-[#7ede56] shadow-[0_15px_30px_-10px_rgba(0,47,55,0.45)] flex flex-col items-center justify-center active:scale-90 transition-all"
+                                            >
+                                                <Users className="h-6 w-6 text-[#7ede56] stroke-[2.5px]" />
+                                                <span className="text-[7px] font-black text-[#7ede56] uppercase tracking-tight mt-0.5">Users</span>
+                                            </button>
+                                        </div>
+                                        <button
+                                            onClick={() => navigate('/dashboard/super-admin/oversight')}
+                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${mobileNavBtn(activeSidebarItem === 'farm-oversight')}`}
+                                        >
+                                            <Sprout className={`h-6 w-6 ${mobileNavBtn(activeSidebarItem === 'farm-oversight')}`} />
+                                            <span className={`text-[9px] font-black uppercase ${mobileNavBtn(activeSidebarItem === 'farm-oversight')}`}>Farms</span>
+                                        </button>
+                                        <button
+                                            onClick={() => setMobileSidebarOpen(true)}
+                                            className={`flex flex-col items-center gap-1 flex-1 transition-all ${mobileNavBtn(mobileSidebarOpen)}`}
+                                        >
+                                            <Menu className={`h-6 w-6 ${mobileNavBtn(mobileSidebarOpen)}`} />
+                                            <span className={`text-[9px] font-black uppercase ${mobileNavBtn(mobileSidebarOpen)}`}>Menu</span>
+                                        </button>
+                                    </>
                                 ) : (
                                     <>
-                                        {/* Agent/Super Admin Navigation - Redesigned like Pulse */}
-                                        {/* Home */}
                                         <button
-                                            onClick={() => navigate(userType === 'agent' ? '/dashboard/agent' : '/dashboard/super-admin')}
+                                            onClick={() => navigate('/dashboard/agent')}
                                             className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'dashboard' ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-gray-400'}`}
                                         >
                                             <div className="p-1">
@@ -471,8 +560,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                             </div>
                                             <span className={`text-[10px] font-black uppercase ${activeSidebarItem === 'dashboard' ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-[#002f37]/40'}`}>Home</span>
                                         </button>
-                                        
-                                        {/* Training */}
                                         <button
                                             onClick={() => navigate('/dashboard/agent/training-performance')}
                                             className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'training-sessions' ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-gray-400'}`}
@@ -482,8 +569,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                             </div>
                                             <span className={`text-[10px] font-black uppercase ${activeSidebarItem === 'training-sessions' ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-[#002f37]/40'}`}>Training</span>
                                         </button>
-
-                                        {/* Pulse Inspired Quick Action - ONBOARDING */}
                                         <div className="relative -top-6 px-1 flex flex-col items-center">
                                             <button
                                                 onClick={() => setAddFarmerModalOpen(true)}
@@ -493,8 +578,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                                 <span className="text-[7px] font-black text-[#002f37] font-montserrat tracking-tighter">Onboard</span>
                                             </button>
                                         </div>
-
-                                        {/* Farm Management */}
                                         <button
                                             onClick={() => navigate('/dashboard/agent/farm-management')}
                                             className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'farm-management' ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-gray-400'}`}
@@ -504,8 +587,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                             </div>
                                             <span className={`text-[10px] font-black uppercase ${activeSidebarItem === 'farm-management' ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-[#002f37]/40'}`}>Farm</span>
                                         </button>
-
-                                        {/* More / Menu */}
                                         <button
                                             onClick={() => setMobileSidebarOpen(true)}
                                             className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${mobileSidebarOpen ? (darkMode ? 'text-[#7ede56]' : 'text-[#065f46]') : 'text-gray-400'}`}

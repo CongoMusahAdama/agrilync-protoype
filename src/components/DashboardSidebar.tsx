@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import SidebarProfileCard from './SidebarProfileCard';
 import { useAuth } from '@/contexts/AuthContext';
+import { getDashboardNavRoute } from '@/utils/dashboardNavigation';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -69,29 +70,10 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     const handleNavigation = (item: string) => {
         if (onNavigate) {
             onNavigate(item);
-        } else {
-            const routes: Record<string, string> = {
-                'dashboard': userType === 'agent' ? '/dashboard/agent' : (userType === 'super-admin' ? '/dashboard/super-admin' : `/dashboard/${userType}`),
-                'settings': userType === 'agent' ? '/dashboard/agent/profile' : (userType === 'super-admin' ? '/dashboard/super-admin/settings' : `/dashboard/${userType}/settings`),
-                'farm-analytics': `/dashboard/${userType}/farm-analytics`,
-                'investor-matches': userType === 'agent' ? '/dashboard/agent/investor-farmer-matches' : `/dashboard/${userType}/investor-matches`,
-                'training-sessions': userType === 'agent' ? '/dashboard/agent/training-performance' : `/dashboard/${userType}/training-sessions`,
-                'farm-management': userType === 'agent' ? '/dashboard/agent/farm-management' : `/dashboard/${userType}/farm-management`,
-                'tasks-alerts': '/dashboard/agent/tasks',
-                'notifications': userType === 'agent' ? '/dashboard/agent/notifications-center' : `/dashboard/${userType}/notifications`,
-                'farmers-management': '/dashboard/agent/farmers-management',
-                'media-gallery': '/dashboard/agent/media',
-                'regional-performance': '/dashboard/super-admin/regions',
-                'agent-management': '/dashboard/super-admin/agents',
-                'field-audit': '/dashboard/super-admin/audit',
-                'farm-oversight': '/dashboard/super-admin/oversight',
-                'escalations': '/dashboard/super-admin/escalations',
-                'reports-analytics': '/dashboard/super-admin/analytics',
-                'system-logs': '/dashboard/super-admin/logs',
-                'performance': userType === 'agent' ? '/dashboard/agent/performance' : `/dashboard/${userType}/performance`,
-            };
-            if (routes[item]) navigate(routes[item]);
+            return;
         }
+        const route = getDashboardNavRoute(userType, item);
+        if (route) navigate(route);
     };
 
     const agentNavSections: NavSection[] = [

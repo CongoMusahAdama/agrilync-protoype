@@ -10,11 +10,13 @@ const SuperAdminDashboard = () => {
         const path = location.pathname;
         if (path === '/dashboard/super-admin') return 'dashboard';
         if (path.includes('/regions')) return 'regional-performance';
-        if (path.includes('/agents')) return 'agent-accountability';
-        if (path.includes('/oversight')) return 'farm-oversight';
+        if (path.includes('/agents') || path.includes('/users')) return 'agent-management';
+        if (path.includes('/audit')) return 'field-audit';
+        if (path.includes('/oversight') || path.includes('/farms')) return 'farm-oversight';
+        if (path.includes('/performance')) return 'performance';
         if (path.includes('/partnerships')) return 'partnerships-summary';
         if (path.includes('/escalations')) return 'escalations';
-        if (path.includes('/analytics')) return 'reports-analytics';
+        if (path.includes('/analytics') || path.includes('/reports')) return 'reports-analytics';
         if (path.includes('/logs')) return 'system-logs';
         if (path.includes('/settings')) return 'settings';
         return 'dashboard';
