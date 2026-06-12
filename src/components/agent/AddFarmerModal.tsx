@@ -1175,7 +1175,6 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                 }
             }}
             farmer={finalizedFarmer}
-            fetchSavedCard={Boolean(finalizedFarmer?._id)}
         />
         </>
     );

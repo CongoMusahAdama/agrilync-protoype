@@ -62,7 +62,16 @@ const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
                 const res = await api.get(`/farmers/${farmer._id}/id-card`);
                 setCardFarmer(res.data?.farmer || farmer);
             } catch (err: any) {
-                setError(err?.response?.data?.message || 'Could not load saved ID card.');
+                const status = err?.response?.status;
+                const msg = String(err?.response?.data?.message || '');
+                const routeMissing = status === 404 || msg.includes('API route not found');
+                // Use onboarding / list payload when API route is not deployed yet
+                if (routeMissing && farmer?.name) {
+                    setCardFarmer(farmer);
+                    setError('');
+                } else {
+                    setError(msg || 'Could not load saved ID card.');
+                }
             } finally {
                 setLoading(false);
             }
