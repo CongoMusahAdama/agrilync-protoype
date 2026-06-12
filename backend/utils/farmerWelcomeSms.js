@@ -1,12 +1,16 @@
+const Farmer = require('../models/Farmer');
 const { dispatchBulkGrowerSms } = require('./bulkGrowerSms');
+const {
+    isValidGrowerSystemId,
+    isGhanaCardDerivedGrowerId,
+    ensureGrowerSystemId,
+} = require('./generateGrowerId');
 
-const { isValidGrowerSystemId } = require('./generateGrowerId');
-
-/** AgriLync grower ID (LYG-########) — same as on the farmer ID card; never Ghana Card. */
+/** AgriLync grower ID (LYG-########) — never Ghana Card or LYG-GHA-* */
 const resolveGrowerId = (farmer) => {
     const id = farmer?.id ? String(farmer.id).trim().toUpperCase() : '';
     if (id && isValidGrowerSystemId(id)) return id;
-    if (id && id.startsWith('LYG-') && !id.includes('GHA')) return id;
+    if (id && isGhanaCardDerivedGrowerId(id, farmer?.ghanaCardNumber)) return '';
     return '';
 };
 
@@ -69,20 +73,39 @@ exports.sendFarmerWelcomeSms = async (farmer, options = {}) => {
         };
     }
 
+    let farmerDoc = farmer;
+    if (farmer?._id) {
+        const fresh = await Farmer.findById(farmer._id);
+        if (fresh) farmerDoc = fresh;
+    }
+
+    const systemId = await ensureGrowerSystemId(farmerDoc);
+    const farmerForMessage = {
+        ...(farmerDoc.toObject ? farmerDoc.toObject() : farmerDoc),
+        id: systemId || resolveGrowerId(farmerDoc),
+    };
+
+    if (!farmerForMessage.id) {
+        console.warn(
+            '[Welcome SMS] No valid LYG system ID for grower',
+            farmer?._id?.toString?.() || farmer?._id
+        );
+    }
+
     const onboardingSource =
-        options.onboardingSource || farmer.onboardingSource || 'agent';
+        options.onboardingSource || farmerForMessage.onboardingSource || 'agent';
 
     const message = exports.buildFarmerWelcomeSms({
-        farmer,
+        farmer: farmerForMessage,
         agent: options.agent,
         onboardingSource,
     });
 
-    const agentId = options.agent?._id || options.agent?.id || farmer?.agent;
+    const agentId = options.agent?._id || options.agent?.id || farmerForMessage?.agent;
 
     const result = await dispatchBulkGrowerSms({
-        farmerIds: farmer._id ? [farmer._id] : [],
-        farmers: [{ name: farmer.name, contact, _id: farmer._id }],
+        farmerIds: farmerForMessage._id ? [farmerForMessage._id] : [],
+        farmers: [{ name: farmerForMessage.name, contact, _id: farmerForMessage._id }],
         agentId,
         message,
         agentName: options.agent?.name || 'AgriLync Agent',
@@ -100,12 +123,14 @@ exports.sendFarmerWelcomeSms = async (farmer, options = {}) => {
         );
     } else {
         console.log(
-            `[Welcome SMS] mNotify bulk SMS queued for ${farmer.name} (${result.succeeded}/${result.total})`
+            `[Welcome SMS] mNotify bulk SMS queued for ${farmerForMessage.name} ` +
+                `(ID: ${farmerForMessage.id || 'n/a'}, ${result.succeeded}/${result.total})`
         );
     }
 
     return {
         ...result,
         skipped: false,
+        growerId: farmerForMessage.id || null,
     };
 };

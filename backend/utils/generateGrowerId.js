@@ -31,9 +31,38 @@ const generateUniqueGrowerId = async (FarmerModel) => {
     return `LYG-${tail}`;
 };
 
+/**
+ * Guarantee a canonical LYG-######## on the grower record (never Ghana Card).
+ * Persists to MongoDB when the document has _id.
+ */
+const ensureGrowerSystemId = async (farmer) => {
+    if (!farmer) return null;
+
+    const FarmerModel = farmer.constructor?.modelName === 'Farmer'
+        ? farmer.constructor
+        : require('../models/Farmer');
+
+    let doc = farmer;
+    if (farmer._id && typeof farmer.save !== 'function') {
+        doc = await FarmerModel.findById(farmer._id);
+    }
+    if (!doc) return null;
+
+    const currentId = doc.id ? String(doc.id).trim().toUpperCase() : '';
+    if (isValidGrowerSystemId(currentId)) return currentId;
+
+    if (!doc.id || isGhanaCardDerivedGrowerId(doc.id, doc.ghanaCardNumber)) {
+        doc.id = await generateUniqueGrowerId(FarmerModel);
+        await doc.save();
+    }
+
+    return doc.id ? String(doc.id).trim().toUpperCase() : null;
+};
+
 module.exports = {
     GROWER_ID_PATTERN,
     isValidGrowerSystemId,
     isGhanaCardDerivedGrowerId,
     generateUniqueGrowerId,
+    ensureGrowerSystemId,
 };
