@@ -962,7 +962,7 @@ const AgentProfile: React.FC = () => {
       
       {/* DIALOGS */}
       <Dialog open={ticketModalOpen} onOpenChange={setTicketModalOpen}>
-        <DialogContent className="max-w-md rounded-[32px] p-8 md:p-10 border-none shadow-3xl bg-white font-inter">
+      <DialogContent className="agent-modal-mobile w-full max-w-[100vw] md:max-w-md max-md:rounded-none rounded-[32px] p-6 sm:p-8 md:p-10 border-none shadow-3xl bg-white font-inter">
           <DialogHeader className="space-y-2">
             <DialogTitle className="text-2xl font-black font-montserrat text-[#002F37] uppercase tracking-tight">Create Ticket</DialogTitle>
             <DialogDescription className="text-[11px] font-medium text-gray-400">Describe your issue and we'll resolve it within 24 hours.</DialogDescription>

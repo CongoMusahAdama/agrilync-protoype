@@ -60,14 +60,14 @@ const ActiveFarmsModal: React.FC<ActiveFarmsModalProps> = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-6xl md:w-full max-md:h-full max-md:max-h-[100dvh] md:max-h-[90vh] overflow-y-auto max-md:rounded-none ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-gray-100' : 'bg-white'}`}>
-                <DialogHeader>
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-[#065f46]/10 rounded-lg">
-                            <Sprout className="h-6 w-6 text-[#065f46]" />
+            <DialogContent className={`agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden md:max-w-6xl max-md:h-full max-md:max-h-[100dvh] md:max-h-[90vh] overflow-y-auto overflow-x-hidden max-md:rounded-none ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-gray-100' : 'bg-white'}`}>
+                <DialogHeader className="pr-10 sm:pr-12">
+                    <div className="flex items-start gap-3">
+                        <div className="p-2 bg-[#065f46]/10 rounded-lg shrink-0">
+                            <Sprout className="h-5 w-5 sm:h-6 sm:w-6 text-[#065f46]" />
                         </div>
-                        <div>
-                            <DialogTitle className="text-2xl font-bold">Active Farms Repository</DialogTitle>
+                        <div className="min-w-0">
+                            <DialogTitle className="text-lg sm:text-2xl font-bold leading-tight">Active Farms Repository</DialogTitle>
                             <DialogDescription className={darkMode ? 'text-gray-400' : ''}>
                                 Manage and track the progress of all registered farming projects.
                             </DialogDescription>

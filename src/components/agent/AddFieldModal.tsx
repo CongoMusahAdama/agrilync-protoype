@@ -187,7 +187,7 @@ const AddFieldModal: React.FC<AddFieldModalProps> = ({ open, onOpenChange, farme
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent hideCloseButton className="agent-modal-mobile w-[95vw] md:max-w-6xl md:w-[min(96vw,1152px)] max-md:h-full max-md:max-h-[100dvh] md:h-[80vh] md:max-h-[90vh] p-0 overflow-hidden border-none bg-[#f8fafc] shadow-2xl flex flex-col max-md:rounded-none">
+            <DialogContent hideCloseButton className="agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden md:max-w-6xl md:w-[min(96vw,1152px)] max-md:h-full max-md:max-h-[100dvh] md:h-[80vh] md:max-h-[90vh] p-0 overflow-hidden border-none bg-[#f8fafc] shadow-2xl flex flex-col max-md:rounded-none">
                 <div className="sr-only">
                     <DialogTitle>Add New Field Asset</DialogTitle>
                     <DialogDescription>Register a new farming operation for {farmer?.name}</DialogDescription>
@@ -387,11 +387,11 @@ const AddFieldModal: React.FC<AddFieldModalProps> = ({ open, onOpenChange, farme
                 </ScrollArea>
 
                 {/* Footer Controls */}
-                <div className="px-6 py-6 border-t border-gray-100 bg-white flex items-center justify-between shrink-0">
+                <div className="agent-action-row px-4 sm:px-6 py-4 border-t border-gray-100 bg-white pb-[max(1rem,env(safe-area-inset-bottom))] flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0">
                     <Button 
                         variant="ghost" 
                         onClick={() => step === 1 ? onOpenChange(false) : setStep(1)}
-                        className="text-gray-400 font-black text-[10px] uppercase tracking-widest h-12 px-6 rounded-2xl hover:bg-gray-100"
+                        className="text-gray-400 font-black text-[10px] uppercase tracking-widest h-12 px-6 rounded-2xl hover:bg-gray-100 w-full sm:w-auto"
                     >
                         {step === 1 ? <><X className="mr-2 h-4 w-4" /> Cancel</> : 'Previous Phase'}
                     </Button>
@@ -399,15 +399,17 @@ const AddFieldModal: React.FC<AddFieldModalProps> = ({ open, onOpenChange, farme
                     {step === 1 ? (
                         <Button 
                             onClick={() => setStep(2)}
-                            className="bg-[#002f37] hover:bg-[#002f37]/90 text-white font-black text-[10px] uppercase tracking-widest h-12 px-8 rounded-2xl shadow-xl shadow-[#002f37]/20 border-none transition-all active:scale-95"
+                            className="bg-[#002f37] hover:bg-[#002f37]/90 text-white font-black text-[10px] uppercase tracking-widest h-12 px-8 rounded-2xl shadow-xl shadow-[#002f37]/20 border-none transition-all active:scale-95 w-full sm:w-auto"
                         >
-                            Configure Asset <ChevronRight className="ml-2 h-4 w-4 text-[#7ede56]" />
+                            <span className="sm:hidden">Next Step</span>
+                            <span className="hidden sm:inline">Configure Asset</span>
+                            <ChevronRight className="ml-2 h-4 w-4 text-[#7ede56]" />
                         </Button>
                     ) : (
                         <Button 
                             onClick={handleSubmit}
                             disabled={addFieldMutation.isPending}
-                            className="bg-[#065f46] hover:bg-[#065f46]/90 text-white font-black text-[10px] uppercase tracking-widest h-12 px-10 rounded-2xl shadow-xl shadow-emerald-900/20 border-none transition-all active:scale-95"
+                            className="bg-[#065f46] hover:bg-[#065f46]/90 text-white font-black text-[10px] uppercase tracking-widest h-12 px-6 sm:px-10 rounded-2xl shadow-xl shadow-emerald-900/20 border-none transition-all active:scale-95 w-full sm:w-auto"
                         >
                             {addFieldMutation.isPending ? (
                                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Finalizing Registry...</>

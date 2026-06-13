@@ -343,7 +343,7 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className={`agent-modal-mobile w-[95vw] md:max-w-7xl md:w-[min(96vw,1280px)] max-md:h-full max-md:max-h-[100dvh] md:h-[88vh] md:max-h-[920px] p-0 flex flex-col overflow-hidden border-0 max-md:rounded-none md:rounded-lg ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-50'}`}
+                className={`agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden md:max-w-7xl md:w-[min(96vw,1280px)] max-md:h-full max-md:max-h-[100dvh] md:h-[88vh] md:max-h-[920px] p-0 flex flex-col overflow-hidden border-0 max-md:rounded-none md:rounded-lg ${darkMode ? 'bg-[#0b2528]' : 'bg-gray-50'}`}
             >
                 <DialogHeader className="sr-only">
                     <DialogTitle>Grower profile — {farmer.name}</DialogTitle>

@@ -251,7 +251,7 @@ export default function DeliverTrainingModal({ open, onOpenChange, onSuccess, ed
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent hideCloseButton className="w-full sm:max-w-3xl p-0 gap-0 border border-gray-200 bg-white max-md:rounded-none rounded-2xl shadow-2xl overflow-hidden flex flex-col max-md:h-full max-md:max-h-[100dvh] md:max-h-[92vh]">
+      <DialogContent hideCloseButton className="agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden sm:max-w-3xl p-0 gap-0 border border-gray-200 bg-white max-md:rounded-none rounded-2xl shadow-2xl overflow-hidden flex flex-col max-md:h-full max-md:max-h-[100dvh] md:max-h-[92vh]">
 
         {/* ── Header ── */}
         <div className="shrink-0 px-5 pt-5 pb-4 border-b border-gray-100">

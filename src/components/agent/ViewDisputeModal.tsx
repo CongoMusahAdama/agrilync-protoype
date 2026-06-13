@@ -177,14 +177,14 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-6xl md:w-full max-md:h-full max-md:max-h-[100dvh] md:max-h-[90vh] overflow-hidden flex flex-col p-0 border-none shadow-2xl max-md:rounded-none ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
+            <DialogContent className={`agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden md:max-w-6xl max-md:h-full max-md:max-h-[100dvh] md:max-h-[90vh] overflow-hidden flex flex-col p-0 border-none shadow-2xl max-md:rounded-none ${darkMode ? 'bg-gray-950 text-white' : 'bg-white'}`}>
                 <VisuallyHidden>
                     <DialogTitle>Dispute Details - {dispute?.id}</DialogTitle>
                     <DialogDescription>Viewing detailed information for dispute {dispute?.id}</DialogDescription>
                 </VisuallyHidden>
                 {/* Header Section */}
-                <div className={`p-6 border-b ${darkMode ? 'border-gray-800 bg-gray-900/50' : 'bg-gray-50/50 border-gray-100'}`}>
-                    <div className="flex items-center justify-between mb-2">
+                <div className={`px-4 sm:px-6 py-4 sm:py-6 border-b pr-12 ${darkMode ? 'border-gray-800 bg-gray-900/50' : 'bg-gray-50/50 border-gray-100'}`}>
+                    <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-rose-50 rounded-lg">
                                 <AlertTriangle className="h-5 w-5 text-rose-600" />
@@ -201,7 +201,7 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
                 </div>
 
                 {/* Tabs Navigation */}
-                <div className={`flex px-6 pt-2 border-b ${darkMode ? 'border-gray-800' : 'border-gray-100'}`}>
+                <div className={`flex gap-2 overflow-x-auto no-scrollbar px-4 sm:px-6 pt-2 border-b ${darkMode ? 'border-gray-800' : 'border-gray-100'}`}>
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
@@ -358,20 +358,20 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
                 </div>
 
                 {/* Footer Actions Section */}
-                <div className={`p-6 border-t flex flex-col md:flex-row items-center justify-between gap-6 ${darkMode ? 'border-gray-800 bg-gray-900/50' : 'bg-gray-50/50 border-gray-100'}`}>
-                    <div className="flex-1 w-full max-w-md">
+                <div className={`agent-action-row px-4 sm:px-6 py-4 border-t pb-[max(1rem,env(safe-area-inset-bottom))] flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-6 ${darkMode ? 'border-gray-800 bg-gray-900/50' : 'bg-gray-50/50 border-gray-100'}`}>
+                    <div className="flex-1 w-full min-w-0">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Case Resolution Notes</Label>
-                        <div className="relative">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:relative">
                             <Textarea
                                 placeholder="Add follow-up notes or resolution details..."
                                 value={note}
                                 onChange={(e) => setNote(e.target.value)}
-                                className="min-h-[40px] h-12 py-3 resize-none pr-32 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 rounded-xl text-sm"
+                                className="min-h-[80px] sm:min-h-[40px] sm:h-12 py-3 resize-none sm:pr-32 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 rounded-xl text-sm w-full"
                             />
                             <Button
                                 onClick={handleAddNote}
                                 disabled={isUpdating}
-                                className="absolute right-1.5 top-1.5 h-9 bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold uppercase tracking-widest text-[9px] px-4 rounded-lg border-none"
+                                className="sm:absolute sm:right-1.5 sm:top-1.5 h-11 sm:h-9 w-full sm:w-auto bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold uppercase tracking-widest text-[9px] px-4 rounded-lg border-none shrink-0"
                             >
                                 {isUpdating && activeTab === 'summary' && note ? (
                                     <Loader2 className="h-3 w-3 animate-spin mr-1" />
@@ -380,7 +380,7 @@ const ViewDisputeModal: React.FC<ViewDisputeModalProps> = ({ open, onOpenChange,
                             </Button>
                         </div>
                     </div>
-                    <div className="flex gap-3 w-full md:w-auto">
+                    <div className="agent-action-row-inline flex gap-3 w-full md:w-auto">
                         <Button
                             variant="outline"
                             onClick={handleEscalate}

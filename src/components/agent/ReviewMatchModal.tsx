@@ -57,13 +57,13 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-5xl md:w-full max-md:max-h-[100dvh] overflow-y-auto max-md:rounded-none ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : 'bg-white'}`}>
+            <DialogContent className={`agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden md:max-w-5xl max-md:max-h-[100dvh] overflow-y-auto max-md:rounded-none flex flex-col ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : 'bg-white'}`}>
                 <DialogHeader className="sr-only">
                     <DialogTitle>Review Investment Match</DialogTitle>
                     <DialogDescription>Verify documents and approve the partnership agreement.</DialogDescription>
                 </DialogHeader>
-                <div className="space-y-3">
-                    <div className="flex items-center gap-3">
+                <div className="space-y-3 pr-10 sm:pr-12">
+                    <div className="flex items-start gap-3">
                         <div className="h-10 w-10 rounded-xl bg-[#065f46]/10 flex items-center justify-center">
                             <ShieldCheck className="h-6 w-6 text-[#065f46]" />
                         </div>
@@ -80,7 +80,7 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
 
                     {/* Match Summary */}
                     <div className={`p-4 rounded-lg border ${darkMode ? 'bg-[#0b2528] border-[#124b53]' : 'bg-gray-50 border-gray-200'}`}>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Investor</p>
                                 <p className="font-medium text-base">{match.investor}</p>
@@ -101,7 +101,7 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
                                 </div>
                                 <div>
                                     <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Farmer</p>
-                                    <p className="font-medium text-base truncate max-w-[120px]">{match.farmer?.name || match.farmer}</p>
+                                    <p className="font-medium text-base break-words">{match.farmer?.name || match.farmer}</p>
                                 </div>
                             </div>
                             <div>
@@ -201,7 +201,7 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
 
                 </div>
 
-                <DialogFooter className="gap-2 sm:gap-0">
+                <DialogFooter className={`agent-action-row pt-4 border-t gap-2 ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                     <Button
                         variant="ghost"
                         onClick={() => onOpenChange(false)}
@@ -209,7 +209,7 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
                     >
                         Cancel
                     </Button>
-                    <div className="flex gap-2">
+                    <div className="agent-action-row-inline flex gap-2 sm:flex-row w-full sm:w-auto">
                         <Button
                             variant="outline"
                             onClick={handleReject}

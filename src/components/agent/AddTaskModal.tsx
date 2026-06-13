@@ -193,8 +193,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onOpenChange, onTaskA
 
     return (
         <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) resetForm(); }}>
-            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-4xl md:w-full max-md:max-h-[100dvh] overflow-y-auto max-md:rounded-none ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-gray-100' : 'bg-white'}`}>
-                <DialogHeader>
+            <DialogContent className={`agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden md:max-w-4xl max-md:max-h-[100dvh] overflow-y-auto max-md:rounded-none ${darkMode ? 'bg-[#0b2528] border-[#124b53] text-gray-100' : 'bg-white'}`}>
+                <DialogHeader className="pr-10 sm:pr-12">
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 bg-[#065f46]/10 rounded-xl">
                             <PlusCircle className="h-6 w-6 text-[#065f46]" />
@@ -343,7 +343,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onOpenChange, onTaskA
                     </div>
 
                     {/* Actions */}
-                    <div className="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                    <div className="pt-4 agent-action-row flex flex-col-reverse sm:flex-row sm:justify-end gap-3 border-t border-gray-100 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
                             Cancel
                         </Button>

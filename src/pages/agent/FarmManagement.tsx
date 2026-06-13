@@ -2055,10 +2055,10 @@ const FarmManagement: React.FC = () => {
 
             {/* Field Visit Modal - Premium Style */}
             <Dialog open={fieldVisitModalOpen} onOpenChange={setFieldVisitModalOpen}>
-                <DialogContent className={`w-[95vw] md:max-w-5xl md:w-full p-0 overflow-hidden border-0 ${darkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
-                    <div className="bg-[#065f46] p-6 text-white relative">
-                        <DialogHeader>
-                            <DialogTitle className="text-2xl font-bold flex items-center gap-3">
+                <DialogContent className={`agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden md:max-w-5xl p-0 overflow-hidden border-0 flex flex-col max-md:h-full max-md:max-h-[100dvh] max-md:rounded-none ${darkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
+                    <div className="bg-[#065f46] p-4 sm:p-6 text-white relative shrink-0">
+                        <DialogHeader className="pr-10">
+                            <DialogTitle className="text-lg sm:text-2xl font-bold flex items-center gap-3">
                                 <ClipboardList className="h-6 w-6" />
                                 Log Field Visit
                             </DialogTitle>
@@ -2071,7 +2071,7 @@ const FarmManagement: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="p-5 sm:p-8 space-y-4 sm:space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
+                    <div className="flex-1 p-4 sm:p-8 space-y-4 sm:space-y-6 overflow-y-auto overflow-x-hidden min-h-0">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div className="space-y-2">
                                 <Label className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Grower Name *</Label>
@@ -2283,18 +2283,18 @@ const FarmManagement: React.FC = () => {
                             )}
                         </div>
 
-                        <div className="flex gap-4 justify-end pt-4">
+                        <div className="agent-action-row flex flex-col-reverse sm:flex-row gap-3 sm:justify-end pt-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] border-t border-gray-100 dark:border-white/10 shrink-0">
                             <Button
                                 variant="ghost"
                                 onClick={() => setFieldVisitModalOpen(false)}
-                                className={`px-6 h-11 ${darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : ''}`}
+                                className={`w-full sm:w-auto h-11 px-6 ${darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : ''}`}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 onClick={handleSubmitVisit}
                                 disabled={visitMutation.isPending}
-                                className="px-8 h-11 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                                className="w-full sm:w-auto px-8 h-11 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                             >
                                 {visitMutation.isPending ? (
                                     <>
@@ -2311,13 +2311,13 @@ const FarmManagement: React.FC = () => {
             </Dialog>
 
             <Dialog open={visitDetailModalOpen} onOpenChange={setVisitDetailModalOpen}>
-                <DialogContent className={`w-[95vw] md:max-w-5xl md:w-full max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#002f37] border-white/10 text-white' : ''}`}>
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-3">
-                            <Badge variant="outline" className={`text-xs font-mono ${darkMode ? 'bg-white/5 border-white/10 text-emerald-400' : 'bg-gray-50 text-emerald-600'}`}>
+                <DialogContent className={`agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden md:max-w-5xl max-h-[90vh] overflow-y-auto max-md:rounded-none ${darkMode ? 'bg-[#002f37] border-white/10 text-white' : 'bg-white'}`}>
+                    <DialogHeader className="pr-10 sm:pr-12">
+                        <DialogTitle className="flex flex-wrap items-center gap-2 sm:gap-3">
+                            <Badge variant="outline" className={`text-xs font-mono shrink-0 ${darkMode ? 'bg-white/5 border-white/10 text-emerald-400' : 'bg-gray-50 text-emerald-600'}`}>
                                 {selectedVisit?.farmer?.lyncId || selectedVisit?.lyncId}
                             </Badge>
-                            <span className="text-xl font-bold">{selectedVisit?.farmer?.name || selectedVisit?.farmerName}</span>
+                            <span className="text-lg sm:text-xl font-bold break-words">{selectedVisit?.farmer?.name || selectedVisit?.farmerName}</span>
                         </DialogTitle>
                         <DialogDescription className={`${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                             Detailed field journal entry for farm inspection
@@ -2326,7 +2326,7 @@ const FarmManagement: React.FC = () => {
 
                     {selectedVisit && (
                         <div className="space-y-6 py-4">
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-white/5">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-white/5">
                                 <div className="space-y-1">
                                     <Label className="text-[10px] uppercase tracking-wider text-gray-500">Date</Label>
                                     <p className="text-sm font-semibold flex items-center gap-2">

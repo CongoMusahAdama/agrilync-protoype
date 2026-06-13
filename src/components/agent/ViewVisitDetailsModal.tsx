@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useDarkMode } from '@/contexts/DarkModeContext';
+import { agentModalShell, agentModalBody, agentModalFooter, agentModalCloseClear } from '@/utils/agentModalStyles';
 import { Calendar, Clock, MapPin, User, FileText, CheckCircle, Download, FileSpreadsheet, Camera } from 'lucide-react';
 
 interface ViewVisitDetailsModalProps {
@@ -80,18 +81,18 @@ const ViewVisitDetailsModal: React.FC<ViewVisitDetailsModalProps> = ({ open, onO
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-3xl md:w-full max-md:max-h-[100dvh] overflow-y-auto max-md:rounded-none ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : 'bg-white'}`}>
-                <DialogHeader>
+            <DialogContent className={agentModalShell(`overflow-hidden md:max-w-3xl md:max-h-[90vh] ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : 'bg-white'}`)}>
+                <DialogHeader className={agentModalCloseClear}>
                     <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="h-6 w-6 text-[#065f46]" />
-                        <DialogTitle className="text-xl">Visit Details</DialogTitle>
+                        <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-[#065f46] shrink-0" />
+                        <DialogTitle className="text-lg sm:text-xl">Visit Details</DialogTitle>
                     </div>
                     <DialogDescription className={darkMode ? 'text-gray-300' : 'text-gray-500'}>
                         Scheduled farm visit information
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4 py-4">
+                <div className={`${agentModalBody} space-y-4`}>
                     <div className={`p-4 rounded-lg border ${darkMode ? 'bg-[#0b2528] border-[#124b53]' : 'bg-gray-50 border-gray-200'}`}>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -124,7 +125,7 @@ const ViewVisitDetailsModal: React.FC<ViewVisitDetailsModalProps> = ({ open, onO
                             </div>
                             <div>
                                 <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Farmer</p>
-                                <p className="font-medium truncate max-w-[200px]">{visit.farmer?.name || visit.farmerName || (typeof visit.farmer === 'string' ? visit.farmer : 'N/A')}</p>
+                                <p className="font-medium break-words">{visit.farmer?.name || visit.farmerName || (typeof visit.farmer === 'string' ? visit.farmer : 'N/A')}</p>
                             </div>
                         </div>
 
@@ -136,24 +137,22 @@ const ViewVisitDetailsModal: React.FC<ViewVisitDetailsModalProps> = ({ open, onO
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3">
-                            <div className="flex gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="flex items-center gap-2">
-                                    <Calendar className={`h-5 w-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                                    <div>
+                                    <Calendar className={`h-5 w-5 shrink-0 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                    <div className="min-w-0">
                                         <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Date</p>
-                                        <p className="font-medium">{visit.date}</p>
+                                        <p className="font-medium break-words">{visit.date}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Clock className={`h-5 w-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                                    <div>
+                                    <Clock className={`h-5 w-5 shrink-0 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                    <div className="min-w-0">
                                         <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Time</p>
-                                        <p className="font-medium">{visit.time}</p>
+                                        <p className="font-medium break-words">{visit.time}</p>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
                         <div className="flex items-start gap-3">
                             <FileText className={`h-5 w-5 mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
@@ -186,16 +185,16 @@ const ViewVisitDetailsModal: React.FC<ViewVisitDetailsModalProps> = ({ open, onO
                     </div>
                 </div>
 
-                <DialogFooter className="flex items-center gap-2">
-                    <Button onClick={handleExportPDF} className="bg-red-600 hover:bg-red-700 text-white flex-1">
+                <DialogFooter className={`${agentModalFooter} sm:flex-row sm:justify-stretch md:justify-end ${darkMode ? 'border-gray-700' : ''}`}>
+                    <Button onClick={handleExportPDF} className="bg-red-600 hover:bg-red-700 text-white w-full sm:flex-1">
                         <Download className="h-4 w-4 mr-2" />
                         PDF
                     </Button>
-                    <Button onClick={handleExportExcel} className="bg-[#065f46] hover:bg-[#065f46]/90 text-white flex-1 border-none">
+                    <Button onClick={handleExportExcel} className="bg-[#065f46] hover:bg-[#065f46]/90 text-white w-full sm:flex-1 border-none">
                         <FileSpreadsheet className="h-4 w-4 mr-2" />
                         Excel
                     </Button>
-                    <Button onClick={() => onOpenChange(false)} className="bg-[#065f46] hover:bg-[#065f46]/90 text-white flex-1 border-none">
+                    <Button onClick={() => onOpenChange(false)} variant="outline" className={`w-full sm:flex-1 ${darkMode ? 'border-gray-600' : ''}`}>
                         Close
                     </Button>
                 </DialogFooter>

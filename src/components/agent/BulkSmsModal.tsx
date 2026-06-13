@@ -213,10 +213,10 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent hideCloseButton className="agent-modal-mobile w-[95vw] md:max-w-6xl md:w-[min(96vw,1152px)] max-md:h-full max-md:max-h-[100dvh] md:h-[85vh] flex flex-col p-0 overflow-hidden border border-white/20 bg-[#FDFCFB]/80 backdrop-blur-3xl max-md:rounded-none md:rounded-2xl shadow-[0_50px_100px_-20px_rgba(0,47,47,0.25)] z-[200] selection:bg-[#7ede56]/30">
+            <DialogContent hideCloseButton className="agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden md:max-w-6xl md:w-[min(96vw,1152px)] max-md:h-full max-md:max-h-[100dvh] md:h-[85vh] flex flex-col p-0 overflow-hidden border border-white/20 bg-[#FDFCFB]/80 backdrop-blur-3xl max-md:rounded-none md:rounded-2xl shadow-[0_50px_100px_-20px_rgba(0,47,47,0.25)] z-[200] selection:bg-[#7ede56]/30">
                 
                 {/* Modern Header - High Contrast */}
-                <div className="bg-[#002f37] text-white p-6 md:p-10 relative shrink-0 overflow-hidden">
+                <div className="bg-[#002f37] text-white p-4 sm:p-6 md:p-10 relative shrink-0 overflow-hidden">
                     {/* Visual Flare Elements */}
                     <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#7ede56]/10 rounded-full -mr-48 -mt-48 blur-3xl opacity-60 animate-pulse" />
                     <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#7ede56]/5 rounded-full -ml-32 -mb-32 blur-2xl opacity-40" />

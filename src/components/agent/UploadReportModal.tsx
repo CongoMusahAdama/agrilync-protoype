@@ -131,61 +131,72 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-6xl md:w-full p-0 overflow-hidden flex flex-col max-md:h-full max-md:max-h-[100dvh] md:h-[75vh] border-none shrink-0 max-md:rounded-none ${darkMode ? 'bg-[#002f37]' : 'bg-white'} md:rounded-[2rem] shadow-2xl`}>
+            <DialogContent className={`agent-modal-mobile w-full max-w-[100vw] md:max-w-6xl md:w-full p-0 overflow-hidden flex flex-col max-md:h-full max-md:max-h-[100dvh] md:h-[75vh] border-none shrink-0 max-md:rounded-none overflow-x-hidden ${darkMode ? 'bg-[#002f37]' : 'bg-white'} md:rounded-[2rem] shadow-2xl`}>
 
                 {/* Premium Multi-step Header */}
-                <div className={`px-8 py-7 border-b shrink-0 relative overflow-hidden ${darkMode ? 'bg-gradient-to-r from-[#0b2528] to-[#002f37] border-white/5' : 'bg-gradient-to-r from-gray-50 to-emerald-50 border-gray-100'}`}>
+                <div className={`px-4 sm:px-8 py-4 sm:py-7 border-b shrink-0 relative overflow-hidden ${darkMode ? 'bg-gradient-to-r from-[#0b2528] to-[#002f37] border-white/5' : 'bg-gradient-to-r from-gray-50 to-emerald-50 border-gray-100'}`}>
                     <div className="absolute top-0 right-0 w-64 h-full bg-emerald-500/5 -skew-x-12 translate-x-1/2 pointer-events-none" />
-                    <div className="flex items-center justify-between relative z-10">
-                        <div className="flex items-center gap-5">
-                            <div className={`p-3.5 rounded-2xl shadow-xl rotate-3 ${darkMode ? 'bg-[#065f46] text-white' : 'bg-[#065f46] text-white'}`}>
-                                {step === 1 ? <ClipboardList className="h-6 w-6" /> :
-                                    step === 2 ? <Camera className="h-6 w-6" /> :
-                                        step === 3 ? <Sparkles className="h-6 w-6" /> :
-                                            <CheckCircle2 className="h-6 w-6" />}
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between relative z-10">
+                        <div className="flex items-start gap-3 sm:gap-5 min-w-0 flex-1 pr-8 sm:pr-0">
+                            <div className={`p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl shadow-xl shrink-0 ${darkMode ? 'bg-[#065f46] text-white' : 'bg-[#065f46] text-white'}`}>
+                                {step === 1 ? <ClipboardList className="h-5 w-5 sm:h-6 sm:w-6" /> :
+                                    step === 2 ? <Camera className="h-5 w-5 sm:h-6 sm:w-6" /> :
+                                        step === 3 ? <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" /> :
+                                            <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6" />}
                             </div>
-                            <div>
-                                <h2 className="text-lg font-black tracking-tight text-[#002f37] dark:text-white flex items-center gap-2">
-                                    {farmer?.name || internalFarmer?.name ? (
-                                        <>
-                                            <span className="opacity-50 text-[10px] font-bold uppercase tracking-widest border border-emerald-500/20 px-2 py-0.5 rounded-full">Auditing</span>
+                            <div className="min-w-0 flex-1">
+                                {farmer?.name || internalFarmer?.name ? (
+                                    <>
+                                        <span className="inline-block text-[10px] font-bold uppercase tracking-widest border border-emerald-500/20 px-2 py-0.5 rounded-full text-[#065f46] dark:text-emerald-300 mb-1.5">
+                                            Auditing
+                                        </span>
+                                        <h2 className="text-base sm:text-lg font-black tracking-tight text-[#002f37] dark:text-white break-words leading-snug">
                                             {farmer?.name || internalFarmer?.name}
-                                        </>
-                                    ) : "Strategic Report Discovery"}
-                                </h2>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-0.5">AgriLync Nexus • Phase {step} of 3</p>
+                                        </h2>
+                                    </>
+                                ) : (
+                                    <h2 className="text-base sm:text-lg font-black tracking-tight text-[#002f37] dark:text-white">
+                                        Strategic Report Discovery
+                                    </h2>
+                                )}
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] mt-1">
+                                    AgriLync Nexus • Phase {step} of 3
+                                </p>
                             </div>
                         </div>
                         {step < 4 && (
-                            <div className="flex items-center gap-2.5">
+                            <div className="flex items-center gap-2 shrink-0 pl-12 sm:pl-0">
                                 {[1, 2, 3].map(i => (
-                                    <div key={i} className={`h-1.5 rounded-full transition-all duration-700 ${step === i ? 'w-10 bg-[#065f46] shadow-[0_0_15px_rgba(6,95,70,0.4)]' : step > i ? 'w-4 bg-[#065f46]/40' : 'w-4 bg-gray-200 dark:bg-gray-800'}`} />
+                                    <div key={i} className={`h-1.5 rounded-full transition-all duration-700 ${step === i ? 'w-8 sm:w-10 bg-[#065f46] shadow-[0_0_15px_rgba(6,95,70,0.4)]' : step > i ? 'w-3 sm:w-4 bg-[#065f46]/40' : 'w-3 sm:w-4 bg-gray-200 dark:bg-gray-800'}`} />
                                 ))}
                             </div>
                         )}
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-8 py-8 bg-gray-50/30 dark:bg-transparent">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-8 py-4 sm:py-8 bg-gray-50/30 dark:bg-transparent">
                     {/* Common Header for all active steps */}
                     {step < 4 && (
-                        <div className="mb-6 space-y-1.5 border-b border-[#065f46]/10 pb-6">
-                            <DialogTitle className={`text-2xl font-black ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <div className="mb-4 sm:mb-6 space-y-1 border-b border-[#065f46]/10 pb-4 sm:pb-6">
+                            <DialogTitle className={`text-xl sm:text-2xl font-black leading-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                                 {step === 1 ? 'Quick Log Report' : step === 2 ? 'Visual Evidence' : 'AI Analysis Preview'}
                             </DialogTitle>
                             {farmer?._id || farmer?.id || internalFarmerId ? (
-                                <DialogDescription className={`font-medium text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                    Logging field insights for <span className="font-black text-[#065f46]">{farmer?.name || internalFarmer?.name || 'Selected Grower'}</span>.
+                                <DialogDescription className={`font-medium text-xs leading-relaxed break-words ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    Logging field insights for{' '}
+                                    <span className="font-black text-[#065f46]">{farmer?.name || internalFarmer?.name || 'Selected Grower'}</span>.
                                 </DialogDescription>
                             ) : (
-                                <DialogDescription className={`font-medium text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Please select a grower to proceed with the report.</DialogDescription>
+                                <DialogDescription className={`font-medium text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    Please select a grower to proceed with the report.
+                                </DialogDescription>
                             )}
                         </div>
                     )}
 
                     {/* Step 1: Observations */}
                     {step === 1 && (
-                        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700 max-w-3xl mx-auto">
+                        <div className="space-y-5 sm:space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700 max-w-3xl mx-auto w-full">
                              {!farmer && (
                                 <div className="space-y-4 p-8 rounded-[2rem] bg-emerald-500/5 border border-emerald-500/10 shadow-inner relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-700" />
@@ -229,46 +240,48 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
                                 </div>
                             )}
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
-                                <div className="space-y-3 relative group">
-                                    <div className="flex justify-between items-end mb-1">
-                                        <Label className="text-[11px] font-black uppercase text-gray-400 tracking-[0.15em]">Engagement Type</Label>
-                                        {visitData.type && <span className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter">Required Field</span>}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8 mt-2 sm:mt-4">
+                                <div className="space-y-2 sm:space-y-3 relative group min-w-0">
+                                    <div className="flex flex-wrap justify-between items-center gap-x-2 gap-y-1 mb-1">
+                                        <Label className="text-[10px] sm:text-[11px] font-black uppercase text-gray-400 tracking-[0.12em] sm:tracking-[0.15em]">Engagement Type</Label>
+                                        {visitData.type && <span className="text-[9px] sm:text-[10px] font-black text-emerald-500 uppercase tracking-tighter shrink-0">Required</span>}
                                     </div>
                                     <div className="relative">
-                                        <Activity className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 z-10 opacity-60 group-hover:opacity-100 transition-opacity" />
+                                        <Activity className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 z-10 opacity-60" />
                                         <Input
                                             value={visitData.type}
                                             onChange={(e) => setVisitData(p => ({ ...p, type: e.target.value }))}
                                             placeholder="Audit focus (e.g. Pest Alert)"
-                                            className={`h-14 pl-12 border-2 border-transparent focus:border-emerald-500/30 transition-all rounded-2xl text-base font-bold shadow-sm ${darkMode ? 'bg-white/5 text-white placeholder:text-gray-600' : 'bg-gray-50/50 hover:bg-white focus:bg-white'}`}
+                                            className={`h-12 sm:h-14 pl-10 sm:pl-12 border-2 border-transparent focus:border-emerald-500/30 transition-all rounded-xl sm:rounded-2xl text-sm sm:text-base font-bold shadow-sm w-full ${darkMode ? 'bg-white/5 text-white placeholder:text-gray-600' : 'bg-gray-50/50 hover:bg-white focus:bg-white'}`}
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-3 relative group">
-                                    <div className="flex justify-between items-end mb-1">
-                                        <Label className="text-[11px] font-black uppercase text-gray-400 tracking-[0.15em]">Growth Cycle Stage</Label>
-                                        {visitData.cropStage && <span className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter">Verified Status</span>}
+                                <div className="space-y-2 sm:space-y-3 relative group min-w-0">
+                                    <div className="flex flex-wrap justify-between items-center gap-x-2 gap-y-1 mb-1">
+                                        <Label className="text-[10px] sm:text-[11px] font-black uppercase text-gray-400 tracking-[0.12em] sm:tracking-[0.15em]">Growth Cycle Stage</Label>
+                                        {visitData.cropStage && <span className="text-[9px] sm:text-[10px] font-black text-emerald-500 uppercase tracking-tighter shrink-0">Verified</span>}
                                     </div>
                                     <div className="relative">
-                                        <Leaf className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 z-10 opacity-60 group-hover:opacity-100 transition-opacity" />
+                                        <Leaf className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 z-10 opacity-60" />
                                         <Input
                                             value={visitData.cropStage}
                                             onChange={(e) => setVisitData(p => ({ ...p, cropStage: e.target.value }))}
                                             placeholder="Current stage (e.g. Flowering)"
-                                            className={`h-14 pl-12 border-2 border-transparent focus:border-emerald-500/30 transition-all rounded-2xl text-base font-bold shadow-sm ${darkMode ? 'bg-white/5 text-white placeholder:text-gray-600' : 'bg-gray-50/50 hover:bg-white focus:bg-white'}`}
+                                            className={`h-12 sm:h-14 pl-10 sm:pl-12 border-2 border-transparent focus:border-emerald-500/30 transition-all rounded-xl sm:rounded-2xl text-sm sm:text-base font-bold shadow-sm w-full ${darkMode ? 'bg-white/5 text-white placeholder:text-gray-600' : 'bg-gray-50/50 hover:bg-white focus:bg-white'}`}
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="p-8 rounded-[2rem] border border-gray-100 dark:border-white/5 bg-white/5 dark:bg-emerald-500/5 shadow-inner">
-                                <div className="flex justify-between items-center mb-6">
-                                    <div className="flex items-center gap-2">
-                                        <TrendingUp className="h-4 w-4 text-emerald-600" />
-                                        <Label className="text-[11px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-widest">Health Assessment Index</Label>
+                            <div className="p-4 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-gray-100 dark:border-white/5 bg-white/5 dark:bg-emerald-500/5 shadow-inner">
+                                <div className="flex justify-between items-center mb-4 sm:mb-6 gap-3">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <TrendingUp className="h-4 w-4 text-emerald-600 shrink-0" />
+                                        <Label className="text-[10px] sm:text-[11px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-widest leading-tight">
+                                            Health Assessment
+                                        </Label>
                                     </div>
-                                    <span className={`text-2xl font-black tabular-nums ${darkMode ? 'text-emerald-400 font-mono' : 'text-[#065f46] font-mono'} drop-shadow-sm`}>
+                                    <span className={`text-xl sm:text-2xl font-black tabular-nums shrink-0 ${darkMode ? 'text-emerald-400 font-mono' : 'text-[#065f46] font-mono'}`}>
                                         {String(visitData.healthScore).padStart(2, '0')}%
                                     </span>
                                 </div>
@@ -291,14 +304,14 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
                                 </div>
                             </div>
 
-                            <div className="space-y-3 relative group">
+                            <div className="space-y-2 sm:space-y-3 relative group">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <FileText className="h-4 w-4 text-emerald-600 opacity-60" />
-                                    <Label className="text-[11px] font-black uppercase text-gray-400 tracking-[0.15em]">Strategic Field Notes</Label>
+                                    <FileText className="h-4 w-4 text-emerald-600 opacity-60 shrink-0" />
+                                    <Label className="text-[10px] sm:text-[11px] font-black uppercase text-gray-400 tracking-[0.12em] sm:tracking-[0.15em]">Strategic Field Notes</Label>
                                 </div>
                                 <Textarea
-                                    placeholder="Synthesize field observations, identify success metrics, or log anomalies for Agri-Vision processing..."
-                                    className={`min-h-[200px] p-6 border-2 border-transparent focus:border-emerald-500/30 transition-all rounded-[2rem] text-base font-bold leading-relaxed resize-none shadow-inner ${darkMode ? 'bg-white/5 text-white placeholder:text-gray-600' : 'bg-gray-50/50 hover:bg-white focus:bg-white'}`}
+                                    placeholder="Log field observations, success metrics, or anomalies..."
+                                    className={`min-h-[120px] sm:min-h-[200px] p-4 sm:p-6 border-2 border-transparent focus:border-emerald-500/30 transition-all rounded-2xl sm:rounded-[2rem] text-sm sm:text-base font-bold leading-relaxed resize-none shadow-inner w-full ${darkMode ? 'bg-white/5 text-white placeholder:text-gray-600' : 'bg-gray-50/50 hover:bg-white focus:bg-white'}`}
                                     value={visitData.notes}
                                     onChange={(e) => setVisitData(p => ({ ...p, notes: e.target.value }))}
                                 />
@@ -308,15 +321,17 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
 
                     {/* Step 2: Media */}
                     {step === 2 && (
-                        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700 max-w-3xl mx-auto">
-                            <div className="text-center space-y-2 mb-4">
-                                <h1 className={`text-3xl font-black ${darkMode ? 'text-white' : 'text-[#002f37]'}`}>Visual Evidence</h1>
-                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Upload high-fidelity field imagery for localized AI processing and audit verification.</p>
+                        <div className="space-y-6 sm:space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700 max-w-3xl mx-auto w-full">
+                            <div className="text-center space-y-2 mb-2 sm:mb-4">
+                                <h1 className={`text-2xl sm:text-3xl font-black ${darkMode ? 'text-white' : 'text-[#002f37]'}`}>Visual Evidence</h1>
+                                <p className={`text-xs sm:text-sm font-medium px-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    Upload field imagery for AI processing and audit verification.
+                                </p>
                             </div>
 
                             <div
                                 onClick={() => fileInputRef.current?.click()}
-                                className={`group relative aspect-[21/9] rounded-[2.5rem] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-500 overflow-hidden ${darkMode ? 'border-white/10 hover:border-emerald-500/50 bg-white/5' : 'border-gray-200 hover:border-emerald-600/50 bg-gray-50/50 hover:bg-white active:scale-[0.99] shadow-inner'}`}
+                                className={`group relative aspect-[4/3] sm:aspect-[21/9] rounded-2xl sm:rounded-[2.5rem] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-500 overflow-hidden ${darkMode ? 'border-white/10 hover:border-emerald-500/50 bg-white/5' : 'border-gray-200 hover:border-emerald-600/50 bg-gray-50/50 hover:bg-white active:scale-[0.99] shadow-inner'}`}
                             >
                                 <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                 <input type="file" ref={fileInputRef} onChange={handleFileSelect} multiple accept="image/*" className="hidden" />
@@ -430,30 +445,38 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onOpenChang
                 </div>
 
                 {/* Premium Footer Controls */}
-                <div className={`p-8 border-t flex items-center justify-between shrink-0 relative overflow-hidden ${darkMode ? 'bg-[#0b2528]/80 border-white/5 backdrop-blur-md' : 'bg-white border-gray-100'}`}>
+                <div className={`agent-action-row p-4 sm:p-8 border-t shrink-0 relative overflow-hidden pb-[max(1rem,env(safe-area-inset-bottom))] ${darkMode ? 'bg-[#0b2528]/80 border-white/5 backdrop-blur-md' : 'bg-white border-gray-100'}`}>
                     {step < 4 ? (
-                        <>
-                            <Button 
-                                variant="ghost" 
+                        <div className="agent-action-row flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
+                            <Button
+                                variant="ghost"
                                 disabled={loading}
-                                className={`font-black text-[10px] uppercase tracking-widest h-14 px-10 rounded-2xl transition-all ${darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:bg-gray-50'}`} 
+                                className={`w-full sm:w-auto font-black text-[10px] uppercase tracking-widest h-12 sm:h-14 px-6 sm:px-10 rounded-xl sm:rounded-2xl transition-all ${darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:bg-gray-50'}`}
                                 onClick={() => step > 1 ? setStep(s => s - 1) : onOpenChange(false)}
                             >
                                 {step === 1 ? 'Discard Audit' : <><ChevronLeft className="h-4 w-4 mr-2" /> Back</>}
                             </Button>
                             <Button
-                                className={`h-14 px-12 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-[0_15px_30px_-10px_rgba(6,95,70,0.4)] border-none transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] ${
+                                className={`w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-12 rounded-xl sm:rounded-2xl font-black uppercase tracking-widest text-[10px] sm:text-[11px] shadow-[0_15px_30px_-10px_rgba(6,95,70,0.4)] border-none transition-all duration-300 sm:hover:scale-[1.03] active:scale-[0.98] ${
                                     (loading || (step === 1 && !visitData.notes)) ? 'bg-gray-400 opacity-50' : 'bg-gradient-to-r from-[#065f46] to-[#047857] text-white hover:shadow-emerald-500/40'
                                 }`}
                                 disabled={loading || (step === 1 && !visitData.notes)}
                                 onClick={() => step === 3 ? handleSubmit() : setStep(s => s + 1)}
                             >
-                                {step === 3 ? (loading ? 'Syncing Insights...' : 'Finalize Strategy') : <>Continue Insight Phase <ChevronRight className="h-4 w-4 ml-2" /></>}
+                                {step === 3 ? (
+                                    loading ? 'Syncing...' : 'Finalize Report'
+                                ) : (
+                                    <>
+                                        <span className="sm:hidden">Continue</span>
+                                        <span className="hidden sm:inline">Continue Insight Phase</span>
+                                        <ChevronRight className="h-4 w-4 ml-2 inline" />
+                                    </>
+                                )}
                             </Button>
-                        </>
+                        </div>
                     ) : (
-                        <Button className="w-full bg-gradient-to-r from-[#065f46] to-[#044e57] text-white hover:shadow-2xl transition-all font-black h-16 rounded-[2rem] uppercase tracking-widest text-xs shadow-xl border-none" onClick={resetForm}>
-                            Return to Global Command Center
+                        <Button className="w-full bg-gradient-to-r from-[#065f46] to-[#044e57] text-white hover:shadow-2xl transition-all font-black h-14 sm:h-16 rounded-2xl sm:rounded-[2rem] uppercase tracking-widest text-xs shadow-xl border-none" onClick={resetForm}>
+                            Return to Dashboard
                         </Button>
                     )}
                 </div>

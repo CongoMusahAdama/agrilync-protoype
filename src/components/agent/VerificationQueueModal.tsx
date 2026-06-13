@@ -76,8 +76,8 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent hideCloseButton className={`agent-modal-mobile w-full sm:max-w-5xl p-0 overflow-hidden border-0 shadow-2xl max-md:rounded-none max-md:h-full max-md:max-h-[100dvh] flex flex-col ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
-                <div className="bg-gradient-to-r from-[#065f46] to-[#044a36] p-8 text-white relative overflow-hidden">
+            <DialogContent hideCloseButton className={`agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden sm:max-w-5xl p-0 overflow-hidden border-0 shadow-2xl max-md:rounded-none max-md:h-full max-md:max-h-[100dvh] flex flex-col ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}>
+                <div className="bg-gradient-to-r from-[#065f46] to-[#044a36] p-4 sm:p-8 text-white relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-12 -mb-12 blur-xl" />
                     
@@ -87,7 +87,7 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
                                 <UserCheck className="h-6 w-6 text-white" />
                             </div>
                             <div>
-                                <DialogTitle className="text-2xl font-black tracking-tight flex items-center gap-3 text-white">
+                                <DialogTitle className="text-lg sm:text-2xl font-black tracking-tight flex items-center gap-3 text-white">
                                     Regional Verification Queue
                                 </DialogTitle>
                                 <DialogDescription className="text-emerald-100/90 mt-1 font-medium italic">
@@ -270,7 +270,7 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
                     </div>
                 </div>
 
-                <div className={`p-4 border-t flex items-center justify-between shrink-0 ${darkMode ? 'bg-[#002f37] border-white/5' : 'bg-gray-50 border-gray-200'}`}>
+                <div className={`p-4 sm:p-8 border-t flex items-center justify-between shrink-0 pb-[max(1rem,env(safe-area-inset-bottom))] ${darkMode ? 'bg-[#002f37] border-white/5' : 'bg-gray-50 border-gray-200'}`}>
                     <div className="flex items-center gap-3">
                         <div className="h-2 w-2 rounded-full bg-[#065f46] animate-ping" />
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">LIVE Verification Portal</span>

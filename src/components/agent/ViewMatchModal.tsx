@@ -43,10 +43,10 @@ const ViewMatchModal: React.FC<ViewMatchModalProps> = ({ open, onOpenChange, mat
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-5xl md:w-full max-md:max-h-[100dvh] overflow-y-auto max-md:rounded-none ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : 'bg-white'}`}>
-                <DialogHeader>
-                    <div className="flex items-center justify-between mr-8">
-                        <DialogTitle className="text-xl">Investment Match Details</DialogTitle>
+            <DialogContent className={`agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden md:max-w-5xl max-md:max-h-[100dvh] overflow-y-auto max-md:rounded-none ${darkMode ? 'bg-[#002f37] border-gray-600 text-white' : 'bg-white'}`}>
+                <DialogHeader className="pr-10 sm:pr-12">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <DialogTitle className="text-lg sm:text-xl">Investment Match Details</DialogTitle>
                         <Badge className={currentStatusColor}>{match.status}</Badge>
                     </div>
                     <DialogDescription className={darkMode ? 'text-gray-300' : 'text-gray-500'}>
@@ -135,7 +135,7 @@ const ViewMatchModal: React.FC<ViewMatchModalProps> = ({ open, onOpenChange, mat
                     </div>
                 </div>
 
-                <DialogFooter>
+                <DialogFooter className="agent-action-row pt-4 border-t">
                     <Button variant="outline" onClick={() => onOpenChange(false)} className={darkMode ? 'border-gray-600 hover:bg-gray-800 text-white' : ''}>
                         Close
                     </Button>

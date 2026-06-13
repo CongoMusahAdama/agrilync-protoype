@@ -184,26 +184,26 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({ open, onOpenChange,
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-5xl md:w-full p-0 overflow-hidden flex flex-col max-md:h-full max-md:max-h-[100dvh] border-none shrink-0 max-md:rounded-none ${darkMode ? 'bg-[#002f37]' : 'bg-white'} md:rounded-2xl shadow-2xl transition-all duration-500`}>
+            <DialogContent className={`agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden md:max-w-5xl p-0 overflow-hidden flex flex-col max-md:h-full max-md:max-h-[100dvh] border-none shrink-0 max-md:rounded-none ${darkMode ? 'bg-[#002f37]' : 'bg-white'} md:rounded-2xl shadow-2xl transition-all duration-500`}>
                 <DialogHeader className="sr-only">
                     <DialogTitle>Upload Field Report</DialogTitle>
                     <DialogDescription>Upload images, videos, or documents to the farmer's gallery</DialogDescription>
                 </DialogHeader>
                 
-                <div className={`px-8 py-6 border-b flex items-center justify-between shrink-0 ${darkMode ? 'bg-[#0b2528]/50 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
-                    <div className="flex items-center gap-4">
-                        <div className={`p-3 rounded-2xl ${darkMode ? 'bg-[#065f46]/20' : 'bg-[#065f46]/10'}`}>
+                <div className={`px-4 sm:px-8 py-4 sm:py-6 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0 pr-12 ${darkMode ? 'bg-[#0b2528]/50 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl shrink-0 ${darkMode ? 'bg-[#065f46]/20' : 'bg-[#065f46]/10'}`}>
                             {step === 1 ? <ImageIcon className="h-6 w-6 text-[#065f46]" /> :
                                 step === 2 ? <FileText className="h-6 w-6 text-[#065f46]" /> :
                                     <CheckCircle2 className="h-6 w-6 text-[#065f46]" />}
                         </div>
-                        <div>
-                            <h2 className="text-base font-black uppercase tracking-widest text-[#002f37] dark:text-white">Upload Field Report</h2>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Farmer: {farmer.name}</p>
+                        <div className="min-w-0">
+                            <h2 className="text-sm sm:text-base font-black uppercase tracking-widest text-[#002f37] dark:text-white">Upload Field Report</h2>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest truncate">Farmer: {farmer.name}</p>
                         </div>
                     </div>
                     {step < 3 && (
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 shrink-0 pl-12 sm:pl-0">
                             {[1, 2].map(i => (
                                 <div key={i} className={`h-1.5 w-8 rounded-full transition-all duration-500 ${step >= i ? 'bg-[#065f46]' : 'bg-gray-200 dark:bg-gray-800'}`} />
                             ))}
@@ -211,7 +211,7 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({ open, onOpenChange,
                     )}
                 </div>
 
-                <div className="flex-1 px-8 py-8 overflow-y-auto max-h-[60vh] scrollbar-hide">
+                <div className="flex-1 px-4 sm:px-8 py-4 sm:py-8 overflow-y-auto overflow-x-hidden min-h-0">
                     {step === 1 && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="text-center mb-4">
@@ -396,22 +396,23 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({ open, onOpenChange,
                     )}
                 </div>
 
-                <div className={`p-8 border-t flex items-center justify-between shrink-0 ${darkMode ? 'bg-[#0b2528]/50 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                <div className={`agent-action-row px-4 sm:px-8 py-4 border-t pb-[max(1rem,env(safe-area-inset-bottom))] flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0 ${darkMode ? 'bg-[#0b2528]/50 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
                     {step < 3 ? (
                         <>
                             <Button 
                                 variant="ghost" 
-                                className={`font-black text-[10px] uppercase tracking-widest h-12 px-6 rounded-xl transition-all ${darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500'}`} 
+                                className={`font-black text-[10px] uppercase tracking-widest h-12 px-6 rounded-xl w-full sm:w-auto transition-all ${darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500'}`} 
                                 onClick={() => step > 1 ? setStep(1) : onOpenChange(false)}
                             >
                                 {step === 1 ? 'Cancel' : 'Back to Selection'}
                             </Button>
                             <Button
-                                className="bg-[#065f46] text-white h-12 px-10 rounded-xl hover:bg-[#065f46]/90 font-black uppercase tracking-widest text-[11px] shadow-lg shadow-[#065f46]/20 border-none group transition-all"
+                                className="bg-[#065f46] text-white h-12 px-6 sm:px-10 rounded-xl hover:bg-[#065f46]/90 font-black uppercase tracking-widest text-[10px] sm:text-[11px] shadow-lg shadow-[#065f46]/20 border-none w-full sm:w-auto group transition-all"
                                 disabled={loading || mediaFiles.length === 0}
                                 onClick={() => step === 1 ? setStep(2) : handleSubmit()}
                             >
-                                {step === 2 ? (loading ? 'Uploading...' : `Sync ${mediaFiles.length} Documents`) : 'Review Details'}
+                                <span className="sm:hidden">{step === 2 ? (loading ? 'Uploading...' : 'Sync Files') : 'Review'}</span>
+                                <span className="hidden sm:inline">{step === 2 ? (loading ? 'Uploading...' : `Sync ${mediaFiles.length} Documents`) : 'Review Details'}</span>
                                 <RefreshCcw className={`ml-2 h-4 w-4 ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
                             </Button>
                         </>

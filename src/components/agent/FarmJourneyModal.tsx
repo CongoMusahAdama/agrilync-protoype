@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -523,6 +524,50 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
         }));
     };
 
+    const formatStageLabel = (stage: string, short = false) => {
+        if (stage === 'acquisition') return short ? 'Acquire' : 'Acquisition';
+        if (stage === 'rearing') return 'Rearing';
+        if (stage === 'health') return short ? 'Health' : 'Health';
+        if (stage === 'production') return 'Production';
+        if (stage === 'marketing') return short ? 'Sales' : 'Marketing';
+        if (stage === 'planting') return 'Planting';
+        if (stage === 'growing') return 'Growing';
+        if (stage === 'harvesting') return 'Harvesting';
+        if (stage === 'maintenance') return 'Maintenance';
+        if (stage === 'planning') return 'Planning';
+        if (stage === 'other') return 'Other';
+        return stage.charAt(0).toUpperCase() + stage.slice(1);
+    };
+
+    const renderStageIcon = (stage: string, sizeClass = 'h-5 w-5') => {
+        const iconClass = `${sizeClass} text-white`;
+        if (isLivestock) {
+            switch (stage) {
+                case 'planning': return <FileText className={iconClass} />;
+                case 'acquisition': return <Users className={iconClass} />;
+                case 'rearing': return <Leaf className={iconClass} />;
+                case 'health': return <Heart className={iconClass} />;
+                case 'production': return <TrendingUp className={iconClass} />;
+                case 'marketing': return <ShoppingCart className={iconClass} />;
+                case 'maintenance': return <Wrench className={iconClass} />;
+                case 'other': return <MoreHorizontal className={iconClass} />;
+                default: return <div className="w-3 h-3 rounded-full bg-gray-400" />;
+            }
+        }
+        switch (stage) {
+            case 'planning': return <FileText className={iconClass} />;
+            case 'planting': return <Sprout className={iconClass} />;
+            case 'growing': return <Leaf className={iconClass} />;
+            case 'harvesting': return <Scissors className={iconClass} />;
+            case 'maintenance': return <Wrench className={iconClass} />;
+            case 'other': return <MoreHorizontal className={iconClass} />;
+            default: return <div className="w-3 h-3 rounded-full bg-gray-400" />;
+        }
+    };
+
+    const currentStageIndex = stages.indexOf(currentStage);
+    const journeyProgress = stages.length > 0 ? ((currentStageIndex + 1) / stages.length) * 100 : 0;
+
     const getStageColor = (stage: string) => {
         if (isLivestock) {
             switch (stage) {
@@ -554,7 +599,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
     if (loading) {
         return (
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-7xl md:w-[min(96vw,1280px)] max-md:h-full max-md:max-h-[100dvh] md:h-[60vh] flex items-center justify-center max-md:rounded-none ${darkMode ? 'bg-[#002f37] border-white/10 text-white' : 'bg-white'}`}>
+                <DialogContent className={`agent-modal-mobile w-full max-w-[100vw] md:max-w-7xl md:w-[min(96vw,1280px)] max-md:h-full max-md:max-h-[100dvh] md:h-[60vh] flex items-center justify-center max-md:rounded-none p-4 sm:p-6 ${darkMode ? 'bg-[#002f37] border-white/10 text-white' : 'bg-white'}`}>
                     <div className="flex flex-col items-center gap-4">
                         <div className="w-12 h-12 border-4 border-[#065f46]/20 border-t-[#065f46] rounded-full animate-spin" />
                         <p className={darkMode ? 'text-gray-200' : 'text-gray-500'}>Loading farm details...</p>
@@ -566,16 +611,17 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-7xl md:w-[min(96vw,1280px)] max-md:h-full max-md:max-h-[100dvh] md:max-h-[95vh] overflow-y-auto max-md:rounded-none ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white'}`}>
-                <DialogHeader className="mb-4">
-                    <DialogTitle className={`flex items-center gap-3 text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        <div className={`p-2 rounded-lg ${darkMode ? 'bg-[#065f46]/20 text-[#065f46]' : 'bg-[#065f46]/10 text-[#065f46]'}`}>
-                            <Leaf className="h-6 w-6" />
+            <DialogContent className={`agent-modal-mobile w-full max-w-[100vw] md:max-w-7xl md:w-[min(96vw,1280px)] max-md:h-full max-md:max-h-[100dvh] md:max-h-[95vh] overflow-y-auto overflow-x-hidden max-md:rounded-none p-4 sm:p-6 ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white'}`}>
+                <DialogHeader className="mb-3 sm:mb-4 space-y-1 pr-8">
+                    <DialogTitle className={`flex items-center gap-2 sm:gap-3 text-lg sm:text-2xl font-bold leading-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <div className={`p-1.5 sm:p-2 rounded-lg shrink-0 ${darkMode ? 'bg-[#065f46]/20 text-[#065f46]' : 'bg-[#065f46]/10 text-[#065f46]'}`}>
+                            <Leaf className="h-5 w-5 sm:h-6 sm:w-6" />
                         </div>
-                        Farm Journey Tracker
+                        <span className="text-balance">Farm Journey Tracker</span>
                     </DialogTitle>
-                    <DialogDescription className={`text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                        Manage and track the agricultural lifecycle for <span className="font-semibold text-[#065f46]">{farmer?.name}</span>
+                    <DialogDescription className={`text-sm sm:text-lg leading-snug break-words text-balance ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                        Manage and track the agricultural lifecycle for{' '}
+                        <span className="font-semibold text-[#065f46]">{farmer?.name}</span>
                     </DialogDescription>
                 </DialogHeader>
 
@@ -657,47 +703,72 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                         </Card>
                     </div>
                 ) : (
-                    <div className="space-y-8 py-4">
-                        <Card className={`mb-8 shadow-lg transition-colors ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white border-gray-200'}`}>
-                            <CardHeader className="pb-2">
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                    <div>
-                                        <CardTitle className={`flex items-center gap-2 text-xl sm:text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                            <Leaf className="h-6 w-6 text-[#065f46]" />
-                                            Farm: <span className="text-[#065f46]">{farm.name}</span>
+                    <div className="space-y-4 md:space-y-8 py-1 md:py-4">
+                        <Card className={`shadow-lg transition-colors overflow-hidden ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white border-gray-200'}`}>
+                            <CardHeader className="pb-3 px-4 sm:px-6 pt-4 sm:pt-6">
+                                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                                    <div className="min-w-0 flex-1">
+                                        <CardTitle className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-base sm:text-2xl font-bold leading-snug ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            <Leaf className="h-5 w-5 sm:h-6 sm:w-6 text-[#065f46] shrink-0" />
+                                            <span className="shrink-0">Farm:</span>
+                                            <span className="text-[#065f46] break-words">{farm.name}</span>
                                         </CardTitle>
-                                        <CardDescription className={`mt-2 text-base ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            Agricultural cycle tracking in <span className="font-semibold">{farm.location}</span>
+                                        <CardDescription className={`mt-2 text-sm sm:text-base leading-relaxed break-words ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                            Agricultural cycle tracking in{' '}
+                                            <span className="font-semibold">{farm.location}</span>
                                         </CardDescription>
                                     </div>
-                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                                        <div className="flex flex-col gap-1">
-                                            <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Update Current Stage</span>
-                                            <Select value={currentStage} onValueChange={(val) => handleUpdateStage(val)}>
-                                                <SelectTrigger className={`h-12 w-full sm:w-56 border-2 border-[#065f46] ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white'}`}>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent className={darkMode ? 'bg-[#002f37] border-white/20 text-white' : ''}>
-                                                    {stages.map((stage) => (
-                                                        <SelectItem key={stage} value={stage}>
-                                                            {stage === 'acquisition' ? 'Acquisition' :
-                                                             stage === 'rearing' ? 'Rearing' :
-                                                             stage === 'health' ? 'Health Management' :
-                                                             stage === 'production' ? 'Production' :
-                                                             stage === 'marketing' ? 'Marketing/Sales' :
-                                                             stage === 'planting' ? 'Planting' :
-                                                             stage === 'growing' ? 'Growing' :
-                                                             stage === 'harvesting' ? 'Harvesting' :
-                                                             stage.charAt(0).toUpperCase() + stage.slice(1)}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
+                                    <div className="flex flex-col gap-1.5 w-full md:w-56 shrink-0">
+                                        <span className={`text-[10px] sm:text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            Update Current Stage
+                                        </span>
+                                        <Select value={currentStage} onValueChange={(val) => handleUpdateStage(val)}>
+                                            <SelectTrigger className={`h-11 sm:h-12 w-full border-2 border-[#065f46] text-sm sm:text-base ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white'}`}>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className={darkMode ? 'bg-[#002f37] border-white/20 text-white' : ''}>
+                                                {stages.map((stage) => (
+                                                    <SelectItem key={stage} value={stage}>
+                                                        {formatStageLabel(stage)}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                 </div>
                             </CardHeader>
-                            <CardContent className="overflow-x-auto pb-10 pt-4 custom-scrollbar">
+
+                            {/* Mobile: compact progress summary */}
+                            <CardContent className="md:hidden px-4 pb-4 pt-0">
+                                <div className={`rounded-2xl p-4 ${darkMode ? 'bg-white/5 border border-white/10' : 'bg-gray-50 border border-gray-100'}`}>
+                                    <div className="flex items-center justify-between gap-2 mb-3">
+                                        <span className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            Journey progress
+                                        </span>
+                                        <Badge variant="outline" className="text-[10px] font-bold border-[#065f46]/30 text-[#065f46] shrink-0">
+                                            Step {currentStageIndex + 1} of {stages.length}
+                                        </Badge>
+                                    </div>
+                                    <Progress value={journeyProgress} className="h-2" />
+                                    <div className="mt-4 flex items-center gap-3 min-w-0">
+                                        <div className="w-11 h-11 rounded-full bg-[#065f46] flex items-center justify-center shrink-0 shadow-lg shadow-[#065f46]/30">
+                                            {renderStageIcon(currentStage, 'h-5 w-5')}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                Current stage
+                                            </p>
+                                            <p className="text-base font-bold text-[#065f46] truncate">
+                                                {formatStageLabel(currentStage)}
+                                            </p>
+                                        </div>
+                                        <Badge className="bg-[#065f46] text-white font-bold shrink-0">Active</Badge>
+                                    </div>
+                                </div>
+                            </CardContent>
+
+                            {/* Desktop: horizontal stepper */}
+                            <CardContent className="hidden md:block overflow-x-auto pb-10 pt-4 custom-scrollbar">
                                 <div className="relative mt-10 min-w-[700px] px-8">
                                     {/* Connection Line */}
                                     <div className={`absolute top-6 sm:top-7 left-8 right-8 h-1.5 rounded-full ${darkMode ? 'bg-white/10' : 'bg-gray-100'}`}>
@@ -763,12 +834,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                                     <div className="mt-4 text-center">
                                                         <p className={`text-sm sm:text-base font-bold transition-colors ${isCurrent ? 'text-[#065f46] scale-105' : isCompleted ? (darkMode ? 'text-white' : 'text-gray-800') : (darkMode ? 'text-gray-500' : 'text-gray-400')
                                                             }`}>
-                                                            {stage === 'acquisition' ? 'Acquisition' :
-                                                             stage === 'rearing' ? 'Rearing' :
-                                                             stage === 'health' ? 'Health' :
-                                                             stage === 'production' ? 'Production' :
-                                                             stage === 'marketing' ? 'Marketing' :
-                                                             stage.charAt(0).toUpperCase() + stage.slice(1)}
+                                                            {formatStageLabel(stage)}
                                                         </p>
                                                         {isCurrent && (
                                                             <Badge className="bg-[#065f46] text-white font-bold mt-1 animate-pulse">Active</Badge>
@@ -782,38 +848,43 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                             </CardContent>
                         </Card>
 
-                        <Card className={`mb-8 transition-all border-none shadow-xl ${darkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
-                            <CardHeader className={`border-b ${darkMode ? 'border-white/10' : 'border-gray-100'} pb-0 px-4 sm:px-6`}>
-                                <div className="flex flex-col gap-4 mb-6">
-                                    <div className="flex items-start justify-between">
-                                        <div>
-                                            <CardTitle className={`flex items-center gap-2 text-xl sm:text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                                <Activity className={`h-6 w-6 sm:h-7 sm:w-7 text-[#065f46]`} />
+                        <Card className={`transition-all border-none shadow-xl overflow-hidden ${darkMode ? 'bg-[#002f37]' : 'bg-white'}`}>
+                            <CardHeader className={`border-b ${darkMode ? 'border-white/10' : 'border-gray-100'} pb-0 px-4 sm:px-6 pt-4 sm:pt-6`}>
+                                <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+                                    <div className="flex items-start justify-between gap-3 min-w-0">
+                                        <div className="min-w-0 flex-1">
+                                            <CardTitle className={`flex items-center gap-2 text-lg sm:text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                <Activity className="h-5 w-5 sm:h-7 sm:w-7 text-[#065f46] shrink-0" />
                                                 Activity Log
                                             </CardTitle>
-                                            <CardDescription className={`text-sm sm:text-base mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                                Tracking <span className="font-bold text-[#065f46] uppercase">{activeStageTab}</span> phase
+                                            <CardDescription className={`text-xs sm:text-base mt-1 break-words ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                Tracking{' '}
+                                                <span className="font-bold text-[#065f46] uppercase">
+                                                    {formatStageLabel(activeStageTab)}
+                                                </span>{' '}
+                                                phase
                                             </CardDescription>
                                         </div>
                                         <Button
                                             onClick={openActivityDialog}
                                             size="sm"
-                                            className="sm:hidden bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold h-10 px-4 rounded-lg shadow-lg shadow-emerald-500/20 border-none"
+                                            className="md:hidden bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold h-11 px-3 rounded-xl shadow-lg shadow-emerald-500/20 border-none shrink-0"
                                         >
-                                            <Plus className="h-5 w-5" />
+                                            <Plus className="h-4 w-4 mr-1" />
+                                            Log
                                         </Button>
                                     </div>
 
                                     <Button
                                         onClick={openActivityDialog}
-                                        className="hidden sm:flex self-end bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold px-8 h-12 rounded-xl shadow-lg shadow-[#065f46]/20 border-none"
+                                        className="hidden md:flex self-end bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold px-8 h-12 rounded-xl shadow-lg shadow-[#065f46]/20 border-none"
                                     >
                                         <Plus className="h-5 w-5 mr-2" />
                                         Log New Activity
                                     </Button>
                                 </div>
 
-                                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0 -mb-px">
+                                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-3 -mx-1 px-1 snap-x snap-mandatory">
                                     {stages.map((stage) => {
                                         const isActive = activeStageTab === stage;
                                         const isCurrentStage = currentStage === stage;
@@ -821,24 +892,22 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                         return (
                                             <button
                                                 key={stage}
+                                                type="button"
                                                 onClick={() => setActiveStageTab(stage)}
                                                 className={`
-                                                relative px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-bold whitespace-nowrap transition-all rounded-t-xl
+                                                snap-start shrink-0 min-h-[44px] px-4 py-2.5 text-xs sm:text-sm font-bold whitespace-nowrap transition-all rounded-full border-2
                                                 ${isActive
-                                                        ? `bg-[#065f46]/10 text-[#065f46] border-b-4 border-[#065f46]`
-                                                        : `text-gray-400 hover:text-gray-600 dark:hover:text-white border-b-4 border-transparent`
+                                                        ? 'bg-[#065f46] text-white border-[#065f46] shadow-md shadow-[#065f46]/25'
+                                                        : darkMode
+                                                            ? 'bg-white/5 text-gray-300 border-white/10 hover:border-[#065f46]/40'
+                                                            : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-[#065f46]/40'
                                                     }
                                             `}
                                             >
-                                                <span className="flex items-center gap-2">
-                                                    {stage === 'acquisition' ? 'Acquisition' :
-                                                     stage === 'rearing' ? 'Rearing' :
-                                                     stage === 'health' ? 'Health' :
-                                                     stage === 'production' ? 'Production' :
-                                                     stage === 'marketing' ? 'Marketing' :
-                                                     stage.charAt(0).toUpperCase() + stage.slice(1)}
+                                                <span className="flex items-center gap-1.5">
+                                                    {formatStageLabel(stage, true)}
                                                     {isCurrentStage && (
-                                                        <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-[#065f46] animate-ping"></div>
+                                                        <span className={`h-2 w-2 rounded-full ${isActive ? 'bg-white animate-pulse' : 'bg-[#065f46] animate-ping'}`} />
                                                     )}
                                                 </span>
                                             </button>
@@ -847,12 +916,12 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                                 </div>
                             </CardHeader>
 
-                            <CardContent className="pt-6 sm:pt-8 min-h-[400px] px-4 sm:px-6">
+                            <CardContent className="pt-4 sm:pt-8 min-h-[240px] md:min-h-[400px] px-4 sm:px-6 pb-6">
                                 <div className="space-y-6">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-4 border-b pb-4 border-white/5">
-                                        <div className="flex items-center justify-between w-full sm:w-auto gap-4">
-                                            <h3 className={`text-xl sm:text-2xl font-extrabold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                                {activeStageTab.charAt(0).toUpperCase() + activeStageTab.slice(1)} Feed
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-3 border-b pb-3 sm:pb-4 border-white/5">
+                                        <div className="flex items-center justify-between w-full sm:w-auto gap-3 min-w-0">
+                                            <h3 className={`text-lg sm:text-2xl font-extrabold tracking-tight truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                {formatStageLabel(activeStageTab)} Feed
                                             </h3>
                                             {currentStage === activeStageTab ? (
                                                 <Badge className="bg-[#065f46] text-white px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-sm font-bold uppercase tracking-wider">In Progress</Badge>
@@ -957,7 +1026,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
 
                         {/* Add Activity Dialog Content */}
                         <Dialog open={showActivityDialog} onOpenChange={setShowActivityDialog}>
-                            <DialogContent className={`agent-modal-mobile w-[95vw] md:max-w-6xl md:w-[min(96vw,1152px)] p-0 overflow-hidden flex flex-col lg:flex-row max-md:h-full max-md:max-h-[100dvh] max-md:rounded-none md:rounded-2xl lg:rounded-3xl border-none ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white shadow-2xl'}`}>
+                            <DialogContent className={`agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden md:max-w-6xl md:w-[min(96vw,1152px)] p-0 overflow-hidden flex flex-col lg:flex-row max-md:h-full max-md:max-h-[100dvh] max-md:rounded-none md:rounded-2xl lg:rounded-3xl border-none ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white shadow-2xl'}`}>
                                 <div className="flex-1 p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 overflow-y-auto max-h-[85vh]">
                                     <DialogHeader className="mb-2 sm:mb-4">
                                         <DialogTitle className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tighter">Log Stage Activity</DialogTitle>
