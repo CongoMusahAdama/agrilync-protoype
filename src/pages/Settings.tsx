@@ -762,6 +762,7 @@ const Settings = () => {
                         <FarmMap
                           latitude={latitude}
                           longitude={longitude}
+                          areaUnit="hectares"
                           onLocationChange={(lat, lng) => {
                             setLatitude(lat);
                             setLongitude(lng);

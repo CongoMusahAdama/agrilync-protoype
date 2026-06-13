@@ -18,6 +18,7 @@ const {
     ensurePrimaryFarm,
     normalizeRegion,
 } = require('../utils/farmerOnboarding');
+const { validateGhanaCardOcrProof } = require('../utils/ghanaCardVerification');
 const { sendFarmerWelcomeSms } = require('../utils/farmerWelcomeSms');
 const {
     findNearestVerificationAgent,
@@ -419,6 +420,15 @@ exports.addFarmer = async (req, res) => {
             if (isNaN(dobDate.getTime()) || dobDate > new Date()) {
                 return res.status(400).json({ msg: 'Invalid Date of Birth' });
             }
+        }
+
+        const ghanaCardCheck = validateGhanaCardOcrProof(req.body);
+        if (!ghanaCardCheck.ok) {
+            return res.status(400).json({ msg: ghanaCardCheck.msg });
+        }
+
+        if (!idCardFront || !idCardBack) {
+            return res.status(400).json({ msg: 'Ghana Card front and back photos are required.' });
         }
 
         let generatedHash = '';

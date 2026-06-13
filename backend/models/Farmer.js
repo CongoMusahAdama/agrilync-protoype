@@ -75,6 +75,8 @@ const farmerSchema = new mongoose.Schema({
         lat: { type: Number },
         lng: { type: Number },
         measuredAcres: { type: Number },
+        /** Polygon vertices [lat, lng] from field boundary measurement */
+        boundary: { type: [[Number]], default: undefined },
     },
     idCardFront: { type: String },
     idCardBack: { type: String },

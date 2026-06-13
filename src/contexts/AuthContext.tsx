@@ -9,6 +9,7 @@ import {
     persistAuthSession,
     refreshAccessToken,
 } from '@/utils/authToken';
+import { getCachedAgentProfile, persistAgentProfile, saveOfflineLogin } from '@/lib/offline/offlineAuth';
 
 interface Agent {
     id: string;
@@ -72,16 +73,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 try {
                     const res = await api.get('/agents/profile');
                     const profile = res.data;
-                    setAgent({
+                    const normalized = {
                         ...profile,
                         region: getRegionKey(profile.region) || profile.region,
-                    });
+                    };
+                    setAgent(normalized);
+                    persistAgentProfile(normalized);
                 } catch (err: any) {
                     console.error('Failed to load agent', err);
-                    if (err?.response?.status === 401 && !getRefreshToken()) {
+                    const cached = getCachedAgentProfile();
+                    const isNetworkFailure = !err?.response;
+                    if (cached && (isNetworkFailure || err?.response?.status >= 500)) {
+                        setAgent({
+                            ...cached,
+                            region: getRegionKey(cached.region) || cached.region,
+                        });
+                    } else if (err?.response?.status === 401 && !getRefreshToken()) {
                         clearAuthSession();
                         setToken(null);
                         setAgent(null);
+                    } else if (cached) {
+                        setAgent({
+                            ...cached,
+                            region: getRegionKey(cached.region) || cached.region,
+                        });
                     }
                 }
             } else {
@@ -115,16 +130,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { token, refreshToken, agent } = res.data;
         persistAuthSession(token, refreshToken);
         setToken(token);
-        setAgent(agent);
+        const normalized = {
+            ...agent,
+            region: agent.region ? (getRegionKey(agent.region) || agent.region) : agent.region,
+        };
+        setAgent(normalized);
+        persistAgentProfile(normalized);
+        await saveOfflineLogin(email, password, normalized);
     };
 
     const setSession = (accessToken: string, agent: Agent, refreshToken?: string | null) => {
         persistAuthSession(accessToken, refreshToken);
         setToken(accessToken);
-        setAgent({
+        const normalized = {
             ...agent,
             region: agent.region ? (getRegionKey(agent.region) || agent.region) : agent.region,
-        });
+        };
+        setAgent(normalized);
+        persistAgentProfile(normalized);
     };
 
     const logout = async () => {

@@ -4,7 +4,6 @@ import api from '@/utils/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOfflineOptional } from '@/contexts/OfflineContext';
 import { submitOrQueue, isBrowserOnline } from '@/lib/offline';
-import Swal from 'sweetalert2';
 import { createWorker } from 'tesseract.js';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -25,7 +24,13 @@ import { GHANA_REGIONS, GHANA_LANGUAGES, GHANA_COMMUNITIES, getRegionKey } from 
 import { GHANA_CROPS, GHANA_LIVESTOCK, type LivestockEntry } from '@/data/ghanaCrops';
 import ProfileImageCropDialog from '@/components/ProfileImageCropDialog';
 import { resolveInitialMapView } from '@/utils/mapLocation';
-import { showValidationAlert } from '@/utils/validationAlert';
+import {
+    showAutoErrorAlert,
+    showAutoSuccessAlert,
+    showAutoWarningAlert,
+    showValidationAlert,
+} from '@/utils/validationAlert';
+import { validateGhanaCardOcr, type GhanaCardExtracted } from '@/utils/ghanaCardOcr';
 import {
     ONBOARDING_INPUT,
     ONBOARDING_SELECT,
@@ -90,11 +95,14 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
     const [idCardBack, setIdCardBack] = useState('');
     const [idVerificationChecked, setIdVerificationChecked] = useState(false);
     const [ocrProcessing, setOcrProcessing] = useState(false);
-    const [ocrData, setOcrData] = useState<{ name?: string; dob?: string } | null>(null);
+    const [ocrData, setOcrData] = useState<GhanaCardExtracted | null>(null);
+    const [ocrRawText, setOcrRawText] = useState('');
+    const [ocrErrors, setOcrErrors] = useState<string[]>([]);
     const [ocrMismatch, setOcrMismatch] = useState<string[]>([]);
     const [farmLatitude, setFarmLatitude] = useState(0);
     const [farmLongitude, setFarmLongitude] = useState(0);
     const [measuredArea, setMeasuredArea] = useState(0);
+    const [farmBoundary, setFarmBoundary] = useState<[number, number][]>([]);
     const [mapViewCenter, setMapViewCenter] = useState<[number, number] | undefined>();
     const [mapViewZoom, setMapViewZoom] = useState(14);
     const [isIdCardModalOpen, setIsIdCardModalOpen] = useState(false);
@@ -139,6 +147,15 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         setLivestockInventory((prev) => prev.filter((_, i) => i !== index));
     };
 
+    const handleMeasuredArea = (acres: number) => {
+        if (!isEditable) return;
+        setMeasuredArea(acres);
+        setFormData((fd) => ({
+            ...fd,
+            farmSize: acres > 0 ? acres.toFixed(2) : '',
+        }));
+    };
+
     const prevOpenRef = React.useRef(false);
     const loadedEditFarmerIdRef = React.useRef<string | null>(null);
 
@@ -161,9 +178,15 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         setFarmLatitude(0);
         setFarmLongitude(0);
         setMeasuredArea(0);
+        setFarmBoundary([]);
         setMapViewCenter(undefined);
         setMapViewZoom(14);
         setTrainingModules(TRAINING_MODULES.map((m) => ({ ...m, completed: false })));
+        setIdVerificationChecked(false);
+        setOcrData(null);
+        setOcrRawText('');
+        setOcrErrors([]);
+        setOcrMismatch([]);
     }, [buildEmptyForm]);
 
     const loadFarmerForEdit = React.useCallback((editFarmer: NonNullable<typeof farmer>) => {
@@ -206,6 +229,9 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             setFarmLatitude(editFarmer.farmLocation.lat);
             setFarmLongitude(editFarmer.farmLocation.lng);
             setMeasuredArea(editFarmer.farmLocation.measuredAcres || editFarmer.farmSize || 0);
+            if (Array.isArray(editFarmer.farmLocation.boundary)) {
+                setFarmBoundary(editFarmer.farmLocation.boundary);
+            }
         }
         setTrainingModules(
             TRAINING_MODULES.map((m) => ({
@@ -239,12 +265,10 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                 try {
                     loadFarmerForEdit(farmer);
                 } catch {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Load Failed',
-                        text: 'Error loading farmer profile for editing. Refined data might be missing.',
-                        confirmButtonColor: '#002f37'
-                    });
+                    showValidationAlert(
+                        'Load Failed',
+                        'Error loading farmer profile for editing. Refined data might be missing.'
+                    );
                 }
             }
             return;
@@ -324,63 +348,76 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [open, step, isEditable]);
 
+    const applyOcrValidation = React.useCallback(
+        (text: string) => {
+            const result = validateGhanaCardOcr(text, {
+                name: formData.name,
+                dob: formData.dob,
+                ghanaCardNumber: formData.ghanaCardNumber,
+            });
+            setOcrData(result.extracted);
+            setOcrErrors(result.errors);
+            if (result.valid) {
+                setOcrMismatch([]);
+                setIdVerificationChecked(true);
+                return true;
+            }
+            setOcrMismatch(result.errors);
+            setIdVerificationChecked(false);
+            return false;
+        },
+        [formData.name, formData.dob, formData.ghanaCardNumber]
+    );
+
+    React.useEffect(() => {
+        if (!ocrRawText || ocrProcessing) return;
+        applyOcrValidation(ocrRawText);
+    }, [ocrRawText, ocrProcessing, applyOcrValidation]);
+
     const processOCR = async (imageData: string) => {
         setOcrProcessing(true);
         setOcrMismatch([]);
+        setOcrErrors([]);
+        setIdVerificationChecked(false);
         try {
             const worker = await createWorker('eng');
-            const { data: { text } } = await worker.recognize(imageData);
+            const {
+                data: { text },
+            } = await worker.recognize(imageData);
             await worker.terminate();
 
-            const nameMatch = text.match(/(?:Name|NAME)\s*:?\s*([A-Z\s]+)/i);
-            const dobMatch = text.match(/(?:Date of Birth|DOB|Birth)\s*:?\s*(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})/i);
-            const idNumberMatch = text.match(/(?:GHA-\d{9}-\d)/);
+            setOcrRawText(text);
+            const valid = applyOcrValidation(text);
 
-            const extractedData = {
-                name: nameMatch ? nameMatch[1].trim() : undefined,
-                dob: dobMatch ? dobMatch[1].trim() : undefined,
-                idNumber: idNumberMatch ? idNumberMatch[0] : undefined
-            };
-            setOcrData(extractedData as any);
-
-            const mismatches: string[] = [];
-            const normalizeName = (n: string) => n.toLowerCase().trim().replace(/\s+/g, ' ');
-
-            if (extractedData.name && formData.name) {
-                const extractedWords = normalizeName(extractedData.name).split(' ');
-                const formWords = normalizeName(formData.name).split(' ');
-                const matchingWords = extractedWords.filter(w => formWords.some(fw => fw.includes(w) || w.includes(fw)));
-                if (matchingWords.length / Math.max(extractedWords.length, formWords.length) < 0.7) {
-                    mismatches.push('name');
-                }
-            }
-            if (extractedData.idNumber && formData.ghanaCardNumber && extractedData.idNumber !== formData.ghanaCardNumber) {
-                mismatches.push('ID number');
-            }
-
-            if (mismatches.length > 0) {
-                setOcrMismatch(mismatches);
-                setIdVerificationChecked(false);
-                Swal.fire({ icon: 'error', title: 'Ghana Card Validation Failed', text: `Mismatch in: ${mismatches.join(', ')}`, confirmButtonColor: '#ef4444' });
-            } else if (extractedData.name || extractedData.dob) {
-                setOcrMismatch([]);
-                setIdVerificationChecked(true);
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: 'Ghana card OCR verification completed successfully!',
-                    timer: 2000,
-                    showConfirmButton: false,
-                    position: 'top-end'
+            if (valid) {
+                showAutoSuccessAlert(
+                    'Ghana Card verified',
+                    '<p style="font-size:15px;color:#065f46;font-weight:700;">Card number, name, and date of birth match your entries.</p>',
+                    3500
+                );
+            } else {
+                const result = validateGhanaCardOcr(text, {
+                    name: formData.name,
+                    dob: formData.dob,
+                    ghanaCardNumber: formData.ghanaCardNumber,
                 });
+                showAutoErrorAlert(
+                    'Ghana Card verification failed',
+                    `<ul style="text-align:left;font-size:13px;color:#374151;margin:0;padding-left:1.1rem;">${result.errors
+                        .map((e) => `<li style="margin-bottom:6px;">${e}</li>`)
+                        .join('')}</ul>`,
+                    5000,
+                    true
+                );
             }
         } catch (error) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'OCR Scan Failed',
-                text: 'Could not read card data. Manual verification will be required.',
-                confirmButtonColor: '#002f37'
-            });
+            setOcrRawText('');
+            setOcrData(null);
+            setIdVerificationChecked(false);
+            showAutoErrorAlert(
+                'Could not scan Ghana Card',
+                'Upload a clear, well-lit photo of the front of the Ghana Card. Random or unrelated images cannot be used.'
+            );
         } finally {
             setOcrProcessing(false);
         }
@@ -407,7 +444,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         if (!file) return;
         e.target.value = '';
         if (file.size > 5 * 1024 * 1024) { 
-            Swal.fire({ icon: 'error', title: 'File Too Large', text: 'Maximum upload size is 5MB. Please choose a smaller image.', confirmButtonColor: '#002f37' });
+            showValidationAlert('File Too Large', 'Maximum upload size is 5MB. Please choose a smaller image.');
             return; 
         }
         const reader = new FileReader();
@@ -419,10 +456,18 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                     return;
                 }
                 const compressed = await compressImage(reader.result as string);
-                if (type === 'front') { setIdCardFront(compressed); processOCR(compressed); }
+                if (type === 'front') {
+                    setIdCardFront(compressed);
+                    setOcrRawText('');
+                    setOcrData(null);
+                    setOcrErrors([]);
+                    setOcrMismatch([]);
+                    setIdVerificationChecked(false);
+                    void processOCR(compressed);
+                }
                 else if (type === 'back') setIdCardBack(compressed);
             } catch { 
-                Swal.fire({ icon: 'error', title: 'Processing Error', text: 'Failed to optimize image for upload.', confirmButtonColor: '#002f37' });
+                showValidationAlert('Processing Error', 'Failed to optimize image for upload.');
             }
         };
         reader.readAsDataURL(file);
@@ -433,7 +478,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             const compressed = await compressImage(dataUrl, 512, 512, 0.88);
             setProfilePicture(compressed);
         } catch {
-            Swal.fire({ icon: 'error', title: 'Processing Error', text: 'Failed to optimize profile photo.', confirmButtonColor: '#002f37' });
+            showValidationAlert('Processing Error', 'Failed to optimize profile photo.');
         }
     };
 
@@ -477,21 +522,21 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         },
         retry: false,
         onSuccess: async (result: { kind: 'online' | 'queued'; data?: unknown; name?: string }) => {
+            submitLockRef.current = false;
+            onOpenChange?.(false);
+            resetNewFarmerForm();
+            // Let the full-screen onboarding dialog unmount so it cannot block the alert on mobile
+            await new Promise((resolve) => window.setTimeout(resolve, 200));
+
             if (result.kind === 'queued') {
                 await refreshOfflineState();
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Saved on Device',
-                    html: `<p style="font-size:18px;color:#065f46;font-weight:800;">Grower profile saved offline.</p>
+                await showAutoSuccessAlert(
+                    'Saved on Device',
+                    `<p style="font-size:18px;color:#065f46;font-weight:800;">Grower profile saved offline.</p>
                         <p style="font-size:14px;color:#374151;margin-top:12px;"><b>${result.name}</b> will be registered when you have signal.</p>
                         <p style="font-size:12px;color:#6b7280;margin-top:10px;">Lync ID, welcome SMS, and ID card will be available after sync.</p>`,
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#065f46',
-                    timer: 6000,
-                    timerProgressBar: true,
-                });
-                onOpenChange?.(false);
-                resetNewFarmerForm();
+                    4000
+                );
                 onSuccess?.();
                 return;
             }
@@ -508,19 +553,17 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                     ? `<p style="font-size:13px;color:#065f46;margin-top:10px;">Welcome SMS queued for the grower via mNotify.</p>`
                     : `<p style="font-size:13px;color:#b45309;margin-top:10px;">Grower saved, but welcome SMS was not sent${sms?.message ? `: ${sms.message}` : ''}. Check the phone number and try Bulk SMS.</p>`
                 : '';
-            await Swal.fire({
-                icon: 'success', title: 'Onboarding Finalized',
-                html: `<p style="font-size:18px;color:#065f46;font-weight:800;">${isEditMode ? 'Farmer profile updated!' : 'Farmer onboarded successfully!'}</p><p style="font-family:monospace;font-size:22px;font-weight:900;color:#064e3b;">Lync ID: ${lyncId}</p>${smsLine}`,
-                confirmButtonText: 'Continue', confirmButtonColor: '#065f46', timer: smsSent ? 3000 : 5000, timerProgressBar: true
-            });
+            await showAutoSuccessAlert(
+                'Onboarding Finalized',
+                `<p style="font-size:18px;color:#065f46;font-weight:800;">${isEditMode ? 'Farmer profile updated!' : 'Farmer onboarded successfully!'}</p><p style="font-family:monospace;font-size:22px;font-weight:900;color:#064e3b;">Lync ID: ${lyncId}</p>${smsLine}`,
+                smsSent ? 3500 : 4500
+            );
             queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
             queryClient.invalidateQueries({ queryKey: ['agentFarmers'] });
             queryClient.invalidateQueries({ queryKey: ['farmers'] });
             queryClient.invalidateQueries({ queryKey: ['agentFarmersDirectory'] });
             setFinalizedFarmer(savedFarmer);
             setIsIdCardModalOpen(true);
-            onOpenChange?.(false);
-            resetNewFarmerForm();
         },
         onError: (error: unknown) => {
             submitLockRef.current = false;
@@ -542,33 +585,42 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         if (submitLockRef.current || addFarmerMutation.isPending) return;
 
         if (isEditMode && !isOnline) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Offline',
-                text: 'Editing a grower profile requires internet. You can onboard new growers offline and sync later.',
-                confirmButtonColor: '#065f46',
-            });
+            showAutoWarningAlert(
+                'Offline',
+                'Editing a grower profile requires internet. You can onboard new growers offline and sync later.'
+            );
             return;
         }
 
         if (!agent?.id && !agent?.agentId) {
-            Swal.fire({ icon: 'error', title: 'Session Error', text: 'Your agent session could not be verified. Please log out and sign in again.', confirmButtonColor: '#002f37' });
+            showValidationAlert(
+                'Session Error',
+                'Your agent session could not be verified. Please log out and sign in again.'
+            );
             return;
         }
         if (!agent?.agentId) {
-            Swal.fire({ icon: 'error', title: 'Profile Incomplete', text: 'Your Field Agent ID is missing from your profile. Contact an administrator before onboarding growers.', confirmButtonColor: '#002f37' });
+            showValidationAlert(
+                'Profile Incomplete',
+                'Your Field Agent ID is missing from your profile. Contact an administrator before onboarding growers.'
+            );
             return;
         }
         if (!idCardFront || !idCardBack) {
-            Swal.fire({ icon: 'error', title: 'Missing Documentation', text: 'Please upload both sides of the Ghana Card', confirmButtonColor: '#002f37' });
+            showValidationAlert('Missing Documentation', 'Please upload both sides of the Ghana Card');
             return;
         }
-        if (!isEditMode && ocrMismatch.length > 0) {
-            Swal.fire({ icon: 'error', title: 'Cannot Proceed', text: `Mismatch in: ${ocrMismatch.join(', ')}. Please correct before submitting.`, confirmButtonColor: '#ef4444' });
-            return;
-        }
-        if (!idVerificationChecked) {
-            Swal.fire({ icon: 'error', title: 'Validation Pending', text: 'Please confirm the ID verification checkbox', confirmButtonColor: '#002f37' });
+        if (!isEditMode && (!idVerificationChecked || !ocrData?.idNumber || ocrErrors.length > 0)) {
+            showAutoErrorAlert(
+                'Ghana Card not verified',
+                ocrErrors.length
+                    ? `<ul style="text-align:left;font-size:13px;margin:0;padding-left:1.1rem;">${ocrErrors
+                          .map((e) => `<li style="margin-bottom:6px;">${e}</li>`)
+                          .join('')}</ul>`
+                    : '<p>Upload a clear front photo of the Ghana Card. The card number, name, and date of birth must match step 1.</p>',
+                5000,
+                true
+            );
             return;
         }
 
@@ -582,13 +634,13 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         };
         const missingFields = Object.entries(requiredFields).filter(([_, v]) => !v).map(([k]) => k);
         if (missingFields.length > 0) {
-            Swal.fire({ icon: 'error', title: 'Incomplete Data', text: `Please fill required fields: ${missingFields.join(', ')}`, confirmButtonColor: '#002f37' });
+            showValidationAlert('Incomplete Data', `Please fill required fields: ${missingFields.join(', ')}`);
             return;
         }
 
         const ghanaCardRegex = /^GHA-\d{9}-\d$/;
         if (!ghanaCardRegex.test(formData.ghanaCardNumber)) {
-            Swal.fire({ icon: 'error', title: 'Identity Format Error', text: 'Invalid Ghana Card format. Expected: GHA-XXXXXXXXX-X', confirmButtonColor: '#002f37' });
+            showValidationAlert('Identity Format Error', 'Invalid Ghana Card format. Expected: GHA-XXXXXXXXX-X');
             return;
         }
 
@@ -612,7 +664,16 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             estimatedCapitalNeed: formData.estimatedCapitalNeed ? Number(formData.estimatedCapitalNeed) : 0,
             investmentReadinessScore: Number(formData.investmentReadinessScore),
             onboardingAgentId: agent.agentId,
-            verificationConfirmed: true,
+            verificationConfirmed: isEditMode ? true : idVerificationChecked,
+            ghanaCardOcr:
+                !isEditMode && ocrData?.idNumber && ocrData?.name && ocrData?.dob
+                    ? {
+                          idNumber: ocrData.idNumber,
+                          name: ocrData.name,
+                          dob: ocrData.dob,
+                          verifiedAt: new Date().toISOString(),
+                      }
+                    : undefined,
             profilePicture, idCardFront, idCardBack, status: 'active',
             trainingModules: trainingModules.filter(m => m.completed).map(m => m.id),
             cropList: selectedCrops,
@@ -622,6 +683,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                 lat: farmLatitude,
                 lng: farmLongitude,
                 measuredAcres: measuredArea || Number(formData.farmSize) || 0,
+                boundary: farmBoundary.length >= 3 ? farmBoundary : undefined,
             } : gpsLocation ? {
                 lat: gpsLocation.lat,
                 lng: gpsLocation.lng,
@@ -844,7 +906,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                 </div>
 
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-                                                    <div className="space-y-2">
+                                                    <div className="space-y-2 sm:col-span-2">
                                                         <OnboardingFieldLabel>Land ownership</OnboardingFieldLabel>
                                                         <Select value={formData.landOwnershipStatus} onValueChange={(v) => handleInputChange('landOwnershipStatus', v)} disabled={!isEditable}>
                                                             <SelectTrigger className={ONBOARDING_SELECT}><SelectValue placeholder="Ownership Status" /></SelectTrigger>
@@ -855,10 +917,6 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                                 <SelectItem value="communal" className="py-3 font-bold">Communal Title</SelectItem>
                                                             </SelectContent>
                                                         </Select>
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <OnboardingFieldLabel>Estimated acreage</OnboardingFieldLabel>
-                                                        <Input type="number" step="0.1" placeholder="Farm size in acres" className={ONBOARDING_INPUT} value={formData.farmSize} onChange={(e) => handleInputChange('farmSize', e.target.value)} disabled={!isEditable} />
                                                     </div>
                                                 </div>
 
@@ -934,27 +992,64 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                     </div>
                                                 )}
 
-                                                <div className="space-y-2">
-                                                    <OnboardingFieldLabel hint="Tap the map or use your location to mark the farm">Farm location on map</OnboardingFieldLabel>
-                                                <div className="relative rounded-2xl overflow-hidden border border-gray-200 h-[280px] sm:h-[360px] lg:h-[400px]">
-                                                    <div className="absolute top-3 left-3 z-10 px-3 py-2 bg-white/95 rounded-lg shadow-sm border border-gray-100 flex items-center gap-2">
-                                                        <MapPin className="h-4 w-4 text-[#065f46]" />
-                                                        <p className="text-xs font-medium text-gray-600">Pin farm location</p>
-                                                    </div>
+                                                <div className="space-y-3 border-t border-gray-100 pt-6">
+                                                    <OnboardingFieldLabel hint="Tap Measure boundary → tap each corner → tap Done. Size saves automatically below.">
+                                                        Farm location & size on map
+                                                    </OnboardingFieldLabel>
+                                                <div className="relative rounded-2xl overflow-hidden border border-gray-200 h-[320px] sm:h-[360px] lg:h-[400px]">
                                                     <FarmMap
+                                                        embedded
+                                                        areaUnit="acres"
                                                         latitude={farmLatitude}
                                                         longitude={farmLongitude}
                                                         viewCenter={mapViewCenter}
                                                         viewZoom={mapViewZoom}
                                                         onLocationChange={(lat, lng) => { if (isEditable) { setFarmLatitude(lat); setFarmLongitude(lng); } }}
-                                                        onAreaChange={(area) => { if (isEditable) { setMeasuredArea(area); if (formData.farmType === 'crop') setFormData(fd => ({ ...fd, farmSize: area.toFixed(2) })); } }}
+                                                        onAreaChange={handleMeasuredArea}
+                                                        onBoundaryChange={(points) => { if (isEditable) setFarmBoundary(points); }}
                                                         farmSize={measuredArea}
                                                     />
-                                                    {measuredArea > 0 && (
-                                                        <div className="absolute bottom-3 right-3 z-10 bg-[#065f46] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md">
-                                                            {measuredArea.toFixed(2)} ha measured
-                                                        </div>
-                                                    )}
+                                                </div>
+
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <OnboardingFieldLabel hint="Auto-filled when you finish measuring on the map">
+                                                            Farm size (acres)
+                                                        </OnboardingFieldLabel>
+                                                        <Input
+                                                            type="number"
+                                                            step="0.01"
+                                                            min={0}
+                                                            placeholder="Tap Done on map after drawing boundary"
+                                                            className={`${ONBOARDING_INPUT} ${
+                                                                measuredArea > 0
+                                                                    ? 'bg-[#7ede56]/10 border-[#065f46]/40 font-bold text-[#002f37]'
+                                                                    : ''
+                                                            }`}
+                                                            value={formData.farmSize}
+                                                            onChange={(e) => handleInputChange('farmSize', e.target.value)}
+                                                            disabled={!isEditable}
+                                                            readOnly={measuredArea > 0}
+                                                        />
+                                                        {measuredArea > 0 && (
+                                                            <p className="text-[11px] font-semibold text-[#065f46]">
+                                                                ✓ {measuredArea.toFixed(2)} acres from GPS map — saved for onboarding
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <OnboardingFieldLabel>GPS pin location</OnboardingFieldLabel>
+                                                        <Input
+                                                            readOnly
+                                                            className={`${ONBOARDING_INPUT} bg-gray-50 text-gray-600 font-mono text-sm`}
+                                                            value={
+                                                                farmLatitude && farmLongitude
+                                                                    ? `${farmLatitude.toFixed(6)}, ${farmLongitude.toFixed(6)}`
+                                                                    : ''
+                                                            }
+                                                            placeholder="Tap map or use My Location"
+                                                        />
+                                                    </div>
                                                 </div>
                                                 </div>
                                         </OnboardingFormCard>
@@ -1137,19 +1232,52 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                 </div>
 
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => isEditable && setIdVerificationChecked(!idVerificationChecked)}
-                                                        className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 text-left ${idVerificationChecked ? 'bg-emerald-50 border-emerald-500' : 'bg-white border-gray-200 hover:border-gray-300'}`}
+                                                    <div
+                                                        role="status"
+                                                        aria-live="polite"
+                                                        className={`p-4 rounded-xl border-2 flex items-center gap-3 text-left select-none pointer-events-none ${
+                                                            idVerificationChecked
+                                                                ? 'bg-emerald-50 border-emerald-500'
+                                                                : ocrErrors.length
+                                                                  ? 'bg-rose-50 border-rose-300'
+                                                                  : 'bg-white border-gray-200'
+                                                        }`}
                                                     >
-                                                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${idVerificationChecked ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                                        <div
+                                                            className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                                                                idVerificationChecked
+                                                                    ? 'bg-emerald-500 text-white'
+                                                                    : ocrErrors.length
+                                                                      ? 'bg-rose-500 text-white'
+                                                                      : 'bg-gray-100 text-gray-500'
+                                                            }`}
+                                                        >
                                                             <UserCheck className="h-5 w-5" />
                                                         </div>
-                                                        <div>
-                                                            <p className="text-sm font-semibold text-[#002f37]">ID verified</p>
-                                                            <p className="text-xs text-gray-500">Details match Ghana Card</p>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-semibold text-[#002f37]">
+                                                                {ocrProcessing
+                                                                    ? 'Scanning Ghana Card…'
+                                                                    : idVerificationChecked
+                                                                      ? 'ID verified'
+                                                                      : 'ID not verified yet'}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500 leading-relaxed">
+                                                                {idVerificationChecked
+                                                                    ? 'Card number, name, and date of birth match automatically.'
+                                                                    : 'Automatic only — upload the front of the Ghana Card. It must match name, DOB, and card number from step 1.'}
+                                                            </p>
+                                                            {ocrErrors.length > 0 && !ocrProcessing && (
+                                                                <ul className="mt-2 space-y-1">
+                                                                    {ocrErrors.slice(0, 3).map((err) => (
+                                                                        <li key={err} className="text-[11px] text-rose-700 leading-snug">
+                                                                            {err}
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            )}
                                                         </div>
-                                                    </button>
+                                                    </div>
                                                     <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 flex items-center gap-3">
                                                         <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 bg-[#065f46] text-white">
                                                             <ShieldCheck className="h-5 w-5" />

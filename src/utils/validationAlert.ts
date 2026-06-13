@@ -22,6 +22,39 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+const SWAL_TOP_LAYER = 99999;
+
+function elevateSwalLayer(): void {
+  document.querySelectorAll('.swal2-container').forEach((el) => {
+    (el as HTMLElement).style.zIndex = String(SWAL_TOP_LAYER);
+  });
+  const backdrop = document.querySelector('.swal2-backdrop-show') as HTMLElement | null;
+  if (backdrop) backdrop.style.zIndex = String(SWAL_TOP_LAYER - 1);
+}
+
+function openAutoAlert(options: {
+  icon: SweetAlertIcon;
+  title: string;
+  text?: string;
+  html?: string;
+  timer?: number;
+}) {
+  void Swal.close();
+  return Swal.fire({
+    icon: options.icon,
+    title: options.title,
+    text: options.text,
+    html: options.html,
+    showConfirmButton: false,
+    timer: options.timer ?? 3500,
+    timerProgressBar: true,
+    allowOutsideClick: true,
+    allowEscapeKey: true,
+    heightAuto: false,
+    didOpen: elevateSwalLayer,
+  });
+}
+
 /** Auto-dismissing alert — use exact validation text from API when available. */
 export function showValidationAlert(
   title: string,
@@ -34,13 +67,30 @@ export function showValidationAlert(
       ? messageOrError
       : getApiErrorMessage(messageOrError, fallbackMessage);
 
-  return Swal.fire({
-    icon,
+  return openAutoAlert({ icon, title, text });
+}
+
+/** Auto-dismissing success alert — no OK tap required (works reliably on mobile). */
+export function showAutoSuccessAlert(title: string, html: string, timer = 3500) {
+  return openAutoAlert({ icon: 'success', title, html, timer });
+}
+
+/** Auto-dismissing error alert — no OK tap required (works reliably on mobile). */
+export function showAutoErrorAlert(
+  title: string,
+  message: string,
+  timer = 4500,
+  asHtml = false
+) {
+  return openAutoAlert({
+    icon: 'error',
     title,
-    text,
-    confirmButtonColor: '#002f37',
-    timer: 3500,
-    timerProgressBar: true,
-    showConfirmButton: false,
+    ...(asHtml ? { html: message } : { text: message }),
+    timer,
   });
+}
+
+/** Auto-dismissing warning alert — no OK tap required (works reliably on mobile). */
+export function showAutoWarningAlert(title: string, text: string, timer = 4000) {
+  return openAutoAlert({ icon: 'warning', title, text, timer });
 }

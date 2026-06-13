@@ -31,6 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { OPERATIONAL_REGION_OPTIONS } from '@/data/ghanaRegions';
 import { getStaffDashboardPath } from '@/utils/postLoginNavigation';
+import { hasOfflineLoginSaved, saveOfflineLogin, tryOfflineLogin } from '@/lib/offline/offlineAuth';
 
 const regions = OPERATIONAL_REGION_OPTIONS;
 
@@ -66,6 +67,58 @@ const AgentLogin = () => {
 
     setLoading(true);
     try {
+      const completeLogin = async (
+        token: string,
+        refreshToken: string | undefined,
+        agent: { name: string; role: string; region?: string; hasChangedPassword?: boolean },
+        offlineMode = false
+      ) => {
+        const agentRegion = agent.region || '';
+
+        if (!agentRegion) {
+          toast.error('Your account has no assigned operational region. Contact your Administrator.');
+          return;
+        }
+
+        const normalizedSelected = formData.region.toLowerCase().replace(' region', '').trim();
+        const normalizedAssigned = agentRegion.toLowerCase().replace(' region', '').trim();
+        if (normalizedSelected !== normalizedAssigned && !normalizedAssigned.includes(normalizedSelected)) {
+          toast.error(`Access Denied: You are not assigned to ${formData.region}. Your zone is ${agentRegion}.`);
+          return;
+        }
+
+        setAssignedRegion(agentRegion);
+        const sessionAgent = { ...agent, region: agentRegion };
+        setSession(token, sessionAgent, refreshToken);
+
+        if (agent.role === 'supervisor') {
+          toast.info('Supervisor dashboard is not available yet. Please contact your administrator.');
+          navigate(getStaffDashboardPath(agent.role, agent.hasChangedPassword));
+          return;
+        }
+
+        if (offlineMode) {
+          toast.success(`Welcome back, ${agent.name.split(' ')[0]}! (Offline mode — sync when back online)`);
+        } else {
+          toast.success(`Welcome back, ${agent.name.split(' ')[0]}!`);
+        }
+        navigate(getStaffDashboardPath(agent.role, agent.hasChangedPassword));
+      };
+
+      if (!navigator.onLine) {
+        const offline = await tryOfflineLogin(formData.email, formData.password, formData.region);
+        if (offline) {
+          await completeLogin(offline.token, offline.refreshToken ?? undefined, offline.agent, true);
+          return;
+        }
+        if (hasOfflineLoginSaved()) {
+          toast.error('Wrong email, password, or region. Use the same details as your last online login.');
+        } else {
+          toast.error('No internet. Log in once while online on this phone, then you can sign in offline in the field.');
+        }
+        return;
+      }
+
       // Authenticate credentials first
       const res = await api.post('/auth/login', {
         email: formData.email,
@@ -73,39 +126,26 @@ const AgentLogin = () => {
       });
 
       const { token, refreshToken, agent } = res.data;
-
-      // Lock to the agent's assigned region — no free selection allowed
-      const agentRegion = agent.region || '';
-
-      if (!agentRegion) {
-        toast.error('Your account has no assigned operational region. Contact your Administrator.');
-        return;
-      }
-
-      if (formData.region) {
-        // If they selected a region on the dropdown, enforce it must match their assigned one
-        const normalizedSelected = formData.region.toLowerCase().replace(' region', '').trim();
-        const normalizedAssigned = agentRegion.toLowerCase().replace(' region', '').trim();
-        if (normalizedSelected !== normalizedAssigned && !normalizedAssigned.includes(normalizedSelected)) {
-          toast.error(`Access Denied: You are not assigned to ${formData.region}. Your zone is ${agentRegion}.`);
-          return;
-        }
-      }
-
-      setAssignedRegion(agentRegion);
-      const sessionAgent = { ...agent, region: agentRegion };
-      setSession(token, sessionAgent, refreshToken);
-
-      if (agent.role === 'supervisor') {
-        toast.info('Supervisor dashboard is not available yet. Please contact your administrator.');
-        navigate(getStaffDashboardPath(agent.role, agent.hasChangedPassword));
-        return;
-      }
-
-      toast.success(`Welcome back, ${agent.name.split(' ')[0]}!`);
-      navigate(getStaffDashboardPath(agent.role, agent.hasChangedPassword));
+      await saveOfflineLogin(formData.email, formData.password, agent);
+      await completeLogin(token, refreshToken, agent);
     } catch (error: any) {
       console.error('Login error:', error);
+      const isNetworkError = !error.response;
+
+      if (isNetworkError) {
+        const offline = await tryOfflineLogin(formData.email, formData.password, formData.region);
+        if (offline) {
+          await completeLogin(offline.token, offline.refreshToken ?? undefined, offline.agent, true);
+          return;
+        }
+        if (hasOfflineLoginSaved()) {
+          toast.error('No internet. Wrong email, password, or region — or log in online once on this phone first.');
+        } else {
+          toast.error('No internet connection. Log in once while online on this phone, then you can use offline login in the field.');
+        }
+        return;
+      }
+
       const msg = error.response?.data?.msg || 'Authentication failed. Please check your credentials.';
       toast.error(msg);
     } finally {

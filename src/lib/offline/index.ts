@@ -20,3 +20,12 @@ export { processSyncQueue } from './syncEngine';
 export type { SyncResult } from './syncEngine';
 export { submitOrQueue } from './submitOrQueue';
 export type { SubmitOrQueueResult } from './submitOrQueue';
+export {
+    clearOfflineAuth,
+    getCachedAgentProfile,
+    hasOfflineLoginSaved,
+    persistAgentProfile,
+    saveOfflineLogin,
+    tryOfflineLogin,
+} from './offlineAuth';
+export type { CachedAgentProfile } from './offlineAuth';

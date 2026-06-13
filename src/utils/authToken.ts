@@ -84,6 +84,9 @@ export const clearAuthSession = () => {
     localStorage.removeItem(ACCOUNT_TYPE_KEY);
     localStorage.removeItem('blogAdminToken');
     localStorage.removeItem('blogAdminUser');
+    localStorage.removeItem('agentProfile');
+    localStorage.removeItem('offlineCredentialHash');
+    localStorage.removeItem('offlineCredentialEmail');
 };
 
 /** Exchange refresh token for a new access token (no api interceptor — avoids loops) */

@@ -1108,6 +1108,15 @@
     border-radius: 0 !important;
   }
 
+  /* SweetAlert must sit above full-screen agent modals on mobile */
+  .swal2-container {
+    z-index: 99999 !important;
+  }
+
+  .swal2-container.swal2-backdrop-show {
+    z-index: 99998 !important;
+  }
+
   /* Horizontal scroll fallback for tables without a mobile card layout */
   .agent-dashboard-root .agent-table-scroll {
     overflow-x: auto;

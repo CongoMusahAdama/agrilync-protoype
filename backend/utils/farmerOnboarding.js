@@ -94,6 +94,9 @@ exports.resolveFarmLocation = (body = {}) => {
                 lat,
                 lng,
                 measuredAcres: Number.isNaN(measuredAcres) ? undefined : measuredAcres,
+                boundary: Array.isArray(fromMap.boundary) && fromMap.boundary.length >= 3
+                    ? fromMap.boundary
+                    : undefined,
             };
         }
     }

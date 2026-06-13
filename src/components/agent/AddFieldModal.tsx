@@ -275,12 +275,17 @@ const AddFieldModal: React.FC<AddFieldModalProps> = ({ open, onOpenChange, farme
                                             </div>
                                         </div>
                                         <FarmMap
+                                            embedded
+                                            areaUnit="acres"
                                             latitude={farmLatitude}
                                             longitude={farmLongitude}
                                             viewCenter={mapViewCenter}
                                             viewZoom={mapViewZoom}
                                             onLocationChange={(lat, lng) => { setFarmLatitude(lat); setFarmLongitude(lng); }}
-                                            onAreaChange={(area) => setMeasuredArea(area)}
+                                            onAreaChange={(area) => {
+                                                setMeasuredArea(area);
+                                                setFormData((prev) => ({ ...prev, size: area.toFixed(2) }));
+                                            }}
                                             farmSize={measuredArea}
                                         />
                                         <div className="absolute bottom-4 right-4 z-10 bg-[#002f37] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-4 border border-white/10">

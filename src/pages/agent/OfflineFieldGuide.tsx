@@ -58,6 +58,10 @@ const faqs = [
         a: 'Yes — add AgriLync to your home screen. It works better offline than opening in a browser tab.',
     },
     {
+        q: 'Can I log in without internet?',
+        a: 'Yes, but only after you have logged in once while online on the same phone. Use the same email, password, and region. Your field work saves on the device until you sync in town.',
+    },
+    {
         q: 'When do my growers get their Lync ID?',
         a: 'After you sync when back online. SMS and IDs are sent once the server receives your saved work.',
     },
