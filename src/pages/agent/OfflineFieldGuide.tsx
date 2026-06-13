@@ -35,9 +35,10 @@ const capabilityRows = [
 
 const dailySteps = [
     {
-        time: 'Before leaving town',
-        title: 'Download field data',
-        detail: 'Open AgriLync while you have mobile data or Wi‑Fi. Tap Download field data on the banner so grower names are on your phone.',
+        time: 'Before going to the field (important)',
+        title: 'Open the app & download field data',
+        detail:
+            'While you still have internet in town: open AgriLync from your home screen icon (the installed app — not Safari). Tap Download field data on the green button so grower names are saved on your phone before you travel.',
     },
     {
         time: 'In the village',
@@ -47,7 +48,7 @@ const dailySteps = [
     {
         time: 'Back in town',
         title: 'Sync your work',
-        detail: 'Open the app with internet. Uploads run automatically, or tap Sync now on the yellow banner.',
+        detail: 'Open the app from your home screen with internet. Uploads run automatically, or tap Sync now on the yellow banner.',
     },
 ];
 
@@ -212,19 +213,23 @@ const OfflineFieldGuide: React.FC = () => {
                                     <p className="text-sm sm:text-base font-black text-[#002f37] flex items-center gap-1.5 flex-wrap">
                                         iPhone (Safari) <Share2 className="h-3.5 w-3.5 text-gray-400" />
                                     </p>
-                                    <p className="text-xs sm:text-sm text-gray-500 mt-1 leading-relaxed">
-                                        Safari → Share → <strong>Add to Home Screen</strong> → open from home screen.
-                                    </p>
+                                    <ol className="text-xs sm:text-sm text-gray-500 mt-2 space-y-1.5 leading-relaxed list-decimal list-inside">
+                                        <li>Open AgriLync in Safari</li>
+                                        <li>
+                                            Tap Share → <strong>Add to Home Screen</strong>
+                                        </li>
+                                        <li>Open it from the home screen icon</li>
+                                    </ol>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
                 </section>
 
-                {/* Daily routine */}
+                {/* Before the field */}
                 <section className="space-y-3">
                     <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider sm:tracking-widest text-[#002f37] leading-snug">
-                        Step 2 — Daily field routine
+                        Step 2 — Before going to the field (important)
                     </h2>
                     <div className="space-y-3">
                         {dailySteps.map((step, idx) => (

@@ -32,13 +32,13 @@ export const HeroSection: React.FC = () => {
 
       <div className="relative z-20 w-full px-4 sm:px-12 lg:px-24 xl:px-32 mt-auto md:mt-0 pb-6 md:pb-0">
         <div className="max-w-3xl text-left pr-12 sm:pr-0">
-          <h1 className="text-[22px] leading-[1.35] sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-5 md:mb-10 md:leading-[1.05] font-montserrat tracking-tight animate-fade-in-up drop-shadow-lg max-w-[280px] sm:max-w-full">
-            Unlocking Difficult Access to <br className="hidden md:block"/> <span className="text-[#7ede56]">Farm Investment</span> and <span className="text-[#7ede56]">Timely Information</span> Through <span className="text-[#7ede56]">AI</span>
+          <h1 className="text-[22px] leading-[1.35] sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-5 md:mb-10 md:leading-[1.15] font-montserrat tracking-tight animate-fade-in-up drop-shadow-lg max-w-full text-balance">
+            Building the infrastructure that makes <span className="text-[#7ede56]">smallholder agriculture</span> <span className="text-[#7ede56]">investable</span>.
           </h1>
 
           {/* Subheadline */}
-          <p className="hidden md:block text-base md:text-lg text-white/80 mb-12 leading-relaxed max-w-xl font-sans animate-fade-in-up delay-200">
-            Empowering <span className="text-[#7ede56] font-bold">smallholder farmers</span> and investors through trusted <span className="text-[#7ede56] font-bold">farm finance</span> and smart advisory.
+          <p className="text-sm sm:text-base md:text-lg text-white/80 mb-8 md:mb-12 leading-relaxed max-w-xl font-sans animate-fade-in-up delay-200">
+            <span className="text-[#7ede56] font-bold">Verified farmers</span>. <span className="text-yellow-400 font-bold">Smart alerts</span>. <span className="text-[#7ede56] font-bold">Trusted finance</span>.
           </p>
 
           {/* CTA Buttons */}
