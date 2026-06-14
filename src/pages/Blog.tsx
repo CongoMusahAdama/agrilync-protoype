@@ -13,6 +13,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { WEBINARS } from '@/data/webinars';
+import { openWebinarRegistration, webinarRegisterButtonLabel } from '@/utils/webinarRegistration';
 import {
   Calendar,
   Clock,
@@ -310,11 +311,7 @@ const Blog = () => {
   ];
 
   const handleWebinarRegistration = (webinar: any) => {
-    if (webinar.registrationLink) {
-      window.open(webinar.registrationLink, '_blank');
-    } else if (webinar.id === 3) {
-      window.open('https://is.gd/agrilyncwebinarnexus', '_blank');
-    } else {
+    if (!openWebinarRegistration(webinar)) {
       setSelectedWebinar(webinar);
       setShowRegistration(true);
     }
@@ -715,7 +712,7 @@ const Blog = () => {
                     className="w-full bg-gradient-to-r from-[#7ede56] to-[#66cc44] hover:from-[#66cc44] hover:to-[#7ede56] text-white rounded-full transition-all duration-300 transform hover:scale-105"
                     disabled={webinar.registered >= webinar.spots}
                   >
-                    {webinar.registered >= webinar.spots ? 'Fully Booked' : 'Register Now'}
+                    {webinarRegisterButtonLabel(webinar)}
                   </Button>
 
                   {webinar.id === 3 && (

@@ -45,6 +45,7 @@ import {
 import { mapApiResourceToDisplay, type DisplayResource } from '@/lib/mapApiResource';
 import { WHATSAPP_COMMUNITY_URL } from '@/lib/communityLinks';
 import { WEBINARS, type WebinarItem } from '@/data/webinars';
+import { openWebinarRegistration, webinarRegisterButtonLabel } from '@/utils/webinarRegistration';
 
 /** Shared Google Drive folder for PDFs/tools (set VITE_RESOURCES_DRIVE_URL in .env) */
 const DEFAULT_RESOURCES_DRIVE =
@@ -504,14 +505,11 @@ const Resources: React.FC = () => {
                         <CardContent>
                           <p className="text-gray-600 mb-6 text-sm leading-relaxed">{webinar.description}</p>
                           <Button
-                            onClick={() => {
-                              if ((webinar as any).registrationLink) window.open((webinar as any).registrationLink, '_blank');
-                              else if (webinar.id === 3) window.open('https://is.gd/agrilyncwebinarnexus', '_blank');
-                            }}
+                            onClick={() => openWebinarRegistration(webinar)}
                             className="w-full bg-gradient-to-r from-[#7ede56] to-[#66cc44] hover:from-[#66cc44] hover:to-[#7ede56] text-white rounded-full transition-all duration-300"
                             disabled={webinar.registered >= webinar.spots}
                           >
-                            {webinar.registered >= webinar.spots ? 'Fully Booked' : 'Register Now'}
+                            {webinarRegisterButtonLabel(webinar)}
                           </Button>
                         </CardContent>
                       </Card>

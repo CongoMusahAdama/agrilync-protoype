@@ -67,6 +67,7 @@ import DashboardRedirect from "./pages/DashboardRedirect";
 import SupervisorPending from "./pages/supervisor/SupervisorPending";
 import CookieConsent from "./components/CookieConsent";
 import GrowerVerify from "./pages/GrowerVerify";
+import WhatsAppCommunityRedirect from "./pages/WhatsAppCommunityRedirect";
 
 // Configure QueryClient with optimized caching defaults
 const queryClient = new QueryClient({
@@ -117,6 +118,16 @@ const App = () => (
               <Route path="/team" element={<Team />} />
               <Route path="/team/:memberId" element={<TeamMemberProfile />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/join/whatsapp" element={<WhatsAppCommunityRedirect />} />
+              <Route
+                path="/events/farm-records/register"
+                element={
+                  <WhatsAppCommunityRedirect
+                    title="Farm Records Event Registration"
+                    message="Redirecting you to our WhatsApp community to register for THE FARMER TALK: Smart Farm Planning for Farm Profitability."
+                  />
+                }
+              />
               <Route path="/verify/grower/:lyncId" element={<GrowerVerify />} />
               <Route path="/agent-mobile-preview" element={<AgentMobilePreview />} />
               <Route path="/login" element={<Login />} />
