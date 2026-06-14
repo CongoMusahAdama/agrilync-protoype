@@ -7,25 +7,36 @@ const {
     staffSms,
     truncateSms,
 } = require('../utils/staffNotifications');
+const { agentIdsMatch, farmerAccessibleToAgent } = require('../utils/agentAuth');
+
+function requestAgentId(req) {
+    return req.agent._id || req.agent.id;
+}
+
+function normalizeVisitStatus(status) {
+    if (!status) return 'Completed';
+    const value = String(status).trim();
+    if (/follow-up/i.test(value)) return 'Follow-up Required';
+    return 'Completed';
+}
 
 // @route   GET api/field-visits
 // @desc    Get all field visits for current agent
 exports.getFieldVisits = async (req, res) => {
     try {
-        // Guard: mock users have non-ObjectId IDs — skip DB query
         if (req.agent.isMock) {
             return res.json([]);
         }
-        const visits = await FieldVisit.find({ agent: req.agent.id })
-            .populate('farmer', 'name contact region district community lyncId')
+        const agentId = requestAgentId(req);
+        const visits = await FieldVisit.find({ agent: agentId })
+            .populate('farmer', 'name contact region district community lyncId id')
             .sort({ date: -1, time: -1 });
         res.json(visits);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('getFieldVisits error:', err.message);
+        res.status(500).json({ msg: 'Server error' });
     }
 };
-
 
 // @route   POST api/field-visits
 // @desc    Log a new field visit
@@ -33,48 +44,64 @@ exports.logFieldVisit = async (req, res) => {
     const { farmerId, date, time, hoursSpent, purpose, notes, visitImages, challenges, status } = req.body;
 
     try {
-        // Verify farmer exists and belongs to this agent
-        const farmer = await Farmer.findById(farmerId);
-        if (!farmer) {
-            return res.status(404).json({ msg: 'Farmer not found' });
+        if (!farmerId) {
+            return res.status(400).json({ msg: 'Grower is required.' });
         }
 
-        if (farmer.agent.toString() !== req.agent.id) {
-            return res.status(401).json({ msg: 'Not authorized' });
+        const farmer = await Farmer.findById(farmerId);
+        if (!farmer) {
+            return res.status(404).json({ msg: 'Grower not found.' });
+        }
+
+        const agentId = requestAgentId(req);
+        if (!farmerAccessibleToAgent(farmer, agentId)) {
+            return res.status(401).json({ msg: 'Not authorized to log visits for this grower.' });
+        }
+
+        if (!farmer.agent) {
+            await Farmer.findByIdAndUpdate(farmerId, { agent: agentId });
+        }
+
+        const parsedHours = Number(hoursSpent);
+        if (!Number.isFinite(parsedHours) || parsedHours < 0.1 || parsedHours > 24) {
+            return res.status(400).json({ msg: 'Hours spent must be between 0.1 and 24.' });
+        }
+
+        const visitDate = date ? new Date(date) : new Date();
+        if (Number.isNaN(visitDate.getTime())) {
+            return res.status(400).json({ msg: 'Invalid visit date.' });
         }
 
         const newVisit = new FieldVisit({
-            agent: req.agent.id,
+            agent: agentId,
             farmer: farmerId,
-            date,
-            time,
-            hoursSpent,
-            purpose,
-            notes,
-            visitImages: visitImages || [],
+            date: visitDate,
+            time: time || '09:00',
+            hoursSpent: parsedHours,
+            purpose: purpose || 'Field visit',
+            notes: notes || '',
+            visitImages: Array.isArray(visitImages) ? visitImages.slice(0, 6) : [],
             challenges: challenges || '',
-            status: status || 'Completed'
+            status: normalizeVisitStatus(status),
         });
 
         const visit = await newVisit.save();
 
-        // Update farmer's lastVisit date
-        await Farmer.findByIdAndUpdate(farmerId, { lastVisit: date });
+        await Farmer.findByIdAndUpdate(farmerId, { lastVisit: visitDate });
 
-        // Log Activity
         await Activity.create({
-            agent: req.agent.id,
+            agent: agentId,
             type: 'report',
             title: `Visited ${farmer.name}`,
-            description: `${purpose || 'Field Visit'} - ${hoursSpent}hrs`
+            description: `${purpose || 'Field Visit'} - ${parsedHours}hrs`,
         });
 
         const populatedVisit = await FieldVisit.findById(visit._id)
-            .populate('farmer', 'name contact region district community');
+            .populate('farmer', 'name contact region district community id');
 
         const agentName = req.agent?.name || 'Field Agent';
         const visitMessage = `${agentName} logged a field visit to ${farmer.name} (${purpose || 'Field visit'}).`;
-        await notifyAgentSupervisorIfAny(req.agent.id, {
+        await notifyAgentSupervisorIfAny(agentId, {
             title: 'Field Visit Logged',
             message: visitMessage,
             smsBody: staffSms(`${visitMessage} Notes: ${truncateSms(notes, 60) || 'None'}.`),
@@ -93,8 +120,11 @@ exports.logFieldVisit = async (req, res) => {
 
         res.json(populatedVisit);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('logFieldVisit error:', err.message);
+        if (err.name === 'ValidationError') {
+            return res.status(400).json({ msg: err.message });
+        }
+        res.status(500).json({ msg: err.message || 'Server error' });
     }
 };
 
@@ -105,16 +135,16 @@ exports.deleteFieldVisit = async (req, res) => {
         const visit = await FieldVisit.findById(req.params.id);
         if (!visit) return res.status(404).json({ msg: 'Visit not found' });
 
-        // Make sure agent owns the visit
-        if (visit.agent.toString() !== req.agent.id) {
+        const agentId = requestAgentId(req);
+        if (!agentIdsMatch(visit.agent, agentId)) {
             return res.status(401).json({ msg: 'Not authorized' });
         }
 
         await visit.deleteOne();
         res.json({ msg: 'Visit removed' });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('deleteFieldVisit error:', err.message);
+        res.status(500).json({ msg: 'Server error' });
     }
 };
 
@@ -127,36 +157,48 @@ exports.updateFieldVisit = async (req, res) => {
         let visit = await FieldVisit.findById(req.params.id);
         if (!visit) return res.status(404).json({ msg: 'Visit not found' });
 
-        // Make sure agent owns the visit
-        if (visit.agent.toString() !== req.agent.id) {
+        const agentId = requestAgentId(req);
+        if (!agentIdsMatch(visit.agent, agentId)) {
             return res.status(401).json({ msg: 'Not authorized' });
         }
 
+        const parsedHours = hoursSpent != null ? Number(hoursSpent) : visit.hoursSpent;
+        if (!Number.isFinite(parsedHours) || parsedHours < 0.1 || parsedHours > 24) {
+            return res.status(400).json({ msg: 'Hours spent must be between 0.1 and 24.' });
+        }
+
+        const visitDate = date ? new Date(date) : visit.date;
+        if (Number.isNaN(new Date(visitDate).getTime())) {
+            return res.status(400).json({ msg: 'Invalid visit date.' });
+        }
+
         const visitFields = {
-            date,
-            time,
-            hoursSpent,
-            purpose,
-            notes,
-            visitImages: visitImages || visit.visitImages,
-            challenges: challenges || visit.challenges,
-            status: status || visit.status
+            date: visitDate,
+            time: time || visit.time,
+            hoursSpent: parsedHours,
+            purpose: purpose || visit.purpose,
+            notes: notes ?? visit.notes,
+            visitImages: Array.isArray(visitImages) ? visitImages.slice(0, 6) : visit.visitImages,
+            challenges: challenges ?? visit.challenges,
+            status: status ? normalizeVisitStatus(status) : visit.status,
         };
 
         visit = await FieldVisit.findByIdAndUpdate(
             req.params.id,
             { $set: visitFields },
-            { new: true }
-        ).populate('farmer', 'name contact region district community lyncId');
+            { new: true, runValidators: true }
+        ).populate('farmer', 'name contact region district community id');
 
-        // Update farmer's lastVisit date if it was changed
         if (date) {
-            await Farmer.findByIdAndUpdate(visit.farmer._id, { lastVisit: date });
+            await Farmer.findByIdAndUpdate(visit.farmer._id, { lastVisit: visitDate });
         }
 
         res.json(visit);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('updateFieldVisit error:', err.message);
+        if (err.name === 'ValidationError') {
+            return res.status(400).json({ msg: err.message });
+        }
+        res.status(500).json({ msg: err.message || 'Server error' });
     }
 };

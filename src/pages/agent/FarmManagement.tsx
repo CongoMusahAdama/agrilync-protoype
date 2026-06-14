@@ -13,6 +13,7 @@ import { useDarkMode } from '@/contexts/DarkModeContext';
 import CountUp from '@/components/CountUp';
 import { playSuccessSound } from '@/utils/audio';
 import { submitOrQueue } from '@/lib/offline';
+import { showAutoSuccessAlert, showValidationAlert } from '@/utils/validationAlert';
 import { useOffline } from '@/contexts/OfflineContext';
 import AddFarmerModal from '@/components/agent/AddFarmerModal';
 import ViewFarmerModal from '@/components/agent/ViewFarmerModal';
@@ -519,11 +520,14 @@ const FarmManagement: React.FC = () => {
         setUploadMediaModalOpen(true);
     };
 
+    const getFarmerMongoId = (farmer: any) =>
+        farmer?._id?.toString?.() ?? (typeof farmer?._id === 'string' ? farmer._id : '');
+
     const handleLogVisit = (farmer?: any) => {
         setVisitImages([]);
         if (farmer) {
             setVisitForm({
-                farmerId: farmer._id,
+                farmerId: getFarmerMongoId(farmer),
                 farmerName: farmer.name,
                 lyncId: getDisplayId(farmer),
                 phone: farmer.phone || '',
@@ -580,7 +584,7 @@ const FarmManagement: React.FC = () => {
         const isOther = visit.purpose && !standardPurposes.includes(visit.purpose) && visit.purpose !== 'Other';
 
         setVisitForm({
-            farmerId: visit.farmer?._id || visit.farmerId,
+            farmerId: getFarmerMongoId(visit.farmer) || visit.farmerId?.toString?.() || '',
             farmerName: visit.farmer?.name || visit.farmerName,
             lyncId: visit.farmer?.lyncId || visit.lyncId,
             phone: visit.farmer?.contact || visit.phone,
@@ -820,21 +824,11 @@ const FarmManagement: React.FC = () => {
         onSuccess: async (data: any) => {
             if (data?.queued) {
                 await refreshOfflineState();
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Saved on Device',
-                    html: `
-                        <div style="text-align: center; padding: 10px 0;">
-                            <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
-                                Field visit saved offline. It will sync when you have signal.
-                            </p>
-                        </div>
-                    `,
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#065f46',
-                    timer: 3000,
-                    timerProgressBar: true,
-                });
+                await showAutoSuccessAlert(
+                    'Saved on Device',
+                    '<p style="font-size: 16px; color: #065f46; margin: 8px 0;">Field visit saved offline. It will sync when you have signal.</p>',
+                    3500
+                );
                 queryClient.invalidateQueries({ queryKey: ['fieldVisits'] });
                 setFieldVisitModalOpen(false);
                 setVisitForm({
@@ -861,21 +855,13 @@ const FarmManagement: React.FC = () => {
                 return;
             }
 
-            await Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                html: `
-                    <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
-                            ${visitForm.isEditing ? 'Field visit updated successfully!' : 'Field visit logged successfully!'}
-                        </p>
-                    </div>
-                `,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#065f46',
-                timer: 2000,
-                timerProgressBar: true
-            });
+            await showAutoSuccessAlert(
+                'Success!',
+                `<p style="font-size: 16px; color: #065f46; margin: 8px 0;">${
+                    visitForm.isEditing ? 'Field visit updated successfully!' : 'Field visit logged successfully!'
+                }</p>`,
+                3000
+            );
             queryClient.invalidateQueries({ queryKey: ['fieldVisits'] });
             queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
             setFieldVisitModalOpen(false);
@@ -904,12 +890,13 @@ const FarmManagement: React.FC = () => {
         },
         onError: (err) => {
             console.error('Error saving visit:', err);
-            Swal.fire({
-                icon: 'error',
-                title: 'Save Failed',
-                text: visitForm.isEditing ? 'Failed to update field visit record.' : 'Failed to log the new field visit.',
-                confirmButtonColor: '#065f46'
-            });
+            showValidationAlert(
+                'Save Failed',
+                err,
+                visitForm.isEditing
+                    ? 'Failed to update field visit record.'
+                    : 'Failed to log the new field visit.'
+            );
         }
     });
 
@@ -919,12 +906,23 @@ const FarmManagement: React.FC = () => {
         const finalPurpose = visitForm.purpose === 'Other' ? visitForm.otherPurpose : visitForm.purpose;
 
         if (!visitForm.farmerId || !finalPurpose || !visitForm.notes) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Validation Error',
-                text: 'Please ensure all required fields are filled correctly.',
-                confirmButtonColor: '#065f46'
-            });
+            showValidationAlert(
+                'Validation Error',
+                'Please ensure all required fields are filled correctly.',
+                'Please ensure all required fields are filled correctly.',
+                'warning'
+            );
+            return;
+        }
+
+        const hoursSpent = Number(visitForm.hoursSpent);
+        if (!Number.isFinite(hoursSpent) || hoursSpent < 0.1 || hoursSpent > 24) {
+            showValidationAlert(
+                'Validation Error',
+                'Hours spent must be between 0.1 and 24.',
+                'Hours spent must be between 0.1 and 24.',
+                'warning'
+            );
             return;
         }
 
@@ -932,7 +930,7 @@ const FarmManagement: React.FC = () => {
             farmerId: visitForm.farmerId,
             date: visitForm.date,
             time: visitForm.time,
-            hoursSpent: Number(visitForm.hoursSpent),
+            hoursSpent,
             purpose: finalPurpose,
             notes: visitForm.notes,
             visitImages: visitImages,
@@ -2078,7 +2076,7 @@ const FarmManagement: React.FC = () => {
                                 <Select
                                     value={visitForm.farmerId}
                                     onValueChange={(val: string) => {
-                                        const farmer = farmers.find((f: any) => f._id === val);
+                                        const farmer = farmers.find((f: any) => getFarmerMongoId(f) === val);
                                         if (farmer) {
                                             setVisitForm({
                                                 ...visitForm,
@@ -2094,8 +2092,8 @@ const FarmManagement: React.FC = () => {
                                         <SelectValue placeholder="Select a registered farmer" />
                                     </SelectTrigger>
                                     <SelectContent className={darkMode ? 'bg-gray-900 border-white/10' : ''}>
-                                        {farmers.slice(0, 5).map((farmer: any, index: number) => (
-                                            <SelectItem key={farmer._id || farmer.id || `select-farmer-${index}`} value={farmer._id || farmer.id} className={darkMode ? 'hover:bg-white/5' : ''}>
+                                        {farmers.map((farmer: any, index: number) => (
+                                            <SelectItem key={getFarmerMongoId(farmer) || `select-farmer-${index}`} value={getFarmerMongoId(farmer)} className={darkMode ? 'hover:bg-white/5' : ''}>
                                                 <div className="flex items-center justify-between w-full">
                                                     <span>{farmer.name}</span>
                                                     <span className="text-xs text-gray-500 ml-2">{farmer.contact}</span>

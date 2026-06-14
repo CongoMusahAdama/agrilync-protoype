@@ -94,3 +94,63 @@ export function showAutoErrorAlert(
 export function showAutoWarningAlert(title: string, text: string, timer = 4000) {
   return openAutoAlert({ icon: 'warning', title, text, timer });
 }
+
+/** Confirm/cancel dialog — elevated above full-screen modals (works on mobile). */
+export function showConfirmDialog(options: {
+  title: string;
+  html?: string;
+  text?: string;
+  confirmButtonText?: string;
+  cancelButtonText?: string;
+  icon?: SweetAlertIcon;
+}) {
+  void Swal.close();
+  return Swal.fire({
+    icon: options.icon ?? 'warning',
+    title: options.title,
+    html: options.html,
+    text: options.text,
+    showCancelButton: true,
+    confirmButtonColor: '#065f46',
+    cancelButtonColor: '#fb7185',
+    confirmButtonText: options.confirmButtonText ?? 'Confirm',
+    cancelButtonText: options.cancelButtonText ?? 'Cancel',
+    allowOutsideClick: false,
+    allowEscapeKey: true,
+    heightAuto: false,
+    reverseButtons: true,
+    customClass: {
+      popup: 'rounded-2xl p-4 sm:p-8',
+      confirmButton: 'swal2-confirm-mobile',
+      cancelButton: 'swal2-cancel-mobile',
+      actions: 'swal2-actions-mobile',
+    },
+    didOpen: elevateSwalLayer,
+  });
+}
+
+/** Single-button alert with elevated z-index (for use inside full-screen modals). */
+export function showModalAlert(options: {
+  icon: SweetAlertIcon;
+  title: string;
+  html?: string;
+  text?: string;
+  confirmButtonText?: string;
+}) {
+  void Swal.close();
+  return Swal.fire({
+    icon: options.icon,
+    title: options.title,
+    html: options.html,
+    text: options.text,
+    confirmButtonColor: '#065f46',
+    confirmButtonText: options.confirmButtonText ?? 'OK',
+    allowOutsideClick: false,
+    heightAuto: false,
+    customClass: {
+      popup: 'rounded-2xl p-4 sm:p-8',
+      confirmButton: 'swal2-confirm-mobile',
+    },
+    didOpen: elevateSwalLayer,
+  });
+}

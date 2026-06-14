@@ -14,7 +14,12 @@ import {
 } from 'lucide-react';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
-import Swal from 'sweetalert2';
+import {
+    showAutoSuccessAlert,
+    showValidationAlert,
+    getApiErrorMessage,
+} from '@/utils/validationAlert';
+import { agentModalShell } from '@/utils/agentModalStyles';
 import { GHANA_REGIONS, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
 
 interface FarmJourneyModalProps {
@@ -286,6 +291,16 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
         return [...filteredResult, "Other (Specify)"];
     }, [farmer?.region]);
 
+    const getFarmApiId = (farmRecord: typeof farm) => farmRecord?._id || farmRecord?.id;
+
+    const persistFarmUpdate = async (payload: Record<string, unknown>) => {
+        const farmId = getFarmApiId(farm);
+        if (!farmId) {
+            throw new Error('Farm record is missing an identifier. Re-open the journey tracker and try again.');
+        }
+        return api.put(`/farms/${farmId}`, payload);
+    };
+
     const fetchFarmDetails = async () => {
         setLoading(true);
         try {
@@ -305,12 +320,10 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
             }
         } catch (error) {
             console.error("Failed to fetch farm details:", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Data Load Error',
-                text: 'Could not load farm journey details from the secure cloud.',
-                confirmButtonColor: '#065f46'
-            });
+            showValidationAlert(
+                'Data Load Error',
+                'Could not load farm journey details from the secure cloud.'
+            );
         } finally {
             setLoading(false);
         }
@@ -325,32 +338,22 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
     const handleUpdateStage = async (newStage: string) => {
         if (!farm) return;
         try {
-            await api.put(`/farms/${farm._id}`, { currentStage: newStage });
+            await persistFarmUpdate({ currentStage: newStage });
             setFarm({ ...farm, currentStage: newStage });
             setCurrentStage(newStage);
-            await Swal.fire({
-                icon: 'success',
-                title: 'Stage Updated!',
-                html: `
-                    <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
-                            Farm stage updated to <strong>${newStage.charAt(0).toUpperCase() + newStage.slice(1)}</strong>
-                        </p>
-                    </div>
-                `,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#065f46',
-                timer: 2000,
-                timerProgressBar: true
-            });
+            setActiveStageTab(newStage);
+            showAutoSuccessAlert(
+                'Stage Updated!',
+                `<p style="font-size:15px;color:#065f46;margin:0;">Farm stage updated to <strong>${formatStageLabel(newStage)}</strong></p>`,
+                2500
+            );
         } catch (error) {
-            console.error("Failed to update stage:", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Protocol Error',
-                text: 'Failed to update farm stage in the field ledger.',
-                confirmButtonColor: '#065f46'
-            });
+            console.error('Failed to update stage:', error);
+            showValidationAlert(
+                'Could not update stage',
+                error,
+                getApiErrorMessage(error, 'Failed to update farm stage in the field ledger.')
+            );
         }
     };
 
@@ -393,32 +396,21 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                 updatedStageDetails[activeStageTab].status = 'in-progress';
             }
 
-            await api.put(`/farms/${farm._id}`, { stageDetails: updatedStageDetails });
+            await persistFarmUpdate({ stageDetails: updatedStageDetails });
             setFarm({ ...farm, stageDetails: updatedStageDetails });
-            await Swal.fire({
-                icon: 'success',
-                title: 'Activity Logged!',
-                html: `
-                    <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
-                            Activity logged successfully!
-                        </p>
-                    </div>
-                `,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#065f46',
-                timer: 2000,
-                timerProgressBar: true
-            });
+            showAutoSuccessAlert(
+                'Activity Logged!',
+                '<p style="font-size:15px;color:#065f46;margin:0;">Activity logged successfully!</p>',
+                2500
+            );
             handleCloseActivityDialog();
         } catch (error) {
-            console.error("Failed to save activity:", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Log Entry Failed',
-                text: 'Could not commit the activity log to the database.',
-                confirmButtonColor: '#065f46'
-            });
+            console.error('Failed to save activity:', error);
+            showValidationAlert(
+                'Log Entry Failed',
+                error,
+                'Could not commit the activity log to the database.'
+            );
         } finally {
             setSavingActivity(false);
         }
@@ -456,29 +448,18 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
             setFarm(res.data);
             setCurrentStage('planning');
             setActiveStageTab('planning');
-            await Swal.fire({
-                icon: 'success',
-                title: 'Farm Registered!',
-                html: `
-                    <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
-                            Farm registered successfully! You can now track the journey.
-                        </p>
-                    </div>
-                `,
-                confirmButtonText: 'Start Tracking',
-                confirmButtonColor: '#065f46',
-                timer: 2500,
-                timerProgressBar: true
-            });
+            showAutoSuccessAlert(
+                'Farm Registered!',
+                '<p style="font-size:15px;color:#065f46;margin:0;">Farm registered successfully! You can now track the journey.</p>',
+                2500
+            );
         } catch (error) {
-            console.error("Failed to add farm:", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Registration Error',
-                text: 'Failed to register farm. Please verify network connectivity.',
-                confirmButtonColor: '#065f46'
-            });
+            console.error('Failed to add farm:', error);
+            showValidationAlert(
+                'Registration Error',
+                error,
+                'Failed to register farm. Please verify network connectivity.'
+            );
         } finally {
             setAddingFarm(false);
         }
@@ -599,7 +580,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
     if (loading) {
         return (
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className={`agent-modal-mobile w-full max-w-[100vw] md:max-w-7xl md:w-[min(96vw,1280px)] max-md:h-full max-md:max-h-[100dvh] md:h-[60vh] flex items-center justify-center max-md:rounded-none p-4 sm:p-6 ${darkMode ? 'bg-[#002f37] border-white/10 text-white' : 'bg-white'}`}>
+                <DialogContent className={agentModalShell(`md:max-w-7xl md:max-h-[95vh] md:h-[60vh] flex flex-col items-center justify-center ${darkMode ? 'bg-[#002f37] border-white/10 text-white' : 'bg-white'}`)}>
                     <div className="flex flex-col items-center gap-4">
                         <div className="w-12 h-12 border-4 border-[#065f46]/20 border-t-[#065f46] rounded-full animate-spin" />
                         <p className={darkMode ? 'text-gray-200' : 'text-gray-500'}>Loading farm details...</p>
@@ -611,20 +592,23 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`agent-modal-mobile w-full max-w-[100vw] md:max-w-7xl md:w-[min(96vw,1280px)] max-md:h-full max-md:max-h-[100dvh] md:max-h-[95vh] overflow-y-auto overflow-x-hidden max-md:rounded-none p-4 sm:p-6 ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white'}`}>
-                <DialogHeader className="mb-3 sm:mb-4 space-y-1 pr-8">
-                    <DialogTitle className={`flex items-center gap-2 sm:gap-3 text-lg sm:text-2xl font-bold leading-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        <div className={`p-1.5 sm:p-2 rounded-lg shrink-0 ${darkMode ? 'bg-[#065f46]/20 text-[#065f46]' : 'bg-[#065f46]/10 text-[#065f46]'}`}>
-                            <Leaf className="h-5 w-5 sm:h-6 sm:w-6" />
-                        </div>
-                        <span className="text-balance">Farm Journey Tracker</span>
-                    </DialogTitle>
-                    <DialogDescription className={`text-sm sm:text-lg leading-snug break-words text-balance ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                        Manage and track the agricultural lifecycle for{' '}
-                        <span className="font-semibold text-[#065f46]">{farmer?.name}</span>
-                    </DialogDescription>
-                </DialogHeader>
+            <DialogContent className={agentModalShell(`md:max-w-7xl md:max-h-[95vh] ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white'}`)}>
+                <div className={`shrink-0 px-4 py-4 border-b pr-12 ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
+                    <DialogHeader className="space-y-1">
+                        <DialogTitle className={`flex items-center gap-2 text-lg sm:text-xl font-bold leading-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            <div className={`p-1.5 rounded-lg shrink-0 ${darkMode ? 'bg-[#065f46]/20 text-[#065f46]' : 'bg-[#065f46]/10 text-[#065f46]'}`}>
+                                <Leaf className="h-5 w-5" />
+                            </div>
+                            <span>Farm Journey Tracker</span>
+                        </DialogTitle>
+                        <DialogDescription className={`text-sm leading-snug break-words ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                            Manage and track the agricultural lifecycle for{' '}
+                            <span className="font-semibold text-[#065f46]">{farmer?.name}</span>
+                        </DialogDescription>
+                    </DialogHeader>
+                </div>
 
+                <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 px-4 py-4 sm:px-6 sm:py-6">
                 {!farm ? (
                     <div className="py-12 max-w-2xl mx-auto w-full">
                         <Card className={`${darkMode ? 'bg-[#003d47] border-white/10' : 'bg-gray-50 border-gray-200'} shadow-2xl overflow-hidden`}>
@@ -703,7 +687,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                         </Card>
                     </div>
                 ) : (
-                    <div className="space-y-4 md:space-y-8 py-1 md:py-4">
+                    <div className="space-y-4 md:space-y-6 w-full min-w-0">
                         <Card className={`shadow-lg transition-colors overflow-hidden ${darkMode ? 'bg-[#002f37] border-white/10' : 'bg-white border-gray-200'}`}>
                             <CardHeader className="pb-3 px-4 sm:px-6 pt-4 sm:pt-6">
                                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -1026,7 +1010,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
 
                         {/* Add Activity Dialog Content */}
                         <Dialog open={showActivityDialog} onOpenChange={setShowActivityDialog}>
-                            <DialogContent className={`agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden md:max-w-6xl md:w-[min(96vw,1152px)] p-0 overflow-hidden flex flex-col lg:flex-row max-md:h-full max-md:max-h-[100dvh] max-md:rounded-none md:rounded-2xl lg:rounded-3xl border-none ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white shadow-2xl'}`}>
+                            <DialogContent className={agentModalShell(`md:max-w-6xl lg:max-w-[min(96vw,1152px)] flex-col lg:flex-row md:rounded-2xl lg:rounded-3xl border-none ${darkMode ? 'bg-[#002f37] text-white' : 'bg-white shadow-2xl'}`)}>
                                 <div className="flex-1 p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 overflow-y-auto max-h-[85vh]">
                                     <DialogHeader className="mb-2 sm:mb-4">
                                         <DialogTitle className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tighter">Log Stage Activity</DialogTitle>
@@ -1190,6 +1174,7 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                         </Dialog>
                     </div>
                 )}
+                </div>
             </DialogContent>
         </Dialog>
     );

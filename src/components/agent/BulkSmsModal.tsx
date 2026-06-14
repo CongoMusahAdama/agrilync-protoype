@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import Swal from 'sweetalert2';
+import { showAutoSuccessAlert, showConfirmDialog, showValidationAlert } from '@/utils/validationAlert';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/utils/api';
 
@@ -120,49 +120,33 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
 
     const handleSendBulkSms = async () => {
         if (!message.trim()) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Transmission Blocked',
-                text: 'Communication payload cannot be empty. Please enter a valid message.',
-                confirmButtonColor: '#002f37',
-                customClass: { popup: 'rounded-[2.5rem]' }
-            });
+            showValidationAlert(
+                'Transmission Blocked',
+                'Communication payload cannot be empty. Please enter a valid message.'
+            );
             return;
         }
 
         if (selectedFarmerIds.length === 0) {
-            Swal.fire({
-                icon: 'error',
-                title: 'No Recipients',
-                text: 'Please select at least one farmer to receive this broadcast.',
-                confirmButtonColor: '#002f37',
-                customClass: { popup: 'rounded-[2.5rem]' }
-            });
+            showValidationAlert(
+                'No Recipients',
+                'Please select at least one farmer to receive this broadcast.'
+            );
             return;
         }
 
-        const confirm = await Swal.fire({
+        const confirm = await showConfirmDialog({
             title: 'Confirm Operation',
             html: `
               <div class="text-center space-y-4">
-                <p class="text-gray-500 font-medium">Initiate bulk transmission to <span class="text-[#065f46] font-black">${selectedFarmerIds.length}</span> selected farmers in your sector?</p>
-                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 italic text-sm text-gray-400">
-                  "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"
+                <p class="text-gray-500 font-medium">Initiate bulk transmission to <span style="color:#065f46;font-weight:800">${selectedFarmerIds.length}</span> selected farmers in your sector?</p>
+                <div style="background:#f9fafb;padding:1rem;border-radius:1rem;border:1px solid #f3f4f6;font-style:italic;font-size:0.875rem;color:#9ca3af;text-align:left;word-break:break-word">
+                  "${message.substring(0, 100).replace(/"/g, '&quot;')}${message.length > 100 ? '...' : ''}"
                 </div>
               </div>
             `,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#065f46',
-            cancelButtonColor: '#fb7185',
             confirmButtonText: 'Yes, Execute Broadcast',
             cancelButtonText: 'Abort',
-            background: '#fff',
-            customClass: {
-                popup: 'rounded-none p-10',
-                confirmButton: 'rounded-2xl px-10 py-4 font-black uppercase text-xs tracking-widest',
-                cancelButton: 'rounded-2xl px-10 py-4 font-black uppercase text-xs tracking-widest'
-            }
         });
 
         if (confirm.isConfirmed) {
@@ -177,34 +161,26 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
                 const { succeeded = 0, total = 0, failed = 0, simulated } = res.data?.data || {};
                 setSentCount(succeeded);
 
-                await Swal.fire({
-                    icon: 'success',
-                    title: simulated ? 'Broadcast Simulated' : 'Broadcast Queued',
-                    html: `
-                      <p class="text-gray-600 text-sm">
+                await showAutoSuccessAlert(
+                    simulated ? 'Broadcast Simulated' : 'Broadcast Queued',
+                    `<p style="color:#4b5563;font-size:14px;margin:0">
                         mNotify ${simulated ? 'simulated' : 'is delivering'} your message to
                         <strong>${succeeded}</strong> of <strong>${total}</strong> farmer(s).
-                        ${failed > 0 ? `<br/><span class="text-amber-600">${failed} could not be sent (invalid numbers).</span>` : ''}
-                      </p>
-                    `,
-                    confirmButtonColor: '#065f46',
-                    customClass: { popup: 'rounded-[2.5rem]' },
-                });
+                        ${failed > 0 ? `<br/><span style="color:#d97706">${failed} could not be sent (invalid numbers).</span>` : ''}
+                      </p>`,
+                    4000
+                );
 
                 onOpenChange(false);
                 setMessage('');
                 setSelectedTemplate('');
                 setSelectedFarmerIds(farmers.map((f) => f.id || f._id));
             } catch (err: any) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Transmission Failed',
-                    text:
-                        err.response?.data?.message ||
-                        'mNotify could not deliver this broadcast. Check numbers and try again.',
-                    confirmButtonColor: '#065f46',
-                    customClass: { popup: 'rounded-[2.5rem]' },
-                });
+                showValidationAlert(
+                    'Transmission Failed',
+                    err,
+                    'mNotify could not deliver this broadcast. Check numbers and try again.'
+                );
             } finally {
                 setSending(false);
             }
