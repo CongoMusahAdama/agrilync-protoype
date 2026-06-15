@@ -12,6 +12,7 @@ import {
 import api from '@/utils/api';
 import FarmerIdCardModal from '@/components/agent/FarmerIdCardModal';
 import { getGrowerDisplayId } from '@/utils/growerId';
+import { getRecordId } from '@/utils/recordIds';
 
 interface ViewFarmerModalProps {
     open: boolean;
@@ -65,36 +66,40 @@ const ViewFarmerModal: React.FC<ViewFarmerModalProps> = ({
     const isActiveGrower =
         farmer?.status === 'active' || String(farmer?.status || '').toLowerCase() === 'active';
 
+    const farmerId = getRecordId(farmer);
+
     const fetchFarms = useCallback(async () => {
-        if (!farmer?._id) return;
+        if (!farmerId) return;
         try {
             const res = await api.get('/farms');
             const farmerFarms = res.data.filter(
-                (f: any) => f.farmer?._id === farmer._id || f.farmer === farmer._id
+                (f: any) => f.farmer?._id === farmerId || f.farmer === farmerId || getRecordId(f.farmer) === farmerId
             );
             setFarms(farmerFarms);
         } catch (err) {
             console.error('Failed to fetch farms', err);
         }
-    }, [farmer?._id]);
+    }, [farmerId]);
 
     const fetchMedia = useCallback(async () => {
-        if (!farmer?._id) return;
+        if (!farmerId) return;
         try {
             const res = await api.get('/media');
             const farmerMedia = res.data.filter(
                 (m: any) =>
-                    m.farm === farmer._id ||
+                    m.farmer === farmerId ||
+                    getRecordId(m.farmer) === farmerId ||
+                    m.farm === farmerId ||
                     (farmer.community && m.community === farmer.community)
             );
             setMedia(farmerMedia);
         } catch (err) {
             console.error('Failed to fetch media', err);
         }
-    }, [farmer?._id, farmer?.community]);
+    }, [farmerId, farmer?.community]);
 
     useEffect(() => {
-        if (open && farmer?._id) {
+        if (open && farmerId) {
             fetchFarms();
             fetchMedia();
         }

@@ -4,6 +4,10 @@ function agentIdsMatch(storedId, requestId) {
     return String(storedId) === String(requestId);
 }
 
+function requestAgentId(req) {
+    return req.agent?._id || req.agent?.id;
+}
+
 /** True when the logged-in agent may act on this grower record. */
 function farmerAccessibleToAgent(farmer, requestAgentId) {
     if (!farmer || !requestAgentId) return false;
@@ -14,4 +18,4 @@ function farmerAccessibleToAgent(farmer, requestAgentId) {
     );
 }
 
-module.exports = { agentIdsMatch, farmerAccessibleToAgent };
+module.exports = { agentIdsMatch, farmerAccessibleToAgent, requestAgentId };

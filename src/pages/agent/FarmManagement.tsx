@@ -5,6 +5,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
+import { getRecordId } from '@/utils/recordIds';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { exportToPDF, exportToWord } from '@/utils/reportExport';
@@ -362,7 +363,7 @@ const FarmManagement: React.FC = () => {
     const handleEditFarmer = async (farmer: any) => {
         try {
             // Fetch full farmer data including Ghana card images
-            const res = await api.get(`/farmers/${farmer._id}`);
+            const res = await api.get(`/farmers/${getRecordId(farmer)}`);
             setSelectedFarmer(res.data);
             setEditModalOpen(true);
         } catch (error: any) {

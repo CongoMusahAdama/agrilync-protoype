@@ -17,7 +17,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { UserCheck, Calendar, Eye, Edit, Loader2, X } from 'lucide-react';
 import api from '@/utils/api';
-import Swal from 'sweetalert2';
+import { showAutoSuccessAlert, showValidationAlert } from '@/utils/validationAlert';
+import { getRecordId } from '@/utils/recordIds';
 
 interface VerificationQueueModalProps {
     open: boolean;
@@ -43,32 +44,23 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
     const [isVerifying, setIsVerifying] = React.useState<string | null>(null);
 
     const handleApprove = async (farmer: any) => {
-        setIsVerifying(farmer._id);
+        const farmerId = getRecordId(farmer);
+        if (!farmerId) return;
+        setIsVerifying(farmerId);
         try {
-            await api.put(`/farmers/${farmer._id}`, { status: 'active' });
-            await Swal.fire({
-                icon: 'success',
-                title: 'Grower Verified!',
-                html: `
-                    <div style="text-align: center; padding: 10px 0;">
-                        <p style="font-size: 18px; color: #065f46; margin: 15px 0;">
-                            Grower verified successfully!
-                        </p>
-                    </div>
-                `,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#065f46',
-                timer: 2000,
-                timerProgressBar: true
-            });
+            await api.put(`/farmers/${farmerId}`, { status: 'active' });
+            await showAutoSuccessAlert(
+                'Grower Verified!',
+                '<p style="font-size:15px;color:#065f46;margin:0;">Grower verified successfully!</p>',
+                3000
+            );
             onSuccess();
         } catch (err) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Verification Failed',
-                text: 'Could not update grower status. Please check your connection and try again.',
-                confirmButtonColor: '#065f46'
-            });
+            showValidationAlert(
+                'Verification Failed',
+                err,
+                'Could not update grower status. Please check your connection and try again.'
+            );
         } finally {
             setIsVerifying(null);
         }
@@ -148,11 +140,11 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
                                     </Button>
                                     <Button
                                         size="sm"
-                                        disabled={isVerifying === f._id}
+                                        disabled={isVerifying === getRecordId(f)}
                                         onClick={() => handleApprove(f)}
                                         className="w-full h-10 bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold"
                                     >
-                                        {isVerifying === f._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserCheck className="w-4 h-4 mr-1" />}
+                                        {isVerifying === getRecordId(f) ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserCheck className="w-4 h-4 mr-1" />}
                                         Approve Grower
                                     </Button>
                                 </div>
@@ -249,11 +241,11 @@ const VerificationQueueModal: React.FC<VerificationQueueModalProps> = ({
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
                                                     <Button
-                                                        disabled={isVerifying === f._id}
+                                                        disabled={isVerifying === getRecordId(f)}
                                                         className="bg-[#065f46] hover:bg-indigo-900 text-white h-10 text-[10px] font-black rounded-xl px-5 transition-all shadow-lg shadow-emerald-500/20 uppercase tracking-widest border-none"
                                                         onClick={() => handleApprove(f)}
                                                     >
-                                                        {isVerifying === f._id ? (
+                                        {isVerifying === getRecordId(f) ? (
                                                             <Loader2 className="h-4 w-4 animate-spin" />
                                                         ) : (
                                                             'Verify & Onboard'

@@ -1,11 +1,13 @@
 const Task = require('../models/Task');
 const { sendEmail } = require('../utils/notificationService');
 const { notifyStaffAgent, notifyAgentSupervisorIfAny, staffSms } = require('../utils/staffNotifications');
+const { requestAgentId } = require('../utils/agentAuth');
 
 // Get all tasks for an agent
 exports.getTasks = async (req, res) => {
   try {
-    const tasks = await Task.find({ agent: req.agent.id, region: req.agent.region })
+    const agentId = requestAgentId(req);
+    const tasks = await Task.find({ agent: agentId, region: req.agent.region })
                             .populate('farmer', 'name region district')
                             .populate('farm', 'name')
                             .sort({ dueDate: 1 });
@@ -58,7 +60,7 @@ exports.getTasks = async (req, res) => {
             year: 'numeric',
           });
           await notifyStaffAgent({
-            agentId: req.agent.id,
+            agentId: requestAgentId(req),
             title: 'Task Due Soon',
             message: `Your task "${task.title}" is due on ${dueLabel}.`,
             smsBody: staffSms(`Reminder: task "${task.title}" is due on ${dueLabel}. Location: ${task.location || 'Field site'}.`),
@@ -91,8 +93,9 @@ exports.createTask = async (req, res) => {
   try {
     const { type, title, farmerName, farmName, farmer, farm, location, dueDate, priority, status } = req.body;
 
+    const agentId = requestAgentId(req);
     const newTask = new Task({
-      agent: req.agent.id,
+      agent: agentId,
       type,
       title,
       farmerName: farmerName || 'System',
@@ -113,7 +116,7 @@ exports.createTask = async (req, res) => {
       ? new Date(dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
       : 'TBC';
     await notifyStaffAgent({
-      agentId: req.agent.id,
+      agentId,
       title: 'Task Created',
       message: `Task "${title}" was added to your list (due ${dueLabel}).`,
       smsBody: staffSms(`New task "${title}" created. Due: ${dueLabel}. Priority: ${priority || 'normal'}.`),
@@ -123,7 +126,7 @@ exports.createTask = async (req, res) => {
     });
 
     if (priority === 'high') {
-      await notifyAgentSupervisorIfAny(req.agent.id, {
+      await notifyAgentSupervisorIfAny(agentId, {
         title: 'High-Priority Task',
         message: `${req.agent.name || 'Agent'} created high-priority task "${title}".`,
         smsBody: staffSms(`${req.agent.name || 'Agent'} created high-priority task "${title}" due ${dueLabel}.`),
@@ -159,7 +162,8 @@ exports.createTask = async (req, res) => {
 exports.updateTask = async (req, res) => {
   try {
     const { status, priority, title, dueDate, location } = req.body;
-    const task = await Task.findOne({ _id: req.params.id, agent: req.agent.id });
+    const agentId = requestAgentId(req);
+    const task = await Task.findOne({ _id: req.params.id, agent: agentId });
 
     if (!task) {
       return res.status(404).json({ success: false, msg: 'Task not found' });
@@ -197,7 +201,8 @@ exports.updateTask = async (req, res) => {
 // Delete a task
 exports.deleteTask = async (req, res) => {
   try {
-    const task = await Task.findOneAndDelete({ _id: req.params.id, agent: req.agent.id });
+    const agentId = requestAgentId(req);
+    const task = await Task.findOneAndDelete({ _id: req.params.id, agent: agentId });
 
     if (!task) {
       return res.status(404).json({ success: false, msg: 'Task not found' });

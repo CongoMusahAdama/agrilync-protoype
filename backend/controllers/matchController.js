@@ -1,43 +1,103 @@
 const Match = require('../models/Match');
 const Activity = require('../models/Activity');
+const mongoose = require('mongoose');
 const {
     notifySuperAdmins,
     notifyStaffAgent,
     notifyAgentSupervisorIfAny,
     staffSms,
 } = require('../utils/staffNotifications');
+const { agentIdsMatch, farmerAccessibleToAgent, requestAgentId } = require('../utils/agentAuth');
+
+async function findMatchByParam(param) {
+    if (mongoose.Types.ObjectId.isValid(param)) {
+        const byId = await Match.findById(param);
+        if (byId) return byId;
+    }
+    return Match.findOne({ id: param });
+}
+
+async function applyMatchDecision(match, { approved, agentName }) {
+    const previousApproval = match.approvalStatus;
+    const farmerName = match.farmer?.name || 'grower';
+
+    if (approved) {
+        match.approvalStatus = 'approved';
+        match.status = 'Active';
+        match.documents = { ...(match.documents || {}), agentApproval: true };
+        match.timeline = match.timeline || [];
+        match.timeline.push({
+            action: 'Agent approved match',
+            date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+            type: 'match',
+        });
+    } else {
+        match.approvalStatus = 'declined';
+        match.status = 'Flagged';
+        match.timeline = match.timeline || [];
+        match.timeline.push({
+            action: 'Agent rejected match',
+            date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+            type: 'issue',
+        });
+    }
+
+    await match.save();
+    await match.populate('farmer', 'name region district community');
+
+    if (match.approvalStatus !== previousApproval) {
+        const approvedLabel = approved ? 'approved' : 'rejected';
+        await notifySuperAdmins({
+            title: approved ? 'Match Approved' : 'Match Rejected',
+            message: `${agentName} ${approvedLabel} match ${match.id} for ${farmerName}.`,
+            smsBody: staffSms(`${agentName} ${approvedLabel} match ${match.id} for grower ${farmerName}.`),
+            type: 'match',
+            priority: approved ? 'medium' : 'high',
+            senderName: agentName,
+        });
+        await notifyStaffAgent({
+            agentId: match.agent,
+            title: approved ? 'Match Approved' : 'Match Rejected',
+            message: `Match ${match.id} for ${farmerName} was ${approvedLabel}.`,
+            smsBody: staffSms(`Match ${match.id} for grower ${farmerName} was ${approvedLabel} on your account.`),
+            type: 'match',
+            priority: 'medium',
+            senderName: 'AgriLync',
+        });
+    }
+
+    return match;
+}
 
 // @route   GET api/matches
-// @desc    Get all matches for current agent
 exports.getMatches = async (req, res) => {
     try {
-        const matches = await Match.find({ agent: req.agent.id })
+        const agentId = requestAgentId(req);
+        const matches = await Match.find({ agent: agentId })
             .populate('farmer', 'name region district community landSize productionStage verified')
             .sort({ createdAt: -1 });
         res.json(matches);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('getMatches error:', err.message);
+        res.status(500).json({ msg: 'Server error' });
     }
 };
 
 // @route   POST api/matches
-// @desc    Create a new match (Apply for opportunity)
 exports.createMatch = async (req, res) => {
     const { farmerId, investor, farmType, value, investmentType, category } = req.body;
 
     try {
-        // Verify farmer belongs to agent (Enforces Regional Operational Area)
         const farmer = await require('../models/Farmer').findById(farmerId);
         if (!farmer) {
             return res.status(404).json({ msg: 'Farmer not found' });
         }
 
-        if (farmer.agent.toString() !== req.agent.id) {
+        const agentId = requestAgentId(req);
+        if (!farmerAccessibleToAgent(farmer, agentId)) {
             return res.status(401).json({ msg: 'Not authorized: Farmer is outside your operational jurisdiction' });
         }
 
-        // Generate simple ID
         const count = await Match.countDocuments();
         const id = `M-${100 + count + 1}`;
 
@@ -56,22 +116,19 @@ exports.createMatch = async (req, res) => {
             timeline: [{
                 action: 'Match Created',
                 date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-                type: 'match'
+                type: 'match',
             }],
-            agent: req.agent.id
+            agent: agentId,
         });
 
         const match = await newMatch.save();
-
-        // Populate farmer details for frontend
         await match.populate('farmer', 'name region district community');
 
-        // Log Activity
         await Activity.create({
-            agent: req.agent.id,
+            agent: agentId,
             type: 'info',
             title: 'New Investment Match',
-            description: `Matched farmer to ${investor} (${category})`
+            description: `Matched farmer to ${investor} (${category})`,
         });
 
         const agentName = req.agent.name || 'Field Agent';
@@ -81,27 +138,24 @@ exports.createMatch = async (req, res) => {
             title: 'New Investor Match',
             message: `${agentName} matched ${farmerName} with ${investor} (${category}).`,
             smsBody: staffSms(
-                `${agentName} created match ${id} linking grower ${farmerName} to ${investor}. ` +
-                    `Value: ${value || 'N/A'}. Review in admin dashboard.`
+                `${agentName} created match ${id} linking grower ${farmerName} to ${investor}. Value: ${value || 'N/A'}.`
             ),
             type: 'match',
             priority: 'medium',
             senderName: agentName,
         });
 
-        await notifyAgentSupervisorIfAny(req.agent.id, {
+        await notifyAgentSupervisorIfAny(agentId, {
             title: 'New Investor Match',
             message: `${agentName} matched ${farmerName} with ${investor}.`,
-            smsBody: staffSms(
-                `Your agent ${agentName} created match ${id} for grower ${farmerName} with ${investor}.`
-            ),
+            smsBody: staffSms(`Your agent ${agentName} created match ${id} for grower ${farmerName} with ${investor}.`),
             type: 'match',
             priority: 'medium',
             senderName: agentName,
         });
 
         await notifyStaffAgent({
-            agentId: req.agent.id,
+            agentId,
             title: 'Match Submitted',
             message: `Match ${id} for ${farmerName} with ${investor} is pending approval.`,
             smsBody: staffSms(`Match ${id} for grower ${farmerName} with ${investor} was submitted successfully.`),
@@ -112,21 +166,65 @@ exports.createMatch = async (req, res) => {
 
         res.json(match);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('createMatch error:', err.message);
+        res.status(500).json({ msg: 'Server error' });
+    }
+};
+
+// @route   POST api/matches/:id/approve
+exports.approveMatch = async (req, res) => {
+    try {
+        const match = await findMatchByParam(req.params.id);
+        if (!match) return res.status(404).json({ msg: 'Match not found' });
+
+        const agentId = requestAgentId(req);
+        if (!agentIdsMatch(match.agent, agentId)) {
+            return res.status(401).json({ msg: 'Not authorized' });
+        }
+
+        const updated = await applyMatchDecision(match, {
+            approved: true,
+            agentName: req.agent.name || 'Field Agent',
+        });
+        res.json({ success: true, data: updated });
+    } catch (err) {
+        console.error('approveMatch error:', err.message);
+        res.status(500).json({ msg: 'Server error' });
+    }
+};
+
+// @route   POST api/matches/:id/reject
+exports.rejectMatch = async (req, res) => {
+    try {
+        const match = await findMatchByParam(req.params.id);
+        if (!match) return res.status(404).json({ msg: 'Match not found' });
+
+        const agentId = requestAgentId(req);
+        if (!agentIdsMatch(match.agent, agentId)) {
+            return res.status(401).json({ msg: 'Not authorized' });
+        }
+
+        const updated = await applyMatchDecision(match, {
+            approved: false,
+            agentName: req.agent.name || 'Field Agent',
+        });
+        res.json({ success: true, data: updated });
+    } catch (err) {
+        console.error('rejectMatch error:', err.message);
+        res.status(500).json({ msg: 'Server error' });
     }
 };
 
 // @route   PUT api/matches/:id
-// @desc    Update match status or approval
 exports.updateMatch = async (req, res) => {
     const { status, approvalStatus, notes, documents } = req.body;
 
     try {
-        let match = await Match.findById(req.params.id);
+        const match = await findMatchByParam(req.params.id);
         if (!match) return res.status(404).json({ msg: 'Match not found' });
 
-        if (match.agent.toString() !== req.agent.id) {
+        const agentId = requestAgentId(req);
+        if (!agentIdsMatch(match.agent, agentId)) {
             return res.status(401).json({ msg: 'Not authorized' });
         }
 
@@ -151,9 +249,7 @@ exports.updateMatch = async (req, res) => {
             await notifySuperAdmins({
                 title: approved ? 'Match Approved' : 'Match Rejected',
                 message: `${agentName} ${approved ? 'approved' : 'rejected'} match ${match.id} for ${farmerName}.`,
-                smsBody: staffSms(
-                    `${agentName} ${approved ? 'approved' : 'rejected'} match ${match.id} for grower ${farmerName}.`
-                ),
+                smsBody: staffSms(`${agentName} ${approved ? 'approved' : 'rejected'} match ${match.id} for grower ${farmerName}.`),
                 type: 'match',
                 priority: approved ? 'medium' : 'high',
                 senderName: agentName,
@@ -162,9 +258,7 @@ exports.updateMatch = async (req, res) => {
                 agentId: match.agent,
                 title: approved ? 'Match Approved' : 'Match Rejected',
                 message: `Match ${match.id} for ${farmerName} was ${approved ? 'approved' : 'rejected'}.`,
-                smsBody: staffSms(
-                    `Match ${match.id} for grower ${farmerName} was ${approved ? 'approved' : 'rejected'} on your account.`
-                ),
+                smsBody: staffSms(`Match ${match.id} for grower ${farmerName} was ${approved ? 'approved' : 'rejected'} on your account.`),
                 type: 'match',
                 priority: 'medium',
                 senderName: 'AgriLync',
@@ -184,7 +278,7 @@ exports.updateMatch = async (req, res) => {
 
         res.json(match);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('updateMatch error:', err.message);
+        res.status(500).json({ msg: 'Server error' });
     }
 };

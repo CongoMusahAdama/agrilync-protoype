@@ -596,7 +596,7 @@ const TaskCard = ({ task, onRefresh, onEdit, onDelete, farmersMap }: {
 
   const handleUpdateStatus = async (newStatus: TaskStatus) => {
      try {
-       await api.put(`/tasks/${task.id}`, { status: newStatus });
+       await api.put(`/tasks/${task.id || task._id}`, { status: newStatus });
        onRefresh();
      } catch (err) {
        console.error('Failed to update task status', err);

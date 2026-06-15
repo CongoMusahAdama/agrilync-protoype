@@ -37,6 +37,7 @@ import { Search, Filter, Plus, Eye, Edit, MapPin } from 'lucide-react';
 import AddFarmerModal from '@/components/agent/AddFarmerModal';
 import ViewFarmerModal from '@/components/agent/ViewFarmerModal';
 import api from '@/utils/api';
+import { getRecordId } from '@/utils/recordIds';
 import Swal from 'sweetalert2';
 import UploadReportModal from '@/components/agent/UploadReportModal';
 import MediaUploadModal from '@/components/agent/MediaUploadModal';
@@ -83,7 +84,7 @@ const FarmersManagement: React.FC = () => {
 
   const handleEditFarmer = async (farmer: any) => {
     try {
-      const res = await api.get(`/farmers/${farmer._id}`);
+      const res = await api.get(`/farmers/${getRecordId(farmer)}`);
       setSelectedFarmer(res.data);
       setEditModalOpen(true);
     } catch (error: any) {

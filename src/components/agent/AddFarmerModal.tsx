@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/api';
+import { getRecordId } from '@/utils/recordIds';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOfflineOptional } from '@/contexts/OfflineContext';
 import { submitOrQueue, isBrowserOnline } from '@/lib/offline';
@@ -502,7 +503,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
     const addFarmerMutation = useMutation({
         mutationFn: async (payload: Record<string, unknown>) => {
             if (isEditMode && farmer?._id) {
-                const res = await api.put(`/farmers/${farmer._id}`, payload);
+                const res = await api.put(`/farmers/${getRecordId(farmer)}`, payload);
                 return { kind: 'online' as const, data: res.data };
             }
 

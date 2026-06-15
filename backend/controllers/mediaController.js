@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Media = require('../models/Media');
 const { uploadDataUrl } = require('../utils/cloudinary');
+const { agentIdsMatch, requestAgentId } = require('../utils/agentAuth');
 
 const toObjectId = (value) => {
     if (value == null || value === '') return undefined;
@@ -16,7 +17,7 @@ exports.getMedia = async (req, res) => {
     try {
         const { type, farmId, search, region, district, community } = req.query;
         
-        let query = { agent: req.agent.id };
+        let query = { agent: requestAgentId(req) };
         
         // Filter by media type
         if (type && type !== 'All' && type !== 'all') {
@@ -101,7 +102,7 @@ exports.uploadMedia = async (req, res) => {
             }
 
             const newMedia = new Media({
-                agent: req.agent.id,
+                agent: requestAgentId(req),
                 farmer: resolvedFarmerId,
                 farm: resolvedFarmId,
                 name: name || `Upload_${Date.now()}`,
@@ -138,8 +139,9 @@ exports.uploadMedia = async (req, res) => {
 exports.syncMedia = async (req, res) => {
     try {
         // Find all pending media for this agent
-        const pendingMedia = await Media.find({ 
-            agent: req.agent.id, 
+        const agentId = requestAgentId(req);
+        const pendingMedia = await Media.find({
+            agent: agentId,
             status: 'Pending' 
         });
 
@@ -149,7 +151,7 @@ exports.syncMedia = async (req, res) => {
 
         // Simulating sync process
         await Media.updateMany(
-            { agent: req.agent.id, status: 'Pending' },
+            { agent: agentId, status: 'Pending' },
             { $set: { status: 'Synced' } }
         );
 
@@ -175,8 +177,8 @@ exports.deleteMedia = async (req, res) => {
             return res.status(404).json({ msg: 'Media not found' });
         }
 
-        // Check if media belongs to agent
-        if (media.agent.toString() !== req.agent.id) {
+        const agentId = requestAgentId(req);
+        if (!agentIdsMatch(media.agent, agentId)) {
             return res.status(401).json({ msg: 'User not authorized' });
         }
 
@@ -193,7 +195,7 @@ exports.deleteMedia = async (req, res) => {
 // @access  Private
 exports.getMediaStats = async (req, res) => {
     try {
-        const agentId = req.agent.id;
+        const agentId = requestAgentId(req);
         
         const totalFiles = await Media.countDocuments({ agent: agentId });
         const photos = await Media.countDocuments({ agent: agentId, type: 'Photo' });

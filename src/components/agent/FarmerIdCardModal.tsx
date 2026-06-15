@@ -10,6 +10,7 @@ import {
   captureCardFace,
 } from "@/utils/growerCardExport";
 import api from "@/utils/api";
+import { getRecordId } from "@/utils/recordIds";
 
 interface FarmerIdCardModalProps {
   open: boolean;
@@ -61,13 +62,13 @@ const FarmerIdCardModal: React.FC<FarmerIdCardModalProps> = ({
 
     setCardFarmer(farmer);
 
-    if (!fetchSavedCard || !farmer?._id) return;
+    if (!fetchSavedCard || !getRecordId(farmer)) return;
 
     const loadCard = async () => {
       setLoading(true);
       setError("");
       try {
-        const res = await api.get(`/farmers/${farmer._id}/id-card`);
+        const res = await api.get(`/farmers/${getRecordId(farmer)}/id-card`);
         setCardFarmer(res.data?.farmer || farmer);
       } catch (err: any) {
         const status = err?.response?.status;

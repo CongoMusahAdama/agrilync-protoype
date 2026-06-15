@@ -8,13 +8,13 @@ const {
     staffSms,
     truncateSms,
 } = require('../utils/staffNotifications');
+const { agentIdsMatch, farmerAccessibleToAgent, requestAgentId } = require('../utils/agentAuth');
 
 // @route   GET api/disputes
-// @desc    Get all disputes for current agent
 exports.getDisputes = async (req, res) => {
     try {
-        // Populate farmer details for the UI
-        const disputes = await Dispute.find({ agent: req.agent.id })
+        const agentId = requestAgentId(req);
+        const disputes = await Dispute.find({ agent: agentId })
             .populate('farmer', 'name region district community contact lyncId');
         res.json(disputes);
     } catch (err) {
@@ -35,7 +35,8 @@ exports.createDispute = async (req, res) => {
             return res.status(404).json({ msg: 'Farmer not found' });
         }
 
-        if (farmer.agent.toString() !== req.agent.id) {
+        const agentId = requestAgentId(req);
+        if (!farmerAccessibleToAgent(farmer, agentId)) {
             return res.status(401).json({ msg: 'Not authorized: Farmer is outside your operational jurisdiction' });
         }
 
@@ -43,7 +44,7 @@ exports.createDispute = async (req, res) => {
             id,
             farmer: farmerId,
             investor,
-            agent: req.agent.id,
+            agent: agentId,
             type,
             severity,
             region: region || farmer.region, // Fallback to farmer's region
@@ -64,7 +65,7 @@ exports.createDispute = async (req, res) => {
 
         // Log Activity
         await Activity.create({
-            agent: req.agent.id,
+            agent: agentId,
             type: 'dispute',
             title: `Dispute Logged: ${id}`,
             description: `${type} (${severity})`
@@ -85,7 +86,7 @@ exports.createDispute = async (req, res) => {
             senderName: agentName,
         });
 
-        await notifyAgentSupervisorIfAny(req.agent.id, {
+        await notifyAgentSupervisorIfAny(agentId, {
             title: 'Agent Logged Dispute',
             message: alertMessage,
             smsBody: staffSms(
@@ -97,7 +98,7 @@ exports.createDispute = async (req, res) => {
         });
 
         await notifyStaffAgent({
-            agentId: req.agent.id,
+            agentId,
             title: 'Dispute Submitted',
             message: `Dispute ${id} for ${farmerName} was submitted and is pending review.`,
             smsBody: staffSms(
@@ -137,8 +138,8 @@ exports.updateDispute = async (req, res) => {
             return res.status(404).json({ msg: 'Dispute not found' });
         }
 
-        // Verify ownership (agent who logged it)
-        if (dispute.agent.toString() !== req.agent.id) {
+        const agentId = requestAgentId(req);
+        if (!agentIdsMatch(dispute.agent, agentId)) {
             return res.status(401).json({ msg: 'Not authorized: You can only update disputes you logged' });
         }
 

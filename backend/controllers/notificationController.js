@@ -3,6 +3,11 @@ const Activity      = require('../models/Activity');
 const Agent         = require('../models/Agent');
 const { sendEmail, sendPush, buildEmailHTML } = require('../services/notificationService');
 const { sendSmsSafe, staffSms, smsEnabledForAgent } = require('../utils/staffNotifications');
+const { agentIdsMatch } = require('../utils/agentAuth');
+
+function requestAgentId(req) {
+    return req.agent._id || req.agent.id;
+}
 
 // ─── In-App: Get all notifications for current agent ─────────────────────────
 
@@ -12,8 +17,9 @@ exports.getNotifications = async (req, res) => {
     try {
         if (req.agent.isMock) return res.json([]);
 
+        const agentId = requestAgentId(req);
         const notifications = await Notification
-            .find({ agent: req.agent.id })
+            .find({ agent: agentId })
             .sort({ createdAt: -1 })
             .lean();
 
@@ -34,7 +40,8 @@ exports.markAsRead = async (req, res) => {
         if (!notification)
             return res.status(404).json({ success: false, message: 'Notification not found' });
 
-        if (notification.agent.toString() !== req.agent.id)
+        const agentId = requestAgentId(req);
+        if (!agentIdsMatch(notification.agent, agentId))
             return res.status(401).json({ success: false, message: 'Not authorized' });
 
         notification.read = true;
@@ -54,8 +61,9 @@ exports.markAllAsRead = async (req, res) => {
     try {
         if (req.agent.isMock) return res.json({ success: true, count: 0 });
 
+        const agentId = requestAgentId(req);
         const result = await Notification.updateMany(
-            { agent: req.agent.id, read: false },
+            { agent: agentId, read: false },
             { read: true }
         );
         res.json({ success: true, count: result.modifiedCount });

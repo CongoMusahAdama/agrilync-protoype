@@ -21,7 +21,7 @@ import {
     ShieldCheck,
     Clock
 } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
+import { getMatchApiId, getRecordId } from '@/utils/recordIds';
 
 interface ReviewMatchModalProps {
     open: boolean;
@@ -44,12 +44,12 @@ const ReviewMatchModal: React.FC<ReviewMatchModalProps> = ({
     if (!match) return null;
 
     const handleApprove = () => {
-        onApprove(match.id);
+        onApprove(getMatchApiId(match));
         onOpenChange(false);
     };
 
     const handleReject = () => {
-        onReject(match.id);
+        onReject(getMatchApiId(match));
         onOpenChange(false);
     };
 

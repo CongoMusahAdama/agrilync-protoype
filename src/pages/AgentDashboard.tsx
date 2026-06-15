@@ -123,6 +123,7 @@ import ReportsTab from './agent/dashboard/ReportsTab';
 
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
+import { getRecordId } from '@/utils/recordIds';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import Preloader from '@/components/ui/Preloader';
@@ -368,7 +369,12 @@ const AgentDashboard: React.FC = () => {
   const queryClient = useQueryClient();
 
   const handleMarkAllRead = async () => {
-    queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
+    try {
+      await api.put('/notifications/mark-all-read');
+      queryClient.invalidateQueries({ queryKey: ['agentDashboardSummary'] });
+    } catch (err) {
+      console.error('Error marking all notifications as read:', err);
+    }
   };
 
   const toggleReadStatus = async (id: string, type?: string) => {
@@ -499,7 +505,7 @@ const AgentDashboard: React.FC = () => {
 
   const handleEditFarmer = async (farmer: any) => {
     try {
-      const res = await api.get(`/farmers/${farmer._id}`);
+      const res = await api.get(`/farmers/${getRecordId(farmer)}`);
       setSelectedFarmer(res.data);
       setEditModalOpen(true);
     } catch (error: any) {

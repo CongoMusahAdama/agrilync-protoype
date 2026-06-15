@@ -1,39 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-    MessageSquare, 
-    Users, 
-    Send, 
-    CheckCircle2, 
-    AlertCircle, 
-    Info, 
-    Trash2, 
-    Search, 
-    X, 
-    Zap, 
-    Megaphone, 
-    Smartphone, 
-    History, 
-    UserCheck, 
-    CheckSquare, 
-    Square, 
-    Eye,
-    ChevronRight,
-    Sparkles,
-    ShieldCheck,
-    Cpu,
-    ArrowRight
+import {
+    MessageSquare,
+    Users,
+    Send,
+    CheckCircle2,
+    AlertCircle,
+    Search,
+    X,
+    Megaphone,
+    Smartphone,
+    History,
+    UserCheck,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import { showAutoSuccessAlert, showConfirmDialog, showValidationAlert } from '@/utils/validationAlert';
-import { motion, AnimatePresence } from 'framer-motion';
+import { agentModalBody, agentModalFooter, agentModalShell } from '@/utils/agentModalStyles';
 import api from '@/utils/api';
+import { cn } from '@/lib/utils';
 
 interface BulkSmsModalProps {
     open: boolean;
@@ -43,29 +31,34 @@ interface BulkSmsModalProps {
 }
 
 const TEMPLATES = [
-    { id: 'training', label: 'Training Session', icon: <Megaphone className="h-3 w-3" />, content: 'Hello {farmer_name}, this is an official reminder from {agent_name} for your [Training Module] workshop on [Date] at [Location]. Please ensure you are prompt. - AgriLync Field Ops' },
-    { id: 'visit', label: 'Field Visit', icon: <Smartphone className="h-3 w-3" />, content: 'Dear {farmer_name}, this is {agent_name}. I am scheduled to visit your farm on [Date] between [Time Window]. Please have your digital ID ready. - AgriLync' },
-    { id: 'followup', label: 'Session Follow-up', icon: <History className="h-3 w-3" />, content: 'Hello {farmer_name}, this is {agent_name}. Following our previous session on [Topic], do you have any questions or require further assistance? Your productivity is our priority. - AgriLync' },
-    { id: 'alert', label: 'Operational Alert', icon: <AlertCircle className="h-3 w-3" />, content: 'URGENT {farmer_name}: This is Agent {agent_name}. We have received reports of [Alert Type] in your district. Please implement the safety protocols discussed in training. - AgriLync Security' }
+    { id: 'training', label: 'Training', icon: Megaphone, content: 'Hello {farmer_name}, this is an official reminder from {agent_name} for your [Training Module] workshop on [Date] at [Location]. Please ensure you are prompt. - AgriLync' },
+    { id: 'visit', label: 'Field visit', icon: Smartphone, content: 'Dear {farmer_name}, this is {agent_name}. I am scheduled to visit your farm on [Date] between [Time Window]. Please have your digital ID ready. - AgriLync' },
+    { id: 'followup', label: 'Follow-up', icon: History, content: 'Hello {farmer_name}, this is {agent_name}. Following our previous session on [Topic], do you have any questions or require further assistance? - AgriLync' },
+    { id: 'alert', label: 'Alert', icon: AlertCircle, content: 'URGENT {farmer_name}: This is Agent {agent_name}. We have received reports of [Alert Type] in your district. Please implement the safety protocols discussed in training. - AgriLync' },
 ];
+
+type MobileTab = 'message' | 'recipients';
 
 const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers = [], agent }) => {
     const [message, setMessage] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [sending, setSending] = useState(false);
-    const [sentCount, setSentCount] = useState(0);
     const [selectedFarmerIds, setSelectedFarmerIds] = useState<string[]>([]);
+    const [mobileTab, setMobileTab] = useState<MobileTab>('message');
 
-    // Initialize all farmers as selected by default
     useEffect(() => {
         if (open && farmers.length > 0 && selectedFarmerIds.length === 0) {
             setSelectedFarmerIds(farmers.map(f => f.id || f._id));
         }
-    }, [open, farmers]);
+    }, [open, farmers, selectedFarmerIds.length]);
 
-    const filteredFarmers = farmers.filter(f => 
-        (f.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) || 
+    useEffect(() => {
+        if (open) setMobileTab('message');
+    }, [open]);
+
+    const filteredFarmers = farmers.filter(f =>
+        (f.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
         (f.contact || '').includes(searchTerm)
     );
 
@@ -78,7 +71,7 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
     };
 
     const handleToggleFarmer = (id: string) => {
-        setSelectedFarmerIds(prev => 
+        setSelectedFarmerIds(prev =>
             prev.includes(id) ? prev.filter(fid => fid !== id) : [...prev, id]
         );
     };
@@ -87,7 +80,6 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
         const template = TEMPLATES.find(t => t.id === templateId);
         if (template) {
             let content = template.content;
-            // Auto-replace agent name if available
             if (agent?.name) {
                 content = content.replace(/{agent_name}/g, agent.name);
             }
@@ -102,16 +94,15 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
             setMessage(prev => prev + tag);
             return;
         }
-        
+
         const start = textArea.selectionStart;
         const end = textArea.selectionEnd;
         const text = message;
         const before = text.substring(0, start);
         const after = text.substring(end);
-        
+
         setMessage(before + tag + after);
-        
-        // Focus back to textarea
+
         setTimeout(() => {
             textArea.focus();
             textArea.setSelectionRange(start + tag.length, start + tag.length);
@@ -120,38 +111,31 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
 
     const handleSendBulkSms = async () => {
         if (!message.trim()) {
-            showValidationAlert(
-                'Transmission Blocked',
-                'Communication payload cannot be empty. Please enter a valid message.'
-            );
+            showValidationAlert('Message required', 'Please write a message before sending.', 'Please write a message before sending.', 'warning');
             return;
         }
 
         if (selectedFarmerIds.length === 0) {
-            showValidationAlert(
-                'No Recipients',
-                'Please select at least one farmer to receive this broadcast.'
-            );
+            showValidationAlert('No recipients', 'Please select at least one grower to receive this message.', 'Please select at least one grower.', 'warning');
             return;
         }
 
         const confirm = await showConfirmDialog({
-            title: 'Confirm Operation',
+            title: 'Send bulk SMS?',
             html: `
-              <div class="text-center space-y-4">
-                <p class="text-gray-500 font-medium">Initiate bulk transmission to <span style="color:#065f46;font-weight:800">${selectedFarmerIds.length}</span> selected farmers in your sector?</p>
-                <div style="background:#f9fafb;padding:1rem;border-radius:1rem;border:1px solid #f3f4f6;font-style:italic;font-size:0.875rem;color:#9ca3af;text-align:left;word-break:break-word">
-                  "${message.substring(0, 100).replace(/"/g, '&quot;')}${message.length > 100 ? '...' : ''}"
+              <div class="text-center space-y-3">
+                <p class="text-gray-600 text-sm">Send this message to <strong style="color:#065f46">${selectedFarmerIds.length}</strong> grower(s)?</p>
+                <div style="background:#f9fafb;padding:0.875rem;border-radius:0.75rem;border:1px solid #e5e7eb;font-size:0.875rem;color:#6b7280;text-align:left;word-break:break-word">
+                  "${message.substring(0, 120).replace(/"/g, '&quot;')}${message.length > 120 ? '…' : ''}"
                 </div>
               </div>
             `,
-            confirmButtonText: 'Yes, Execute Broadcast',
-            cancelButtonText: 'Abort',
+            confirmButtonText: 'Yes, send SMS',
+            cancelButtonText: 'Cancel',
         });
 
         if (confirm.isConfirmed) {
             setSending(true);
-            setSentCount(0);
             try {
                 const res = await api.post('/farmers/bulk-sms', {
                     farmerIds: selectedFarmerIds,
@@ -159,14 +143,13 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
                 });
 
                 const { succeeded = 0, total = 0, failed = 0, simulated } = res.data?.data || {};
-                setSentCount(succeeded);
 
                 await showAutoSuccessAlert(
-                    simulated ? 'Broadcast Simulated' : 'Broadcast Queued',
+                    simulated ? 'SMS simulated' : 'SMS sent',
                     `<p style="color:#4b5563;font-size:14px;margin:0">
-                        mNotify ${simulated ? 'simulated' : 'is delivering'} your message to
-                        <strong>${succeeded}</strong> of <strong>${total}</strong> farmer(s).
-                        ${failed > 0 ? `<br/><span style="color:#d97706">${failed} could not be sent (invalid numbers).</span>` : ''}
+                        ${simulated ? 'Simulated delivery' : 'mNotify is delivering'} your message to
+                        <strong>${succeeded}</strong> of <strong>${total}</strong> grower(s).
+                        ${failed > 0 ? `<br/><span style="color:#d97706">${failed} could not be sent.</span>` : ''}
                       </p>`,
                     4000
                 );
@@ -175,11 +158,11 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
                 setMessage('');
                 setSelectedTemplate('');
                 setSelectedFarmerIds(farmers.map((f) => f.id || f._id));
-            } catch (err: any) {
+            } catch (err: unknown) {
                 showValidationAlert(
-                    'Transmission Failed',
+                    'Could not send',
                     err,
-                    'mNotify could not deliver this broadcast. Check numbers and try again.'
+                    'mNotify could not deliver this message. Check numbers and try again.'
                 );
             } finally {
                 setSending(false);
@@ -187,277 +170,293 @@ const BulkSmsModal: React.FC<BulkSmsModalProps> = ({ open, onOpenChange, farmers
         }
     };
 
+    const previewMessage = message
+        .replace(/{farmer_name}/g, filteredFarmers[0]?.name || 'Grower name')
+        .replace(/{agent_name}/g, agent?.name || 'Your agent');
+
+    const renderRecipientList = (compact?: boolean) => (
+        <div className={cn('space-y-2', compact ? '' : 'pb-2')}>
+            {filteredFarmers.map((f) => {
+                const id = f.id || f._id;
+                const isSelected = selectedFarmerIds.includes(id);
+                return (
+                    <button
+                        type="button"
+                        key={id}
+                        onClick={() => handleToggleFarmer(id)}
+                        className={cn(
+                            'w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors',
+                            isSelected
+                                ? 'bg-emerald-50 border-emerald-200'
+                                : 'bg-white border-gray-100 hover:border-gray-200'
+                        )}
+                    >
+                        <div
+                            className={cn(
+                                'h-5 w-5 shrink-0 rounded-md border-2 flex items-center justify-center',
+                                isSelected ? 'bg-[#065f46] border-[#065f46]' : 'border-gray-200 bg-white'
+                            )}
+                        >
+                            {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
+                        </div>
+                        <div className="h-9 w-9 shrink-0 rounded-full bg-[#065f46]/10 flex items-center justify-center text-[#065f46] font-semibold text-sm">
+                            {f.name?.[0] || 'G'}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className={cn('text-sm font-medium truncate', isSelected ? 'text-[#002f37]' : 'text-gray-600')}>
+                                {f.name}
+                            </p>
+                            <p className="text-xs text-gray-400 truncate">{f.contact}</p>
+                        </div>
+                    </button>
+                );
+            })}
+            {filteredFarmers.length === 0 && (
+                <div className="py-12 text-center text-sm text-gray-400">
+                    No growers match your search.
+                </div>
+            )}
+        </div>
+    );
+
+    const renderMessageSection = () => (
+        <div className="space-y-5">
+            <div className="space-y-2">
+                <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Quick templates</Label>
+                <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 snap-x snap-mandatory md:grid md:grid-cols-2 md:overflow-visible lg:grid-cols-4">
+                    {TEMPLATES.map((t) => {
+                        const Icon = t.icon;
+                        const active = selectedTemplate === t.id;
+                        return (
+                            <button
+                                key={t.id}
+                                type="button"
+                                onClick={() => handleApplyTemplate(t.id)}
+                                className={cn(
+                                    'snap-start shrink-0 min-w-[7.5rem] flex flex-col items-start gap-2 p-3 rounded-xl border text-left transition-colors md:min-w-0',
+                                    active
+                                        ? 'bg-[#065f46] border-[#065f46] text-white'
+                                        : 'bg-white border-gray-200 text-[#002f37] hover:border-emerald-300'
+                                )}
+                            >
+                                <Icon className={cn('h-4 w-4', active ? 'text-emerald-200' : 'text-[#065f46]')} />
+                                <span className="text-xs font-semibold leading-tight">{t.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                    <Label htmlFor="bulk-sms-textarea" className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        Your message
+                    </Label>
+                    <Badge variant="outline" className="text-[10px] font-medium shrink-0">
+                        {message.length}/160
+                    </Badge>
+                </div>
+                <Textarea
+                    id="bulk-sms-textarea"
+                    placeholder="Write your SMS here. Use {farmer_name} to personalise each message."
+                    className="min-h-[140px] md:min-h-[180px] rounded-xl border-gray-200 bg-white p-4 text-base resize-none focus:border-[#065f46] focus:ring-[#065f46]/20"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                />
+                <div className="flex flex-wrap gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => insertTag('{farmer_name}')}
+                        className="h-9 rounded-lg text-xs font-medium"
+                    >
+                        + Grower name
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => insertTag('{agent_name}')}
+                        className="h-9 rounded-lg text-xs font-medium"
+                    >
+                        + Agent name
+                    </Button>
+                </div>
+            </div>
+
+            {message.length > 0 && (
+                <div className="rounded-xl bg-[#f4ffee] border border-emerald-100 p-4">
+                    <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wide mb-2">Preview</p>
+                    <p className="text-sm text-gray-700 leading-relaxed">{previewMessage}</p>
+                </div>
+            )}
+        </div>
+    );
+
+    const renderRecipientsHeader = () => (
+        <div className="space-y-3 shrink-0">
+            <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Select growers</Label>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleToggleSelectAll}
+                    className="h-8 px-2 text-xs font-semibold text-[#065f46] hover:bg-emerald-50"
+                >
+                    {selectedFarmerIds.length === farmers.length ? 'Clear all' : 'Select all'}
+                </Button>
+            </div>
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                    placeholder="Search by name or phone…"
+                    className="h-11 pl-10 rounded-xl border-gray-200 bg-white"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+        </div>
+    );
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent hideCloseButton className="agent-modal-mobile w-full max-w-[100vw] overflow-x-hidden md:max-w-6xl md:w-[min(96vw,1152px)] max-md:h-full max-md:max-h-[100dvh] md:h-[85vh] flex flex-col p-0 overflow-hidden border border-white/20 bg-[#FDFCFB]/80 backdrop-blur-3xl max-md:rounded-none md:rounded-2xl shadow-[0_50px_100px_-20px_rgba(0,47,47,0.25)] z-[200] selection:bg-[#7ede56]/30">
-                
-                {/* Modern Header - High Contrast */}
-                <div className="bg-[#002f37] text-white p-4 sm:p-6 md:p-10 relative shrink-0 overflow-hidden">
-                    {/* Visual Flare Elements */}
-                    <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#7ede56]/10 rounded-full -mr-48 -mt-48 blur-3xl opacity-60 animate-pulse" />
-                    <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#7ede56]/5 rounded-full -ml-32 -mb-32 blur-2xl opacity-40" />
-                    
-                    <div className="relative z-10 flex items-center justify-between">
-                        <div className="flex items-center gap-4 md:gap-6">
-                            <div className="h-14 w-14 md:h-16 md:w-16 rounded-none bg-white/10 flex items-center justify-center border border-white/20 shadow-[0_15px_30px_-5px_rgba(0,0,0,0.2)] backdrop-blur-md">
-                                <Zap className="h-7 w-7 md:h-8 md:w-8 text-[#7ede56] fill-[#7ede56]/20 animate-pulse" />
+            <DialogContent
+                hideCloseButton
+                className={agentModalShell(
+                    'md:max-w-5xl md:h-[85vh] md:rounded-2xl border-0 bg-white shadow-2xl z-[200]'
+                )}
+            >
+                {/* Header */}
+                <div className="shrink-0 bg-[#065f46] text-white px-4 py-4 sm:px-6 sm:py-5 relative">
+                    <div className="flex items-start justify-between gap-3 pr-2">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="h-11 w-11 shrink-0 rounded-xl bg-white/15 flex items-center justify-center">
+                                <MessageSquare className="h-5 w-5 text-emerald-200" />
                             </div>
-                            <div>
-                                <div className="flex items-center gap-3 mb-1">
-                                   <Badge variant="outline" className="bg-[#7ede56]/20 text-[#7ede56] border-[#7ede56]/30 px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em]">
-                                      Secure Node
-                                   </Badge>
-                                   <span className="h-1 w-1 rounded-full bg-white/20"></span>
-                                   <span className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em]">Encrypted Relay</span>
-                                </div>
-                                <DialogTitle className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase leading-none">SMS Command Center</DialogTitle>
-                                <DialogDescription className="text-white/40 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.4em] leading-none mt-2">Operational Broadcast Environment</DialogDescription>
+                            <div className="min-w-0">
+                                <DialogTitle className="text-lg sm:text-xl font-bold text-white leading-tight">
+                                    Bulk SMS
+                                </DialogTitle>
+                                <DialogDescription className="text-emerald-100/90 text-xs sm:text-sm mt-0.5">
+                                    Send updates to your registered growers
+                                </DialogDescription>
                             </div>
                         </div>
-                        <button 
-                            onClick={() => onOpenChange(false)} 
-                            className="h-12 w-12 rounded-none bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all active:scale-90 group"
+                        <button
+                            type="button"
+                            onClick={() => onOpenChange(false)}
+                            className="h-10 w-10 shrink-0 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                            aria-label="Close"
                         >
-                            <X className="h-6 w-6 text-white/30 group-hover:text-white transition-colors" />
+                            <X className="h-5 w-5 text-white" />
                         </button>
+                    </div>
+
+                    {/* Summary chips */}
+                    <div className="flex flex-wrap gap-2 mt-4">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white">
+                            <Users className="h-3.5 w-3.5" />
+                            {selectedFarmerIds.length} selected
+                        </span>
+                        {agent?.name && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-emerald-100 max-w-full">
+                                <UserCheck className="h-3.5 w-3.5 shrink-0" />
+                                <span className="truncate">{agent.name}</span>
+                            </span>
+                        )}
                     </div>
                 </div>
 
-                <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-                    
-                    {/* Left Column - Message Composition (Wider) */}
-                    <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 md:border-r border-gray-100 bg-white/40">
-                        
-                        {/* Status Cards */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <motion.div 
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="bg-white rounded-none p-5 border border-gray-100 shadow-sm flex items-center gap-5 group hover:border-[#7ede56]/30 transition-all duration-300"
-                            >
-                                <div className="h-12 w-12 rounded-none bg-[#002f37]/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <Users className="h-6 w-6 text-[#002f37]" />
-                                </div>
-                                <div>
-                                    <p className="text-[9px] font-black text-[#002f37]/30 uppercase tracking-[0.2em] mb-0.5">Selected Farmers</p>
-                                    <div className="flex items-baseline gap-1.5">
-                                        <span className="text-2xl font-black text-[#002f37]">{selectedFarmerIds.length}</span>
-                                        <span className="text-[10px] font-black text-gray-300 uppercase">Recipients</span>
-                                    </div>
-                                </div>
-                            </motion.div>
-                            <motion.div 
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 }}
-                                className="bg-white rounded-none p-5 border border-gray-100 shadow-sm flex items-center gap-5 group hover:border-emerald-300 transition-all duration-300"
-                            >
-                                <div className="h-12 w-12 rounded-none bg-emerald-50 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <ShieldCheck className="h-6 w-6 text-emerald-600" />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-[9px] font-black text-emerald-600/40 uppercase tracking-[0.2em] mb-0.5">Authorised By</p>
-                                    <p className="text-xs font-black text-emerald-800 uppercase tracking-tight truncate">{agent?.name || 'Root Access'}</p>
-                                </div>
-                            </motion.div>
-                        </div>
+                {/* Mobile tabs */}
+                <div className="md:hidden shrink-0 flex border-b border-gray-100 bg-gray-50/80 p-1 gap-1">
+                    <button
+                        type="button"
+                        onClick={() => setMobileTab('message')}
+                        className={cn(
+                            'flex-1 flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition-colors min-h-[44px]',
+                            mobileTab === 'message'
+                                ? 'bg-white text-[#065f46] shadow-sm'
+                                : 'text-gray-500'
+                        )}
+                    >
+                        <MessageSquare className="h-4 w-4" />
+                        Message
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setMobileTab('recipients')}
+                        className={cn(
+                            'flex-1 flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition-colors min-h-[44px]',
+                            mobileTab === 'recipients'
+                                ? 'bg-white text-[#065f46] shadow-sm'
+                                : 'text-gray-500'
+                        )}
+                    >
+                        <Users className="h-4 w-4" />
+                        Growers
+                        <Badge className="h-5 min-w-5 px-1.5 bg-[#065f46] text-white text-[10px]">
+                            {selectedFarmerIds.length}
+                        </Badge>
+                    </button>
+                </div>
 
-                        {/* Templates */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3 pl-1">
-                                <Cpu className="h-4 w-4 text-[#002f37]/20" />
-                                <Label className="text-[10px] font-black uppercase text-[#002f37]/40 tracking-[0.3em] leading-none">Operational Templates</Label>
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                {TEMPLATES.map(t => (
-                                    <button 
-                                        key={t.id} 
-                                        className={`flex flex-col items-start gap-3 p-4 rounded-none transition-all border-2 text-[10px] font-black uppercase tracking-wider relative overflow-hidden group ${selectedTemplate === t.id ? 'bg-[#002f37] border-[#002f37] text-white shadow-xl' : 'bg-white border-gray-100 text-[#002f37] hover:border-[#7ede56]'}`}
-                                        onClick={() => handleApplyTemplate(t.id)}
-                                    >
-                                        <div className={`h-8 w-8 rounded-none flex items-center justify-center transition-all ${selectedTemplate === t.id ? 'bg-white/20' : 'bg-gray-50 group-hover:bg-[#7ede56]/10 group-hover:text-[#065f46]'}`}>
-                                            {t.icon}
-                                        </div>
-                                        <span className="leading-tight">{t.label}</span>
-                                        {selectedTemplate === t.id && (
-                                            <div className="absolute top-2 right-2">
-                                                <CheckCircle2 className="h-3 w-3 text-[#7ede56]" />
-                                            </div>
-                                        )}
-                                    </button>
-                                ))}
-                            </div>
+                {/* Mobile body — one tab at a time */}
+                <div className="md:hidden flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-4">
+                    {mobileTab === 'message' ? (
+                        renderMessageSection()
+                    ) : (
+                        <div className="flex flex-col gap-3 h-full">
+                            {renderRecipientsHeader()}
+                            {renderRecipientList(true)}
                         </div>
+                    )}
+                </div>
 
-                        {/* Compose */}
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between px-1">
-                                <div className="flex items-center gap-3">
-                                    <MessageSquare className="h-4 w-4 text-[#002f37]/20" />
-                                    <Label className="text-[10px] font-black uppercase text-[#002f37]/40 tracking-[0.3em] leading-none">Payload Composition</Label>
-                                </div>
-                                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-50 font-black text-[9px] px-3 py-1 rounded-full uppercase tracking-widest">
-                                   SMS UNIT 1: {message.length}/160
-                                </Badge>
-                            </div>
-                            
-                            <div className="relative">
-                                <Textarea 
-                                    placeholder="Enter operational payload text... Use merge tags for personalisation." 
-                                    className="min-h-[220px] rounded-none border-2 border-gray-100 bg-white/80 p-8 text-base font-bold text-[#002f37] focus:border-[#065f46] focus:ring-0 transition-all placeholder:text-gray-300 shadow-inner resize-none"
-                                    value={message}
-                                    id="bulk-sms-textarea"
-                                    onChange={(e) => setMessage(e.target.value)}
-                                />
-                                
-                                {/* Floating Merge Tools */}
-                                <div className="absolute bottom-6 right-6 flex gap-2">
-                                    <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        onClick={() => insertTag('{farmer_name}')}
-                                        className="h-9 px-4 rounded-xl border-emerald-100 bg-white text-[9px] font-black text-[#065f46] hover:bg-emerald-50 transition-all shadow-sm active:scale-95 uppercase tracking-widest"
-                                    >
-                                        + Farmer
-                                    </Button>
-                                    <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        onClick={() => insertTag('{agent_name}')}
-                                        className="h-9 px-4 rounded-xl border-emerald-100 bg-white text-[9px] font-black text-[#065f46] hover:bg-emerald-50 transition-all shadow-sm active:scale-95 uppercase tracking-widest"
-                                    >
-                                        + Agent
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <AnimatePresence>
-                                {message.length > 0 && (
-                                    <motion.div 
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.95 }}
-                                        className="bg-[#002f37] rounded-none p-6 md:p-8 border border-white/5 relative overflow-hidden group"
-                                    >
-                                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                            <Sparkles className="h-10 w-10 text-[#7ede56]" />
-                                        </div>
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <div className="h-2 w-2 rounded-full bg-[#7ede56] animate-pulse" />
-                                            <span className="text-[10px] font-black text-[#7ede56] uppercase tracking-[0.3em]">Neural Preview</span>
-                                        </div>
-                                        <p className="text-sm md:text-base font-medium text-white/90 leading-relaxed italic pr-12">
-                                            "{message
-                                                .replace(/{farmer_name}/g, filteredFarmers[0]?.name || 'John Farmer')
-                                                .replace(/{agent_name}/g, agent?.name || 'Agent Lync')}"
-                                        </p>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
+                {/* Desktop body — side by side */}
+                <div className="hidden md:flex flex-1 min-h-0 overflow-hidden">
+                    <div className={cn(agentModalBody, 'md:w-[58%] md:border-r border-gray-100 bg-white')}>
+                        {renderMessageSection()}
                     </div>
-
-                    {/* Right Column - Recipient Management (Narrower) */}
-                    <div className="w-full md:w-[380px] bg-gray-50/50 flex flex-col overflow-hidden">
-                        
-                        <div className="p-6 md:p-8 space-y-6 flex-1 flex flex-col min-h-0">
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between px-1">
-                                    <div className="flex items-center gap-3">
-                                        <UserCheck className="h-4 w-4 text-[#002f37]/20" />
-                                        <Label className="text-[10px] font-black uppercase text-[#002f37]/40 tracking-[0.3em] leading-none">Recipient Queue</Label>
-                                    </div>
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        onClick={handleToggleSelectAll}
-                                        className="h-7 px-3 text-[9px] font-black text-[#065f46] uppercase tracking-widest hover:bg-emerald-50 rounded-full"
-                                    >
-                                        {selectedFarmerIds.length === farmers.length ? 'Reset All' : 'Select All'}
-                                    </Button>
-                                </div>
-
-                                <div className="relative group">
-                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300 group-focus-within:text-[#065f46] transition-colors" />
-                                    <Input 
-                                        placeholder="Filter list..." 
-                                        className="h-12 pl-12 pr-4 text-base md:text-xs font-bold rounded-none border-none bg-white shadow-sm focus:ring-4 focus:ring-[#002f37]/5 transition-all text-[#002f37]"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex-1 min-h-0">
-                                <ScrollArea className="h-full pr-4 -mr-4">
-                                    <div className="space-y-2.5 pb-4">
-                                        {filteredFarmers.map((f, idx) => {
-                                            const id = f.id || f._id;
-                                            const isSelected = selectedFarmerIds.includes(id);
-                                            return (
-                                                <motion.div 
-                                                    initial={{ opacity: 0, x: 20 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ delay: idx * 0.02 }}
-                                                    key={id} 
-                                                    className={`flex items-center gap-4 p-4 rounded-none border-2 transition-all cursor-pointer group relative overflow-hidden ${isSelected ? 'bg-white border-[#7ede56] shadow-md' : 'bg-white border-transparent hover:border-gray-200'}`}
-                                                    onClick={() => handleToggleFarmer(id)}
-                                                >
-                                                    <div className="shrink-0 relative z-10">
-                                                        <div className={`h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-[#065f46] border-[#065f46] shadow-lg shadow-emerald-900/20' : 'bg-gray-50 border-gray-100'}`}>
-                                                            {isSelected && <CheckCircle2 className="h-4 w-4 text-white" />}
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div className="h-10 w-10 rounded-full bg-[#002f37]/5 flex items-center justify-center text-[#002f37] font-black text-xs uppercase shadow-inner shrink-0 relative z-10">
-                                                        {f.name?.[0] || 'F'}
-                                                    </div>
-                                                    
-                                                    <div className="flex flex-col min-w-0 relative z-10">
-                                                        <span className={`text-xs font-black truncate capitalize leading-none mb-1 ${isSelected ? 'text-[#002f37]' : 'text-gray-400'}`}>{f.name}</span>
-                                                        <span className="text-[10px] font-bold text-gray-300 font-mono tracking-tighter">{f.contact}</span>
-                                                    </div>
-
-                                                    {isSelected && (
-                                                        <div className="absolute right-0 top-0 bottom-0 w-1 bg-[#7ede56]" />
-                                                    )}
-                                                </motion.div>
-                                            );
-                                        })}
-                                        {filteredFarmers.length === 0 && (
-                                            <div className="py-20 text-center flex flex-col items-center gap-4">
-                                                <div className="h-16 w-16 rounded-none bg-gray-100 flex items-center justify-center text-gray-300 animate-pulse">
-                                                    <Users className="h-8 w-8" />
-                                                </div>
-                                                <span className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">Target Node Not Found</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </ScrollArea>
-                            </div>
-
-                            <div className="pt-6">
-                                <Button 
-                                    className={`w-full h-18 rounded-none font-black uppercase tracking-[0.25em] text-xs transition-all flex items-center justify-center gap-4 active:scale-[0.98] shadow-[0_20px_40px_-10px_rgba(0,47,55,0.3)] border-none ${sending ? 'bg-gray-100 text-gray-400 shadow-none' : 'bg-gradient-to-r from-[#065f46] to-[#044e3a] hover:from-[#044e3a] hover:to-[#065f46] text-white'}`}
-                                    onClick={handleSendBulkSms}
-                                    disabled={sending}
-                                >
-                                    {sending ? (
-                                        <>
-                                            <div className="h-7 w-7 border-[4px] border-emerald-500/20 border-t-emerald-600 rounded-full animate-spin" />
-                                            <span className="animate-pulse">Broadcasting...</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Send className="h-5 w-5" />
-                                            <span>Execute Transmission</span>
-                                            <ArrowRight className="h-4 w-4 opacity-40" />
-                                        </>
-                                    )}
-                                </Button>
+                    <div className="md:w-[42%] flex flex-col min-h-0 bg-gray-50/60">
+                        <div className="flex-1 min-h-0 flex flex-col px-4 sm:px-6 py-4 gap-3 overflow-hidden">
+                            {renderRecipientsHeader()}
+                            <div className="flex-1 min-h-0 overflow-y-auto -mx-1 px-1">
+                                {renderRecipientList()}
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Footer */}
+                <div className={cn(agentModalFooter, 'bg-white border-gray-100')}>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                        className="md:order-1 rounded-xl min-h-[44px] font-semibold"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        type="button"
+                        onClick={handleSendBulkSms}
+                        disabled={sending}
+                        className="md:order-2 rounded-xl min-h-[44px] font-semibold bg-[#065f46] hover:bg-[#054a38] text-white gap-2"
+                    >
+                        {sending ? (
+                            <>
+                                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Sending…
+                            </>
+                        ) : (
+                            <>
+                                <Send className="h-4 w-4" />
+                                Send SMS to {selectedFarmerIds.length} grower{selectedFarmerIds.length === 1 ? '' : 's'}
+                            </>
+                        )}
+                    </Button>
                 </div>
             </DialogContent>
         </Dialog>
