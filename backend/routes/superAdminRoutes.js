@@ -19,6 +19,7 @@ const {
     getGrowerIdCards,
     getFarmerDetails,
     updateFarmerStatus,
+    confirmFarmerRating,
     resolveEscalation,
     getVisits,
     getMedia,
@@ -34,6 +35,12 @@ const {
     getFarmerDeletionRequests,
     reviewFarmerDeletionRequest,
 } = require('../controllers/superAdminController');
+const {
+    getAdminPortfolio,
+    createPortfolioItem,
+    updatePortfolioItem,
+    deletePortfolioItem,
+} = require('../controllers/portfolioController');
 const auth = require('../middleware/auth');
 
 // Super-admin routes are restricted to super_admin only.
@@ -73,6 +80,7 @@ router.get('/farmers', getAllFarmers); // New route for farmers
 router.get('/grower-id-cards', getGrowerIdCards);
 router.get('/farmers/:id', getFarmerDetails); // Get deep details
 router.put('/farmers/:id/status', updateFarmerStatus); // Override status route
+router.put('/farmers/:id/rating', confirmFarmerRating);
 router.get('/farmer-deletion-requests', getFarmerDeletionRequests);
 router.put('/farmer-deletion-requests/:id/review', reviewFarmerDeletionRequest);
 router.get('/visits', getVisits); // Field visits route
@@ -87,6 +95,11 @@ router.get('/blog-authors', getBlogAuthors);
 router.post('/blog-authors', createBlogAuthor);
 router.put('/blog-authors/:id', updateBlogAuthor);
 router.delete('/blog-authors/:id', deleteBlogAuthor);
+
+router.get('/portfolio', getAdminPortfolio);
+router.post('/portfolio', createPortfolioItem);
+router.put('/portfolio/:id', updatePortfolioItem);
+router.delete('/portfolio/:id', deletePortfolioItem);
 
 module.exports = router;
 

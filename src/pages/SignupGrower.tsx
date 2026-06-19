@@ -22,6 +22,7 @@ import {
     getCommunitiesForRegion,
 } from '@/data/ghanaRegions';
 import { persistGrowerSession } from '@/utils/authToken';
+import { GROWER_ROUTES } from '@/utils/growerRoutes';
 import { guardPublicRoleSignup, isPublicRoleSignupEnabled } from '@/utils/signupGate';
 
 const readFileAsDataUrl = (file: File): Promise<string> =>
@@ -206,7 +207,7 @@ const SignupGrower = () => {
                         password: formData.password,
                     });
                     persistGrowerSession(loginRes.data.token, loginRes.data.farmer);
-                    navigate('/dashboard/grower');
+                    navigate(GROWER_ROUTES.dashboard);
                 } catch {
                     navigate('/login');
                 }

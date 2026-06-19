@@ -103,7 +103,7 @@ exports.getPublicGrowerProfile = async (req, res) => {
         }
 
         const farmer = await Farmer.findOne({ id: lookup })
-            .select('-password -idCardFront -idCardBack -ghanaCardNumber -email -contact -imageHash')
+            .select('-password -idCardFront -idCardBack -cocoaCardPhoto -ghanaCardNumber -email -contact -imageHash')
             .populate('agent', 'name agentId contact')
             .lean();
 
@@ -406,7 +406,22 @@ exports.addFarmer = async (req, res) => {
             { onboardingSource: 'agent' }
         );
         const ghanaCardNumber = req.body.ghanaCardNumber?.trim().toUpperCase();
-        const { profilePicture, idCardFront, idCardBack } = req.body;
+        const { profilePicture, idCardFront, idCardBack, cocoaCardPhoto } = req.body;
+
+        const hasCocoaData = Boolean(
+            String(req.body.cocoaFarmerId || '').trim() || cocoaCardPhoto
+        );
+        if (hasCocoaData && !req.body.cocoaCardConsent) {
+            return res.status(400).json({
+                msg: 'Grower consent is required when submitting COCOBOD cocoa card details.',
+            });
+        }
+        const cocoaFarmerId = String(req.body.cocoaFarmerId || '').trim();
+        if (cocoaFarmerId && !/^\d{6,12}$/.test(cocoaFarmerId)) {
+            return res.status(400).json({
+                msg: 'Invalid COCOBOD Farmer ID. Use the numeric ID printed on the cocoa card (e.g. 303220037).',
+            });
+        }
 
         if (ghanaCardNumber) {
             const regex = /^GHA-\d{9}-\d$/;
@@ -463,12 +478,16 @@ exports.addFarmer = async (req, res) => {
         const s3ProfilePicture = profilePicture ? await uploadDataUrl(profilePicture, 'farmers/profiles') : undefined;
         const s3IdCardFront = idCardFront ? await uploadDataUrl(idCardFront, 'farmers/ids') : undefined;
         const s3IdCardBack = idCardBack ? await uploadDataUrl(idCardBack, 'farmers/ids') : undefined;
+        const s3CocoaCardPhoto = cocoaCardPhoto
+            ? await uploadDataUrl(cocoaCardPhoto, 'farmers/cocoa-cards')
+            : undefined;
 
         const newFarmer = new Farmer({
             ...onboardingFields,
             profilePicture: s3ProfilePicture,
             idCardFront: s3IdCardFront,
             idCardBack: s3IdCardBack,
+            cocoaCardPhoto: s3CocoaCardPhoto,
             ghanaCardNumber,
             imageHash: generatedHash,
             flags,
@@ -568,7 +587,7 @@ exports.addFarmer = async (req, res) => {
 exports.getPendingFarmersByRegion = async (req, res) => {
     try {
         const farmers = await Farmer.find(buildPendingQueueQuery(req.agent))
-            .select('-idCardFront -idCardBack -password')
+            .select('-idCardFront -idCardBack -cocoaCardPhoto -password')
             .sort({ createdAt: -1 })
             .lean();
 
@@ -619,6 +638,8 @@ exports.updateFarmer = async (req, res) => {
             'preferredInvestmentType', 'estimatedCapitalNeed', 'hasPreviousInvestment',
             'currentStage', 'stageDetails', 'ghanaCardNumber', 'verificationConfirmed', 'onboardingAgentId',
             'investmentReadinessScore', 'profileCompleteness',
+            'farmStatusFlag', 'currentSeason',
+            'cocoaFarmerId', 'cocoaCardConsentAt', 'cocoaCardVerifiedAt',
         ];
 
         for (const key of allowedScalars) {
@@ -642,19 +663,66 @@ exports.updateFarmer = async (req, res) => {
             farmer.gpsLocation = structuredFields.gpsLocation;
         }
 
-        for (const imageKey of ['profilePicture', 'idCardFront', 'idCardBack']) {
+        const hasCocoaUpdate = Boolean(
+            String(updateData.cocoaFarmerId || '').trim() || updateData.cocoaCardPhoto
+        );
+        if (hasCocoaUpdate && !updateData.cocoaCardConsent && !farmer.cocoaCardConsentAt) {
+            return res.status(400).json({
+                success: false,
+                message: 'Grower consent is required when submitting COCOBOD cocoa card details.',
+            });
+        }
+        const updateCocoaId = updateData.cocoaFarmerId != null
+            ? String(updateData.cocoaFarmerId).trim()
+            : undefined;
+        if (updateCocoaId && !/^\d{6,12}$/.test(updateCocoaId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid COCOBOD Farmer ID. Use the numeric ID printed on the cocoa card.',
+            });
+        }
+
+        for (const imageKey of ['profilePicture', 'idCardFront', 'idCardBack', 'cocoaCardPhoto']) {
             if (updateData[imageKey] !== undefined) {
                 if (typeof updateData[imageKey] === 'string' && updateData[imageKey].startsWith('data:')) {
-                    const folder = imageKey === 'profilePicture' ? 'farmers/profiles' : 'farmers/ids';
+                    const folder = imageKey === 'profilePicture'
+                        ? 'farmers/profiles'
+                        : imageKey === 'cocoaCardPhoto'
+                          ? 'farmers/cocoa-cards'
+                          : 'farmers/ids';
                     farmer[imageKey] = await uploadDataUrl(updateData[imageKey], folder);
                 } else {
-                    farmer[imageKey] = updateData[imageKey];
+                    farmer[imageKey] = updateData[imageKey] || undefined;
                 }
             }
         }
 
+        if (updateData.cocoaCardConsent && hasCocoaUpdate) {
+            farmer.cocoaCardConsentAt = new Date();
+            farmer.cocoaCardVerifiedAt = new Date();
+        } else if (structuredFields.cocoaCardVerifiedAt) {
+            farmer.cocoaCardVerifiedAt = structuredFields.cocoaCardVerifiedAt;
+        }
+        if (structuredFields.cocoaCardConsentAt) {
+            farmer.cocoaCardConsentAt = structuredFields.cocoaCardConsentAt;
+        }
+        if (updateData.cocoaCardPhoto === '' || updateData.cocoaCardPhoto === null) {
+            farmer.cocoaCardPhoto = undefined;
+        }
+        if (updateData.cocoaFarmerId === '' || updateData.cocoaFarmerId === null) {
+            farmer.cocoaFarmerId = undefined;
+        }
+
         farmer.profileCompleteness = structuredFields.profileCompleteness;
         farmer.lastUpdated = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+        if (updateData.proposedRating !== undefined) {
+            const stars = Math.min(5, Math.max(0, Number(updateData.proposedRating) || 0));
+            farmer.proposedRating = stars;
+            farmer.ratingNote = String(updateData.ratingNote || '').trim().slice(0, 280);
+            farmer.ratingStatus = 'pending_admin';
+            farmer.ratingProposedBy = agentId;
+        }
 
         await farmer.save();
 
@@ -698,7 +766,7 @@ exports.updateFarmer = async (req, res) => {
 exports.getFlaggedFarmers = async (req, res) => {
     try {
         const farmers = await Farmer.find({ 'flags.0': { $exists: true } })
-            .select('-password -idCardFront -idCardBack')
+            .select('-password -idCardFront -idCardBack -cocoaCardPhoto')
             .populate('agent', 'name email region')
             .sort({ createdAt: -1 })
             .lean();

@@ -189,6 +189,7 @@ try {
     app.use('/api/agents', require('./routes/agentRoutes'));
     console.log('✓ Agent routes registered');
     app.use('/api/farmers', require('./routes/farmerRoutes'));
+    app.use('/api/grower', require('./routes/growerRoutes'));
     console.log('✓ Farmer routes registered');
     app.use('/api/farms', require('./routes/farmRoutes'));
     console.log('✓ Farm routes registered');
@@ -223,6 +224,8 @@ try {
     console.log('✓ Super admin routes registered');
     app.use('/api/blogs', require('./routes/blogRoutes'));
     console.log('✓ Blog routes registered');
+    app.use('/api/portfolio', require('./routes/portfolioRoutes'));
+    console.log('✓ Portfolio routes registered');
     app.use('/api/resources', require('./routes/resourceRoutes'));
     console.log('✓ Resource routes registered');
     app.use('/api/scheduled-visits', require('./routes/scheduledVisitRoutes'));

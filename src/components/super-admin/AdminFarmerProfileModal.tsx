@@ -24,6 +24,7 @@ import {
     Loader2,
     Calendar,
     Tractor,
+    CreditCard,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { exportFarmerProfilePdf, downloadFarmerProfileJson } from '@/utils/farmerProfileExport';
@@ -87,6 +88,14 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
         if (!raw || typeof raw !== 'object') return {};
         return raw as Record<string, { status?: string; date?: string; notes?: string; activities?: unknown[] }>;
     }, [farmer?.stageDetails]);
+
+    const isCocoaGrower = useMemo(() => {
+        const crops = farmer?.cropList || [];
+        const cropText = String(farmer?.cropsGrown || '').toLowerCase();
+        return crops.some((c: string) => String(c).toLowerCase() === 'cocoa') || cropText.includes('cocoa');
+    }, [farmer?.cropList, farmer?.cropsGrown]);
+
+    const hasCocoaCardOnFile = Boolean(farmer?.cocoaFarmerId || farmer?.cocoaCardPhoto);
 
     const gps = farmer?.gpsLocation || farmer?.farmLocation;
     const lat = gps?.lat;
@@ -237,6 +246,26 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
                                             <DetailField darkMode={darkMode} label="Experience" value={farmer?.yearsOfExperience != null ? `${farmer.yearsOfExperience} years` : undefined} />
                                             <DetailField darkMode={darkMode} label="Land Ownership" value={farmer?.landOwnershipStatus} />
                                             <DetailField darkMode={darkMode} label="Crops" value={(farmer?.cropList || []).filter((c: string) => c && c !== 'Other').join(', ') || farmer?.cropsGrown} />
+                                            {isCocoaGrower && (
+                                                <>
+                                                    <DetailField darkMode={darkMode} label="COCOBOD Farmer ID" value={farmer?.cocoaFarmerId} />
+                                                    <DetailField
+                                                        darkMode={darkMode}
+                                                        label="Cocoa Card Verified"
+                                                        value={
+                                                            farmer?.cocoaCardVerifiedAt
+                                                                ? new Date(farmer.cocoaCardVerifiedAt).toLocaleDateString('en-GB', {
+                                                                      day: '2-digit',
+                                                                      month: 'short',
+                                                                      year: 'numeric',
+                                                                  })
+                                                                : hasCocoaCardOnFile
+                                                                  ? 'Pending'
+                                                                  : 'Not provided'
+                                                        }
+                                                    />
+                                                </>
+                                            )}
                                             <DetailField darkMode={darkMode} label="Livestock" value={farmer?.livestockType} />
                                             <DetailField darkMode={darkMode} label="Investment Interest" value={farmer?.investmentInterest} />
                                             <DetailField darkMode={darkMode} label="System Status" value={farmer?.status} />
@@ -254,10 +283,12 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
                                         </section>
                                     )}
 
-                                    {(farmer?.idCardFront || farmer?.idCardBack) && (
+                                    {(farmer?.idCardFront || farmer?.idCardBack || farmer?.cocoaCardPhoto || farmer?.cocoaFarmerId) && (
                                         <section>
-                                            <h3 className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-3">KYC Documents</h3>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <h3 className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-3">
+                                                KYC Documents
+                                            </h3>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                                 {farmer.idCardFront && (
                                                     <a href={farmer.idCardFront} target="_blank" rel="noreferrer" className="block rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:opacity-90">
                                                         <img src={farmer.idCardFront} alt="ID front" className="w-full h-40 object-cover" />
@@ -270,7 +301,44 @@ const AdminFarmerProfileModal: React.FC<AdminFarmerProfileModalProps> = ({
                                                         <p className="text-xs font-medium p-2 text-center text-gray-500">Ghana Card — Back</p>
                                                     </a>
                                                 )}
+                                                {farmer.cocoaCardPhoto && (
+                                                    <a
+                                                        href={farmer.cocoaCardPhoto}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="block rounded-xl overflow-hidden border border-amber-200 dark:border-amber-900/50 hover:opacity-90"
+                                                    >
+                                                        <img src={farmer.cocoaCardPhoto} alt="COCOBOD cocoa card" className="w-full h-40 object-cover" />
+                                                        <div className="p-2 text-center space-y-1">
+                                                            <p className="text-xs font-medium text-gray-500 flex items-center justify-center gap-1.5">
+                                                                <CreditCard className="w-3.5 h-3.5 text-amber-600" />
+                                                                COCOBOD Cocoa Card
+                                                            </p>
+                                                            {farmer.cocoaFarmerId && (
+                                                                <p className="text-[10px] font-mono text-amber-700 dark:text-amber-400">
+                                                                    ID {farmer.cocoaFarmerId}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </a>
+                                                )}
                                             </div>
+                                            {isCocoaGrower && !farmer?.cocoaCardPhoto && (
+                                                <p className="text-xs text-gray-500 mt-3 flex items-center gap-1.5">
+                                                    <CreditCard className="w-3.5 h-3.5 shrink-0" />
+                                                    No COCOBOD cocoa card photo on file
+                                                    {farmer?.cocoaFarmerId ? ` (Farmer ID: ${farmer.cocoaFarmerId})` : ''}.
+                                                </p>
+                                            )}
+                                        </section>
+                                    )}
+
+                                    {isCocoaGrower && !farmer?.idCardFront && !farmer?.idCardBack && !farmer?.cocoaCardPhoto && !farmer?.cocoaFarmerId && (
+                                        <section>
+                                            <h3 className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-3 flex items-center gap-2">
+                                                <CreditCard className="w-4 h-4 text-amber-600" /> COCOBOD Cocoa Card
+                                            </h3>
+                                            <p className="text-sm text-gray-500">No cocoa card details submitted for this grower.</p>
                                         </section>
                                     )}
                                 </TabsContent>

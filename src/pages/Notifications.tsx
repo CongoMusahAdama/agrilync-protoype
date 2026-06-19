@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useDashboardUserType } from '@/hooks/useDashboardUserType';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import DashboardLayout from '@/components/DashboardLayout';
+import { EndUserPageFrame, type EndUserPageProps } from '@/components/end-user/EndUserPageFrame';
 import {
   Search,
   Filter,
@@ -21,8 +22,8 @@ import {
   Bell
 } from 'lucide-react';
 
-const Notifications = () => {
-  const { userType } = useParams();
+const Notifications: React.FC<EndUserPageProps> = ({ skipLayout = false }) => {
+  const userType = useDashboardUserType();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -161,7 +162,12 @@ const Notifications = () => {
 
 
   return (
-    <DashboardLayout activeSidebarItem="notifications" title="Notifications" description="Manage your updates and alerts">
+    <EndUserPageFrame
+      skipLayout={skipLayout}
+      activeSidebarItem="notifications"
+      title="Notifications"
+      description="Manage your updates and alerts"
+    >
       <div className="w-full p-3 sm:p-4 md:p-6">
         {/* Search and Filter */}
         <div className="mb-6 flex flex-col sm:flex-row gap-4">
@@ -370,7 +376,7 @@ const Notifications = () => {
           )}
         </div>
       </div>
-    </DashboardLayout>
+    </EndUserPageFrame>
   );
 };
 

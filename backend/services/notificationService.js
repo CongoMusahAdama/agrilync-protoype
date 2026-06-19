@@ -45,7 +45,7 @@ async function sendEmail(to, subject, html, text = '') {
 
     try {
         const result = await client.emails.send({
-            from:    process.env.RESEND_FROM_EMAIL || 'AgriLync <notifications@agrilync.com>',
+            from:    process.env.RESEND_FROM_EMAIL || 'Agrilync Nexus <notifications@agrilync.com>',
             to,
             subject,
             html,

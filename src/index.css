@@ -1068,12 +1068,47 @@
   border-width: 2px;
 }
 
-.agent-dashboard-root .no-scrollbar::-webkit-scrollbar {
+.agent-dashboard-root .no-scrollbar::-webkit-scrollbar,
+.grower-dashboard-root .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
-.agent-dashboard-root .no-scrollbar {
+.agent-dashboard-root .no-scrollbar,
+.grower-dashboard-root .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Agent + Grower dashboard shells — Inter typography (matches field agent app) */
+.agent-dashboard-root,
+.grower-dashboard-root {
+  font-family: 'Inter', sans-serif;
+}
+
+.agent-dashboard-root :where(h1, h2, h3, h4, h5, h6),
+.grower-dashboard-root :where(h1, h2, h3, h4, h5, h6) {
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Grower dashboard home — Inter typography hierarchy */
+.grower-dashboard-home {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.grower-dashboard-home :where(h1, h2, h3, h4, h5, h6) {
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.grower-dashboard-home :where(button, [role="button"], a[class*="rounded-full"]) {
+  font-family: 'Inter', sans-serif;
+}
+
+.grower-dashboard-home :where(p, span, li, td, th, label) {
+  font-family: 'Inter', sans-serif;
 }
 
 /* SweetAlert must sit above agent modals (all viewports) */
@@ -1097,7 +1132,9 @@
 /* Agent dashboard — mobile field use (prevent iOS Safari auto-zoom on form focus) */
 @media (max-width: 767px) {
   .agent-dashboard-root,
-  body.agent-dashboard-active {
+  .grower-dashboard-root,
+  body.agent-dashboard-active,
+  body.grower-dashboard-active {
     touch-action: manipulation;
   }
 
@@ -1105,14 +1142,23 @@
   .agent-dashboard-root select,
   .agent-dashboard-root textarea,
   .agent-dashboard-root [role="combobox"],
+  .grower-dashboard-root input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+  .grower-dashboard-root select,
+  .grower-dashboard-root textarea,
+  .grower-dashboard-root [role="combobox"],
   body.agent-dashboard-active input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
   body.agent-dashboard-active select,
   body.agent-dashboard-active textarea,
-  body.agent-dashboard-active [role="combobox"] {
+  body.agent-dashboard-active [role="combobox"],
+  body.grower-dashboard-active input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+  body.grower-dashboard-active select,
+  body.grower-dashboard-active textarea,
+  body.grower-dashboard-active [role="combobox"] {
     font-size: 16px !important;
   }
 
-  .agent-dashboard-root main {
+  .agent-dashboard-root main,
+  .grower-dashboard-root main {
     max-width: 100vw;
     overflow-x: hidden;
   }
@@ -1190,10 +1236,39 @@
     min-width: 640px;
   }
 
-  .agent-dashboard-root .no-scrollbar::-webkit-scrollbar {
+  .agent-dashboard-root .no-scrollbar::-webkit-scrollbar,
+  .grower-dashboard-root .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
-  .agent-dashboard-root .no-scrollbar {
+
+  .grower-mobile-nav-tab {
+    min-height: 40px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .grower-mobile-bottom-nav nav {
+    isolation: isolate;
+  }
+
+  .grower-mobile-bottom-nav button {
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+  }
+
+  .grower-mobile-bottom-nav button:focus {
+    outline: none;
+  }
+
+  .grower-mobile-bottom-nav button:focus-visible {
+    outline: 2px solid #7ede56;
+    outline-offset: 2px;
+  }
+
+  .agent-dashboard-root .no-scrollbar,
+  .grower-dashboard-root .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }

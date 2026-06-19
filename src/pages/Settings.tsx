@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useDashboardUserType } from '@/hooks/useDashboardUserType';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import DashboardLayout from '@/components/DashboardLayout';
+import { EndUserPageFrame, type EndUserPageProps } from '@/components/end-user/EndUserPageFrame';
 import {
   ArrowLeft,
   ArrowRight,
@@ -332,8 +333,8 @@ const regionCoordinates: Record<string, [number, number]> = {
   other: [7.9465, -1.0232]
 };
 
-const Settings = () => {
-  const { userType } = useParams();
+const Settings: React.FC<EndUserPageProps> = ({ skipLayout = false }) => {
+  const userType = useDashboardUserType();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('profile');
   const [language, setLanguage] = useState('english');
@@ -1355,7 +1356,12 @@ const Settings = () => {
   ];
 
   return (
-    <DashboardLayout activeSidebarItem="settings" title="Profile & Settings" description="Manage your profile, security, and preferences">
+    <EndUserPageFrame
+      skipLayout={skipLayout}
+      activeSidebarItem="settings"
+      title="Profile & Settings"
+      description="Manage your profile, security, and preferences"
+    >
 
 
       <div className="flex flex-col gap-6">
@@ -1402,7 +1408,7 @@ const Settings = () => {
           </Card>
         </div>
       </div>
-    </DashboardLayout>
+    </EndUserPageFrame>
   );
 };
 

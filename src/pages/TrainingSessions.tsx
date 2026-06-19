@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useDashboardUserType } from '@/hooks/useDashboardUserType';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import DashboardLayout from '@/components/DashboardLayout';
+import { EndUserPageFrame, type EndUserPageProps } from '@/components/end-user/EndUserPageFrame';
 import {
   ArrowLeft,
   ArrowRight,
@@ -49,8 +50,8 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 
-const TrainingSessions = () => {
-  const { userType } = useParams();
+const TrainingSessions: React.FC<EndUserPageProps> = ({ skipLayout = false }) => {
+  const userType = useDashboardUserType();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -352,7 +353,7 @@ Recommended Action:
 
 
   return (
-    <DashboardLayout activeSidebarItem="training-sessions" title="Training & Advisory">
+    <EndUserPageFrame skipLayout={skipLayout} activeSidebarItem="training-sessions" title="Training & Advisory">
 
       <div className="w-full p-3 sm:p-4 md:p-6 max-w-7xl mx-auto">
         <div className="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -976,7 +977,7 @@ Recommended Action:
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </DashboardLayout >
+    </EndUserPageFrame>
   );
 };
 

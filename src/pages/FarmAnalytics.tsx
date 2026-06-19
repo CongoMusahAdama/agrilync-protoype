@@ -1,12 +1,13 @@
-﻿import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useDashboardUserType } from '@/hooks/useDashboardUserType';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import DashboardLayout from '@/components/DashboardLayout';
+import { EndUserPageFrame, type EndUserPageProps } from '@/components/end-user/EndUserPageFrame';
 import {
   Leaf,
   DollarSign,
@@ -28,8 +29,8 @@ import {
 } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Legend, BarChart, Bar } from 'recharts';
 
-const FarmAnalytics = () => {
-  const { userType } = useParams();
+const FarmAnalytics: React.FC<EndUserPageProps> = ({ skipLayout = false }) => {
+  const userType = useDashboardUserType();
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useDarkMode();
   const sidebarDarkMode = !darkMode;
@@ -190,7 +191,12 @@ const FarmAnalytics = () => {
 
 
   return (
-    <DashboardLayout activeSidebarItem="farm-analytics" title="Farm Analytics" description="Track your farm performance and insights">
+    <EndUserPageFrame
+      skipLayout={skipLayout}
+      activeSidebarItem="farm-analytics"
+      title="Farm Analytics"
+      description="Track your farm performance and insights"
+    >
 
       <div className="w-full p-3 sm:p-4 md:p-6">
         <div className="mb-4 sm:mb-6 md:mb-8">
@@ -616,7 +622,7 @@ const FarmAnalytics = () => {
           </Card>
         </div>
       </div>
-    </DashboardLayout>
+    </EndUserPageFrame>
   );
 };
 

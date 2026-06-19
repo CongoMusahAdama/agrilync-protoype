@@ -3,8 +3,9 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import Preloader from '@/components/ui/Preloader';
 import { isLocalhost } from '@/utils/env';
-import { isEndUserDashboardPath } from '@/utils/dashboardRoutes';
+import { isEndUserDashboardPath, isAgentDashboardPath } from '@/utils/dashboardRoutes';
 import { getGrowerToken, getAccountType } from '@/utils/authToken';
+import { GROWER_ACCOUNT_TYPE, GROWER_ROUTES } from '@/utils/growerRoutes';
 import { SUPERVISOR_PENDING_PATH } from '@/utils/postLoginNavigation';
 
 const PrivateRoute = () => {
@@ -43,6 +44,14 @@ const PrivateRoute = () => {
 
     if (agent && !agent.hasChangedPassword && location.pathname !== '/dashboard/agent/change-password') {
         return <Navigate to="/dashboard/agent/change-password" replace />;
+    }
+
+    if (
+        isAgentDashboardPath(location.pathname) &&
+        getAccountType() === GROWER_ACCOUNT_TYPE &&
+        !!getGrowerToken()
+    ) {
+        return <Navigate to={GROWER_ROUTES.dashboard} replace />;
     }
 
     return <Outlet />;

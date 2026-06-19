@@ -7,6 +7,19 @@ const GROWER_TOKEN_KEY = 'growerToken';
 const GROWER_PROFILE_KEY = 'growerProfile';
 const ACCOUNT_TYPE_KEY = 'accountType';
 
+export interface GrowerLivestockEntry {
+    type?: string;
+    count?: number;
+    otherLabel?: string;
+}
+
+export interface GrowerFarmLocation {
+    lat?: number;
+    lng?: number;
+    measuredAcres?: number;
+    boundary?: number[][];
+}
+
 export interface GrowerProfile {
     id: string;
     lyncId?: string;
@@ -17,7 +30,45 @@ export interface GrowerProfile {
     community?: string;
     contact?: string;
     email?: string;
+    gender?: string;
+    dob?: string;
+    language?: string;
+    otherLanguage?: string;
+    ghanaCardNumber?: string;
+    farmType?: string;
+    farmSize?: number;
+    yearsOfExperience?: number;
+    landOwnershipStatus?: string;
+    cropList?: string[];
+    cropsGrown?: string;
+    cropsGrownOther?: string;
+    livestockType?: string;
+    livestockInventory?: GrowerLivestockEntry[];
+    farmLocation?: GrowerFarmLocation;
+    gpsLocation?: { lat?: number; lng?: number };
     profilePicture?: string;
+    idCardFront?: string;
+    idCardBack?: string;
+    fieldNotes?: string;
+    investmentInterest?: string;
+    preferredInvestmentType?: string;
+    estimatedCapitalNeed?: number;
+    hasPreviousInvestment?: boolean;
+    investmentReadinessScore?: number;
+    trainingModules?: string[];
+    verificationConfirmed?: boolean;
+    onboardingAgentId?: string;
+    onboardingSource?: 'agent' | 'self';
+    currentStage?: string;
+    profileCompleteness?: number;
+    digitalCardNumber?: string | null;
+    digitalCardIssuedAt?: string | null;
+    digitalCardGenerated?: boolean;
+    investmentStatus?: string;
+    investorBio?: string;
+    growerStageNotes?: Record<string, string>;
+    stageDetails?: Record<string, { date?: string; notes?: string; status?: string }>;
+    lastVisit?: string;
 }
 
 export const getAccessToken = () => {

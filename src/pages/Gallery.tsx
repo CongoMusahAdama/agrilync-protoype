@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogTrigger, DialogClose } from '@/components/ui/dialog';
@@ -14,6 +14,13 @@ import { X, MapPin, Calendar, Search, ArrowLeft, ArrowRight, Filter } from 'luci
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import api from '@/utils/api';
+import { resolvePublicAssetUrl } from '@/lib/resolveAssetUrl';
+import {
+  PORTFOLIO_REGIONS,
+  PORTFOLIO_CATEGORIES,
+  type PortfolioItem,
+} from '@/data/portfolioMeta';
 
 // Farm visit data with regions and crops
 const farmVisits = [
@@ -270,40 +277,77 @@ const farmVisits = [
   }
 ];
 
-const regions = [
-  "All Regions",
-  "Western Region",
-  "Ashanti Region",
-  "Eastern Region",
-  "Northern Region",
-  "Bono Ahafo Region",
-  "Asunafo North Ahafo Region",
-  "Ahafo Region",
-  "Volta Region",
-  "Central Region"
-];
-
-const categories = [
-  "All Categories",
-  "Pineapple Plantation",
-  "Palm Nut Farming",
-  "Conference",
-  "Training",
-  "Catfish Farming",
-  "Poultry Farming",
-  "Extension Services",
-  "Community Outreach"
-];
+const regions = [...PORTFOLIO_REGIONS];
+const categories = [...PORTFOLIO_CATEGORIES];
 
 const Gallery = () => {
+  const [apiVisits, setApiVisits] = useState<PortfolioItem[]>([]);
   const [selectedRegion, setSelectedRegion] = useState("All Regions");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
-  const [selectedImage, setSelectedImage] = useState<typeof farmVisits[0] | null>(null);
+  const [selectedImage, setSelectedImage] = useState<PortfolioItem | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0);
 
-  // Reset carousel when filters change
+  useEffect(() => {
+    const loadPortfolio = async () => {
+      try {
+        const res = await api.get<PortfolioItem[]>('/portfolio');
+        const items = Array.isArray(res.data) ? res.data : [];
+        setApiVisits(
+          items.map((item) => ({
+            ...item,
+            image: resolvePublicAssetUrl(item.image),
+          }))
+        );
+      } catch {
+        setApiVisits([]);
+      }
+    };
+    loadPortfolio();
+  }, []);
+
+  const staticVisits = useMemo<PortfolioItem[]>(
+    () =>
+      farmVisits.map((visit) => ({
+        ...visit,
+        image: resolvePublicAssetUrl(visit.image),
+        isStatic: true,
+      })),
+    []
+  );
+
+  const adminVisits = useMemo<PortfolioItem[]>(
+    () => apiVisits.map((visit) => ({ ...visit, isStatic: false })),
+    [apiVisits]
+  );
+
+  /** Display order: fixed hero, then new uploads, then rest of original gallery. */
+  const allVisits: PortfolioItem[] = useMemo(
+    () => [
+      ...(staticVisits[0] ? [staticVisits[0]] : []),
+      ...adminVisits,
+      ...staticVisits.slice(1),
+    ],
+    [staticVisits, adminVisits]
+  );
+
+  const matchesFilters = (visit: PortfolioItem) => {
+    const regionMatch = selectedRegion === 'All Regions' || visit.region === selectedRegion;
+    const categoryMatch = selectedCategory === 'All Categories' || visit.category === selectedCategory;
+    return regionMatch && categoryMatch;
+  };
+
+  const filteredAdminVisits = adminVisits.filter(matchesFilters);
+
+  // Hero — always the original first image; never replaced by uploads or filters
+  const featuredVisit = staticVisits[0] ?? null;
+
+  // Grid: new uploads first (below hero), then the rest of the original gallery
+  const gridVisits = [
+    ...filteredAdminVisits,
+    ...staticVisits.slice(1).filter(matchesFilters),
+  ];
   useEffect(() => {
     setCurrentCarouselIndex(0);
   }, [selectedRegion, selectedCategory]);
@@ -316,39 +360,27 @@ const Gallery = () => {
 
 
   // Filter farm visits based on selected region and category
-  const filteredVisits = farmVisits.filter(visit => {
-    const regionMatch = selectedRegion === "All Regions" || visit.region === selectedRegion;
-    const categoryMatch = selectedCategory === "All Categories" || visit.category === selectedCategory;
-    return regionMatch && categoryMatch;
-  });
-
-  // Split into Featured (1st) and Grid (Rest)
-  const featuredVisit = filteredVisits.length > 0 ? filteredVisits[0] : null;
-  const gridVisits = filteredVisits.length > 1 ? filteredVisits.slice(1) : [];
-
-
-  // Open modal with selected image
-  const openModal = (visit: typeof farmVisits[0]) => {
+  // Reset carousel when filters change
+  const openModal = (visit: PortfolioItem) => {
     setSelectedImage(visit);
-    setCurrentImageIndex(farmVisits.findIndex(v => v.id === visit.id));
+    setCurrentImageIndex(allVisits.findIndex(v => v.id === visit.id));
     setIsModalOpen(true);
   };
 
-  // Navigate to previous/next image in modal
   const navigateImage = (direction: 'prev' | 'next') => {
     if (!selectedImage) return;
 
     let newIndex;
-    const currentListIndex = farmVisits.findIndex(v => v.id === selectedImage.id);
+    const currentListIndex = allVisits.findIndex(v => v.id === selectedImage.id);
 
     if (direction === 'prev') {
-      newIndex = currentListIndex > 0 ? currentListIndex - 1 : farmVisits.length - 1;
+      newIndex = currentListIndex > 0 ? currentListIndex - 1 : allVisits.length - 1;
     } else {
-      newIndex = currentListIndex < farmVisits.length - 1 ? currentListIndex + 1 : 0;
+      newIndex = currentListIndex < allVisits.length - 1 ? currentListIndex + 1 : 0;
     }
 
     setCurrentImageIndex(newIndex);
-    setSelectedImage(farmVisits[newIndex]);
+    setSelectedImage(allVisits[newIndex]);
   };
 
   // Handle keyboard navigation in modal
@@ -445,7 +477,7 @@ const Gallery = () => {
         {/* Gallery Content - CAROUSEL MODE */}
         <section ref={galleryRef} className={`relative transition-all duration-1000 delay-200 ${galleryVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} `}>
 
-          {filteredVisits.length === 0 ? (
+          {featuredVisit === null && gridVisits.length === 0 ? (
             <div className="py-20 text-center bg-white rounded-3xl shadow-sm border border-gray-100">
               <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="w-8 h-8 text-gray-300" />
@@ -594,7 +626,7 @@ const Gallery = () => {
           {/* Top Bar */}
           <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex justify-between items-center z-50 bg-gradient-to-b from-black/60 to-transparent">
             <div className="text-white/80 text-sm font-medium">
-              {currentImageIndex + 1} / {farmVisits.length}
+              {currentImageIndex + 1} / {allVisits.length}
             </div>
             <Button
               onClick={() => setIsModalOpen(false)}

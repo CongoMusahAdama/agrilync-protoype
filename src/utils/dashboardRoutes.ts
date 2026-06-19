@@ -9,3 +9,6 @@ export const isEndUserDashboardPath = (pathname: string): boolean =>
     END_USER_DASHBOARD_PREFIXES.some(
         (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
     );
+
+export const isAgentDashboardPath = (pathname: string): boolean =>
+    pathname === '/dashboard/agent' || pathname.startsWith('/dashboard/agent/');

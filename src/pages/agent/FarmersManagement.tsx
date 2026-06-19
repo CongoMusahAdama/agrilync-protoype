@@ -2,6 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import AgentLayout from './AgentLayout';
+import {
+  GROWER_DIRECTORY_ADD_BTN,
+  GROWER_DIRECTORY_HEAD_CELL,
+  GROWER_DIRECTORY_HEADER,
+  growerDirectoryActionBtn,
+} from '@/constants/growerDirectoryTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import {
@@ -199,7 +205,7 @@ const FarmersManagement: React.FC = () => {
 
               <AddFarmerModal
                 trigger={
-                  <Button className="bg-[#065f46] hover:bg-[#065f46]/90 text-white font-bold h-10 px-6 rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-500/10 whitespace-nowrap border-none">
+                  <Button className={`${GROWER_DIRECTORY_ADD_BTN} rounded-xl h-10`}>
                     <Plus className="h-4 w-4" />
                     <span>Add Grower</span>
                   </Button>
@@ -290,16 +296,16 @@ const FarmersManagement: React.FC = () => {
           {/* Desktop table */}
           <div className="hidden md:block agent-table-scroll">
             <Table>
-              <TableHeader className="bg-[#065f46]">
+              <TableHeader className={GROWER_DIRECTORY_HEADER}>
                 <TableRow className="border-none hover:bg-transparent">
-                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Farmer</TableHead>
-                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Region</TableHead>
-                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Community</TableHead>
-                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Farm Type</TableHead>
-                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Status</TableHead>
-                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Investment Status</TableHead>
-                  <TableHead className="text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Last Updated</TableHead>
-                  <TableHead className="text-right text-white font-black text-[10px] uppercase tracking-widest py-4 px-6">Actions</TableHead>
+                  <TableHead className={GROWER_DIRECTORY_HEAD_CELL}>Farmer</TableHead>
+                  <TableHead className={GROWER_DIRECTORY_HEAD_CELL}>Region</TableHead>
+                  <TableHead className={GROWER_DIRECTORY_HEAD_CELL}>Community</TableHead>
+                  <TableHead className={GROWER_DIRECTORY_HEAD_CELL}>Farm Type</TableHead>
+                  <TableHead className={GROWER_DIRECTORY_HEAD_CELL}>Status</TableHead>
+                  <TableHead className={GROWER_DIRECTORY_HEAD_CELL}>Investment Status</TableHead>
+                  <TableHead className={GROWER_DIRECTORY_HEAD_CELL}>Last Updated</TableHead>
+                  <TableHead className={`${GROWER_DIRECTORY_HEAD_CELL} text-right`}>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -349,7 +355,7 @@ const FarmersManagement: React.FC = () => {
                             setSelectedFarmer(farmer);
                             setUploadReportModalOpen(true);
                           }}
-                          className={`h-8 px-3 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}
+                          className={growerDirectoryActionBtn(darkMode)}
                         >
                           <Plus className="w-3.5 h-3.5" />
                           <span className="text-[10px] font-black uppercase tracking-widest">Field Report</span>
@@ -358,7 +364,7 @@ const FarmersManagement: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleViewFarmer(farmer)}
-                          className={`h-8 px-3 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
+                          className={growerDirectoryActionBtn(darkMode, true)}
                         >
                           <Eye className="w-3.5 h-3.5" />
                           <span className="text-[10px] font-black uppercase tracking-widest">View</span>
@@ -367,7 +373,7 @@ const FarmersManagement: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEditFarmer(farmer)}
-                          className={`h-8 px-3 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}`}
+                          className={growerDirectoryActionBtn(darkMode)}
                         >
                           <Edit className="w-3.5 h-3.5" />
                           <span className="text-[10px] font-black uppercase tracking-widest">Edit</span>

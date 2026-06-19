@@ -3,9 +3,9 @@ import { isLocalhost } from '@/utils/env';
 import { WHATSAPP_COMMUNITY_URL } from '@/lib/communityLinks';
 
 /**
- * Public role signup (Solo Farmer, Lync Grower, Lync Investor) is enabled on localhost
+ * Public Lync Investor signup is enabled on localhost
  * and when VITE_ENABLE_PUBLIC_SIGNUP=true is set at build time (e.g. staging).
- * Production .com / Netlify builds stay "Under Development" unless that flag is set.
+ * Lync Growers and Solo Farmers sign up in the mobile app only.
  */
 export const isPublicRoleSignupEnabled = (): boolean => {
     if (isLocalhost()) return true;
@@ -22,10 +22,10 @@ export const showSignupUnderDevelopment = async () => {
         : '';
 
     await Swal.fire({
-        title: 'Signup Under Development',
-        html: `🌾 Thank you for your interest in AgriLync!<br><br>
-            Registration for farmers, growers, and investors is being finalized and will open soon on our live site.<br><br>
-            <i>Field agents and admins can still sign in.</i>
+        title: 'Investor signup under development',
+        html: `Thank you for your interest in AgriLync.<br><br>
+            Lync Investor registration on the web is being finalized and will open soon on our live site.<br><br>
+            <i>Lync Growers and Solo Farmers sign up in the mobile app. Field agents and admins can sign in on the web.</i>
             ${whatsappBlock}`,
         icon: 'info',
         confirmButtonColor: '#7ede56',
@@ -33,7 +33,7 @@ export const showSignupUnderDevelopment = async () => {
     });
 };
 
-/** Returns true when signup may proceed; otherwise shows the under-development message. */
+/** Returns true when investor signup may proceed; otherwise shows the under-development message. */
 export const guardPublicRoleSignup = async (): Promise<boolean> => {
     if (isPublicRoleSignupEnabled()) return true;
     await showSignupUnderDevelopment();

@@ -1,20 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Eye, EyeOff, MessageCircle, Construction, Star, Quote, ShieldCheck } from 'lucide-react';
-import Navbar from '@/components/Navbar';
+import { ArrowLeft, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import api from '@/utils/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import Swal from 'sweetalert2';
 import RegionSelectionModal from '@/components/auth/RegionSelectionModal';
 import { getRegionKey } from '@/data/ghanaRegions';
-import { persistGrowerSession } from '@/utils/authToken';
 import { getStaffDashboardPath } from '@/utils/postLoginNavigation';
+import { FARMER_APP_SIGNUP_PATH } from '@/constants/platformAccess';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -26,17 +23,9 @@ const Login = () => {
     rememberMe: false
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [imagesLoaded, setImagesLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
-  
-  // Regional verification states
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
   const [pendingSession, setPendingSession] = useState<{ token: string; refreshToken?: string; agent: any } | null>(null);
-
-  useEffect(() => {
-    // Trigger animations after component mounts
-    setImagesLoaded(true);
-  }, []);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({
@@ -50,10 +39,10 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Step 1: Verify Credentials only (we don't pass region here anymore)
-      const res = await api.post('/auth/login', { 
-        email: formData.email, 
-        password: formData.password 
+      // Staff login (agent / super-admin). Investor web auth is not implemented yet.
+      const res = await api.post('/auth/login', {
+        email: formData.email,
+        password: formData.password,
       });
       
       const { token, refreshToken, agent } = res.data;
@@ -70,28 +59,26 @@ const Login = () => {
         toast.info('Credentials Verified. Please confirm your region.');
       }
     } catch (error: any) {
-      const status = error.response?.status;
-      if (status === 400 || status === 403) {
+      console.error('Login error:', error);
+
+      if (error.response?.status === 400) {
         try {
-          const growerRes = await api.post('/farmers/auth/login', {
+          await api.post('/farmers/auth/login', {
             email: formData.email,
             password: formData.password,
           });
-          const { token, farmer } = growerRes.data;
-          persistGrowerSession(token, farmer);
-          if (farmer.status === 'pending') {
-            toast.success(`Welcome ${farmer.name.split(' ')[0]}! Your profile is pending field agent verification.`);
-          } else {
-            toast.success(`Welcome back, ${farmer.name.split(' ')[0]}!`);
-          }
-          navigate('/dashboard/grower');
+          toast.info('Grower and Solo Farmer accounts use the AgriLync mobile app.', {
+            action: {
+              label: 'Get the app',
+              onClick: () => navigate(FARMER_APP_SIGNUP_PATH),
+            },
+          });
           return;
-        } catch (growerErr: any) {
-          console.error('Grower login error:', growerErr);
+        } catch {
+          // Not a grower account — fall through to generic error
         }
       }
 
-      console.error('Login error:', error);
       const data = error.response?.data;
       const msg =
         (typeof data === 'object' && data?.msg) ||
@@ -205,7 +192,7 @@ const Login = () => {
           <div className="space-y-2">
             <h2 className="text-4xl font-extrabold text-[#002f37]">Welcome back!</h2>
             <p className="text-gray-500 font-medium">
-              Your agricultural journey provides you with the building blocks necessary to create true success.
+              Sign in as a Lync Investor or platform administrator. Lync Growers and Solo Farmers use the mobile app.
             </p>
           </div>
 
@@ -273,11 +260,23 @@ const Login = () => {
             >
               {loading ? 'Signing In...' : 'Sign In'}
             </Button>
+
+            {import.meta.env.DEV && (
+              <p className="text-center text-xs text-gray-400">
+                Grower dashboard preview remains available locally for development only.
+              </p>
+            )}
           </form>
 
           <div className="text-center pt-4 space-y-4">
             <p className="text-gray-600">
-              Don't have an account?{' '}
+              Lync Grower or Solo Farmer?{' '}
+              <Link to={FARMER_APP_SIGNUP_PATH} className="text-[#002f37] font-bold hover:underline">
+                Get the mobile app
+              </Link>
+            </p>
+            <p className="text-gray-600">
+              Don&apos;t have an account?{' '}
               <Link to="/signup" className="text-[#002f37] font-bold hover:underline">
                 Create free account
               </Link>

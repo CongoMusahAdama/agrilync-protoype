@@ -1,5 +1,6 @@
-﻿import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useDashboardUserType } from '@/hooks/useDashboardUserType';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -9,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import DashboardLayout from '@/components/DashboardLayout';
+import { EndUserPageFrame, type EndUserPageProps } from '@/components/end-user/EndUserPageFrame';
 import {
   Users,
   Search,
@@ -37,8 +38,8 @@ import {
   UserCheck
 } from 'lucide-react';
 
-const InvestorMatches = () => {
-  const { userType } = useParams();
+const InvestorMatches: React.FC<EndUserPageProps> = ({ skipLayout = false }) => {
+  const userType = useDashboardUserType();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
@@ -445,7 +446,12 @@ const InvestorMatches = () => {
 
 
   return (
-    <DashboardLayout activeSidebarItem="investor-matches" title="Investor Matches" description="Find and manage your financial partners">
+    <EndUserPageFrame
+      skipLayout={skipLayout}
+      activeSidebarItem="investor-matches"
+      title="Investor Matches"
+      description="Find and manage your financial partners"
+    >
 
       <div className="w-full p-3 sm:p-4 md:p-6">
         {/* Investor Risk Notice */}
@@ -1873,7 +1879,7 @@ const InvestorMatches = () => {
           </>
         )}
       </div>
-    </DashboardLayout >
+    </EndUserPageFrame>
   );
 };
 

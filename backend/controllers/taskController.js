@@ -66,7 +66,7 @@ exports.getTasks = async (req, res) => {
             smsBody: staffSms(`Reminder: task "${task.title}" is due on ${dueLabel}. Location: ${task.location || 'Field site'}.`),
             type: 'alert',
             priority: task.priority === 'high' ? 'high' : 'medium',
-            senderName: 'AgriLync',
+            senderName: 'Agrilync Nexus',
           });
 
           // Mark as sent

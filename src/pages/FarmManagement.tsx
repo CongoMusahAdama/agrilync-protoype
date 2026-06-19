@@ -1,5 +1,6 @@
-﻿import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useDashboardUserType } from '@/hooks/useDashboardUserType';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import DashboardLayout from '@/components/DashboardLayout';
+import { EndUserPageFrame, type EndUserPageProps } from '@/components/end-user/EndUserPageFrame';
 import {
   ArrowLeft,
   ArrowRight,
@@ -43,11 +44,11 @@ import {
   Menu
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { getDashboardNavRoute } from '@/utils/dashboardNavigation';
 
-const FarmManagement = () => {
+const FarmManagement: React.FC<EndUserPageProps> = ({ skipLayout = false }) => {
   const { darkMode } = useDarkMode();
-  const { userType } = useParams();
+  const userType = useDashboardUserType();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [farmStage, setFarmStage] = useState<string>('planning'); // Global current stage
@@ -170,18 +171,8 @@ const FarmManagement = () => {
     if (isMobile) {
       // Mobile sidebar state is managed by DashboardLayout
     }
-    const routes: { [key: string]: string } = {
-      'dashboard': `/dashboard/${userType}`,
-      'settings': `/dashboard/${userType}/settings`,
-      'farm-analytics': `/dashboard/${userType}/farm-analytics`,
-      'investor-matches': `/dashboard/${userType}/investor-matches`,
-      'training-sessions': `/dashboard/${userType}/training-sessions`,
-      'farm-management': `/dashboard/${userType}/farm-management`,
-      'notifications': `/dashboard/${userType}/notifications`
-    };
-    if (routes[item]) {
-      navigate(routes[item]);
-    }
+    const route = userType ? getDashboardNavRoute(userType, item) : null;
+    if (route) navigate(route);
   };
 
   const handleCreateProject = () => {
@@ -383,7 +374,8 @@ const FarmManagement = () => {
 
 
   return (
-    <DashboardLayout
+    <EndUserPageFrame
+      skipLayout={skipLayout}
       activeSidebarItem="farm-management"
       title="Farm Management"
       subtitle="Manage your crops and livestock"
@@ -1096,7 +1088,7 @@ const FarmManagement = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </DashboardLayout>
+    </EndUserPageFrame>
   );
 };
 

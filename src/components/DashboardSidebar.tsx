@@ -9,7 +9,6 @@ import {
     ChevronLeft,
     ChevronRight,
     Sprout,
-    Handshake,
     AlertTriangle,
     Briefcase,
     Activity,
@@ -21,8 +20,13 @@ import {
     GraduationCap,
     Scale,
     CloudOff,
+    UserRound,
+    ClipboardList,
+    Wheat,
+    HelpCircle,
 } from 'lucide-react';
 import SidebarProfileCard from './SidebarProfileCard';
+import { growerNavIconClass, growerNavItemClass, GROWER_NAV_SECTION_LABEL } from '@/constants/growerTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { getDashboardNavRoute } from '@/utils/dashboardNavigation';
 import {
@@ -153,20 +157,60 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         },
     ];
 
+    const growerNavSections: NavSection[] = [
+        {
+            section: 'Overview',
+            items: [{ id: 'dashboard', label: 'Home', icon: Home }],
+        },
+        {
+            section: 'My Farm',
+            items: [
+                { id: 'farm-profile', label: 'My Farm Profile', icon: UserRound },
+                { id: 'project-funding', label: 'Project & Funding', icon: Briefcase },
+            ],
+        },
+        {
+            section: 'Growth',
+            items: [
+                { id: 'training', label: 'Training', icon: GraduationCap },
+                { id: 'farm-visits', label: 'Farm Visits & Reports', icon: ClipboardList },
+                { id: 'yield-harvest', label: 'Yield & Harvest', icon: Wheat },
+            ],
+        },
+        {
+            section: 'Account',
+            items: [
+                { id: 'help', label: 'Help & Support', icon: HelpCircle },
+                { id: 'settings', label: 'Settings', icon: Settings },
+            ],
+        },
+    ];
+
+    const isGrowerView = userType === 'grower';
+
     const navSections: NavSection[] = userType === 'agent'
         ? agentNavSections
         : userType === 'super-admin'
             ? superAdminNavSections
-            : agentNavSections;
+            : userType === 'grower'
+              ? growerNavSections
+              : agentNavSections;
 
     return (
-        <div className="flex flex-col h-full overflow-hidden shadow-2xl relative" style={{ backgroundColor: '#002f37' }}>
+        <div
+            className="flex flex-col h-full overflow-hidden shadow-2xl relative"
+            style={{ backgroundColor: isGrowerView ? '#7ede56' : '#002f37' }}
+        >
             
             {/* Collapse Toggle Button - Enhanced Premium Style */}
             {!isMobile && (
                 <button
                     onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                    className="absolute -right-4 top-14 z-50 h-8 w-8 rounded-full bg-white border border-emerald-500/10 shadow-[0_8px_30px_rgb(0,0,0,0.2)] flex items-center justify-center text-[#002f37] hover:bg-[#7ede56] hover:text-[#002f37] hover:scale-125 transition-all duration-300 ring-4 ring-transparent hover:ring-[#7ede56]/20 group active:scale-95"
+                    className={`absolute -right-4 top-14 z-50 h-8 w-8 rounded-full bg-white border shadow-[0_8px_30px_rgb(0,0,0,0.2)] flex items-center justify-center hover:scale-125 transition-all duration-300 ring-4 ring-transparent active:scale-95 ${
+                        isGrowerView
+                            ? 'border-[#002f37]/15 text-[#002f37] hover:bg-[#002f37] hover:text-white hover:ring-[#002f37]/20'
+                            : 'border-emerald-500/10 text-[#002f37] hover:bg-[#7ede56] hover:text-[#002f37] hover:ring-[#7ede56]/20'
+                    } group`}
                 >
                     {sidebarCollapsed ? (
                         <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -193,13 +237,17 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                         {/* Section Label */}
                         {(!sidebarCollapsed || isMobile) && (
                             <div className={`px-2 ${sectionIdx === 0 ? 'pt-3' : 'pt-4'} pb-1.5`}>
-                                <p className="text-[9px] font-bold text-white/25 uppercase tracking-[0.22em]">
+                                <p
+                                    className={`text-[9px] font-bold uppercase tracking-[0.22em] ${
+                                        isGrowerView ? GROWER_NAV_SECTION_LABEL : 'text-white/25'
+                                    }`}
+                                >
                                     {section.section}
                                 </p>
                             </div>
                         )}
                         {sidebarCollapsed && !isMobile && sectionIdx > 0 && (
-                            <div className="mx-3 my-2 border-t border-white/10" />
+                            <div className={`mx-3 my-2 border-t ${isGrowerView ? 'border-white/25' : 'border-white/10'}`} />
                         )}
                         {/* Items */}
                         <div className="space-y-0.5">
@@ -208,19 +256,31 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                                 return (
                                     <div
                                         key={item.id}
-                                        className={`flex items-center gap-3.5 px-4 py-[13px] rounded-xl cursor-pointer transition-all duration-200 group relative ${isActive
-                                            ? 'bg-white text-[#065f46] shadow-lg shadow-black/25'
-                                            : 'text-white/65 hover:text-white hover:bg-white/[0.08]'
+                                        className={`flex items-center gap-3.5 px-4 py-[13px] rounded-xl cursor-pointer transition-all duration-200 group relative ${
+                                            isGrowerView
+                                                ? growerNavItemClass(isActive)
+                                                : isActive
+                                                  ? 'bg-white text-[#065f46] shadow-lg shadow-black/25'
+                                                  : 'text-white/65 hover:text-white hover:bg-white/[0.08]'
                                         }`}
                                         onClick={() => handleNavigation(item.id)}
                                     >
                                         {/* Active left bar */}
-                                        {isActive && (
+                                        {isActive && isGrowerView && (
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-white rounded-r-full" />
+                                        )}
+                                        {isActive && !isGrowerView && (
                                             <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#7ede56] rounded-r-full" />
                                         )}
 
                                         <item.icon
-                                            className={`h-[18px] w-[18px] shrink-0 transition-all duration-200 ${isActive ? 'text-[#065f46]' : 'text-white/50 group-hover:text-white'}`}
+                                            className={`h-[18px] w-[18px] shrink-0 transition-all duration-200 ${
+                                                isGrowerView
+                                                    ? growerNavIconClass(isActive)
+                                                    : isActive
+                                                      ? 'text-[#065f46]'
+                                                      : 'text-white/50 group-hover:text-white'
+                                            }`}
                                         />
 
                                         {(!sidebarCollapsed || isMobile) && (
@@ -233,7 +293,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 
                                         {/* Collapsed active dot */}
                                         {isActive && sidebarCollapsed && !isMobile && (
-                                            <div className="absolute right-2 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-[#7ede56]" />
+                                            <div className={`absolute right-2 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full ${isGrowerView ? 'bg-[#002f37]' : 'bg-[#7ede56]'}`} />
                                         )}
                                     </div>
                                 );
@@ -244,13 +304,23 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             </nav>
 
             {/* Footer: Sign Out */}
-            <div className="p-4 border-t border-white/10">
+            <div className={`p-4 border-t ${isGrowerView ? 'border-white/25' : 'border-white/10'}`}>
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
-                        <div className={`flex items-center gap-3.5 px-4 py-3 rounded-xl cursor-pointer text-white/40 hover:text-white hover:bg-red-500/10 transition-all group`}>
-                            <LogOut className="h-[18px] w-[18px] shrink-0 group-hover:translate-x-0.5 transition-transform text-white/40 group-hover:text-red-400" />
+                        <div className={`flex items-center gap-3.5 px-4 py-3 rounded-xl cursor-pointer transition-all group ${
+                            isGrowerView
+                                ? 'text-white/75 hover:text-white hover:bg-white/15'
+                                : 'text-white/40 hover:text-white hover:bg-red-500/10'
+                        }`}>
+                            <LogOut className={`h-[18px] w-[18px] shrink-0 group-hover:translate-x-0.5 transition-transform ${
+                                isGrowerView
+                                    ? 'text-white/75 group-hover:text-white'
+                                    : 'text-white/40 group-hover:text-red-400'
+                            }`} />
                             {(!sidebarCollapsed || isMobile) && (
-                                <span className="text-[13.5px] font-medium group-hover:text-red-400 transition-colors">
+                                <span className={`text-[13.5px] font-medium transition-colors ${
+                                    isGrowerView ? 'group-hover:text-white' : 'group-hover:text-red-400'
+                                }`}>
                                     Sign Out
                                 </span>
                             )}

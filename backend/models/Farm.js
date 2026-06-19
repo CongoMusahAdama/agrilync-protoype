@@ -11,6 +11,11 @@ const farmSchema = new mongoose.Schema({
     },
     measuredAcres: { type: Number },
     crop: { type: String, required: true },
+    farmCategory: {
+        type: String,
+        enum: ['crop', 'livestock'],
+        default: 'crop',
+    },
     status: {
         type: String,
         enum: ['verified', 'scheduled', 'needs-attention'],
@@ -31,6 +36,14 @@ const farmSchema = new mongoose.Schema({
                 activity: String,
                 description: String,
                 resources: String,
+                inputsUsed: String,
+                cost: { type: Number },
+                confirmationStatus: {
+                    type: String,
+                    enum: ['pending', 'yes', 'not_yet'],
+                    default: 'pending',
+                },
+                confirmedAt: { type: Date },
                 media: [{
                     type: { type: String, enum: ['image', 'video'] },
                     url: String,

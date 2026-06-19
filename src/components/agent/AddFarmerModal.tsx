@@ -19,7 +19,7 @@ import {
     User, Sprout, FileText, X, MapPin, Camera,
     ChevronRight, ChevronLeft, UserCheck, Loader2,
     Leaf, CheckCircle2, Edit, Coins, ShieldCheck, Activity,
-    Globe, Mail, Layers, Briefcase as FarmIcon
+    Globe, Mail, Layers, Briefcase as FarmIcon, CreditCard
 } from 'lucide-react';
 import { GHANA_REGIONS, GHANA_LANGUAGES, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
 import { GHANA_CROPS, GHANA_LIVESTOCK, type LivestockEntry } from '@/data/ghanaCrops';
@@ -116,6 +116,11 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
     const [livestockInventory, setLivestockInventory] = useState<LivestockEntry[]>([]);
     const [cropDialogOpen, setCropDialogOpen] = useState(false);
     const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+    const [cocoaFarmerId, setCocoaFarmerId] = useState('');
+    const [cocoaCardPhoto, setCocoaCardPhoto] = useState('');
+    const [cocoaCardConsent, setCocoaCardConsent] = useState(false);
+
+    const isCocoaGrower = selectedCrops.some((crop) => crop.toLowerCase() === 'cocoa');
 
     const toggleModule = (id: string) => {
         if (!isEditable) return;
@@ -188,6 +193,9 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         setOcrRawText('');
         setOcrErrors([]);
         setOcrMismatch([]);
+        setCocoaFarmerId('');
+        setCocoaCardPhoto('');
+        setCocoaCardConsent(false);
     }, [buildEmptyForm]);
 
     const loadFarmerForEdit = React.useCallback((editFarmer: NonNullable<typeof farmer>) => {
@@ -226,6 +234,9 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         );
         setCropsGrownOther(editFarmer.cropsGrownOther || '');
         setLivestockInventory(editFarmer.livestockInventory?.length ? editFarmer.livestockInventory : []);
+        setCocoaFarmerId(editFarmer.cocoaFarmerId || '');
+        setCocoaCardPhoto(editFarmer.cocoaCardPhoto || '');
+        setCocoaCardConsent(Boolean(editFarmer.cocoaCardConsentAt));
         if (editFarmer.farmLocation?.lat != null) {
             setFarmLatitude(editFarmer.farmLocation.lat);
             setFarmLongitude(editFarmer.farmLocation.lng);
@@ -440,7 +451,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
         });
     };
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'front' | 'back' | 'profile') => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'front' | 'back' | 'profile' | 'cocoaCard') => {
         const file = e.target.files?.[0];
         if (!file) return;
         e.target.value = '';
@@ -467,6 +478,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                     void processOCR(compressed);
                 }
                 else if (type === 'back') setIdCardBack(compressed);
+                else if (type === 'cocoaCard') setCocoaCardPhoto(compressed);
             } catch { 
                 showValidationAlert('Processing Error', 'Failed to optimize image for upload.');
             }
@@ -645,6 +657,25 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
             return;
         }
 
+        const trimmedCocoaId = cocoaFarmerId.trim();
+        const hasCocoaData = Boolean(trimmedCocoaId || cocoaCardPhoto);
+        if (isCocoaGrower && hasCocoaData) {
+            if (!cocoaCardConsent) {
+                showValidationAlert(
+                    'Consent Required',
+                    'Please confirm grower consent before saving COCOBOD cocoa card details.'
+                );
+                return;
+            }
+            if (trimmedCocoaId && !/^\d{6,12}$/.test(trimmedCocoaId)) {
+                showValidationAlert(
+                    'Invalid COCOBOD ID',
+                    'Farmer ID should be the numeric ID printed on the cocoa card (e.g. 303220037).'
+                );
+                return;
+            }
+        }
+
         let tempPassword = formData.password;
         if (!isEditMode && !tempPassword) {
             tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
@@ -690,6 +721,13 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                 lng: gpsLocation.lng,
                 measuredAcres: Number(formData.farmSize) || measuredArea || 0,
             } : undefined,
+            ...(isCocoaGrower || (isEditMode && (trimmedCocoaId || cocoaCardPhoto || farmer?.cocoaFarmerId || farmer?.cocoaCardPhoto))
+                ? {
+                      cocoaFarmerId: trimmedCocoaId,
+                      cocoaCardPhoto: cocoaCardPhoto || '',
+                      cocoaCardConsent: hasCocoaData ? cocoaCardConsent : undefined,
+                  }
+                : {}),
         };
         if (isEditMode) delete payload.password;
 
@@ -1183,7 +1221,7 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                             step={4}
                                             icon={FileText}
                                             title="Documents & finish"
-                                            description="Upload Ghana Card photos, then complete onboarding."
+                                            description="Upload Ghana Card photos. Cocoa growers may optionally add a COCOBOD card."
                                         />
                                         <OnboardingFormCard className="space-y-6">
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
@@ -1220,6 +1258,94 @@ const AddFarmerModal: React.FC<AddFarmerModalProps> = ({ trigger, open, onOpenCh
                                                         </div>
                                                     </div>
                                                 </div>
+
+                                                {isCocoaGrower && (
+                                                    <div className="space-y-5 pt-2 border-t border-dashed border-amber-200/80">
+                                                        <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50/80 border border-amber-100">
+                                                            <div className="h-10 w-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+                                                                <CreditCard className="h-5 w-5" />
+                                                            </div>
+                                                            <div className="min-w-0 space-y-1">
+                                                                <p className="text-sm font-semibold text-[#002f37]">
+                                                                    COCOBOD Cocoa Card <span className="text-gray-400 font-normal">(optional)</span>
+                                                                </p>
+                                                                <p className="text-xs text-gray-600 leading-relaxed">
+                                                                    If this grower has a Ghana Cocoa Board farmer card, you may upload a photo
+                                                                    or enter their COCOBOD Farmer ID. The physical card remains property of COCOBOD.
+                                                                    This is used for AgriLync verification only — not shared with investors.
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
+                                                            <div className="space-y-3">
+                                                                <OnboardingFieldLabel hint="Numeric ID on the card, e.g. 303220037">
+                                                                    COCOBOD Farmer ID
+                                                                </OnboardingFieldLabel>
+                                                                <Input
+                                                                    type="text"
+                                                                    inputMode="numeric"
+                                                                    placeholder="303220037"
+                                                                    className={ONBOARDING_INPUT}
+                                                                    value={cocoaFarmerId}
+                                                                    onChange={(e) => setCocoaFarmerId(e.target.value.replace(/\D/g, ''))}
+                                                                    disabled={!isEditable}
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-3">
+                                                                <OnboardingFieldLabel>Cocoa card photo</OnboardingFieldLabel>
+                                                                <div className="relative group rounded-xl overflow-hidden bg-gray-50 border-2 border-dashed border-amber-200 h-[200px] sm:h-[220px] flex flex-col items-center justify-center transition-all hover:border-amber-400">
+                                                                    {cocoaCardPhoto
+                                                                        ? <img src={cocoaCardPhoto} alt="COCOBOD Cocoa Card" className="w-full h-full object-cover" />
+                                                                        : <div className="flex flex-col items-center gap-2 text-gray-300 group-hover:text-amber-600 transition-colors">
+                                                                            <Camera className="h-10 w-10" />
+                                                                            <span className="text-[9px] font-black uppercase">Upload or Snap</span>
+                                                                          </div>
+                                                                    }
+                                                                    <label className="absolute inset-0 cursor-pointer opacity-0 group-hover:opacity-100 bg-[#002f37]/80 flex flex-col items-center justify-center text-white gap-2 transition-all backdrop-blur-sm" title="Upload cocoa card photo">
+                                                                        <span className="text-[10px] font-black uppercase tracking-widest">Upload or Capture</span>
+                                                                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, 'cocoaCard')} disabled={!isEditable} />
+                                                                    </label>
+                                                                    {cocoaCardPhoto && isEditable && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => setCocoaCardPhoto('')}
+                                                                            className="absolute top-2 right-2 h-8 w-8 rounded-lg bg-black/50 text-white flex items-center justify-center hover:bg-black/70"
+                                                                            aria-label="Remove cocoa card photo"
+                                                                        >
+                                                                            <X className="h-4 w-4" />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {(cocoaFarmerId.trim() || cocoaCardPhoto) && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => isEditable && setCocoaCardConsent((prev) => !prev)}
+                                                                disabled={!isEditable}
+                                                                className={`w-full p-4 rounded-xl border-2 transition-all flex items-start gap-3 text-left ${
+                                                                    cocoaCardConsent
+                                                                        ? 'bg-amber-50 border-amber-500'
+                                                                        : 'bg-white border-gray-200 hover:border-gray-300'
+                                                                }`}
+                                                            >
+                                                                <div className={`h-6 w-6 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 ${
+                                                                    cocoaCardConsent
+                                                                        ? 'border-amber-600 bg-amber-600 text-white'
+                                                                        : 'border-gray-300 bg-white'
+                                                                }`}>
+                                                                    {cocoaCardConsent && <CheckCircle2 className="h-3.5 w-3.5" />}
+                                                                </div>
+                                                                <p className="text-xs text-gray-700 leading-relaxed">
+                                                                    The grower agrees to share their COCOBOD cocoa card details with AgriLync
+                                                                    for verification purposes only.
+                                                                </p>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                )}
 
                                                 <div className="space-y-2">
                                                     <OnboardingFieldLabel hint="Optional notes from your field visit">Field notes</OnboardingFieldLabel>

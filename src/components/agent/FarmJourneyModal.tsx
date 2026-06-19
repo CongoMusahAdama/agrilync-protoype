@@ -371,7 +371,8 @@ const FarmJourneyModal: React.FC<FarmJourneyModalProps> = ({ open, onOpenChange,
                 activity: newActivity.activity,
                 description: newActivity.description,
                 resources: newActivity.resources,
-                media: newActivity.media
+                media: newActivity.media,
+                confirmationStatus: 'pending',
             };
             
             // Add additional fields if they exist

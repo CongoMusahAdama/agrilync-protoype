@@ -1,3 +1,5 @@
+import { GROWER_ROUTES } from '@/utils/growerRoutes';
+
 /** Shared dashboard sidebar / mobile nav route map */
 export const getDashboardNavRoute = (userType: string, itemId: string): string | null => {
     const agentRoutes: Record<string, string> = {
@@ -29,13 +31,15 @@ export const getDashboardNavRoute = (userType: string, itemId: string): string |
     };
 
     const growerRoutes: Record<string, string> = {
-        dashboard: '/dashboard/grower',
-        settings: '/dashboard/grower/settings',
-        'farm-analytics': '/dashboard/grower/farm-analytics',
-        'investor-matches': '/dashboard/grower/investor-matches',
-        'training-sessions': '/dashboard/grower/training-sessions',
-        'farm-management': '/dashboard/grower/farm-management',
-        notifications: '/dashboard/grower/notifications',
+        dashboard: GROWER_ROUTES.dashboard,
+        account: GROWER_ROUTES.account,
+        'farm-profile': GROWER_ROUTES.farmProfile,
+        'project-funding': GROWER_ROUTES.projectFunding,
+        training: GROWER_ROUTES.training,
+        'farm-visits': GROWER_ROUTES.farmVisits,
+        'yield-harvest': GROWER_ROUTES.yieldHarvest,
+        help: GROWER_ROUTES.help,
+        settings: GROWER_ROUTES.settings,
     };
 
     if (userType === 'agent') return agentRoutes[itemId] ?? null;

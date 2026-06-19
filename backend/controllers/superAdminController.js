@@ -1666,6 +1666,56 @@ exports.updateFarmerStatus = async (req, res) => {
     }
 };
 
+// @route   PUT api/super-admin/farmers/:id/rating
+// @desc    Admin confirms agent-proposed farmer performance rating
+exports.confirmFarmerRating = async (req, res) => {
+    const { approve, note } = req.body;
+    try {
+        const farmer = await Farmer.findById(req.params.id);
+        if (!farmer) {
+            return res.status(404).json({ msg: 'Farmer not found' });
+        }
+
+        if (approve === false) {
+            farmer.ratingStatus = 'none';
+            farmer.proposedRating = undefined;
+            if (note) farmer.ratingNote = String(note).slice(0, 280);
+            await farmer.save();
+            return res.json({ success: true, farmer, message: 'Rating proposal declined.' });
+        }
+
+        if (farmer.ratingStatus !== 'pending_admin' && req.body.rating == null) {
+            return res.status(400).json({ msg: 'No pending rating to confirm.' });
+        }
+
+        const stars =
+            req.body.rating != null
+                ? Math.min(5, Math.max(0, Number(req.body.rating)))
+                : farmer.proposedRating || 0;
+
+        farmer.rating = stars;
+        farmer.ratingStatus = 'confirmed';
+        farmer.ratingConfirmedAt = new Date();
+        if (note) farmer.ratingNote = String(note).slice(0, 280);
+
+        await farmer.save();
+
+        await AuditLog.create({
+            action: 'CONFIRM_FARMER_RATING',
+            user: req.agent.id,
+            userRole: req.agent.role,
+            details: `Confirmed ${stars}-star rating for ${farmer.name}`,
+            targetResource: 'Farmer',
+            targetId: farmer.id,
+        });
+
+        res.json({ success: true, farmer, message: 'Rating confirmed.' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
 // @route   PUT api/super-admin/escalations/:id/resolve
 // @desc    Resolve support ticket
 exports.resolveEscalation = async (req, res) => {

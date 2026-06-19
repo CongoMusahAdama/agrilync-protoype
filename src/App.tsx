@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DarkModeProvider } from "./contexts/DarkModeContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { OfflineProvider } from "./contexts/OfflineContext";
@@ -19,8 +19,6 @@ import Resources from "./pages/Resources";
 import Team from "./pages/Team";
 import TeamMemberProfile from "./pages/TeamMemberProfile";
 import Signup from "./pages/Signup";
-import SignupFarmer from "./pages/SignupFarmer";
-import SignupGrower from "./pages/SignupGrower";
 import SignupInvestor from "./pages/SignupInvestor";
 
 import Login from "./pages/Login";
@@ -48,6 +46,16 @@ import FarmManagement from "./pages/FarmManagement";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 import GrowerProfile from "./pages/grower/GrowerProfile";
+import GrowerDashboard from "./pages/grower/GrowerDashboard";
+import GrowerProjectFunding from "./pages/grower/GrowerProjectFunding";
+import GrowerFarmVisits from "./pages/grower/GrowerFarmVisits";
+import GrowerYieldHarvest from "./pages/grower/GrowerYieldHarvest";
+import GrowerHelpSupport from "./pages/grower/GrowerHelpSupport";
+import GrowerLegacyRedirect from "./pages/grower/GrowerLegacyRedirect";
+import GrowerSettings from "./pages/grower/GrowerSettings";
+import GrowerAccountProfile from "./pages/grower/GrowerAccountProfile";
+import GrowerTrainingSessions from "./pages/grower/GrowerTrainingSessions";
+import GrowerRoute from "./contexts/GrowerRoute";
 import NotFound from "./pages/NotFound";
 import AgentMobilePreview from "./pages/AgentMobilePreview";
 import SuperAdminDashboard from "@/pages/super-admin/SuperAdminDashboard";
@@ -133,8 +141,8 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/agent/login" element={<AgentLogin />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/signup/farmer" element={<SignupFarmer />} />
-              <Route path="/signup/grower" element={<SignupGrower />} />
+              <Route path="/signup/farmer" element={<Navigate to="/signup?app=solo" replace />} />
+              <Route path="/signup/grower" element={<Navigate to="/signup?app=grower" replace />} />
               <Route path="/signup/investor" element={<SignupInvestor />} />
 
 
@@ -155,7 +163,25 @@ const App = () => (
                 <Route path="/dashboard/agent/media" element={<AgentMediaDashboard />} />
                 <Route path="/dashboard/agent/performance" element={<AgentPerformance />} />
                 <Route path="/dashboard/agent/offline-guide" element={<OfflineFieldGuide />} />
-                <Route path="/dashboard/grower/profile" element={<GrowerProfile />} />
+
+                {/* Lync Grower — dedicated routes (accountType: grower from signup) */}
+                <Route element={<GrowerRoute />}>
+                  <Route path="/dashboard/grower" element={<GrowerDashboard />} />
+                  <Route path="/dashboard/grower/farm-profile" element={<GrowerProfile />} />
+                  <Route path="/dashboard/grower/project-funding" element={<GrowerProjectFunding />} />
+                  <Route path="/dashboard/grower/training" element={<GrowerTrainingSessions />} />
+                  <Route path="/dashboard/grower/farm-visits" element={<GrowerFarmVisits />} />
+                  <Route path="/dashboard/grower/yield-harvest" element={<GrowerYieldHarvest />} />
+                  <Route path="/dashboard/grower/help" element={<GrowerHelpSupport />} />
+                  <Route path="/dashboard/grower/account" element={<GrowerAccountProfile />} />
+                  <Route path="/dashboard/grower/settings" element={<GrowerSettings />} />
+                  <Route path="/dashboard/grower/profile" element={<GrowerLegacyRedirect />} />
+                  <Route path="/dashboard/grower/farm-management" element={<GrowerLegacyRedirect />} />
+                  <Route path="/dashboard/grower/farm-analytics" element={<GrowerLegacyRedirect />} />
+                  <Route path="/dashboard/grower/training-sessions" element={<GrowerLegacyRedirect />} />
+                  <Route path="/dashboard/grower/notifications" element={<GrowerLegacyRedirect />} />
+                </Route>
+
                 <Route path="/dashboard/farmer/profile" element={<GrowerProfile />} />
                 <Route path="/dashboard/:userType" element={<Dashboard />} />
                 <Route path="/dashboard/:userType/farm-analytics" element={<FarmAnalytics />} />

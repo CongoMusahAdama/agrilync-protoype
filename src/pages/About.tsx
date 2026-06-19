@@ -102,7 +102,6 @@ const About = () => {
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'
                 }`}
               loading={index === 0 ? 'eager' : 'lazy'}
-              fetchPriority={index === 0 ? 'high' : 'low'}
               style={{
                 objectPosition: index === 0 ? 'center center' : 'center 25%',
                 objectFit: 'cover',

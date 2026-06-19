@@ -39,7 +39,8 @@ import {
     XCircle,
     ChevronRight,
     MoreVertical,
-    PenLine
+    PenLine,
+    Image as ImageIcon,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from '@/components/ui/badge';
@@ -51,6 +52,7 @@ import { useDarkMode } from '@/contexts/DarkModeContext';
 import CountUp from '@/components/CountUp';
 import { useAuth } from '@/contexts/AuthContext';
 import BlogAuthorsPanel from '@/components/super-admin/BlogAuthorsPanel';
+import PortfolioAdminPanel from '@/components/super-admin/PortfolioAdminPanel';
 import SubscribersAdminPanel from '@/components/blog-admin/SubscribersAdminPanel';
 
 const SettingsRoles = () => {
@@ -152,6 +154,7 @@ const SettingsRoles = () => {
                     {[
                         { value: 'profile', label: 'My Profile', icon: Fingerprint },
                         { value: 'blog-authors', label: 'Blog Authors', icon: PenLine },
+                        { value: 'portfolio', label: 'Portfolio', icon: ImageIcon },
                         { value: 'subscribers', label: 'Subscribers', icon: Users },
                         { value: 'permissions', label: 'Access Matrix', icon: Shield },
                         { value: 'training', label: 'Protocol Center', icon: BookOpen },
@@ -259,6 +262,10 @@ const SettingsRoles = () => {
 
                 <TabsContent value="blog-authors" className="outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
                     <BlogAuthorsPanel />
+                </TabsContent>
+
+                <TabsContent value="portfolio" className="outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <PortfolioAdminPanel />
                 </TabsContent>
 
                 <TabsContent value="subscribers" className="outline-none animate-in fade-in slide-in-from-bottom-2 duration-500">

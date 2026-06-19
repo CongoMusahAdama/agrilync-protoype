@@ -80,6 +80,11 @@ const farmerSchema = new mongoose.Schema({
     },
     idCardFront: { type: String },
     idCardBack: { type: String },
+    /** COCOBOD cocoa farmer card — optional, agent-only verification */
+    cocoaFarmerId: { type: String, sparse: true, index: true },
+    cocoaCardPhoto: { type: String },
+    cocoaCardConsentAt: { type: Date },
+    cocoaCardVerifiedAt: { type: Date },
     ghanaCardNumber: { type: String, unique: true, sparse: true },
     verificationConfirmed: { type: Boolean, default: false },
     /** Human-readable agent ID (e.g. LYC-…) stamped at onboarding */
@@ -91,6 +96,14 @@ const farmerSchema = new mongoose.Schema({
     imageHash: { type: String },
     flags: [{ type: String }],
     fieldNotes: { type: String },
+    /** English bio shown to investors when status is active */
+    investorBio: { type: String, maxlength: 500 },
+    /** Farmer-written short notes per season stage (separate from agent stageDetails) */
+    growerStageNotes: {
+        type: Map,
+        of: String,
+        default: () => new Map(),
+    },
     investmentInterest: {
         type: String,
         enum: ['yes', 'no', 'maybe'],
@@ -102,6 +115,23 @@ const farmerSchema = new mongoose.Schema({
         min: 0,
         max: 5
     },
+    /** Agent-proposed rating awaiting admin confirmation */
+    proposedRating: { type: Number, min: 0, max: 5 },
+    ratingNote: { type: String, maxlength: 280 },
+    ratingStatus: {
+        type: String,
+        enum: ['none', 'pending_admin', 'confirmed'],
+        default: 'none',
+    },
+    ratingProposedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent' },
+    ratingConfirmedAt: { type: Date },
+    /** Overall farm progress flag shown on grower profile */
+    farmStatusFlag: {
+        type: String,
+        enum: ['on_track', 'at_risk', 'off_track'],
+        default: 'on_track',
+    },
+    currentSeason: { type: String },
     preferredInvestmentType: {
         type: String,
         enum: ['inputs', 'cash', 'equipment', 'partnership', 'mechanization', 'irrigation', 'infrastructure', 'working_capital'],
@@ -126,6 +156,8 @@ const farmerSchema = new mongoose.Schema({
 farmerSchema.index({ agent: 1, status: 1, region: 1 });
 farmerSchema.index({ status: 1, region: 1 });
 farmerSchema.index({ verificationAgent: 1, status: 1 });
+farmerSchema.index({ email: 1 }, { sparse: true });
+farmerSchema.index({ contact: 1 }, { sparse: true });
 
 const {
     isGhanaCardDerivedGrowerId,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { DASHBOARD_POLL_INTERVAL_MS } from '@/data/dashboardConfig';
@@ -10,10 +10,14 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, Bell, Settings, Users, UserRoundPlus, LayoutGrid, Leaf, Bot, Search, LogOut, BarChart3, GraduationCap, Zap, MapPin, Sprout, Activity } from 'lucide-react';
 import DashboardSidebar from './DashboardSidebar';
 import { getDashboardNavRoute } from '@/utils/dashboardNavigation';
+import { GROWER_ROUTES, isGrowerDashboardPath } from '@/utils/growerRoutes';
 import Preloader from './ui/Preloader';
 import AddFarmerModal from './agent/AddFarmerModal';
 import { Badge } from './ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { getGrowerProfile } from '@/utils/authToken';
+import { useGrowerOptional } from '@/contexts/GrowerContext';
+import { resolvePublicAssetUrl } from '@/lib/resolveAssetUrl';
 import { toast } from 'sonner';
 import api from '@/utils/api';
 import {
@@ -31,6 +35,9 @@ import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { playNotificationBeep } from '@/utils/audio';
 import OfflineBanner from '@/components/agent/OfflineBanner';
 import InstallPwaPrompt from '@/components/agent/InstallPwaPrompt';
+import GrowerMobileBottomNav from '@/components/grower/GrowerMobileBottomNav';
+import GrowerMobileDrawer from '@/components/grower/mobile/GrowerMobileDrawer';
+import { GROWER_NAV_PRELOADER_MS } from '@/constants/platformAccess';
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -55,22 +62,41 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 }) => {
     const { userType: paramUserType } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { darkMode, toggleDarkMode } = useDarkMode();
     const isMobile = useIsMobile();
     const { agent } = useAuth();
+    const growerCtx = useGrowerOptional();
+    const growerFromPath = isGrowerDashboardPath(location.pathname) ? 'grower' : undefined;
     const userType =
         explicitUserType ||
         paramUserType ||
+        growerFromPath ||
         (agent?.role === 'super_admin' ? 'super-admin' : agent?.role === 'agent' ? 'agent' : undefined);
+    const isGrowerView = userType === 'grower';
+    const grower = isGrowerView ? growerCtx?.grower ?? getGrowerProfile() : null;
+    const headerDisplayName = isGrowerView ? grower?.name || 'Lync Grower' : agent?.name;
+    const headerRoleLabel = isGrowerView
+        ? 'Lync Grower'
+        : agent?.role === 'super_admin'
+          ? 'Super Admin'
+          : agent?.role === 'supervisor'
+            ? 'Supervisor'
+            : 'Field Agent';
+    const headerEmail = isGrowerView
+        ? grower?.email || grower?.contact || 'grower@agrilync.com'
+        : agent?.email;
+    const headerAvatarSrc = isGrowerView
+        ? grower?.profilePicture
+            ? resolvePublicAssetUrl(grower.profilePicture)
+            : undefined
+        : agent?.avatar || (agent as any)?.profilePicture;
     const queryClient = useQueryClient();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const [isNavigating, setIsNavigating] = useState(false);
-    const [isInitialMount, setIsInitialMount] = useState(false);
+    const growerNavPending = useRef(false);
     const [addFarmerModalOpen, setAddFarmerModalOpen] = useState(false);
-    const location = useLocation();
-    const [prevPath, setPrevPath] = useState(location.pathname);
     const [searchQuery, setSearchQuery] = useState('');
 
     const handleSearch = (e: React.FormEvent) => {
@@ -91,10 +117,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         }
     };
 
-    // Check if any queries are fetching to show preloader
-    const isFetching = queryClient.isFetching() > 0;
-
-    const isSuperAdmin = userType === 'super-admin' || agent?.role === 'super_admin';
+    const isSuperAdmin = userType === 'super-admin';
     const receivesStaffNotifications = userType === 'agent' || isSuperAdmin;
 
     const { data: notifications = [] } = useQuery({
@@ -109,12 +132,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         refetchIntervalInBackground: false,
     });
 
-    // Track initial mount and show preloader on first dashboard load
     useEffect(() => {
         if (location.pathname.startsWith('/dashboard')) {
-            setIsLoading(false);
             setIsNavigating(false);
-            setIsInitialMount(false);
 
             // Initialize Notifications for Agents (only on first mount to avoid spam)
             const hasNotifications = typeof window !== 'undefined' && 'Notification' in window;
@@ -157,12 +177,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             document.body.classList.add('agent-dashboard-active');
             return () => document.body.classList.remove('agent-dashboard-active');
         }
+        if (isGrowerView) {
+            document.body.classList.add('grower-dashboard-active');
+            return () => document.body.classList.remove('grower-dashboard-active');
+        }
         if (isSuperAdmin) {
             document.body.classList.add('admin-dashboard-active');
             return () => document.body.classList.remove('admin-dashboard-active');
         }
         return undefined;
-    }, [userType, isSuperAdmin]);
+    }, [userType, isGrowerView, isSuperAdmin]);
 
     const effectiveSubtitle = description || subtitle;
     const currentTitle = title || 'Dashboard';
@@ -172,9 +196,29 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
     useNotificationSound(receivesStaffNotifications ? notifications : [], receivesStaffNotifications);
 
+    const beginGrowerNav = useCallback(() => {
+        growerNavPending.current = true;
+        setIsNavigating(true);
+    }, []);
+
+    useEffect(() => {
+        if (!growerNavPending.current) return;
+        growerNavPending.current = false;
+        const timer = setTimeout(() => setIsNavigating(false), GROWER_NAV_PRELOADER_MS);
+        return () => clearTimeout(timer);
+    }, [location.pathname]);
+
+    const isGrowerRoute = (route: string) => {
+        if (route === GROWER_ROUTES.dashboard) return location.pathname === route;
+        return location.pathname === route || location.pathname.startsWith(`${route}/`);
+    };
+
     const handleSidebarNavigate = (item: string) => {
         setMobileSidebarOpen(false);
         const route = getDashboardNavRoute(userType || '', item);
+        if (route && isGrowerView && !isGrowerRoute(route)) {
+            beginGrowerNav();
+        }
         if (route) navigate(route);
     };
 
@@ -187,11 +231,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     return (
         <div
             className={`h-screen overflow-hidden font-inter ${
-                isAgent ? 'agent-dashboard-root' : isSuperAdmin ? 'admin-dashboard-root' : ''
+                isAgent
+                    ? 'agent-dashboard-root'
+                    : isGrowerView
+                      ? 'grower-dashboard-root'
+                      : isSuperAdmin
+                        ? 'admin-dashboard-root'
+                        : ''
             } ${darkMode ? 'bg-[#002f37]' : 'bg-gray-50'}`}
         >
-            {/* Full-page preloader only on initial app boot if needed, otherwise rely on skeletons */}
-            {/* Preloader removed to improve perceived performance */}
+            {isGrowerView && isNavigating && <Preloader />}
             <div className="flex h-full">
                 {/* Mobile Sidebar */}
                 {isMobile && (
@@ -199,12 +248,20 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         <SheetContent
                             side="left"
                             hideCloseButton
-                            className={`w-[min(320px,88vw)] max-w-[320px] p-0 border-none bg-[#002f37] text-white`}
+                            className="w-[min(320px,88vw)] max-w-[320px] p-0 border-none bg-white"
                         >
                             <SheetHeader className="sr-only">
-                                <SheetTitle>{isSuperAdmin ? 'Admin Navigation' : 'Navigation Menu'}</SheetTitle>
+                                <SheetTitle>Navigation Menu</SheetTitle>
                                 <SheetDescription>Access different sections of the dashboard</SheetDescription>
                             </SheetHeader>
+                            {isGrowerView ? (
+                                <GrowerMobileDrawer
+                                    activeItem={activeSidebarItem}
+                                    onNavigate={handleSidebarNavigate}
+                                    onClose={() => setMobileSidebarOpen(false)}
+                                />
+                            ) : (
+                                <div className="flex flex-col h-full bg-[#002f37] text-white">
                             {isSuperAdmin && (
                                 <div className="px-5 pt-5 pb-3 border-b border-white/10">
                                     <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#7ede56]">AgriLync Command</p>
@@ -220,13 +277,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                 isMobile={true}
                                 onNavigate={handleSidebarNavigate}
                             />
+                                </div>
+                            )}
                         </SheetContent>
                     </Sheet>
                 )}
 
                 {/* Desktop Sidebar */}
                 {!isMobile && (
-                    <div className={`${userType === 'grower' ? 'w-[325px]' : (sidebarCollapsed ? 'w-16' : 'w-[325px]')} bg-[#065f46] flex-shrink-0 transition-all duration-300 shadow-xl`}>
+                    <div className={`${userType === 'grower' ? 'w-[325px]' : (sidebarCollapsed ? 'w-16' : 'w-[325px]')} ${userType === 'grower' ? 'bg-[#7ede56]' : 'bg-[#065f46]'} flex-shrink-0 transition-all duration-300 shadow-xl`}>
                         <DashboardSidebar
                             userType={userType || ''}
                             sidebarCollapsed={sidebarCollapsed}
@@ -435,12 +494,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                         <div className="flex items-center gap-3 cursor-pointer group active:scale-[0.98] transition-all outline-none pl-2 pr-1.5 py-1.5 rounded-full hover:bg-gray-50 border border-transparent hover:border-gray-100/80">
                                             <div className="hidden sm:flex flex-col items-end">
                                                 <span className="text-[14px] font-bold text-gray-900 leading-tight group-hover:text-[#065f46] transition-colors" style={{ fontFamily: 'Inter, sans-serif' }}>
-                                                    {agent?.name ? agent.name : <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />}
+                                                    {headerDisplayName ? headerDisplayName : <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />}
                                                 </span>
                                                 <div className="flex items-center gap-1.5 mt-0.5">
                                                     <span className="h-1 w-1 rounded-full bg-[#7ede56] shadow-[0_0_8px_rgba(126,222,86,0.6)]" />
                                                     <span className="text-[10px] font-black text-[#065f46] uppercase tracking-[0.05em] leading-none opacity-80">
-                                                        {agent?.role === 'super_admin' ? 'Super Admin' : agent?.role === 'supervisor' ? 'Supervisor' : 'Field Agent'}
+                                                        {headerRoleLabel}
                                                     </span>
                                                 </div>
                                             </div>
@@ -449,9 +508,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                             <div className="relative">
                                                 <div className="absolute -inset-0.5 rounded-full bg-gradient-to-tr from-[#065f46] to-[#7ede56] opacity-40 group-hover:opacity-100 transition-all blur-[1px]"></div>
                                                 <Avatar className="relative h-9 w-9 border-2 border-white shadow-lg transition-transform group-hover:rotate-[4deg]">
-                                                    <AvatarImage src={agent?.avatar || (agent as any)?.profilePicture} className="object-cover" />
+                                                    <AvatarImage src={headerAvatarSrc} className="object-cover" />
                                                     <AvatarFallback className="bg-[#065f46] text-white text-[11px] font-black">
-                                                        {agent?.name ? agent.name.split(' ').map(n => n?.[0]).join('').substring(0, 2).toUpperCase() : 'AL'}
+                                                        {headerDisplayName ? headerDisplayName.split(' ').map(n => n?.[0]).join('').substring(0, 2).toUpperCase() : 'AL'}
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 {/* Online Status Beacon */}
@@ -462,7 +521,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                     <DropdownMenuContent align="end" className="w-56 mt-2 rounded-[1.25rem] border-gray-100 shadow-2xl p-2 animate-in fade-in slide-in-from-top-2 duration-200">
                                         <div className="px-3 py-2.5 mb-1 bg-gray-50/50 rounded-xl">
                                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Signed in as</p>
-                                            <p className="text-[13px] font-bold text-[#002f37] truncate">{agent?.email || 'authenticated_user'}</p>
+                                            <p className="text-[13px] font-bold text-[#002f37] truncate">{headerEmail || 'authenticated_user'}</p>
                                         </div>
                                         <DropdownMenuGroup className="space-y-0.5">
                                             <DropdownMenuItem
@@ -508,7 +567,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                             isSuperAdmin && isMobile ? 'p-3 sm:p-6 md:p-8' : 'p-4 sm:p-6 md:p-8'
                         } ${
                             isMobile
-                                ? 'pb-[max(6.5rem,calc(5.5rem+env(safe-area-inset-bottom)))]'
+                                ? isGrowerView
+                                    ? 'pb-[max(5.25rem,calc(4.25rem+env(safe-area-inset-bottom)))]'
+                                    : 'pb-[max(6.5rem,calc(5.5rem+env(safe-area-inset-bottom)))]'
                                 : 'pb-8'
                         }`}
                     >
@@ -517,7 +578,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     </main>
 
                     {/* Mobile bottom navigation */}
-                    {isMobile && (
+                    {isMobile && userType === 'grower' && (
+                        <GrowerMobileBottomNav
+                            activeSidebarItem={activeSidebarItem}
+                            moreOpen={mobileSidebarOpen}
+                            onOpenMore={() => setMobileSidebarOpen(true)}
+                            onNavigateStart={beginGrowerNav}
+                        />
+                    )}
+                    {isMobile && userType !== 'grower' && (
                         <div className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pointer-events-none admin-mobile-bottom-nav">
                             <div
                                 className={`pointer-events-auto flex items-end justify-between px-2 sm:px-3 py-2 rounded-[1.75rem] shadow-[0_20px_50px_-12px_rgba(0,47,55,0.25)] border backdrop-blur-md ${
@@ -528,64 +597,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                           : 'bg-white/95 border-gray-100'
                                 }`}
                             >
-                                {userType === 'grower' ? (
-                                    <>
-                                        {/* Home */}
-                                        <button
-                                            onClick={() => navigate(`/dashboard/grower`)}
-                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'dashboard' ? 'text-[#7ede56]' : 'text-gray-400'}`}
-                                        >
-                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'dashboard' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
-                                                <Home className={`h-5 w-5 ${activeSidebarItem === 'dashboard' ? 'text-[#7ede56]' : 'text-gray-400'}`} />
-                                            </div>
-                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'dashboard' ? 'text-[#7ede56]' : 'text-gray-400'}`}>Home</span>
-                                        </button>
-
-                                        {/* Farm Management */}
-                                        <button
-                                            onClick={() => navigate(`/dashboard/grower/farm-management`)}
-                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'farm-management' ? 'text-[#7ede56]' : 'text-gray-400'}`}
-                                        >
-                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'farm-management' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
-                                                <Leaf className={`h-5 w-5 ${activeSidebarItem === 'farm-management' ? 'text-[#7ede56]' : 'text-gray-400'}`} />
-                                            </div>
-                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'farm-management' ? 'text-[#7ede56]' : 'text-gray-400'}`}>Farm</span>
-                                        </button>
-
-                                        {/* AI Advisory Action - Premium Floating Button */}
-                                        <div className="relative -top-7 px-2">
-                                            <button
-                                                onClick={() => navigate(`/dashboard/grower/training-sessions?tab=advisory`)}
-                                                className="h-16 w-16 rounded-full bg-[#002f37] border-[3px] border-[#7ede56] shadow-[0_8px_20px_-4px_rgba(126,222,86,0.4)] flex items-center justify-center active:scale-95 transition-all group overflow-hidden"
-                                            >
-                                                <div className="absolute inset-0 bg-gradient-to-tr from-[#7ede56]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                <Bot className="h-7 w-7 text-[#7ede56] relative z-10" />
-                                            </button>
-                                        </div>
-
-                                        {/* Analytics */}
-                                        <button
-                                            onClick={() => navigate(`/dashboard/grower/farm-analytics`)}
-                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'farm-analytics' ? 'text-[#7ede56]' : 'text-gray-400'}`}
-                                        >
-                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'farm-analytics' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
-                                                <BarChart3 className={`h-5 w-5 ${activeSidebarItem === 'farm-analytics' ? 'text-[#7ede56]' : 'text-gray-400'}`} />
-                                            </div>
-                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'farm-analytics' ? 'text-[#7ede56]' : 'text-gray-400'}`}>Analytics</span>
-                                        </button>
-
-                                        {/* Settings / Profile */}
-                                        <button
-                                            onClick={() => navigate(`/dashboard/grower/settings`)}
-                                            className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${activeSidebarItem === 'settings' ? 'text-[#7ede56]' : 'text-gray-400'}`}
-                                        >
-                                            <div className={`p-2.5 rounded-[1.25rem] transition-colors ${activeSidebarItem === 'settings' ? (darkMode ? 'bg-[#7ede56]/20' : 'bg-[#7ede56]/10') : ''}`}>
-                                                <Settings className={`h-5 w-5 ${activeSidebarItem === 'settings' ? 'text-[#7ede56]' : 'text-gray-400'}`} />
-                                            </div>
-                                            <span className={`text-[10px] font-bold ${activeSidebarItem === 'settings' ? 'text-[#7ede56]' : 'text-gray-400'}`}>Profile</span>
-                                        </button>
-                                    </>
-                                ) : isSuperAdmin ? (
+                                {isSuperAdmin ? (
                                     <>
                                         <button
                                             type="button"

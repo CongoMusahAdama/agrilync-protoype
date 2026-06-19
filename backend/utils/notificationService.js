@@ -1,10 +1,41 @@
 const { Resend } = require('resend');
 
 // ─────────────────────────────────────────────────────────────
+// Brand (Agrilync Nexus — email-safe absolute assets)
+// ─────────────────────────────────────────────────────────────
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'https://www.agrilyncnexus.com').replace(/\/$/, '');
+const EMAIL_LOGO_URL = `${FRONTEND_URL}/Frame%2074.png`;
+const BRAND = {
+    name: 'Agrilync Nexus',
+    darkGreen: '#065f46',
+    brightGreen: '#7ede56',
+    navy: '#002f37',
+    lightBg: '#f4f7f6',
+    lightGreenBg: '#ecfdf5',
+    lightGreenBorder: '#6ee7b7',
+};
+
+/** Branded email header with logo on green gradient */
+const emailBrandHeader = (subtitle = 'Operations') => `
+    <div style="background: linear-gradient(135deg, ${BRAND.darkGreen} 0%, ${BRAND.navy} 100%); padding: 28px 24px; border-radius: 12px; text-align: center; margin-bottom: 24px;">
+        <img
+            src="${EMAIL_LOGO_URL}"
+            alt="${BRAND.name}"
+            width="140"
+            height="48"
+            style="display: inline-block; margin: 0 auto 14px; max-height: 48px; width: auto; height: auto; object-fit: contain;"
+        />
+        <p style="color: ${BRAND.brightGreen}; margin: 0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em;">${subtitle}</p>
+    </div>`;
+
+const emailFooter = () =>
+    `<p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">© ${BRAND.name} · Ghana · <a href="${FRONTEND_URL}" style="color: ${BRAND.darkGreen}; text-decoration: none;">agrilyncnexus.com</a></p>`;
+
+// ─────────────────────────────────────────────────────────────
 // Initialize Resend
 // ─────────────────────────────────────────────────────────────
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'AgriLync <notifications@agrilync.com>';
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Agrilync Nexus <notifications@agrilync.com>';
 
 let resend = null;
 if (RESEND_API_KEY) {
@@ -123,20 +154,18 @@ const emailTemplates = {
     taskReminder: ({ agentName, taskTitle, dueDate, location, priority }) => ({
         subject: `⏰ Reminder: Task "${taskTitle}" is due soon!`,
         html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #fffcf0; padding: 32px; border-radius: 16px; border: 1px solid #fef3c7;">
-            <div style="background: #92400e; padding: 24px; border-radius: 12px; text-align: center; margin-bottom: 24px;">
-                <h1 style="color: white; margin: 0; font-size: 24px;">🌱 AgriLync Alerts</h1>
-            </div>
-            <h2 style="color: #92400e; margin: 0 0 12px;">⏰ Upcoming Task Reminder</h2>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: ${BRAND.lightBg}; padding: 32px; border-radius: 16px; border: 1px solid ${BRAND.lightGreenBorder};">
+            ${emailBrandHeader('Task Alerts')}
+            <h2 style="color: ${BRAND.navy}; margin: 0 0 12px; font-size: 20px;">⏰ Upcoming Task Reminder</h2>
             <p style="color: #4b5563; line-height: 1.6;">Hello <strong>${agentName}</strong>, you have a task that is reaching its deadline:</p>
-            <div style="background: white; border: 1px solid #fde68a; padding: 20px; border-radius: 12px; margin: 16px 0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                <h3 style="margin: 0 0 10px; color: #1f2937; font-size: 18px;">${taskTitle}</h3>
+            <div style="background: white; border: 1px solid ${BRAND.lightGreenBorder}; padding: 20px; border-radius: 12px; margin: 16px 0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                <h3 style="margin: 0 0 10px; color: ${BRAND.navy}; font-size: 18px;">${taskTitle}</h3>
                 <p style="margin: 6px 0; color: #4b5563; font-size: 14px;">📅 <strong>Due:</strong> ${dueDate}</p>
                 ${location ? `<p style="margin: 6px 0; color: #4b5563; font-size: 14px;">📍 <strong>Location:</strong> ${location}</p>` : ''}
-                <p style="margin: 6px 0; color: #92400e; font-size: 12px; font-weight: bold; text-transform: uppercase;">🔥 Priority: ${priority}</p>
+                <p style="margin: 10px 0 0; color: ${BRAND.darkGreen}; font-size: 12px; font-weight: bold; text-transform: uppercase;">🔥 Priority: ${priority}</p>
             </div>
             <p style="color: #4b5563; line-height: 1.6;">Please ensure all necessary materials are prepared for this field mission.</p>
-            <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">© AgriLync · Ghana</p>
+            ${emailFooter()}
         </div>`
     })
 };

@@ -1,4 +1,5 @@
 const Farm = require('../models/Farm');
+const { inferFarmCategory } = require('./farmStages');
 const { normalizeCropName } = require('../data/ghanaCrops');
 
 const FARM_TYPE_MAP = {
@@ -115,6 +116,35 @@ exports.resolveGpsLocation = (body, farmLocation) => {
     return undefined;
 };
 
+exports.normalizeCocoaPayload = (body = {}) => {
+    const cropList = Array.isArray(body.cropList) ? body.cropList : [];
+    const hasCocoaCrop =
+        cropList.some((c) => String(c).toLowerCase() === 'cocoa') ||
+        String(body.cropsGrown || '').toLowerCase().includes('cocoa');
+
+    const cocoaFarmerId = body.cocoaFarmerId != null ? String(body.cocoaFarmerId).trim() : undefined;
+    const hasPhoto = Boolean(body.cocoaCardPhoto);
+    const hasId = Boolean(cocoaFarmerId);
+    /** Only stamp consent/verified when this request explicitly submits consent */
+    const consentSubmitted = body.cocoaCardConsent === true;
+
+    if (!hasCocoaCrop && !hasId && !hasPhoto) {
+        return {};
+    }
+
+    const result = {};
+    if (cocoaFarmerId !== undefined) {
+        result.cocoaFarmerId = cocoaFarmerId || undefined;
+    }
+    if (consentSubmitted) {
+        result.cocoaCardConsentAt = new Date();
+        if (hasId || hasPhoto) {
+            result.cocoaCardVerifiedAt = new Date();
+        }
+    }
+    return result;
+};
+
 exports.computeProfileCompleteness = (fields) => {
     const checks = [
         fields.name,
@@ -185,6 +215,7 @@ exports.buildFarmerOnboardingFields = (body, options = {}) => {
         ghanaCardNumber: body.ghanaCardNumber,
         onboardingAgentId: body.onboardingAgentId || undefined,
         verificationConfirmed: Boolean(body.verificationConfirmed || body.onboardingAgentId),
+        ...exports.normalizeCocoaPayload(body),
     };
 
     base.profileCompleteness = exports.computeProfileCompleteness(base);
@@ -204,6 +235,8 @@ exports.ensurePrimaryFarm = async (farmer, agentId) => {
         farmer.livestockInventory?.[0]?.type ||
         'Mixed';
 
+    const farmCategory = inferFarmCategory(crop);
+
     const locationParts = [farmer.community, farmer.district, farmer.region].filter(Boolean);
     const farm = new Farm({
         id: `F-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -211,6 +244,7 @@ exports.ensurePrimaryFarm = async (farmer, agentId) => {
         farmer: farmer._id,
         location: locationParts.join(', ') || 'Ghana',
         crop,
+        farmCategory,
         agent: agentId,
         status: 'scheduled',
         coordinates: farmer.farmLocation?.lat != null
