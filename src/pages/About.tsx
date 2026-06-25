@@ -161,7 +161,7 @@ const About = () => {
                 Agrilync Nexus is a Ghana-based AgriFinTech and advisory platform that connects smallholder farmers with farm investors and partner organizations through a structured, transparent finance-first model supported by training, AI-powered advisory, and an agent network.
               </p>
               <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-4">
-                We operate a B2B2C model, working with partner organizations and investor entities who in turn serve and fund smallholder farmers. Our first rollout targets 500 pilot smallholder farmers across seven regions of Ghana.
+                We operate a B2B2C model, working with partner organizations and investor entities who in turn serve and fund smallholder farmers. Our first rollout targets smallholder farmers across selected regions in Ghana including Northern, Upper East, Ahafo, and some other regions. We want to give investors the evidence they need to invest with confidence, so we focus on capacity building, making these farmers investment-ready with the confidence investors will also need to invest.
               </p>
               <p className="text-gray-500 text-xs italic mb-4 p-4 border-l-4 border-[#7ede56]/20 bg-[#7ede56]/10">
                 "Agrilync Nexus is a technology-enabled agricultural platform that connects farmers, agricultural experts, and independent investors. We do not operate as a fund manager, financial institution, or farm operator. Agrilync Nexus does not custody user funds or guarantee investment returns."
@@ -347,7 +347,7 @@ const About = () => {
                 <div>
                   <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Lync Growers</h3>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    Verified smallholder farmers in Ghana (initially 500 pilot farmers) who are matched with investors and partners for shared-profit agricultural projects.
+                    Verified smallholder farmers in Ghana who are matched with investors and partners for shared-profit agricultural projects.
                   </p>
                 </div>
               </div>

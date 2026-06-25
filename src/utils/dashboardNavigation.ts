@@ -28,6 +28,7 @@ export const getDashboardNavRoute = (userType: string, itemId: string): string |
         performance: '/dashboard/super-admin/performance',
         'reports-analytics': '/dashboard/super-admin/analytics',
         'system-logs': '/dashboard/super-admin/logs',
+        'expense-vouchers': '/dashboard/super-admin/vouchers',
     };
 
     const growerRoutes: Record<string, string> = {

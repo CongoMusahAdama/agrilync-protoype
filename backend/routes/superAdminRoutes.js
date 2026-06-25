@@ -41,6 +41,13 @@ const {
     updatePortfolioItem,
     deletePortfolioItem,
 } = require('../controllers/portfolioController');
+const {
+    getVouchers,
+    getVoucherById,
+    createVoucher,
+    updateVoucher,
+    deleteVoucher,
+} = require('../controllers/voucherController');
 const auth = require('../middleware/auth');
 
 // Super-admin routes are restricted to super_admin only.
@@ -100,6 +107,12 @@ router.get('/portfolio', getAdminPortfolio);
 router.post('/portfolio', createPortfolioItem);
 router.put('/portfolio/:id', updatePortfolioItem);
 router.delete('/portfolio/:id', deletePortfolioItem);
+
+router.get('/vouchers', getVouchers);
+router.get('/vouchers/:id', getVoucherById);
+router.post('/vouchers', createVoucher);
+router.put('/vouchers/:id', updateVoucher);
+router.delete('/vouchers/:id', deleteVoucher);
 
 module.exports = router;
 

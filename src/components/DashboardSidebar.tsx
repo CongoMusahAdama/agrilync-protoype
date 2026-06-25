@@ -24,6 +24,7 @@ import {
     ClipboardList,
     Wheat,
     HelpCircle,
+    Receipt,
 } from 'lucide-react';
 import SidebarProfileCard from './SidebarProfileCard';
 import { growerNavIconClass, growerNavItemClass, GROWER_NAV_SECTION_LABEL } from '@/constants/growerTheme';
@@ -140,6 +141,12 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             items: [
                 { id: 'escalations', label: 'Escalations & Alerts', icon: AlertTriangle },
             ]
+        },
+        {
+            section: 'Finance',
+            items: [
+                { id: 'expense-vouchers', label: 'Expense Vouchers', icon: Receipt },
+            ],
         },
         {
             section: 'Analytics',
