@@ -43,8 +43,8 @@ export const coFounders: TeamMember[] = [
     {
         id: 'takyi-robert',
         name: 'Takyi Robert',
-        role: 'Co-Founder (Finance & Partnerships)',
-        image: '/lovable-uploads/robert.jpg',
+        role: 'Co-Founder / Finance & Partnerships',
+        image: '/lovable-uploads/robtak.png',
         initials: 'TR',
         description: 'Finance, partnerships, investor relations, financial planning, and strategic collaborations.',
         longBio: `As Co-Founder overseeing Finance and Partnerships, Robert brings a strategic edge to AgriLync's growth. He specializes in building robust financial frameworks and securing high-value partnerships that drive sustainability and expansion.
