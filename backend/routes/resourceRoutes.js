@@ -9,7 +9,9 @@ const blogAuth = require('../middleware/blogAuth');
 router.get('/', async (req, res) => {
     try {
         const resources = await Resource.find({ published: true })
-            .sort({ order: -1, createdAt: -1 });
+            .select('title category type description coverImage documentUrl badge tags stats order createdAt')
+            .sort({ order: -1, createdAt: -1 })
+            .lean();
         res.json(resources);
     } catch (err) {
         console.error('Fetch resources error:', err.message);

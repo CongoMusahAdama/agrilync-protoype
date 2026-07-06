@@ -17,7 +17,11 @@ const isBlogAdminRoute = (url?: string) =>
     !!url &&
     (url.includes('/blogs') ||
         url.includes('/blog-admin') ||
-        url.includes('/resources'));
+        url.includes('/resources/admin'));
+
+/** Public endpoints — skip auth headers to avoid slow token refresh on expired sessions. */
+const isPublicRoute = (url?: string) =>
+    !!url && /^\/resources\/?$/.test(url.split('?')[0]);
 
 let isRefreshing = false;
 let refreshQueue: Array<{
@@ -41,6 +45,10 @@ api.interceptors.request.use(
         }
 
         if (config.headers && config.headers['x-auth-token']) {
+            return config;
+        }
+
+        if (isPublicRoute(config.url)) {
             return config;
         }
 

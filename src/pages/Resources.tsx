@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -42,7 +43,7 @@ import {
   registerResourceAccess,
   getSubscribeErrorMessage,
 } from '@/services/subscriberService';
-import { mapApiResourceToDisplay, type DisplayResource } from '@/lib/mapApiResource';
+import { mapApiResourceToDisplay, type ApiResourceRecord, type DisplayResource } from '@/lib/mapApiResource';
 import { WHATSAPP_COMMUNITY_URL } from '@/lib/communityLinks';
 import { WEBINARS, type WebinarItem } from '@/data/webinars';
 import { openWebinarRegistration, webinarRegisterButtonLabel } from '@/utils/webinarRegistration';
@@ -67,6 +68,20 @@ const webinars = WEBINARS;
 const formatDate = (dateString: string) =>
   new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
+const RESOURCE_SKELETON_COUNT = 6;
+
+const ResourceCardSkeleton = () => (
+  <div className="flex flex-col bg-white rounded-2xl overflow-hidden border-2 border-gray-100 shadow-sm h-full animate-pulse">
+    <div className="w-full aspect-video bg-gray-200" />
+    <div className="p-5 space-y-3">
+      <div className="h-5 bg-gray-200 rounded w-4/5" />
+      <div className="h-4 bg-gray-100 rounded w-full" />
+      <div className="h-4 bg-gray-100 rounded w-3/4" />
+      <div className="h-10 bg-gray-200 rounded-full mt-4" />
+    </div>
+  </div>
+);
+
 // ─── Component ────────────────────────────────────────────────────────
 const Resources: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState('all');
@@ -74,9 +89,29 @@ const Resources: React.FC = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [email, setEmail] = useState('');
   const [subscribing, setSubscribing] = useState(false);
-  const [apiResources, setApiResources] = useState<DisplayResource[]>([]);
-  const [resourcesLoading, setResourcesLoading] = useState(true);
-  const [resourcesLoadError, setResourcesLoadError] = useState<string | null>(null);
+
+  const {
+    data: apiResources = [],
+    isLoading: resourcesLoading,
+    isError: resourcesLoadFailed,
+    error: resourcesError,
+  } = useQuery({
+    queryKey: ['publicResources'],
+    queryFn: async () => {
+      const res = await api.get<ApiResourceRecord[]>('/resources', { timeout: 10000 });
+      return res.data.map(mapApiResourceToDisplay);
+    },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+
+  const resourcesLoadError = resourcesLoadFailed
+    ? resourcesError instanceof Error
+      ? resourcesError.message
+      : 'Could not load resources. Please try again shortly.'
+    : null;
 
   const [accessModalOpen, setAccessModalOpen] = useState(false);
   const [selectedResource, setSelectedResource] = useState<DisplayResource | null>(null);
@@ -92,51 +127,38 @@ const Resources: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    setResourcesLoading(true);
-    setResourcesLoadError(null);
-    api
-      .get('/resources', { timeout: 15000 })
-      .then(res => {
-        setApiResources(res.data.map(mapApiResourceToDisplay));
-      })
-      .catch(err => {
-        console.error('Failed to load resources from API:', err);
-        const msg =
-          err instanceof Error ? err.message : 'Could not load resources. Please try again shortly.';
-        setResourcesLoadError(msg);
-      })
-      .finally(() => setResourcesLoading(false));
-  }, []);
-
-  const allResources = useMemo<DisplayResource[]>(() => apiResources, [apiResources]);
-
-  const categories = useMemo(
-    () => [
-      { id: 'all', label: 'All Resources', icon: Layers, count: allResources.length },
-      { id: 'tools', label: 'Tools', icon: Wrench, count: allResources.filter(r => r.category === 'tools').length },
-      { id: 'guides', label: 'Guides & eBooks', icon: BookOpen, count: allResources.filter(r => r.category === 'guides').length },
-      { id: 'templates', label: 'Templates', icon: FileText, count: allResources.filter(r => r.category === 'templates').length },
-      { id: 'videos', label: 'Video Recordings', icon: Video, count: allResources.filter(r => r.category === 'videos').length },
-      { id: 'reports', label: 'Reports', icon: BarChart3, count: allResources.filter(r => r.category === 'reports').length },
+  const categories = useMemo(() => {
+    const counts = { tools: 0, guides: 0, templates: 0, videos: 0, reports: 0 };
+    for (const resource of apiResources) {
+      const key = resource.category as keyof typeof counts;
+      if (key in counts) counts[key]++;
+    }
+    return [
+      { id: 'all', label: 'All Resources', icon: Layers, count: apiResources.length },
+      { id: 'tools', label: 'Tools', icon: Wrench, count: counts.tools },
+      { id: 'guides', label: 'Guides & eBooks', icon: BookOpen, count: counts.guides },
+      { id: 'templates', label: 'Templates', icon: FileText, count: counts.templates },
+      { id: 'videos', label: 'Video Recordings', icon: Video, count: counts.videos },
+      { id: 'reports', label: 'Reports', icon: BarChart3, count: counts.reports },
       { id: 'webinars', label: 'Webinars', icon: Video, count: webinars.length },
-    ],
-    [allResources]
-  );
+    ];
+  }, [apiResources]);
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  const filtered = allResources.filter(r => {
-    const matchCat = activeCategory === 'all' || r.category === activeCategory;
+  const filtered = useMemo(() => {
     const q = searchTerm.toLowerCase();
-    const matchSearch =
-      !q ||
-      r.title.toLowerCase().includes(q) ||
-      r.description.toLowerCase().includes(q) ||
-      r.tags.some(t => t.toLowerCase().includes(q)) ||
-      r.type.toLowerCase().includes(q);
-    return matchCat && matchSearch;
-  });
+    return apiResources.filter(r => {
+      const matchCat = activeCategory === 'all' || r.category === activeCategory;
+      const matchSearch =
+        !q ||
+        r.title.toLowerCase().includes(q) ||
+        r.description.toLowerCase().includes(q) ||
+        r.tags.some(t => t.toLowerCase().includes(q)) ||
+        r.type.toLowerCase().includes(q);
+      return matchCat && matchSearch;
+    });
+  }, [apiResources, activeCategory, searchTerm]);
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -341,9 +363,10 @@ const Resources: React.FC = () => {
           {/* Resource Grid */}
           <AnimatePresence mode="popLayout">
             {resourcesLoading ? (
-              <div className="flex flex-col items-center justify-center py-20">
-                <Loader2 className="w-10 h-10 animate-spin text-[#7ede56]" />
-                <p className="text-sm text-gray-500 mt-4 font-medium">Loading resources…</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+                {Array.from({ length: RESOURCE_SKELETON_COUNT }).map((_, i) => (
+                  <ResourceCardSkeleton key={i} />
+                ))}
               </div>
             ) : filtered.length > 0 ? (
               <motion.div
@@ -359,7 +382,7 @@ const Resources: React.FC = () => {
                       initial={{ opacity: 0, y: 24, scale: 0.97 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.32, delay: i * 0.03 }}
+                      transition={{ duration: 0.2, delay: Math.min(i * 0.02, 0.12) }}
                       className="group flex flex-col bg-white rounded-2xl overflow-hidden border-2 border-gray-100 hover:border-[#7ede56]/40 transition-all duration-300 shadow-sm hover:shadow-xl h-full"
                     >
                       {/* Image Header area */}
@@ -367,6 +390,8 @@ const Resources: React.FC = () => {
                         <img
                           src={res.bgImage}
                           alt={res.title}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-transparent to-transparent pointer-events-none" />
@@ -445,14 +470,14 @@ const Resources: React.FC = () => {
                 <h3 className="text-xl font-black text-[#002f37] mb-2">
                   {resourcesLoadError
                     ? 'Unable to load resources'
-                    : allResources.length === 0 && !searchTerm && activeCategory === 'all'
+                    : apiResources.length === 0 && !searchTerm && activeCategory === 'all'
                     ? 'No resources yet'
                     : 'No resources found'}
                 </h3>
                 <p className="text-gray-400 text-sm mb-6 max-w-md mx-auto">
                   {resourcesLoadError
                     ? resourcesLoadError
-                    : allResources.length === 0 && !searchTerm && activeCategory === 'all'
+                    : apiResources.length === 0 && !searchTerm && activeCategory === 'all'
                     ? 'New tools, guides, and reports will appear here once published from the blog dashboard.'
                     : 'Try a different keyword or browse all categories.'}
                 </p>
@@ -488,7 +513,7 @@ const Resources: React.FC = () => {
                     webinars.filter(w => w.status === 'upcoming').map((webinar) => (
                       <Card key={webinar.id} className="group hover:shadow-2xl transition-all duration-500 overflow-hidden border-2 hover:border-[#7ede56]/30 rounded-2xl">
                         <div className="relative overflow-hidden h-52">
-                          <img src={webinar.image} alt={webinar.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                          <img src={webinar.image} alt={webinar.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                           <div className="absolute top-4 right-4">
                             <Badge className="bg-gradient-to-r from-[#7ede56] to-[#66cc44] text-white border-0">{webinar.registered}/{webinar.spots} spots</Badge>
                           </div>
@@ -539,7 +564,7 @@ const Resources: React.FC = () => {
                   {webinars.filter((w: WebinarItem) => w.status === 'completed').map((webinar: WebinarItem) => (
                     <Card key={webinar.id} className="group hover:shadow-2xl transition-all duration-500 overflow-hidden border-2 hover:border-[#7ede56]/30 rounded-2xl">
                       <div className="relative overflow-hidden h-64">
-                        <img src={webinar.image} alt={webinar.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                        <img src={webinar.image} alt={webinar.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                           <Play className="h-20 w-20 text-white" />
                         </div>
