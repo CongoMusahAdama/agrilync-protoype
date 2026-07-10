@@ -82,6 +82,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/api';
 import Swal from 'sweetalert2';
 import { showValidationAlert } from '@/utils/validationAlert';
+import { buildMediaUploadFormData } from '@/utils/mediaUpload';
 import { useAuth } from '@/contexts/AuthContext';
 import { GHANA_REGIONS, GHANA_COMMUNITIES, getRegionKey } from '@/data/ghanaRegions';
 
@@ -401,8 +402,8 @@ const MediaDashboard: React.FC = () => {
 
   // Upload mutation
   const uploadMutation = useMutation({
-    mutationFn: async (payload: any) => {
-      const res = await api.post('/media', payload);
+    mutationFn: async (payload: FormData) => {
+      const res = await api.post('/media', payload, { timeout: 120000 });
       return res.data;
     },
     onSuccess: () => {
@@ -493,27 +494,22 @@ const MediaDashboard: React.FC = () => {
         showValidationAlert('Name Required', 'Please provide a reference name for this asset.', 'Please provide a reference name for this asset.', 'warning');
         return;
     }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64 = e.target?.result as string;
-      const sizeKB = uploadFile.size / 1024;
-      const sizeStr = sizeKB > 1024 ? `${(sizeKB / 1024).toFixed(1)} MB` : `${sizeKB.toFixed(0)} KB`;
-      uploadMutation.mutate({
+
+    try {
+      const formData = await buildMediaUploadFormData(uploadFile, {
         name: uploadForm.name.trim(),
         type: uploadForm.type,
-        url: base64,
-        thumbnail: uploadFile.type.startsWith('image/') ? base64 : undefined,
-        size: sizeStr,
-        format: uploadFile.name.split('.').pop()?.toUpperCase(),
         farmName: uploadForm.farm?.trim() || undefined,
         album: normalizeAlbumName(uploadForm.album) || undefined,
         status: 'Synced',
         community: agent?.community,
         district: agent?.district,
-        region: agent?.region
+        region: agent?.region,
       });
-    };
-    reader.readAsDataURL(uploadFile);
+      uploadMutation.mutate(formData);
+    } catch (error: unknown) {
+      showValidationAlert('Upload Failed', error, 'Could not prepare the file for upload. Please try again.');
+    }
   };
 
   const handleCreateAlbum = () => {
@@ -582,7 +578,7 @@ const MediaDashboard: React.FC = () => {
                 className="bg-[#065f46] hover:bg-[#054d39] text-white font-black font-montserrat text-[12px] tracking-wider px-8 h-12 rounded-[1.2rem] shadow-xl shadow-[#065f46]/20 transition-all active:scale-95 border-none w-full sm:w-auto flex items-center justify-center"
                 onClick={() => setUploadOpen(true)}
               >
-                <Upload className="mr-2 h-4 w-4" /> {currentAlbum ? `UPLOAD TO ${currentAlbum.toUpperCase()}` : 'UPLOAD FILES'}
+                <Upload className="mr-2 h-4 w-4" /> {currentAlbum ? `UPLOAD TO ${currentAlbum.toUpperCase()}` : 'UPLOAD'}
               </Button>
               <Button 
                 variant="outline" 
@@ -839,7 +835,7 @@ const MediaDashboard: React.FC = () => {
                         setUploadOpen(true);
                       }}
                     >
-                      <Plus className="h-4 w-4" /> UPLOAD FILES
+                      <Plus className="h-4 w-4" /> UPLOAD
                     </Button>
                   </div>
                 )}
@@ -1428,7 +1424,7 @@ const MediaDashboard: React.FC = () => {
                 {uploadMutation.isPending ? (
                   <span className="flex items-center gap-2"><Clock className="h-4 w-4 animate-spin" /> Uploading...</span>
                 ) : (
-                  <span className="flex items-center gap-2"><Upload className="h-4 w-4" /> Upload File</span>
+                  <span className="flex items-center gap-2"><Upload className="h-4 w-4" /> Upload</span>
                 )}
               </Button>
             </div>

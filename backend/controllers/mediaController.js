@@ -58,6 +58,75 @@ exports.getMedia = async (req, res) => {
 // @access  Private
 exports.uploadMedia = async (req, res) => {
     try {
+        if (req.file) {
+            const {
+                name,
+                type,
+                size,
+                format,
+                farmerId,
+                farmId,
+                farmer,
+                farm,
+                farmName,
+                album,
+                category,
+                description,
+                status,
+            } = req.body;
+
+            const mime = req.file.mimetype || 'application/octet-stream';
+            const dataUrl = `data:${mime};base64,${req.file.buffer.toString('base64')}`;
+
+            let url = dataUrl;
+            let thumbnail;
+
+            const allowedPrefixes = ['data:image/', 'data:video/', 'data:application/pdf'];
+            if (!allowedPrefixes.some((prefix) => dataUrl.startsWith(prefix))) {
+                return res.status(400).json({ msg: 'Invalid file type. Only images, videos, and PDFs are allowed.' });
+            }
+
+            url = await uploadDataUrl(dataUrl, 'media/uploads');
+            if (mime.startsWith('image/')) {
+                thumbnail = url;
+            }
+
+            const resolvedFarmerId = toObjectId(farmerId || farmer);
+            const resolvedFarmId = toObjectId(farmId || farm);
+            const metadata = {};
+            const entityLabel = typeof farmName === 'string' ? farmName.trim() : '';
+            if (!resolvedFarmId && entityLabel) {
+                metadata.farmName = entityLabel;
+            }
+            if (typeof category === 'string' && category.trim()) {
+                metadata.category = category.trim();
+            }
+            if (typeof description === 'string' && description.trim()) {
+                metadata.description = description.trim();
+            }
+
+            const newMedia = new Media({
+                agent: requestAgentId(req),
+                farmer: resolvedFarmerId,
+                farm: resolvedFarmId,
+                name: name || req.file.originalname || `Upload_${Date.now()}`,
+                type: type || 'Photo',
+                url,
+                thumbnail,
+                size: size || '0 KB',
+                format: format || req.file.originalname?.split('.').pop()?.toUpperCase() || 'JPG',
+                album,
+                status: status || 'Synced',
+                region: req.agent.region,
+                district: req.agent.district,
+                community: req.agent.community,
+                metadata,
+            });
+
+            const savedMedia = await newMedia.save();
+            return res.json(savedMedia);
+        }
+
         const items = Array.isArray(req.body) ? req.body : [req.body];
         const uploadedItems = [];
 

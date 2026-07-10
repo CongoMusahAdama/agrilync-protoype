@@ -29,6 +29,14 @@ import Swal from 'sweetalert2';
 import api from '@/utils/api';
 import { playSuccessSound } from '@/utils/audio';
 import {
+  agentModalShell,
+  agentModalHeader,
+  agentModalBody,
+  agentModalFooter,
+  agentModalCloseClear,
+} from '@/utils/agentModalStyles';
+import { cn } from '@/lib/utils';
+import {
   getCommunitiesForDistrict,
   getCommunitiesForRegion,
   getDistrictsForRegion,
@@ -36,6 +44,27 @@ import {
   GHANA_REGIONS,
   OTHER_COMMUNITY_OPTION,
 } from '@/data/ghanaRegions';
+
+const MOBILE_PANEL_TITLES: Record<string, string> = {
+  'personal-info': 'My Account',
+  'work-details': 'Work Details',
+  location: 'Field Location',
+  alerts: 'Notifications',
+  comms: 'Communication',
+  display: 'Display & Language',
+  sync: 'Offline & Sync',
+  commission: 'Earnings',
+  payouts: 'Payout History',
+  security: 'Security & Access',
+  support: 'Help & Support',
+  knowledge: 'Knowledge Base',
+};
+
+const cardShell = 'rounded-2xl lg:rounded-[32px] border border-gray-100 lg:border-none shadow-sm lg:shadow-2xl bg-white overflow-hidden agent-settings-form-card';
+const cardPad = 'p-5 sm:p-6 lg:p-10';
+const sectionGap = 'space-y-6 lg:space-y-10';
+const sectionTitle = 'text-lg sm:text-xl font-black font-montserrat text-[#002F37] uppercase tracking-tight';
+const actionBtn = 'h-12 lg:h-14 rounded-xl lg:rounded-2xl font-black font-montserrat text-[12px] lg:text-[13px]';
 
 const Field = ({ label, id, type = "text", required = false, readOnly = false, value, onChange, options }: any) => (
   <div className="space-y-1.5">
@@ -47,7 +76,7 @@ const Field = ({ label, id, type = "text", required = false, readOnly = false, v
     </div>
     {type === "select" ? (
       <Select disabled={readOnly} defaultValue={value}>
-        <SelectTrigger id={id} className="h-11 border-[1.5px] border-gray-100 rounded-xl bg-gray-50 focus:ring-4 focus:ring-[#7EDE56]/15 focus:border-[#7EDE56] text-[13px] font-semibold transition-all font-inter">
+        <SelectTrigger id={id} className="h-11 border-[1.5px] border-gray-100 rounded-xl bg-gray-50 focus:ring-4 focus:ring-[#7EDE56]/15 focus:border-[#7EDE56] text-base sm:text-[13px] font-semibold transition-all font-inter">
           <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
         </SelectTrigger>
         <SelectContent className="rounded-xl border-none shadow-2xl">
@@ -63,7 +92,7 @@ const Field = ({ label, id, type = "text", required = false, readOnly = false, v
         readOnly={readOnly}
         value={value || ''}
         onChange={onChange}
-        className={`h-11 border-[1.5px] border-gray-100 rounded-xl bg-gray-50 focus:ring-4 focus:ring-[#7EDE56]/15 focus:border-[#7EDE56] text-[13px] font-semibold transition-all font-inter ${readOnly ? 'opacity-60 cursor-not-allowed shadow-none' : ''}`}
+        className={`h-11 border-[1.5px] border-gray-100 rounded-xl bg-gray-50 focus:ring-4 focus:ring-[#7EDE56]/15 focus:border-[#7EDE56] text-base sm:text-[13px] font-semibold transition-all font-inter ${readOnly ? 'opacity-60 cursor-not-allowed shadow-none' : ''}`}
       />
     )}
   </div>
@@ -441,7 +470,7 @@ const AgentProfile: React.FC = () => {
       case 'personal-info':
         return (
           <div className="space-y-6 animate-fade-in">
-            <div className="relative overflow-hidden rounded-[32px] p-8 md:p-10 text-white shadow-2xl" 
+            <div className="relative overflow-hidden rounded-2xl lg:rounded-[32px] p-5 sm:p-6 lg:p-10 text-white shadow-xl lg:shadow-2xl" 
                  style={{ background: 'linear-gradient(135deg, #002F37 0%, #004D4D 100%)' }}>
               <div className="absolute right-[-40px] top-[-40px] opacity-10 pointer-events-none scale-150 rotate-12">
                 <User className="h-64 w-64" />
@@ -483,23 +512,23 @@ const AgentProfile: React.FC = () => {
               </div>
             </div>
 
-            <Card className="rounded-[32px] border-none shadow-2xl bg-white overflow-hidden">
+            <Card className={cardShell}>
               <div className="h-1.5 w-full bg-[#7EDE56]" />
-              <CardContent className="p-8 md:p-10 space-y-10">
+              <CardContent className={cn(cardPad, sectionGap)}>
                 <div>
-                  <h3 className="text-xl font-black font-montserrat text-[#002F37] uppercase tracking-tight">Personal Identity</h3>
+                  <h3 className={sectionTitle}>Personal Identity</h3>
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] mt-2">Verified credentials & mapping</p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-8">
                   <Field label="Full Name" id="name" required value={formData.name || ''} onChange={(e: any) => setFormData({...formData, name: e.target.value})} />
                   <Field label="Mobile Number" id="phone" required value={formData.contact || ''} onChange={(e: any) => setFormData({...formData, contact: e.target.value})} />
                   <Field label="Primary Email" id="email" required value={formData.email || ''} readOnly />
                   <Field label="Assigned Gender" id="gender" type="select" value="male" readOnly options={[{label:'MALE', value:'male'}, {label:'FEMALE', value:'female'}]} />
                 </div>
-                <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-50">
-                  <Button variant="ghost" className="h-14 px-8 rounded-2xl font-black font-montserrat text-[13px] text-gray-400 hover:bg-gray-50" onClick={() => { setFormData(agent); setActivePanel('home'); }}>BACK</Button>
-                  <Button className="h-14 px-10 rounded-2xl bg-[#002f37] hover:bg-[#002f37]/90 text-white font-black font-montserrat text-[13px] border-none shadow-xl shadow-[#002f37]/20" onClick={handleUpdateProfile} disabled={saving}>
-                    {saving ? 'PROCESSING...' : 'UPDATE PROFILE'}
+                <div className="agent-action-row flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 lg:pt-6 border-t border-gray-50 sticky bottom-0 lg:static bg-white/95 lg:bg-transparent backdrop-blur-sm lg:backdrop-blur-none -mx-1 px-1 pb-1 lg:mx-0 lg:px-0 lg:pb-0">
+                  <Button variant="ghost" className={cn(actionBtn, 'px-6 lg:px-8 text-gray-400 hover:bg-gray-50')} onClick={() => { setFormData(agent); setActivePanel('home'); }}>Back</Button>
+                  <Button className={cn(actionBtn, 'px-8 lg:px-10 bg-[#002f37] hover:bg-[#002f37]/90 text-white border-none shadow-lg lg:shadow-xl shadow-[#002f37]/20')} onClick={handleUpdateProfile} disabled={saving}>
+                    {saving ? 'Processing…' : 'Update Profile'}
                   </Button>
                 </div>
               </CardContent>
@@ -515,20 +544,20 @@ const AgentProfile: React.FC = () => {
           : getCommunitiesForRegion(formData.region || agent?.region);
 
         return (
-          <Card className="rounded-[32px] border-none shadow-2xl bg-white overflow-hidden animate-fade-in">
+          <Card className={cn(cardShell, 'animate-fade-in')}>
             <div className="h-1.5 w-full bg-[#7EDE56]" />
-            <CardContent className="p-8 md:p-10 space-y-10">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-[#7EDE56]/10 flex items-center justify-center text-[#002f37]">
-                  <MapPin className="h-6 w-6" />
+            <CardContent className={cn(cardPad, sectionGap)}>
+              <div className="flex items-center gap-3 lg:gap-4">
+                <div className="h-10 w-10 lg:h-12 lg:w-12 rounded-xl lg:rounded-2xl bg-[#7EDE56]/10 flex items-center justify-center text-[#002f37] shrink-0">
+                  <MapPin className="h-5 w-5 lg:h-6 lg:w-6" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-black font-montserrat text-[#002F37] uppercase tracking-tight">Field Location</h3>
+                <div className="min-w-0">
+                  <h3 className={sectionTitle}>Field Location</h3>
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] mt-1">Region, district & community mapping</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-8">
                 <div className="space-y-1.5">
                   <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Assigned Region</Label>
                   <Select
@@ -604,10 +633,10 @@ const AgentProfile: React.FC = () => {
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-50">
-                <Button variant="ghost" className="h-14 px-8 rounded-2xl font-black text-[13px] text-gray-400" onClick={() => setActivePanel('home')}>BACK</Button>
-                <Button className="h-14 px-10 rounded-2xl bg-[#002f37] hover:bg-[#002f37]/90 text-white font-black text-[13px]" onClick={handleUpdateProfile} disabled={saving}>
-                  {saving ? 'SAVING...' : 'SAVE LOCATION'}
+              <div className="agent-action-row flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 lg:pt-6 border-t border-gray-50 sticky bottom-0 lg:static bg-white/95 lg:bg-transparent backdrop-blur-sm lg:backdrop-blur-none -mx-1 px-1 pb-1 lg:mx-0 lg:px-0 lg:pb-0">
+                <Button variant="ghost" className={cn(actionBtn, 'px-6 lg:px-8 text-gray-400')} onClick={() => setActivePanel('home')}>Back</Button>
+                <Button className={cn(actionBtn, 'px-8 lg:px-10 bg-[#002f37] hover:bg-[#002f37]/90 text-white')} onClick={handleUpdateProfile} disabled={saving}>
+                  {saving ? 'Saving…' : 'Save Location'}
                 </Button>
               </div>
             </CardContent>
@@ -617,19 +646,19 @@ const AgentProfile: React.FC = () => {
 
       case 'work-details':
         return (
-          <Card className="rounded-[32px] border-none shadow-2xl bg-white overflow-hidden animate-fade-in">
+          <Card className={cn(cardShell, 'animate-fade-in')}>
             <div className="h-1.5 w-full bg-[#002f37]" />
-            <CardContent className="p-8 md:p-10 space-y-10">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-[#002f37]/5 flex items-center justify-center text-[#002f37]">
-                   <Briefcase className="h-6 w-6" />
+            <CardContent className={cn(cardPad, sectionGap)}>
+              <div className="flex items-center gap-3 lg:gap-4">
+                <div className="h-10 w-10 lg:h-12 lg:w-12 rounded-xl lg:rounded-2xl bg-[#002f37]/5 flex items-center justify-center text-[#002f37] shrink-0">
+                   <Briefcase className="h-5 w-5 lg:h-6 lg:w-6" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-black font-montserrat text-[#002F37] uppercase tracking-tight">Work Profile</h3>
+                <div className="min-w-0">
+                  <h3 className={sectionTitle}>Work Profile</h3>
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] mt-1">Operational details & assignment</p>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-8">
                 <Field label="Agent Identity" id="aid" readOnly value={agent?.agentId} />
                 <Field label="Current Grade" id="role" readOnly value="Field Agent (Gold)" />
                 <Field label="Reporting Supervisor" id="sup" readOnly value={supervisorInfo?.name || 'Not assigned'} />
@@ -641,19 +670,19 @@ const AgentProfile: React.FC = () => {
 
       case 'security':
         return (
-          <Card className="rounded-[32px] border-none shadow-2xl bg-white overflow-hidden animate-fade-in">
+          <Card className={cn(cardShell, 'animate-fade-in')}>
             <div className="h-1.5 w-full bg-[#921573]" />
-            <CardContent className="p-8 md:p-10 space-y-10">
+            <CardContent className={cn(cardPad, sectionGap)}>
                <div>
-                  <h3 className="text-xl font-black font-montserrat text-[#002F37] uppercase tracking-tight">Account Access</h3>
+                  <h3 className={sectionTitle}>Account Access</h3>
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] mt-2">Manage your authentication</p>
                 </div>
-              <div className="grid gap-6 max-w-md">
+              <div className="grid gap-5 lg:gap-6 max-w-md">
                 <Field label="Current Password" id="cp" type="password" value={passwordData.currentPassword} onChange={(e: any) => setPasswordData({...passwordData, currentPassword: e.target.value})} />
                 <Field label="New Secure Password" id="np" type="password" value={passwordData.newPassword} onChange={(e: any) => setPasswordData({...passwordData, newPassword: e.target.value})} />
                 <Field label="Verify New Password" id="cnp" type="password" value={passwordData.confirmPassword} onChange={(e: any) => setPasswordData({...passwordData, confirmPassword: e.target.value})} />
-                <Button onClick={handleUpdatePassword} disabled={saving} className="h-14 bg-[#002f37] hover:bg-[#002f37]/90 text-white font-black font-montserrat rounded-2xl border-none mt-2 shadow-xl shadow-[#002f37]/20 uppercase tracking-widest text-[11px]">
-                  {saving ? 'AUTHENTICATING...' : 'CHANGE PASSWORD'}
+                <Button onClick={handleUpdatePassword} disabled={saving} className={cn(actionBtn, 'bg-[#002f37] hover:bg-[#002f37]/90 text-white border-none mt-1 shadow-lg lg:shadow-xl shadow-[#002f37]/20 uppercase tracking-widest text-[11px] w-full')}>
+                  {saving ? 'Authenticating…' : 'Change Password'}
                 </Button>
               </div>
             </CardContent>
@@ -662,74 +691,76 @@ const AgentProfile: React.FC = () => {
 
       case 'support':
         return (
-          <div className="space-y-6 animate-fade-in">
-            <Card className="rounded-[32px] border-none shadow-2xl bg-white overflow-hidden">
+          <div className="space-y-4 lg:space-y-6 animate-fade-in">
+            <Card className={cardShell}>
               <div className="h-1.5 w-full bg-[#002f37]" />
-              <CardContent className="p-8 md:p-10 space-y-10">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                  <div className="space-y-1">
-                    <h3 className="text-3xl font-black font-montserrat text-[#002F37] uppercase tracking-tight leading-tight">Support<br/>Center</h3>
+              <CardContent className={cn(cardPad, sectionGap)}>
+                <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+                  <div className="space-y-1 min-w-0">
+                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-black font-montserrat text-[#002F37] uppercase tracking-tight leading-tight">Support Center</h3>
                     <p className="text-[10px] font-black font-inter text-gray-400 uppercase tracking-[0.25em]">We're here to help you succeed</p>
                   </div>
-                  <Button className="bg-[#002F37] hover:bg-[#003c47] text-white font-black font-montserrat px-8 h-14 rounded-2xl border-none shadow-xl shadow-[#002F37]/20 transition-all uppercase tracking-widest text-[11px]" onClick={() => setTicketModalOpen(true)}>
+                  <Button className={cn(actionBtn, 'bg-[#002F37] hover:bg-[#003c47] text-white px-6 lg:px-8 border-none shadow-lg lg:shadow-xl shadow-[#002F37]/20 uppercase tracking-widest text-[11px] w-full sm:w-auto shrink-0')} onClick={() => setTicketModalOpen(true)}>
                     Create Ticket
                   </Button>
                 </div>
-                <div className="space-y-6">
-                  <h4 className="text-[10px] font-black font-inter text-gray-400 uppercase tracking-[0.3em] mb-4">Recent Tickets</h4>
-                  {tickets.length > 0 ? (
-                    <div className="space-y-4">
+                <div className="space-y-4 lg:space-y-6">
+                  <h4 className="text-[10px] font-black font-inter text-gray-400 uppercase tracking-[0.3em]">Recent Tickets</h4>
+                  {loadingTickets ? (
+                    <div className="py-10 text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">Loading tickets…</div>
+                  ) : tickets.length > 0 ? (
+                    <div className="space-y-3">
                       {tickets.map((t: any) => (
-                        <div key={t._id} className="p-5 rounded-2xl border border-gray-100 hover:border-[#7EDE56] hover:bg-gray-50/50 transition-all group flex items-center justify-between cursor-pointer">
-                          <div className="flex items-center gap-4">
-                            <div className={`h-3 w-3 rounded-full ${t.status === 'Open' ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]'}`} />
-                            <div>
-                              <h5 className="text-[14px] font-black font-montserrat text-[#002F37]">{t.subject}</h5>
-                              <p className="text-[10px] font-bold font-inter text-gray-400 uppercase tracking-widest mt-0.5">{t.ticketId} · {t.category}</p>
+                        <div key={t._id} className="p-4 lg:p-5 rounded-xl lg:rounded-2xl border border-gray-100 hover:border-[#7EDE56] hover:bg-gray-50/50 transition-all group flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${t.status === 'Open' ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]'}`} />
+                            <div className="min-w-0">
+                              <h5 className="text-[13px] lg:text-[14px] font-black font-montserrat text-[#002F37] truncate">{t.subject}</h5>
+                              <p className="text-[10px] font-bold font-inter text-gray-400 uppercase tracking-widest mt-0.5 truncate">{t.ticketId} · {t.category}</p>
                             </div>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-gray-200 group-hover:text-[#002F37] transition-all" />
+                          <ChevronRight className="h-4 w-4 text-gray-200 group-hover:text-[#002F37] transition-all shrink-0" />
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="py-16 text-center bg-gray-50/50 rounded-[32px] border-2 border-dashed border-gray-200">
-                      <div className="h-20 w-20 rounded-full bg-white flex items-center justify-center mx-auto mb-6 shadow-sm">
-                        <Briefcase className="w-10 h-10 text-gray-200" />
+                    <div className="py-12 lg:py-16 text-center bg-gray-50/50 rounded-2xl lg:rounded-[32px] border-2 border-dashed border-gray-200">
+                      <div className="h-16 w-16 lg:h-20 lg:w-20 rounded-full bg-white flex items-center justify-center mx-auto mb-4 lg:mb-6 shadow-sm">
+                        <Briefcase className="w-8 h-8 lg:w-10 lg:h-10 text-gray-200" />
                       </div>
-                      <h5 className="text-[12px] font-black font-inter text-gray-400 uppercase tracking-[0.2em]">No active support tickets</h5>
-                      <p className="text-[10px] font-medium text-gray-300 mt-2">Your historical requests will appear here</p>
+                      <h5 className="text-[11px] lg:text-[12px] font-black font-inter text-gray-400 uppercase tracking-[0.2em]">No active support tickets</h5>
+                      <p className="text-[10px] font-medium text-gray-300 mt-2 px-6">Your historical requests will appear here</p>
                     </div>
                   )}
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="p-10 rounded-[40px] bg-[#002F37] text-white shadow-3xl relative overflow-hidden border-none text-center">
+            <Card className="p-6 sm:p-8 lg:p-10 rounded-2xl lg:rounded-[40px] bg-[#002F37] text-white shadow-xl lg:shadow-3xl relative overflow-hidden border-none text-center">
                <div className="absolute top-0 right-0 p-8 opacity-5">
                   <Handshake className="h-64 w-64 -rotate-12" />
                </div>
-               <div className="relative z-10 space-y-8 flex flex-col items-center">
-                  <Badge className="bg-[#7EDE56] text-[#002F37] font-black font-inter px-4 py-2 border-none uppercase tracking-[0.25em] rounded-full shadow-lg">YOUR SUPERVISOR</Badge>
+               <div className="relative z-10 space-y-6 lg:space-y-8 flex flex-col items-center">
+                  <Badge className="bg-[#7EDE56] text-[#002F37] font-black font-inter px-4 py-2 border-none uppercase tracking-[0.25em] rounded-full shadow-lg">Your Supervisor</Badge>
                   <div className="space-y-2">
-                    <h3 className="text-3xl font-black font-montserrat tracking-tight">{supervisorInfo?.name || 'Supervisor pending'}</h3>
-                    <p className="text-white/60 text-[13px] font-medium max-w-xs mx-auto">
+                    <h3 className="text-2xl lg:text-3xl font-black font-montserrat tracking-tight">{supervisorInfo?.name || 'Supervisor pending'}</h3>
+                    <p className="text-white/60 text-[12px] lg:text-[13px] font-medium max-w-xs mx-auto px-2">
                       {supervisorInfo?.contact || supervisorInfo?.email
                         ? 'Contact your assigned regional supervisor directly from the field.'
                         : 'Ask your admin to assign a supervisor to your account.'}
                     </p>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4 w-full max-w-sm px-2">
                     <Button
                       onClick={() => contactSupervisor('phone')}
-                      className="bg-[#7EDE56] hover:bg-[#8eff6b] text-[#002F37] font-black font-montserrat h-14 rounded-2xl w-full border-none shadow-xl shadow-[#7EDE56]/10 uppercase tracking-widest text-[11px]"
+                      className={cn(actionBtn, 'bg-[#7EDE56] hover:bg-[#8eff6b] text-[#002F37] w-full border-none shadow-lg shadow-[#7EDE56]/10 uppercase tracking-widest text-[11px]')}
                     >
                       Call Supervisor
                     </Button>
                     <Button
                       onClick={() => contactSupervisor('whatsapp')}
                       variant="ghost"
-                      className="bg-white/10 text-white hover:bg-white/20 h-14 rounded-2xl w-full font-black font-montserrat border-none uppercase tracking-widest text-[11px]"
+                      className={cn(actionBtn, 'bg-white/10 text-white hover:bg-white/20 w-full border-none uppercase tracking-widest text-[11px]')}
                     >
                       WhatsApp
                     </Button>
@@ -741,8 +772,8 @@ const AgentProfile: React.FC = () => {
 
       case 'knowledge':
         return (
-          <div className="space-y-6 animate-fade-in">
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-4 lg:space-y-6 animate-fade-in">
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
                 {[
                   { title: 'Offline & PWA Field Guide', desc: 'Install the app, download grower data, work offline, sync in town', icon: <Wifi className="h-6 w-6" />, route: '/dashboard/agent/offline-guide' },
                   { title: 'Grower Onboarding', desc: 'Step-by-step guide to registering new farmers', icon: <UserCheck className="h-6 w-6" /> },
@@ -751,22 +782,23 @@ const AgentProfile: React.FC = () => {
                 ].map((guide, idx) => (
                   <Card
                     key={idx}
-                    className="p-6 rounded-[32px] border-none shadow-xl hover:shadow-2xl transition-all cursor-pointer bg-white group"
+                    className="p-5 lg:p-6 rounded-2xl lg:rounded-[32px] border border-gray-100 lg:border-none shadow-sm lg:shadow-xl hover:shadow-md lg:hover:shadow-2xl transition-all cursor-pointer bg-white group active:scale-[0.99]"
                     onClick={() => {
                       if ('route' in guide && guide.route) navigate(guide.route as string);
                     }}
                   >
-                    <div className="h-14 w-14 rounded-2xl bg-[#002f37]/5 flex items-center justify-center text-[#002f37] group-hover:bg-[#7EDE56] group-hover:text-[#002f37] transition-all mb-4">
+                    <div className="h-12 w-12 lg:h-14 lg:w-14 rounded-xl lg:rounded-2xl bg-[#002f37]/5 flex items-center justify-center text-[#002f37] group-hover:bg-[#7EDE56] group-hover:text-[#002f37] transition-all mb-3 lg:mb-4">
                       {guide.icon}
                     </div>
-                    <h4 className="text-[15px] font-black font-montserrat text-[#002f37] mb-2 leading-tight uppercase tracking-tight">{guide.title}</h4>
+                    <h4 className="text-[14px] lg:text-[15px] font-black font-montserrat text-[#002f37] mb-1.5 lg:mb-2 leading-tight uppercase tracking-tight">{guide.title}</h4>
                     <p className="text-[11px] font-medium text-gray-400 font-inter leading-relaxed">{guide.desc}</p>
                   </Card>
                 ))}
              </div>
-             <Card className="rounded-[32px] border-none shadow-2xl bg-white overflow-hidden p-8">
-                <h3 className="text-xl font-black font-montserrat text-[#002F37] uppercase tracking-tight mb-8">Frequently Asked Questions</h3>
-                <div className="space-y-4">
+             <Card className={cn(cardShell, 'p-0')}>
+                <CardContent className={cn(cardPad)}>
+                <h3 className={cn(sectionTitle, 'mb-5 lg:mb-8')}>Frequently Asked Questions</h3>
+                <div className="space-y-3">
                   {[
                     "How do I use AgriLync offline in the village?",
                     "What should I do if my GPS isn't locking?",
@@ -775,16 +807,17 @@ const AgentProfile: React.FC = () => {
                   ].map((q, i) => (
                     <div
                       key={i}
-                      className="p-4 rounded-2xl border border-gray-50 flex items-center justify-between group hover:border-[#7EDE56] cursor-pointer"
+                      className="p-4 rounded-xl lg:rounded-2xl border border-gray-50 flex items-center justify-between gap-3 group hover:border-[#7EDE56] active:bg-gray-50/80 cursor-pointer"
                       onClick={() => {
                         if (i === 0) navigate('/dashboard/agent/offline-guide');
                       }}
                     >
-                      <p className="text-[13px] font-bold text-gray-600 font-inter group-hover:text-[#002f37]">{q}</p>
-                      <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-[#002f37]" />
+                      <p className="text-[13px] font-bold text-gray-600 font-inter group-hover:text-[#002f37] leading-snug">{q}</p>
+                      <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-[#002f37] shrink-0" />
                     </div>
                   ))}
                 </div>
+                </CardContent>
              </Card>
           </div>
         );
@@ -792,27 +825,27 @@ const AgentProfile: React.FC = () => {
       case 'commission':
       case 'payouts':
         return (
-          <div className="space-y-6 animate-fade-in">
-             <Card className="p-10 rounded-[40px] bg-[#002F37] text-white shadow-3xl relative overflow-hidden border-none text-center">
+          <div className="space-y-4 lg:space-y-6 animate-fade-in">
+             <Card className="p-6 sm:p-8 lg:p-10 rounded-2xl lg:rounded-[40px] bg-[#002F37] text-white shadow-xl lg:shadow-3xl relative overflow-hidden border-none text-center">
                 <div className="absolute top-0 left-0 p-8 opacity-5">
                    <TrendingUp className="h-64 w-64" />
                 </div>
-                <div className="relative z-10 space-y-4">
+                <div className="relative z-10 space-y-3 lg:space-y-4">
                    <p className="text-[10px] font-black text-[#7EDE56] uppercase tracking-[0.3em]">Lifetime Earnings</p>
-                   <h2 className="text-6xl font-black font-montserrat tracking-tighter">GH₵ 4,250.00</h2>
-                   <p className="text-white/40 text-[11px] font-bold uppercase tracking-widest">Next payout: April 30, 2026</p>
+                   <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black font-montserrat tracking-tighter">GH₵ 4,250.00</h2>
+                   <p className="text-white/40 text-[10px] lg:text-[11px] font-bold uppercase tracking-widest">Next payout: April 30, 2026</p>
                 </div>
              </Card>
-             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4">
                 {[
                   { label: 'This Month', val: '640' },
                   { label: 'Bonuses', val: '200' },
                   { label: 'Referrals', val: '120' },
                   { label: 'Withdrawn', val: '3.2k' }
                 ].map((stat, i) => (
-                  <Card key={i} className="p-5 rounded-3xl border-none shadow-xl bg-white text-center">
+                  <Card key={i} className="p-4 lg:p-5 rounded-2xl lg:rounded-3xl border border-gray-100 lg:border-none shadow-sm lg:shadow-xl bg-white text-center">
                     <p className="text-[9px] font-black text-gray-400 gap-2 mb-1 uppercase tracking-widest">{stat.label}</p>
-                    <p className="text-[18px] font-black text-[#002f37] font-montserrat">₵{stat.val}</p>
+                    <p className="text-[16px] lg:text-[18px] font-black text-[#002f37] font-montserrat">₵{stat.val}</p>
                   </Card>
                 ))}
              </div>
@@ -839,9 +872,9 @@ const AgentProfile: React.FC = () => {
 
       case 'display':
         return (
-          <Card className="rounded-[32px] border-none shadow-2xl bg-white overflow-hidden animate-fade-in">
-            <CardContent className="p-8 md:p-10 space-y-8">
-              <h3 className="text-xl font-black font-montserrat text-[#002F37] uppercase tracking-tight">Display Settings</h3>
+          <Card className={cn(cardShell, 'animate-fade-in')}>
+            <CardContent className={cn(cardPad, 'space-y-2 lg:space-y-4')}>
+              <h3 className={sectionTitle}>Display Settings</h3>
               <ToggleRow label="Dark Mode" description="Switch between light and dark interface" />
               <ToggleRow label="Compact View" description="Reduce spacing in data tables" />
               <ToggleRow label="High Contrast" description="Improve readability for field use" />
@@ -856,35 +889,34 @@ const AgentProfile: React.FC = () => {
 
   return (
     <AgentLayout activeSection="profile" title="Settings & Support">
-      <div className="pb-24">
-        <div className="lg:hidden animate-fade-in bg-white min-h-screen">
+      <div className="pb-24 lg:pb-0">
+        <div className="lg:hidden agent-settings-mobile">
           {activePanel === 'home' ? (
-            <div className="space-y-0 px-4">
-               {/* MINIMAL CENTERED PROFILE HEADER */}
-               <div className="pt-10 pb-8 flex flex-col items-center">
+            <div className="space-y-0 px-1 sm:px-2">
+               <div className="pt-8 pb-6 flex flex-col items-center">
                   <div className="relative mb-4">
-                    <Avatar className="h-24 w-24 border-none shadow-sm relative z-10">
+                    <Avatar className="h-24 w-24 border-2 border-[#7ede56]/20 shadow-md relative z-10">
                       <AvatarImage src={agent?.avatar} />
-                      <AvatarFallback className="bg-gray-100 text-gray-400 text-xl font-bold">{agent?.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className="bg-[#065f46] text-white text-xl font-bold">{agent?.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <button className="absolute bottom-0 right-0 h-8 w-8 bg-black text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white z-20 active:scale-95 transition-all">
+                    <label className="absolute bottom-0 right-0 h-8 w-8 bg-[#002f37] text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white z-20 active:scale-95 transition-all cursor-pointer">
                        <Camera className="h-4 w-4" />
-                    </button>
+                       <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                    </label>
                   </div>
                   
-                  <div className="text-center">
-                    <h2 className="text-xl font-bold font-montserrat text-black tracking-tight">{agent?.name || 'Musah Adams Congo'}</h2>
-                    <p className="text-[12px] font-medium text-gray-400 font-inter mt-0.5">{agent?.agentId || '053 187 8243'}</p>
+                  <div className="text-center px-4">
+                    <h2 className="text-xl font-bold font-montserrat text-[#002f37] tracking-tight">{agent?.name}</h2>
+                    <p className="text-[12px] font-semibold text-gray-400 font-inter mt-1">{agent?.agentId}</p>
                   </div>
                </div>
 
-               {/* NICE AND SIMPLE CARDS - REDUCED FONT SIZES */}
-               <div className="space-y-3 pb-24 px-1">
+               <div className="space-y-2.5 pb-28">
                   {[
-                    { id: 'personal-info', title: 'My Account', desc: 'Manage your history and mapping', icon: <User className="w-4 h-4 text-white" /> },
+                    { id: 'personal-info', title: 'My Account', desc: 'Manage your profile and mapping', icon: <User className="w-4 h-4 text-white" /> },
                     { id: 'commission', title: 'Earnings & Payouts', desc: 'Monitor monthly growth and bonuses', icon: <Coins className="w-4 h-4 text-white" /> },
                     { id: 'display', title: 'Offline access', desc: 'Install app & field data guide', icon: <RefreshCw className="w-4 h-4 text-white" />, route: '/dashboard/agent/offline-guide' },
-                    { id: 'security', title: 'Security & Access', desc: 'Customize how your account works', icon: <Lock className="w-4 h-4 text-white" /> },
+                    { id: 'security', title: 'Security & Access', desc: 'Password and account protection', icon: <Lock className="w-4 h-4 text-white" /> },
                     { id: 'knowledge', title: 'Knowledge base', desc: 'Best practices, FAQs and guides', icon: <FileText className="w-4 h-4 text-white" /> },
                     { id: 'support', title: 'Help and support', desc: "Get help with any issue you face", icon: <AlertTriangle className="w-4 h-4 text-white" /> },
                   ].map((item) => (
@@ -896,39 +928,54 @@ const AgentProfile: React.FC = () => {
                           return;
                         }
                         setActivePanel(item.id);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
                       }} 
-                      className="w-full flex items-center gap-4 p-5 bg-white border border-gray-100 rounded-[1.5rem] shadow-sm active:bg-gray-50 transition-all text-left group normal-case"
+                      className="w-full flex items-center gap-4 p-4 sm:p-5 bg-white border border-gray-100 rounded-2xl shadow-sm active:bg-gray-50 active:scale-[0.99] transition-all text-left group"
                     >
-                      <div className="h-11 w-11 rounded-full flex items-center justify-center bg-black text-white shrink-0">
+                      <div className="h-11 w-11 rounded-full flex items-center justify-center bg-[#002f37] text-white shrink-0 shadow-sm">
                         {item.icon}
                       </div>
-                      <div className="flex-1">
-                        <p className="text-[14px] font-bold font-montserrat text-black leading-tight">{item.title}</p>
-                        <p className="text-[11px] font-medium text-gray-400 font-inter leading-tight mt-1">{item.desc}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[14px] font-bold font-montserrat text-[#002f37] leading-tight">{item.title}</p>
+                        <p className="text-[11px] font-medium text-gray-400 font-inter leading-snug mt-0.5">{item.desc}</p>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-gray-200" />
+                      <ChevronRight className="h-4 w-4 text-gray-300 group-active:text-[#002f37] shrink-0" />
                     </button>
                   ))}
 
-                  {/* Simple Sign out */}
-                  <div className="pt-4 px-2">
+                  <div className="pt-3">
                     <Button 
                       variant="ghost" 
                       onClick={handleLogout} 
-                      className="w-full h-14 rounded-[1.5rem] text-rose-500 font-bold font-montserrat hover:bg-rose-50 transition-all gap-2 text-[13px] border border-transparent normal-case"
+                      className="w-full h-12 rounded-2xl text-rose-500 font-bold font-montserrat hover:bg-rose-50 active:bg-rose-100 transition-all gap-2 text-[13px] border border-rose-100"
                     >
                       <LogOut className="h-4 w-4" />
-                      Sign out account
+                      Sign out
                     </Button>
                   </div>
                </div>
             </div>
           ) : (
-            <div className="space-y-6 px-4 pt-6 bg-white min-h-screen">
-              <Button variant="ghost" size="sm" onClick={() => setActivePanel('home')} className="font-bold font-montserrat text-black text-[13px] p-0 flex items-center gap-2 hover:bg-transparent mb-4">
-                <ChevronRight className="h-4 w-4 rotate-180" /> Back to Sections
-              </Button>
-              {renderContent()}
+            <div className="flex flex-col min-h-[calc(100dvh-6rem)] -mx-2 sm:-mx-0">
+              <div className="sticky top-0 z-40 bg-[#f8fafc]/95 backdrop-blur-md border-b border-gray-100 px-3 sm:px-4 py-3 flex items-center gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => { setActivePanel('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="h-10 w-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[#002f37] shadow-sm active:scale-95 transition-transform shrink-0"
+                  aria-label="Back to settings"
+                >
+                  <ChevronRight className="h-4 w-4 rotate-180" />
+                </button>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Settings</p>
+                  <h1 className="text-[15px] font-black font-montserrat text-[#002f37] truncate">
+                    {MOBILE_PANEL_TITLES[activePanel] || 'Settings'}
+                  </h1>
+                </div>
+              </div>
+              <div className="agent-settings-mobile-panel flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 py-4 pb-32">
+                {renderContent()}
+              </div>
             </div>
           )}
         </div>
@@ -962,27 +1009,34 @@ const AgentProfile: React.FC = () => {
       
       {/* DIALOGS */}
       <Dialog open={ticketModalOpen} onOpenChange={setTicketModalOpen}>
-      <DialogContent className="agent-modal-mobile w-full max-w-[100vw] md:max-w-md max-md:rounded-none rounded-[32px] p-6 sm:p-8 md:p-10 border-none shadow-3xl bg-white font-inter">
-          <DialogHeader className="space-y-2">
-            <DialogTitle className="text-2xl font-black font-montserrat text-[#002F37] uppercase tracking-tight">Create Ticket</DialogTitle>
+        <DialogContent className={agentModalShell('border-none shadow-2xl bg-white font-inter gap-0')}>
+          <DialogHeader className={cn(agentModalHeader, agentModalCloseClear, 'space-y-2 border-gray-100 bg-white')}>
+            <DialogTitle className="text-xl sm:text-2xl font-black font-montserrat text-[#002F37] uppercase tracking-tight">Create Ticket</DialogTitle>
             <DialogDescription className="text-[11px] font-medium text-gray-400">Describe your issue and we'll resolve it within 24 hours.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-6 mt-6">
+          <div className={cn(agentModalBody, 'space-y-5')}>
             <Field label="Brief Subject" id="tsub" value={ticketData.subject} onChange={(e: any) => setTicketData({...ticketData, subject: e.target.value})} />
-            <Field label="Issue Category" id="tcat" type="select" value={ticketData.category} options={[{label:'TECHNICAL ISSUE', value:'Technical Issue'}, {label:'ACCOUNT ACCESS', value:'Account Access'}]} />
+            <Field label="Issue Category" id="tcat" type="select" value={ticketData.category} options={[{label:'TECHNICAL ISSUE', value:'Technical Issue'}, {label:'ACCOUNT ACCESS', value:'Account Access'}, {label:'FIELD OPERATIONS', value:'Field Operations'}]} />
             <div className="space-y-1.5">
               <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Describe detailed issue</Label>
               <Textarea 
-                className="min-h-[140px] rounded-2xl border-[1.5px] border-gray-100 bg-gray-50 focus:ring-4 focus:ring-[#7EDE56]/15 focus:border-[#7EDE56] transition-all p-4 text-sm font-medium" 
+                className="min-h-[120px] sm:min-h-[140px] rounded-xl lg:rounded-2xl border-[1.5px] border-gray-100 bg-gray-50 focus:ring-4 focus:ring-[#7EDE56]/15 focus:border-[#7EDE56] transition-all p-4 text-base sm:text-sm font-medium resize-none" 
                 placeholder="How can we help you today?" 
                 value={ticketData.description} 
                 onChange={(e) => setTicketData({...ticketData, description: e.target.value})} 
               />
             </div>
           </div>
-          <DialogFooter className="mt-8">
-            <Button onClick={handleCreateTicket} disabled={creatingTicket} className="w-full h-14 bg-[#7EDE56] text-[#002F37] font-black font-montserrat rounded-2xl border-none shadow-xl shadow-[#7EDE56]/20 uppercase tracking-widest text-[12px]">
-              {creatingTicket ? 'SUBMITTING...' : 'SUBMIT SUPPORT TICKET'}
+          <DialogFooter className={cn(agentModalFooter, 'border-gray-100 bg-white mt-0')}>
+            <Button
+              variant="outline"
+              onClick={() => setTicketModalOpen(false)}
+              className={cn(actionBtn, 'border-2 border-gray-200 text-gray-500 hover:bg-gray-50')}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleCreateTicket} disabled={creatingTicket} className={cn(actionBtn, 'bg-[#7EDE56] hover:bg-[#6cd147] text-[#002F37] border-none shadow-lg shadow-[#7EDE56]/20 uppercase tracking-widest text-[12px]')}>
+              {creatingTicket ? 'Submitting…' : 'Submit Ticket'}
             </Button>
           </DialogFooter>
         </DialogContent>

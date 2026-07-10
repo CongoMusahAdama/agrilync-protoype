@@ -1273,6 +1273,27 @@
     scrollbar-width: none;
   }
 
+  /* Settings & Support — smooth mobile scrolling and form polish */
+  .agent-settings-mobile-panel {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  .agent-settings-mobile input,
+  .agent-settings-mobile textarea,
+  .agent-settings-mobile select,
+  .agent-settings-mobile [role="combobox"] {
+    font-size: 16px !important;
+  }
+
+  .agent-settings-mobile .agent-settings-form-card {
+    max-width: 100%;
+  }
+
+  .agent-settings-mobile .agent-modal-mobile [role="dialog"] {
+    max-height: 100dvh;
+  }
+
   .admin-dashboard-root {
     touch-action: manipulation;
     -webkit-text-size-adjust: 100%;

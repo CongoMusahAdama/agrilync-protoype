@@ -17,6 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import { showValidationAlert } from '@/utils/validationAlert';
+import { buildMediaUploadFormData } from '@/utils/mediaUpload';
 
 interface MediaFile {
     id: string;
@@ -79,8 +80,8 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({ open, onOpenChange,
     }, []);
 
     const uploadMutation = useMutation({
-        mutationFn: async (payload: any) => {
-            const res = await api.post('/media', payload);
+        mutationFn: async (payload: FormData) => {
+            const res = await api.post('/media', payload, { timeout: 120000 });
             return res.data;
         },
         onError: (err) => {
@@ -98,31 +99,22 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({ open, onOpenChange,
         setLoading(true);
         try {
             for (const item of mediaFiles) {
-                const base64 = await new Promise<string>((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target?.result as string);
-                    reader.readAsDataURL(item.file);
-                });
-
-                const sizeKB = item.file.size / 1024;
-                const sizeStr = sizeKB > 1024 ? `${(sizeKB / 1024).toFixed(1)} MB` : `${sizeKB.toFixed(0)} KB`;
-
-                await uploadMutation.mutateAsync({
+                const formData = await buildMediaUploadFormData(item.file, {
                     name: item.name || item.file.name.split('.')[0],
                     type: item.type,
-                    url: base64,
-                    thumbnail: item.file.type.startsWith('image/') ? base64 : undefined,
-                    size: sizeStr,
-                    format: item.file.name.split('.').pop()?.toUpperCase(),
                     farmerId: farmer?._id || farmer?.id,
-                    album: item.name.startsWith('[Album] ') ? item.name.replace('[Album] ', '') : (item.category === 'Album' ? item.name : undefined),
+                    album: item.name.startsWith('[Album] ')
+                        ? item.name.replace('[Album] ', '')
+                        : (item.category === 'Album' ? item.name : undefined),
                     category: item.category,
                     description: item.description,
                     community: farmer?.community || agent?.community,
                     district: farmer?.district || agent?.district,
                     region: farmer?.region || agent?.region,
-                    status: 'Synced'
+                    status: 'Synced',
                 });
+
+                await uploadMutation.mutateAsync(formData);
             }
 
             queryClient.invalidateQueries({ queryKey: ['mediaItems'] });
