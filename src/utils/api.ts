@@ -20,8 +20,11 @@ const isBlogAdminRoute = (url?: string) =>
         url.includes('/resources/admin'));
 
 /** Public endpoints — skip auth headers to avoid slow token refresh on expired sessions. */
-const isPublicRoute = (url?: string) =>
-    !!url && /^\/resources\/?$/.test(url.split('?')[0]);
+const isPublicRoute = (url?: string) => {
+    if (!url) return false;
+    const path = url.split('?')[0];
+    return /^\/resources\/?$/.test(path) || /^\/blogs\/?$/.test(path);
+};
 
 let isRefreshing = false;
 let refreshQueue: Array<{

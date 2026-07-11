@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import api from '@/utils/api';
 import { resolvePublicAssetUrl } from '@/lib/resolveAssetUrl';
@@ -13,6 +14,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { WEBINARS } from '@/data/webinars';
+import { STATIC_BLOG_POSTS } from '@/data/staticBlogPosts';
 import { openWebinarRegistration, webinarRegisterButtonLabel } from '@/utils/webinarRegistration';
 import {
   Calendar,
@@ -140,162 +142,36 @@ const Blog = () => {
     }
   }, []);
 
-  // Static predefined blog posts
-  const staticBlogPosts = [
-    {
-      id: 10,
-      slug: "ghana-tomato-productivity-fix",
-      title: "From 8 to 20 Tonnes: Can Ghana Finally Fix Its Tomato Crisis?",
-      excerpt: "Explore how government-backed research from WACCI and Agrilync's finance-first innovation are unlocking massive productivity gains for smallholder farmers.",
-      author: "Agrilync Nexus Team",
-      date: "2026-03-26",
-      readTime: "8 min read",
-      category: "Agribusiness",
-      tags: ["Policy", "Innovation", "Tomato Crisis", "WACCI"],
-      image: "/lovable-uploads/image copy 15.png",
-      link: "https://agri-insider-series.beehiiv.com/p/from-8-to-20-tonnes-can-ghana-finally-fix-its-tomato-crisis",
-      featured: true
+  type BlogListPost = (typeof STATIC_BLOG_POSTS)[number] & {
+    _id?: string;
+    slug?: string;
+    link?: string;
+    createdAt?: string;
+  };
+
+  const { data: dynamicPosts = [], isFetching: fetchingBlogs } = useQuery({
+    queryKey: ['publicBlogs'],
+    queryFn: async () => {
+      const res = await api.get<BlogListPost[]>('/blogs', { timeout: 10000 });
+      return res.data;
     },
-    {
-      id: 9,
-      slug: "smart-greenhouse-tomato-crisis",
-      title: "How Smart Greenhouse Technology Can Solve Ghana’s Tomato Crisis",
-      excerpt: "Discover how smart greenhouse technology is revolutionizing Ghana's agriculture and solving the tomato crisis by 2026. A practical guide to year-round production.",
-      author: "Agrilync Nexus Team",
-      date: "2026-03-26",
-      readTime: "7 min read",
-      category: "Technology",
-      tags: ["Smart Greenhouse", "Tomato Crisis", "Ag-Tech"],
-      image: "/lovable-uploads/image copy 14.png",
-      link: "https://agri-insider-series.beehiiv.com/p/how-smart-greenhouse-technology-can-solve-ghana-s-tomato-crisis",
-      featured: true
-    },
-    {
-      id: 8,
-      slug: "mushroom-farming",
-      title: "A Beginner's Guide to Mushroom Farming: From Planning to Profit",
-      excerpt: "Learn the essentials of mushroom farming, from initial planning and setup to harvesting and selling for profit. A comprehensive guide for aspiring Ghanaian agropreneurs.",
-      author: "Agrilync Nexus Team",
-      date: "2026-01-16",
-      readTime: "6 min read",
-      category: "Agribusiness",
-      tags: ["Mushroom Farming", "Agropreneur", "Guided Farming"],
-      image: "/lovable-uploads/mushroom-farming.jpg",
-      link: "https://agri-insider-series.beehiiv.com/p/a-beginner-s-guide-to-mushroom-farming-from-planning-to-profit-post",
-      featured: true
-    },
-    {
-      id: 1,
-      title: "Ghana Faces Agricultural Crisis as Maize Imports Surge",
-      excerpt: "Ghana's agricultural sector confronts a critical challenge as projected maize imports could rise by 67 percent for the 2025/26 season, potentially reaching 300,000 tonnes and threatening the livelihoods of thousands of local farmers.",
-      author: "News Ghana",
-      date: "2024-12-19",
-      readTime: "4 min read",
-      category: "Agribusiness",
-      tags: ["Maize Crisis", "Food Security", "Imports"],
-      image: "/lovable-uploads/Screenshot 2025-12-19 195104.png",
-      link: "https://www.newsghana.com.gh/ghana-faces-agricultural-crisis-as-maize-imports-surge/",
-      featured: true
-    },
-    {
-      id: 2,
-      title: "5 Challenges Ghanaian Farmers Face Without Smart Tools",
-      excerpt: "Discover how Agrilync Nexus is helping to solve agricultural challenges with AI and finance access. Learn about the key obstacles facing Ghanaian farmers and how technology is providing solutions.",
-      author: "Agrilync Nexus Team",
-      date: "2024-06-25",
-      readTime: "5 min read",
-      category: "Agribusiness",
-      tags: ["Smart Farming", "Technology", "Ghana"],
-      image: "/lovable-uploads/889a4eaa-0299-4896-8399-849a40f5565a.png",
-      link: "https://agriinsider.beehiiv.com/",
-      featured: true
-    },
-    {
-      id: 3,
-      title: "Ghana's Agriculture Sector: Market Size, Growth, and Key Trends",
-      excerpt: "Explore the current state of Ghana's agricultural sector, market opportunities, and emerging trends that are shaping the future of farming in the country.",
-      author: "Market Research Team",
-      date: "2024-05-26",
-      readTime: "6 min read",
-      category: "Market Analysis",
-      tags: ["Market Trends", "Growth", "Analysis"],
-      image: "/lovable-uploads/3e19a1d1-e890-436d-ba69-4227c2a1c8b1.png",
-      link: "https://agriinsider.beehiiv.com/",
-      featured: false
-    },
-    {
-      id: 4,
-      title: "The Role of AI in African Farming: A Smart Future for Agriculture",
-      excerpt: "Discover how artificial intelligence is revolutionizing farming practices across Africa, from crop disease detection to predictive analytics and smart farming solutions.",
-      author: "AI Research Team",
-      date: "2024-05-06",
-      readTime: "7 min read",
-      category: "Technology",
-      tags: ["AI", "Innovation", "Smart Farming"],
-      image: "/lovable-uploads/d5bee012-8bd6-4f66-bd49-d60d2468bcb3.png",
-      link: "https://agriinsider.beehiiv.com/",
-      featured: false
-    },
-    {
-      id: 5,
-      title: "Sustainable Farming Practices for Smallholder Farmers",
-      excerpt: "Learn about sustainable farming techniques that can help smallholder farmers improve yields while protecting the environment and ensuring long-term profitability.",
-      author: "Sustainability Expert",
-      date: "2024-04-15",
-      readTime: "8 min read",
-      category: "Sustainability",
-      tags: ["Sustainability", "Best Practices", "Smallholder"],
-      image: "/lovable-uploads/3957d1e2-dc2b-4d86-a585-6dbc1d1d7c70.png",
-      link: "https://agriinsider.beehiiv.com/",
-      featured: false
-    },
-    {
-      id: 6,
-      title: "Digital Financial Services for Agricultural Growth",
-      excerpt: "Explore how digital financial services are transforming agricultural financing and enabling farmers to access credit, insurance, and payment solutions.",
-      author: "Fintech Team",
-      date: "2024-04-02",
-      readTime: "6 min read",
-      category: "Fintech",
-      tags: ["Digital Finance", "Credit", "Insurance"],
-      image: "/lovable-uploads/512cd931-d1b6-4a18-8b57-63786de9ffb8.png",
-      link: "https://agriinsider.beehiiv.com/",
-      featured: false
-    },
-    {
-      id: 7,
-      title: "Climate-Smart Agriculture: Adapting to Changing Weather Patterns",
-      excerpt: "Discover climate-smart agricultural practices that help farmers adapt to changing weather patterns and build resilience against climate change impacts.",
-      author: "Climate Expert",
-      date: "2024-03-20",
-      readTime: "9 min read",
-      category: "Climate",
-      tags: ["Climate Change", "Resilience", "Adaptation"],
-      image: "/lovable-uploads/58a418db-b2d5-4bcb-94c1-d230345ec90b.png",
-      link: "https://agriinsider.beehiiv.com/",
-      featured: true
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+
+  const blogPosts = useMemo(() => {
+    const seen = new Set<string>();
+    const merged: BlogListPost[] = [];
+    for (const post of [...dynamicPosts, ...STATIC_BLOG_POSTS]) {
+      const key = String(post.slug || (post as { _id?: string })._id || post.id);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      merged.push(post);
     }
-  ];
-
-  // Dynamic blog posts fetched from the backend + existing static articles
-  const [blogPosts, setBlogPosts] = useState<any[]>(staticBlogPosts);
-  const [loadingBlogs, setLoadingBlogs] = useState(true);
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        setLoadingBlogs(true);
-        const res = await api.get('/blogs');
-        // Prepend dynamic posts (latest) to the static list
-        setBlogPosts([...res.data, ...staticBlogPosts]);
-      } catch (err) {
-        console.error('Error fetching blogs from backend:', err);
-      } finally {
-        setLoadingBlogs(false);
-      }
-    };
-    fetchPosts();
-  }, []);
+    return merged;
+  }, [dynamicPosts]);
 
   const webinars = WEBINARS;
 
@@ -333,15 +209,15 @@ const Blog = () => {
   };
 
   // Filter blog posts based on active tab and search term
-  const filteredPosts = blogPosts.filter(post => {
+  const filteredPosts = useMemo(() => blogPosts.filter(post => {
     const matchesCategory = activeTab === 'all' || post.category.toLowerCase().replace(' ', '-') === activeTab;
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (post.tags && post.tags.some((tag: string) => tag.toLowerCase().includes(searchTerm.toLowerCase())));
     return matchesCategory && matchesSearch;
-  });
+  }), [blogPosts, activeTab, searchTerm]);
 
-  const featuredPosts = blogPosts.slice(0, 2);
+  const featuredPosts = useMemo(() => blogPosts.slice(0, 2), [blogPosts]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white overflow-x-hidden">
@@ -454,6 +330,8 @@ const Blog = () => {
                     <img
                       src={resolvePublicAssetUrl(post.image)}
                       alt={post.title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
@@ -542,24 +420,24 @@ const Blog = () => {
             </div>
           )}
 
-          {loadingBlogs ? (
-            <div className="flex flex-col items-center justify-center py-20 w-full col-span-3">
-              <div className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-[#7ede56] animate-spin mb-4"></div>
-              <p className="text-sm font-semibold text-[#002f37]/60">Fetching latest dynamic publications...</p>
-            </div>
-          ) : (
-            <motion.div 
-              layout
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-            >
-              <AnimatePresence mode="popLayout">
-                {filteredPosts.map((post, index) => (
+          {fetchingBlogs && (
+            <p className="text-center text-xs font-semibold text-[#002f37]/50 mb-6 uppercase tracking-widest">
+              Refreshing latest articles…
+            </p>
+          )}
+
+          <motion.div 
+            layout
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            <AnimatePresence mode="popLayout">
+              {filteredPosts.map((post, index) => (
                   <motion.article
                     layout
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.1) }}
                     key={post._id || post.slug}
                     id={post.slug}
                     className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-[#7ede56]/30"
@@ -568,6 +446,8 @@ const Blog = () => {
                       <img
                         src={resolvePublicAssetUrl(post.image)}
                         alt={post.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                       />
                       <div className="absolute top-4 left-4">
@@ -624,7 +504,6 @@ const Blog = () => {
                 ))}
               </AnimatePresence>
             </motion.div>
-          )}
 
           {filteredPosts.length === 0 && (
             <div className="text-center py-20 max-w-md mx-auto">
@@ -670,6 +549,8 @@ const Blog = () => {
                   <img
                     src={webinar.image}
                     alt={webinar.title}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                   <div className="absolute top-4 right-4">
@@ -721,6 +602,8 @@ const Blog = () => {
                         <img
                           src="/lovable-uploads/webinar-qr.jpg"
                           alt="QR Code"
+                          loading="lazy"
+                          decoding="async"
                           className="w-28 h-28 rounded-lg mb-2"
                         />
                         <p className="text-sm font-semibold text-gray-700">Scan to Register</p>
@@ -757,6 +640,8 @@ const Blog = () => {
                   <img
                     src={webinar.image}
                     alt={webinar.title}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">

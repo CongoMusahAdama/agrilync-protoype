@@ -323,7 +323,10 @@ router.post('/subscribe', async (req, res) => {
 // @desc    Fetch all blog posts
 router.get('/', async (req, res) => {
     try {
-        const blogs = await Blog.find().sort({ createdAt: -1 });
+        const blogs = await Blog.find()
+            .select('title slug category author readTime excerpt image tags createdAt updatedAt')
+            .sort({ createdAt: -1 })
+            .lean();
         res.json(blogs);
     } catch (err) {
         console.error('Fetch blogs error:', err.message);

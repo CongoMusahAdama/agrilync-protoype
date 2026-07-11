@@ -107,7 +107,7 @@ export const WEBINARS: WebinarItem[] = [
     description:
       'A knowledge session for forward-thinking agripreneurs on using budgets and farm records to improve profitability. Speaker: Cynthia Awewura Abavare (Climate Change & Environmental Conservation Specialist, Field Agent, AgriLync Nexus). Moderated by Congo Musah Adama (Founder & CEO, AgriLync Nexus).',
     speaker: 'Cynthia Awewura Abavare',
-    status: 'upcoming',
+    status: 'completed',
     registrationChannel: 'whatsapp',
   },
 ];
