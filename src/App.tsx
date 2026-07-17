@@ -14,6 +14,7 @@ import BlogPost from "./pages/BlogPost";
 import BlogAdminLogin from "./pages/BlogAdminLogin";
 import BlogAdminDashboard from "./pages/BlogAdminDashboard";
 import Contact from "./pages/Contact";
+import SafeguardingPolicy from "./pages/SafeguardingPolicy";
 import Gallery from "./pages/Gallery";
 import Resources from "./pages/Resources";
 import Team from "./pages/Team";
@@ -75,6 +76,7 @@ import AdminStaffNotifications from "@/pages/super-admin/AdminStaffNotifications
 import DashboardRedirect from "./pages/DashboardRedirect";
 import SupervisorPending from "./pages/supervisor/SupervisorPending";
 import CookieConsent from "./components/CookieConsent";
+import ScrollToTop from "./components/ScrollToTop";
 import GrowerVerify from "./pages/GrowerVerify";
 import WhatsAppCommunityRedirect from "./pages/WhatsAppCommunityRedirect";
 
@@ -114,6 +116,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <ScrollToTop />
             <CookieConsent />
             <Routes>
               <Route path="/" element={<Index />} />
@@ -127,6 +130,8 @@ const App = () => (
               <Route path="/team" element={<Team />} />
               <Route path="/team/:memberId" element={<TeamMemberProfile />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/safeguarding-policy" element={<SafeguardingPolicy />} />
+              <Route path="/safeguarding_policy" element={<Navigate to="/safeguarding-policy" replace />} />
               <Route path="/join/whatsapp" element={<WhatsAppCommunityRedirect />} />
               <Route
                 path="/events/farm-records/register"

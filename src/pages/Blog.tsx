@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import api from '@/utils/api';
 import { resolvePublicAssetUrl } from '@/lib/resolveAssetUrl';
@@ -46,6 +46,7 @@ const BRAND_GREEN = '#7ede56';
 const BRAND_TEAL = '#002F37';
 
 const Blog = () => {
+  const queryClient = useQueryClient();
   const [selectedWebinar, setSelectedWebinar] = useState<any>(null);
   const [showRegistration, setShowRegistration] = useState(false);
   const [registrationForm, setRegistrationForm] = useState({
@@ -160,6 +161,18 @@ const Blog = () => {
     refetchOnWindowFocus: false,
     retry: 1,
   });
+
+  const prefetchBlogPost = (slug?: string) => {
+    if (!slug) return;
+    queryClient.prefetchQuery({
+      queryKey: ['blogPost', slug],
+      queryFn: async () => {
+        const res = await api.get(`/blogs/${slug}`, { timeout: 10000 });
+        return res.data;
+      },
+      staleTime: 10 * 60 * 1000,
+    });
+  };
 
   const blogPosts = useMemo(() => {
     const seen = new Set<string>();
@@ -370,6 +383,8 @@ const Blog = () => {
                   to={`/blog/${post.slug}`}
                   className="group cursor-pointer animate-fade-in-up"
                   style={{ animationDelay: `${index * 150}ms` }}
+                  onMouseEnter={() => prefetchBlogPost(post.slug)}
+                  onFocus={() => prefetchBlogPost(post.slug)}
                 >
                   {content}
                 </Link>
@@ -483,6 +498,8 @@ const Blog = () => {
                           <Link
                             to={`/blog/${post.slug}`}
                             className="inline-flex items-center gap-2 text-[#7ede56] hover:text-[#66cc44] font-semibold text-sm group-hover:gap-3 transition-all"
+                            onMouseEnter={() => prefetchBlogPost(post.slug)}
+                            onFocus={() => prefetchBlogPost(post.slug)}
                           >
                             Read More
                             <ArrowRight className="w-4 h-4" />

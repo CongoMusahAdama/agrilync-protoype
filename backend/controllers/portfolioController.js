@@ -33,8 +33,10 @@ async function resolveImageUrl(image) {
 exports.getPublicPortfolio = async (req, res) => {
     try {
         const items = await PortfolioItem.find({ published: true })
+            .select('title image region category date description sortOrder featured published createdAt updatedAt')
             .sort({ sortOrder: 1, createdAt: 1 })
             .lean();
+        res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
         res.json(items.map(formatItem));
     } catch (err) {
         console.error('getPublicPortfolio error:', err.message);

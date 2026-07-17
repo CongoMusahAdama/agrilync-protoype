@@ -23,7 +23,12 @@ const isBlogAdminRoute = (url?: string) =>
 const isPublicRoute = (url?: string) => {
     if (!url) return false;
     const path = url.split('?')[0];
-    return /^\/resources\/?$/.test(path) || /^\/blogs\/?$/.test(path);
+    if (/^\/resources\/?$/.test(path)) return true;
+    if (/^\/blogs\/?$/.test(path)) return true;
+    if (/^\/blogs\/[^/]+$/.test(path) && path !== '/blogs/subscribers') return true;
+    if (/^\/portfolio\/?$/.test(path)) return true;
+    if (/^\/farmers\/public\//.test(path)) return true;
+    return false;
 };
 
 let isRefreshing = false;

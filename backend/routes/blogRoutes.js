@@ -327,6 +327,7 @@ router.get('/', async (req, res) => {
             .select('title slug category author readTime excerpt image tags createdAt updatedAt')
             .sort({ createdAt: -1 })
             .lean();
+        res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
         res.json(blogs);
     } catch (err) {
         console.error('Fetch blogs error:', err.message);
@@ -350,10 +351,11 @@ router.get('/subscribers', blogAuth, async (req, res) => {
 // @desc    Fetch single blog by slug
 router.get('/:slug', async (req, res) => {
     try {
-        const blog = await Blog.findOne({ slug: req.params.slug });
+        const blog = await Blog.findOne({ slug: req.params.slug }).lean();
         if (!blog) {
             return res.status(404).json({ msg: 'Blog post not found' });
         }
+        res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
         res.json(blog);
     } catch (err) {
         console.error('Fetch blog by slug error:', err.message);

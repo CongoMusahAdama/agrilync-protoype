@@ -92,7 +92,7 @@ const Resources: React.FC = () => {
 
   const {
     data: apiResources = [],
-    isLoading: resourcesLoading,
+    isPending: resourcesPending,
     isError: resourcesLoadFailed,
     error: resourcesError,
   } = useQuery({
@@ -105,7 +105,10 @@ const Resources: React.FC = () => {
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     retry: 1,
+    placeholderData: (previousData) => previousData,
   });
+
+  const showResourceSkeletons = resourcesPending && apiResources.length === 0;
 
   const resourcesLoadError = resourcesLoadFailed
     ? resourcesError instanceof Error
@@ -362,7 +365,7 @@ const Resources: React.FC = () => {
 
           {/* Resource Grid */}
           <AnimatePresence mode="popLayout">
-            {resourcesLoading ? (
+            {showResourceSkeletons ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
                 {Array.from({ length: RESOURCE_SKELETON_COUNT }).map((_, i) => (
                   <ResourceCardSkeleton key={i} />

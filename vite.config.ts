@@ -60,11 +60,11 @@ export default defineConfig(({ mode }) => ({
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname.startsWith("/api/blogs") && !url.pathname.includes("/blogs/"),
+            urlPattern: ({ url }) => url.pathname.startsWith("/api/blogs"),
             handler: "StaleWhileRevalidate",
             options: {
               cacheName: "agrilync-blogs-api",
-              expiration: { maxEntries: 5, maxAgeSeconds: 60 * 60 * 24 },
+              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },
@@ -73,6 +73,15 @@ export default defineConfig(({ mode }) => ({
             handler: "StaleWhileRevalidate",
             options: {
               cacheName: "agrilync-resources-api",
+              expiration: { maxEntries: 5, maxAgeSeconds: 60 * 60 * 24 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith("/api/portfolio"),
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "agrilync-portfolio-api",
               expiration: { maxEntries: 5, maxAgeSeconds: 60 * 60 * 24 },
               cacheableResponse: { statuses: [0, 200] },
             },

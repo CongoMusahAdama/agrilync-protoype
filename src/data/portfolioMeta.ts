@@ -6,6 +6,8 @@ export type PortfolioItem = {
   category: string;
   date: string;
   description: string;
+  /** Longer narrative — shown only in the detail modal (Read Full Story). */
+  fullStory?: string | string[];
   featured?: boolean;
   published?: boolean;
   sortOrder?: number;

@@ -12,6 +12,7 @@ router.get('/', async (req, res) => {
             .select('title category type description coverImage documentUrl badge tags stats order createdAt')
             .sort({ order: -1, createdAt: -1 })
             .lean();
+        res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
         res.json(resources);
     } catch (err) {
         console.error('Fetch resources error:', err.message);

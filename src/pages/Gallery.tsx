@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogTrigger, DialogClose } from '@/components/ui/dialog';
@@ -22,17 +23,50 @@ import {
   type PortfolioItem,
 } from '@/data/portfolioMeta';
 
+const AGRI_ECON_SUMMIT_2024 = {
+  title: '2024 Agricultural Economics Summit',
+  date: '2–4 October 2024',
+  description:
+    'AgriLync Nexus at the GAAE Agricultural Economics & Agribusiness Conference, UDS Tamale — learning from researchers and experts across Africa’s agri value chains.',
+  fullStory: [
+    'AgriLync Nexus participated in the 2024 Agricultural Economics and Agribusiness Conference held at the University for Development Studies (UDS), Tamale, from 2nd to 4th October 2024. The conference, organized by the Ghana Association of Agricultural Economists (GAAE), was themed “Regenerative and Precision Agriculture for Inclusive Value Chain Development in Africa.”',
+    'The event brought together researchers, policymakers, agricultural experts, and industry stakeholders to deliberate on innovative approaches to strengthening agricultural systems and agribusiness development across Africa. Key discussions centered on regenerative agriculture, precision farming, climate resilience, food systems, and data-driven strategies for building more inclusive and sustainable agricultural value chains.',
+    'By meeting researchers and sector experts, our team gained practical insights that continue to shape how AgriLync delivers finance-first tools, AI advisory, and field-agent networks to support smallholder farmers and agripreneurs across Ghana.',
+  ],
+};
+
+const renderPortfolioStory = (item: PortfolioItem) => {
+  const story = item.fullStory ?? item.description;
+  if (Array.isArray(story)) {
+    return (
+      <div className="space-y-4">
+        {story.map((paragraph, index) => (
+          <p key={index} className="text-gray-300 text-base sm:text-lg leading-relaxed">
+            {paragraph}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return (
+    <p className="text-gray-300 text-base sm:text-lg leading-relaxed">
+      {story}
+    </p>
+  );
+};
+
 // Farm visit data with regions and crops
 const farmVisits = [
   // 🎓 Annual Agricultural Economics Conference (Tamale, Northern Region) - FEATURED GROUP PHOTO
   {
     id: 5,
-    title: "Agricultural Economics Conference",
+    title: AGRI_ECON_SUMMIT_2024.title,
     image: "/lovable-uploads/gallery5.jpg",
     region: "Northern Region",
     category: "Conference",
-    date: "October 2024",
-    description: "Participated in the 2024 Agricultural Economics & Agribusiness Conference at UDS, Tamale — focused on regenerative agriculture and agribusiness development."
+    date: AGRI_ECON_SUMMIT_2024.date,
+    description: AGRI_ECON_SUMMIT_2024.description,
+    fullStory: AGRI_ECON_SUMMIT_2024.fullStory,
   },
 
   // 🍍 Pineapple Plantation Visit (Ahanta West, Western Region)
@@ -94,21 +128,23 @@ const farmVisits = [
   // (Moved ID 5 to top)
   {
     id: 7,
-    title: "Agricultural Economics Conference",
+    title: AGRI_ECON_SUMMIT_2024.title,
     image: "/lovable-uploads/gallery7.jpg",
     region: "Northern Region",
     category: "Conference",
-    date: "October 2024",
-    description: "Participated in the 2024 Agricultural Economics & Agribusiness Conference at UDS, Tamale — focused on regenerative agriculture and agribusiness development."
+    date: AGRI_ECON_SUMMIT_2024.date,
+    description: AGRI_ECON_SUMMIT_2024.description,
+    fullStory: AGRI_ECON_SUMMIT_2024.fullStory,
   },
   {
     id: 12,
-    title: "Agricultural Economics Conference",
+    title: AGRI_ECON_SUMMIT_2024.title,
     image: "/lovable-uploads/gallery12.jpg",
     region: "Northern Region",
     category: "Conference",
-    date: "October 2024",
-    description: "Participated in the 2024 Agricultural Economics & Agribusiness Conference at UDS, Tamale — focused on regenerative agriculture and agribusiness development."
+    date: AGRI_ECON_SUMMIT_2024.date,
+    description: AGRI_ECON_SUMMIT_2024.description,
+    fullStory: AGRI_ECON_SUMMIT_2024.fullStory,
   },
 
   // 📱 Digital Tools Training for Farmers (Dormaa Ahenkro, Bono Ahafo Region)
@@ -281,7 +317,6 @@ const regions = [...PORTFOLIO_REGIONS];
 const categories = [...PORTFOLIO_CATEGORIES];
 
 const Gallery = () => {
-  const [apiVisits, setApiVisits] = useState<PortfolioItem[]>([]);
   const [selectedRegion, setSelectedRegion] = useState("All Regions");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedImage, setSelectedImage] = useState<PortfolioItem | null>(null);
@@ -289,23 +324,21 @@ const Gallery = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0);
 
-  useEffect(() => {
-    const loadPortfolio = async () => {
-      try {
-        const res = await api.get<PortfolioItem[]>('/portfolio');
-        const items = Array.isArray(res.data) ? res.data : [];
-        setApiVisits(
-          items.map((item) => ({
-            ...item,
-            image: resolvePublicAssetUrl(item.image),
-          }))
-        );
-      } catch {
-        setApiVisits([]);
-      }
-    };
-    loadPortfolio();
-  }, []);
+  const { data: apiVisits = [] } = useQuery({
+    queryKey: ['publicPortfolio'],
+    queryFn: async () => {
+      const res = await api.get<PortfolioItem[]>('/portfolio', { timeout: 10000 });
+      const items = Array.isArray(res.data) ? res.data : [];
+      return items.map((item) => ({
+        ...item,
+        image: resolvePublicAssetUrl(item.image),
+      }));
+    },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
 
   const staticVisits = useMemo<PortfolioItem[]>(
     () =>
@@ -532,7 +565,7 @@ const Gallery = () => {
                           {featuredVisit.title}
                         </h2>
 
-                        <p className="text-lg text-gray-600 leading-updated mb-8 lg:mb-12 line-clamp-4 lg:line-clamp-none">
+                        <p className="text-lg text-gray-600 leading-relaxed mb-8 lg:mb-12 line-clamp-3">
                           {featuredVisit.description}
                         </p>
 
@@ -667,7 +700,7 @@ const Gallery = () => {
               </div>
 
               {/* Info Sidebar (Bottom on mobile, Right on Desktop) */}
-              <div className="w-full md:w-[400px] lg:w-[450px] bg-white/10 backdrop-blur-xl md:bg-[#1a1a1a] border-t md:border-t-0 md:border-l border-white/10 p-6 sm:p-8 flex flex-col justify-center h-[40vh] md:h-full overflow-y-auto">
+              <div className="w-full md:w-[400px] lg:w-[480px] bg-white/10 backdrop-blur-xl md:bg-[#1a1a1a] border-t md:border-t-0 md:border-l border-white/10 p-6 sm:p-8 flex flex-col justify-start md:justify-center h-[40vh] md:h-full overflow-y-auto">
                 <div className="space-y-6">
                   <div>
                     <div className="flex flex-wrap gap-2 mb-3">
@@ -681,9 +714,12 @@ const Gallery = () => {
                     <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 leading-tight">
                       {selectedImage.title}
                     </h2>
-                    <p className="text-gray-300 text-base sm:text-lg leading-relaxed">
-                      {selectedImage.description}
-                    </p>
+                    {selectedImage.fullStory && (
+                      <p className="text-[#7ede56] text-xs font-semibold uppercase tracking-wider mb-4">
+                        Full Story
+                      </p>
+                    )}
+                    {renderPortfolioStory(selectedImage)}
                   </div>
 
                   <div className="pt-6 border-t border-white/10 space-y-4">

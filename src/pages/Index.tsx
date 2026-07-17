@@ -14,6 +14,7 @@ import { InvestmentPackagesSection } from '@/components/home/InvestmentPackagesS
 import { SuccessStoriesSection } from '@/components/home/SuccessStoriesSection';
 import { TeamSection } from '@/components/home/TeamSection';
 import { FAQSection } from '@/components/home/FAQSection';
+import { SafeguardingSection } from '@/components/home/SafeguardingSection';
 
 // ── Module-level static data (allocated once, not per-render) ──────────────────
 const heroImages = [
@@ -200,8 +201,10 @@ const Index = () => {
       {/* ── 9. TEAM ── */}
       <TeamSection />
 
+      {/* ── 10. SAFEGUARDING ── */}
+      <SafeguardingSection />
 
-      {/* ── 10. FAQ ── */}
+      {/* ── 11. FAQ ── */}
       <FAQSection />
 
       {/* Scroll to Top */}

@@ -129,6 +129,10 @@ const Footer = () => {
                 <div className="w-1 h-1 bg-green-400 rounded-full" />
                 Independent verification
               </li>
+              <li className="flex items-center gap-2">
+                <div className="w-1 h-1 bg-green-400 rounded-full" />
+                Safeguarding policy in place
+              </li>
             </ul>
           </div>
 
@@ -136,6 +140,7 @@ const Footer = () => {
           <div className="col-span-1">
             <h3 className="font-semibold text-lg mb-4 text-white">Legal Links</h3>
             <div className="space-y-3">
+              <Link to="/safeguarding-policy" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Safeguarding Policy</Link>
               <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Terms of Service</Link>
               <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Privacy Policy</Link>
               <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Risk Disclosure</Link>
