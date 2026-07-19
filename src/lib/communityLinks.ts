@@ -1,4 +1,4 @@
-/** Public contact & community links — set in Netlify / local .env */
+/** Public contact & community links — set in Vercel / local .env */
 
 export const WHATSAPP_COMMUNITY_URL =
   import.meta.env.VITE_WHATSAPP_COMMUNITY_URL?.trim() || '';

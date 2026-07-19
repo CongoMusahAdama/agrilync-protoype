@@ -23,7 +23,7 @@ export function normalizeStoredAssetUrl(url: string): string {
   return trimmed;
 }
 
-/** Resolve image/document URLs for display on any domain (Netlify, .com, localhost). */
+/** Resolve image/document URLs for display on any domain (Vercel, .com, localhost). */
 export function resolvePublicAssetUrl(url: string): string {
   if (!url?.trim()) return '';
 

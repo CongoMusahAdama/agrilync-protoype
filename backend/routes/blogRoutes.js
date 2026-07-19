@@ -78,7 +78,7 @@ async function broadcastBlogEmail(blog) {
         }
 
         const uniqueEmails = [...new Set(allEmails)];
-        const frontendUrl = process.env.FRONTEND_URL || 'https://agri-lync.netlify.app';
+        const frontendUrl = process.env.FRONTEND_URL || 'https://www.agrilyncnexus.com';
         const articleLink = `${frontendUrl}/blog/${blog.slug}`;
         const imageSrc = blog.image && blog.image.startsWith('http') ? blog.image : `${frontendUrl}${blog.image}`;
         const fromEmail = process.env.RESEND_FROM_EMAIL || 'AgriLync Insights <noreply@agrilync.com>';

@@ -36,14 +36,14 @@ app.use(cors({
             hostname = '';
         }
 
-        const isNetlify =
-            hostname.endsWith('.netlify.app') || hostname === 'netlify.app';
+        const isVercel =
+            hostname.endsWith('.vercel.app') || hostname === 'vercel.app';
         const isAgrilyncDomain = hostname.includes('agrilync');
 
         if (
             isLocalhost ||
             allowedOrigins.indexOf(origin) !== -1 ||
-            isNetlify ||
+            isVercel ||
             isAgrilyncDomain
         ) {
             return callback(null, true);

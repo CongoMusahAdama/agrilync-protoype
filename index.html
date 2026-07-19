@@ -50,8 +50,8 @@
         var path = window.location.pathname + window.location.search + window.location.hash;
         var canonical = "https://www.agrilyncnexus.com";
 
-        // Redirect Netlify preview/default URL to custom domain
-        if (host.endsWith(".netlify.app")) {
+        // Redirect Vercel preview/default URL to custom domain
+        if (host.endsWith(".vercel.app")) {
           window.location.replace(canonical + path);
           return;
         }
