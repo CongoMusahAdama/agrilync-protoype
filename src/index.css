@@ -134,9 +134,10 @@
     background-color: #ffffff;
   }
 
+  /* Public/marketing site — Montserrat (ICRISAT-inspired). Dashboards override to Inter. */
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     font-size: 16px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
@@ -167,7 +168,7 @@
   }
 
   p {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     font-size: clamp(0.95rem, 2vw, 1.125rem);
     font-weight: 400;
   }
@@ -1078,16 +1079,27 @@
   scrollbar-width: none;
 }
 
-/* Agent + Grower dashboard shells — Inter typography (matches field agent app) */
+/* Dashboard shells keep Inter — do not inherit Montserrat from the public site */
 .agent-dashboard-root,
-.grower-dashboard-root {
+.grower-dashboard-root,
+.admin-dashboard-root,
+body.agent-dashboard-active,
+body.grower-dashboard-active,
+body.admin-dashboard-active {
   font-family: 'Inter', sans-serif;
 }
 
 .agent-dashboard-root :where(h1, h2, h3, h4, h5, h6),
-.grower-dashboard-root :where(h1, h2, h3, h4, h5, h6) {
+.grower-dashboard-root :where(h1, h2, h3, h4, h5, h6),
+.admin-dashboard-root :where(h1, h2, h3, h4, h5, h6) {
   font-family: 'Inter', sans-serif;
   letter-spacing: -0.01em;
+}
+
+.agent-dashboard-root :where(p, button, .btn, input, select, textarea, label, span, li, td, th, a),
+.grower-dashboard-root :where(p, button, .btn, input, select, textarea, label, span, li, td, th, a),
+.admin-dashboard-root :where(p, button, .btn, input, select, textarea, label, span, li, td, th, a) {
+  font-family: 'Inter', sans-serif;
 }
 
 /* Grower dashboard home — Inter typography hierarchy */

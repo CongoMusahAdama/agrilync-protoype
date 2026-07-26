@@ -25,8 +25,6 @@ const CookieConsent = () => {
     return (
         <>
             <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-
         @keyframes ck-slideUp {
           from { transform: translateY(100%); }
           to   { transform: translateY(0); }
@@ -37,7 +35,7 @@ const CookieConsent = () => {
         }
 
         .ck-bar {
-          font-family: 'Inter', system-ui, -apple-system, sans-serif;
+          font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
           animation: ck-slideUp 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
         .ck-bar.ck-out {

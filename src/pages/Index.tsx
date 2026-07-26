@@ -8,9 +8,11 @@ import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 // ── Section Components ─────────────────────────────────────────────────────────
 import { HeroSection } from '@/components/home/HeroSection';
-import { PartnersSection } from '@/components/home/PartnersSection';
 import { ImpactSection } from '@/components/home/ImpactSection';
-import { InvestmentPackagesSection } from '@/components/home/InvestmentPackagesSection';
+// PartnersSection temporarily hidden
+// import { PartnersSection } from '@/components/home/PartnersSection';
+// InvestmentPackagesSection temporarily hidden
+// import { InvestmentPackagesSection } from '@/components/home/InvestmentPackagesSection';
 import { SuccessStoriesSection } from '@/components/home/SuccessStoriesSection';
 import { TeamSection } from '@/components/home/TeamSection';
 import { FAQSection } from '@/components/home/FAQSection';
@@ -92,10 +94,10 @@ const Index = () => {
       {/* ── 1. HERO ── */}
       <HeroSection />
 
-      {/* ── 2. PARTNERS ── */}
-      <PartnersSection />
+      {/* ── 2. PARTNERS (hidden for now) ── */}
+      {/* <PartnersSection /> */}
 
-      {/* ── 3. IMPACT STATS + CINEMATIC IMAGES ── */}
+      {/* ── 3. IMPACT STATS + SDGs + CINEMATIC IMAGES ── */}
       <ImpactSection heroImages={heroImages} currentHeroImage={currentHeroImage} />
 
       {/* ── 4. OUR INNOVATION ── */}
@@ -192,8 +194,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ── 7. INVESTMENT PACKAGES ── */}
-      <InvestmentPackagesSection />
+      {/* ── 7. INVESTMENT PACKAGES (hidden for now) ── */}
+      {/* <InvestmentPackagesSection /> */}
 
       {/* ── 8. SUCCESS STORIES ── */}
       <SuccessStoriesSection />

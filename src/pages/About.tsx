@@ -6,6 +6,7 @@ import { useScrollReveal } from '../hooks/useScrollReveal';
 import { Users, TrendingUp, Award, Shield, Target, Heart, Lightbulb, Handshake, Eye, Building2, ArrowUp, Rocket, Smartphone, MapPin, Search, Globe, GraduationCap, Sprout, Check, Flag } from 'lucide-react';
 import { Button } from '../components/ui/button'; // Added Button import
 import CountUp from '../components/CountUp';
+import { WhereWeWorkSection } from '../components/home/WhereWeWorkSection';
 
 // Brand colors
 const BRAND_MAGENTA = '#7ede56';
@@ -179,7 +180,7 @@ const About = () => {
                 </div>
                 <div className="text-left transition-all duration-700 ease-in-out">
                   <div className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
-                    <CountUp end={8} />
+                    <CountUp end={10} />
                   </div>
                   <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
                     Online webinars covering all aspects of farming
@@ -207,7 +208,8 @@ const About = () => {
         </div>
       </section>
 
-
+      {/* Where We Work — selectable regions, Ghana/Africa live */}
+      <WhereWeWorkSection />
 
       {/* Vision & Mission Section */}
       <section id="vision-mission" className="py-10 sm:py-16 md:py-20 bg-white">
