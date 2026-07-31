@@ -33,6 +33,7 @@ const SuperAdminDashboard = () => {
         if (path.includes('/vouchers')) return 'expense-vouchers';
         if (path.includes('/settings')) return 'settings';
         if (path.includes('/notifications')) return 'notifications';
+        if (path.includes('/bulk-sms')) return 'bulk-sms';
         return 'dashboard';
     };
 
@@ -50,6 +51,7 @@ const SuperAdminDashboard = () => {
         'expense-vouchers': 'Expense Vouchers',
         settings: 'Settings',
         notifications: 'Notifications',
+        'bulk-sms': 'Bulk SMS',
     };
 
     const activeItem = getActiveItem();

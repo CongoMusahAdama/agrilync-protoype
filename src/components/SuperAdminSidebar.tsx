@@ -10,6 +10,7 @@ import {
     LayoutDashboard,
     ShieldAlert,
     CreditCard,
+    MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -53,6 +54,12 @@ const navSections: NavSection[] = [
         section: 'Reports',
         items: [
             { icon: FileText, label: 'Reports', path: '/dashboard/super-admin/reports' },
+        ]
+    },
+    {
+        section: 'Messaging',
+        items: [
+            { icon: MessageSquare, label: 'Bulk SMS', path: '/dashboard/super-admin/bulk-sms' },
         ]
     },
     {

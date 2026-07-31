@@ -73,6 +73,7 @@ import ReportsAnalytics from "@/pages/super-admin/ReportsAnalytics";
 import SettingsRoles from "@/pages/super-admin/SettingsRoles";
 import ExpenseVouchers from "@/pages/super-admin/ExpenseVouchers";
 import AdminStaffNotifications from "@/pages/super-admin/AdminStaffNotifications";
+import BulkSMS from "@/pages/super-admin/BulkSMS";
 import DashboardRedirect from "./pages/DashboardRedirect";
 import SupervisorPending from "./pages/supervisor/SupervisorPending";
 import CookieConsent from "./components/CookieConsent";
@@ -216,6 +217,7 @@ const App = () => (
                 <Route path="vouchers" element={<ExpenseVouchers />} />
                 <Route path="settings" element={<SettingsRoles />} />
                 <Route path="notifications" element={<AdminStaffNotifications />} />
+                <Route path="bulk-sms" element={<BulkSMS />} />
                 <Route path="*" element={<Overview />} />
               </Route>
 
