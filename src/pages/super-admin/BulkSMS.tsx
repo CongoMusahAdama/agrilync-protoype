@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import api from '@/utils/api';
+import { upcomingWebinars } from '@/data/webinars';
+import { WHATSAPP_COMMUNITY_URL } from '@/lib/communityLinks';
 import {
     Send,
     Users,
@@ -54,6 +56,13 @@ const GROUP_OPTIONS: { id: RecipientGroup; label: string }[] = [
 const MAX_SMS_CHARS = 160;
 const VARS = ['{name}', '{date}', '{link}', '{event}'];
 
+const UPCOMING_WEBINAR = upcomingWebinars[0];
+const WHATSAPP_LINK =
+    WHATSAPP_COMMUNITY_URL || 'https://chat.whatsapp.com/Juajl1hFw2vDV6JR3kymUe';
+const DEFAULT_WEBINAR_TITLE = 'Farmer Talk – AI in Agriculture Reminder';
+const DEFAULT_WEBINAR_MESSAGE =
+    `Hi {name}, reminder: AgriLync Farmer Talk "{event}" is on {date} at 7 PM GMT. Register free: {link}. Join our WhatsApp community: ${WHATSAPP_LINK} — AgriLync Nexus`;
+
 function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString('en-GB', {
         day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
@@ -63,8 +72,8 @@ function formatDate(iso: string) {
 const BulkSMS: React.FC = () => {
     const { darkMode } = useDarkMode();
 
-    const [campaignTitle, setCampaignTitle] = useState('');
-    const [message, setMessage] = useState('');
+    const [campaignTitle, setCampaignTitle] = useState(DEFAULT_WEBINAR_TITLE);
+    const [message, setMessage] = useState(DEFAULT_WEBINAR_MESSAGE);
     const [selectedGroup, setSelectedGroup] = useState<RecipientGroup>('webinar');
     const [customNumbers, setCustomNumbers] = useState('');
     const [addCustom, setAddCustom] = useState(false);
@@ -156,6 +165,9 @@ const BulkSMS: React.FC = () => {
                 message,
                 group: selectedGroup,
                 phones: [...phones, ...customList],
+                event: UPCOMING_WEBINAR?.title,
+                date: UPCOMING_WEBINAR?.date,
+                link: UPCOMING_WEBINAR?.registrationLink,
             });
             if (res.data?.campaign) setCampaigns(prev => [res.data.campaign, ...prev]);
             setSendResult({ success: true, message: res.data?.message || 'Sent.' });
@@ -182,7 +194,11 @@ const BulkSMS: React.FC = () => {
     const text = darkMode ? 'text-white' : 'text-gray-900';
 
     const preview = message
-        ? message.replace('{name}', 'Kwame').replace('{date}', '5 Aug').replace('{event}', 'Webinar').replace('{link}', 'agrilync.com')
+        ? message
+            .replace('{name}', 'Kwame')
+            .replace('{date}', UPCOMING_WEBINAR?.date ? new Date(UPCOMING_WEBINAR.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '1 Aug 2026')
+            .replace('{event}', UPCOMING_WEBINAR?.title || 'Webinar')
+            .replace('{link}', UPCOMING_WEBINAR?.registrationLink || 'https://luma.com/llzyrz4i')
         : '';
 
     return (
@@ -262,7 +278,7 @@ const BulkSMS: React.FC = () => {
                             value={message}
                             onChange={e => setMessage(e.target.value)}
                             rows={4}
-                            placeholder="Hi {name}, reminder: {event} on {date}. Join: {link}"
+                            placeholder="Hi {name}, reminder: {event} on {date}. Register: {link}"
                             className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none resize-none focus:border-[#065f46] ${input}`}
                         />
                         {preview && (

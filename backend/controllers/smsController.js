@@ -17,6 +17,8 @@ const GROUP_LABELS = {
     webinar: 'Webinar Registrants',
 };
 
+const WHATSAPP_COMMUNITY_URL = process.env.WHATSAPP_COMMUNITY_URL?.trim() || '';
+
 const personalizeMessage = (template, recipient, extras = {}) => {
     const eventName = extras.event || recipient.meta?.event || 'AgriLync Webinar';
     const eventDate = extras.date || recipient.meta?.date || '';
@@ -27,14 +29,16 @@ const personalizeMessage = (template, recipient, extras = {}) => {
               year: 'numeric',
           })
         : extras.dateLabel || 'soon';
+    const whatsappLink = extras.whatsapp || WHATSAPP_COMMUNITY_URL;
 
     return String(template)
         .replace(/{name}/g, recipient.name || 'Friend')
         .replace(/{farmer_name}/g, recipient.name || 'Grower')
         .replace(/{agent_name}/g, extras.agentName || 'AgriLync')
         .replace(/{date}/g, formattedDate)
-        .replace(/{link}/g, extras.link || process.env.WEBINAR_JOIN_LINK || 'https://agrilync.com/blog#upcoming-webinars')
-        .replace(/{event}/g, eventName);
+        .replace(/{link}/g, extras.link || process.env.WEBINAR_JOIN_LINK || 'https://luma.com/llzyrz4i')
+        .replace(/{event}/g, eventName)
+        .replace(/{whatsapp}/g, whatsappLink);
 };
 
 // @route   GET /api/sms/recipients

@@ -88,7 +88,8 @@ exports.sendBulkSMS = async (recipients, template, options = {}) => {
                     .replace(/{agent_name}/g, agentName)
                     .replace(/{date}/g, r.date || options.date || 'soon')
                     .replace(/{link}/g, r.link || options.link || '')
-                    .replace(/{event}/g, r.event || options.event || 'AgriLync Webinar');
+                    .replace(/{event}/g, r.event || options.event || 'AgriLync Webinar')
+                    .replace(/{whatsapp}/g, r.whatsapp || options.whatsapp || process.env.WHATSAPP_COMMUNITY_URL?.trim() || '');
             return exports.sendSMS(r.phone, body);
         })
     );
