@@ -47,10 +47,11 @@ const SubscribersAdminPanel: React.FC<SubscribersAdminPanelProps> = ({
       toast.error('No subscribers to export.');
       return;
     }
-    const header = 'Email,Phone,Source,Last Resource,Joined\n';
+    const header = 'Name,Email,Phone,Source,Last Resource,Joined\n';
     const rows = subscribers
       .map(s =>
         [
+          s.name || '',
           s.email,
           s.phone || '',
           s.source || '',
@@ -110,6 +111,7 @@ const SubscribersAdminPanel: React.FC<SubscribersAdminPanelProps> = ({
             <table className="w-full text-sm min-w-[520px]">
               <thead>
                 <tr className="bg-gray-50 text-left text-[10px] font-black uppercase tracking-wider text-gray-500">
+                  <th className="px-3 sm:px-6 py-3">Name</th>
                   <th className="px-3 sm:px-6 py-3">Email</th>
                   <th className="px-3 sm:px-6 py-3">Phone</th>
                   <th className="px-3 sm:px-6 py-3 hidden md:table-cell">Source</th>
@@ -120,6 +122,7 @@ const SubscribersAdminPanel: React.FC<SubscribersAdminPanelProps> = ({
               <tbody className="divide-y divide-gray-100">
                 {subscribers.map(sub => (
                   <tr key={sub._id} className="hover:bg-gray-50/80">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 font-medium text-[#002f37] max-w-[120px] truncate">{sub.name || '—'}</td>
                     <td className="px-3 sm:px-6 py-3 sm:py-4 font-medium text-[#002f37] max-w-[140px] sm:max-w-none truncate">{sub.email}</td>
                     <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-600 whitespace-nowrap">
                       {sub.phone ? (

@@ -97,23 +97,26 @@ async function fetchGrowers() {
     return fetchFarmers().then((rows) => rows.map((r) => ({ ...r, type: 'grower' })));
 }
 
-async function fetchInvestors() {
+async function fetchSubscribers() {
     const subscribers = await Subscriber.find({
-        $or: [
-            { phone: { $exists: true, $nin: [null, ''] } },
-            { email: { $exists: true, $nin: [null, ''] } },
-        ],
+        phone: { $exists: true, $nin: [null, ''] },
     })
-        .select('email phone')
+        .select('name email phone source')
         .lean();
 
-    return subscribers.map((s) =>
-        toRecipient({
-            ...s,
-            name: s.email?.split('@')[0] || 'Subscriber',
-            type: 'investor',
-        })
-    );
+    return subscribers
+        .filter((s) => hasValidPhone(s.phone))
+        .map((s) =>
+            toRecipient({
+                ...s,
+                name: s.name?.trim() || s.email?.split('@')[0] || 'Subscriber',
+                type: 'subscriber',
+            })
+        );
+}
+
+async function fetchInvestors() {
+    return fetchSubscribers();
 }
 
 async function fetchWebinarRegistrants(webinarId) {
@@ -146,21 +149,30 @@ async function resolveRecipientsByGroup(group, options = {}) {
     else if (normalizedGroup === 'investors') recipients = await fetchInvestors();
     else if (normalizedGroup === 'webinar') recipients = await fetchWebinarRegistrants(options.webinarId);
     else {
-        const [farmers, agents, investors, webinar] = await Promise.all([
+        const [farmers, agents, webinar] = await Promise.all([
             fetchFarmers(),
             fetchAgents(),
-            fetchInvestors(),
             fetchWebinarRegistrants(options.webinarId),
         ]);
-        recipients = dedupeRecipients([...farmers, ...agents, ...investors, ...webinar]);
+        recipients = dedupeRecipients([...farmers, ...agents, ...webinar]);
     }
 
-    return filterByChannel(dedupeRecipients(recipients), channel);
+    recipients = filterByChannel(dedupeRecipients(recipients), channel);
+
+    // Every bulk SMS also reaches newsletter subscribers with a valid phone
+    if (channel === 'sms' && options.includeSubscribers !== false) {
+        const subscribers = await fetchSubscribers();
+        recipients = dedupeByPhone([...recipients, ...subscribers]);
+    }
+
+    return recipients;
 }
 
 async function getGroupCounts() {
     const groups = ['all', 'farmers', 'agents', 'growers', 'investors', 'webinar'];
     const counts = {};
+    const subscribers = await fetchSubscribers();
+    counts.subscribers = subscribers.length;
 
     await Promise.all(
         groups.map(async (group) => {
@@ -178,6 +190,7 @@ module.exports = {
     resolveRecipientsByGroup,
     getGroupCounts,
     fetchWebinarRegistrants,
+    fetchSubscribers,
     dedupeRecipients,
     dedupeByPhone,
     dedupeByEmail,

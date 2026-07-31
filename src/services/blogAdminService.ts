@@ -69,6 +69,7 @@ export async function fetchAdminResources() {
 
 export type SubscriberRecord = {
   _id: string;
+  name?: string;
   email: string;
   phone?: string;
   source?: string;

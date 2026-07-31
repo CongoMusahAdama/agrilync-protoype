@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const subscriberSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        trim: true,
+        default: '',
+    },
     email: {
         type: String,
         required: true,

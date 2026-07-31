@@ -5,6 +5,7 @@ const {
     getGroupCounts,
     dedupeByPhone,
     hasValidPhone,
+    fetchSubscribers,
 } = require('../utils/bulkSmsRecipients');
 
 const GROUP_LABELS = {
@@ -118,6 +119,10 @@ exports.sendBulkCampaign = async (req, res) => {
                     meta: {},
                 }))
             );
+            if (group !== 'investors') {
+                const subscribers = await fetchSubscribers();
+                recipients = dedupeByPhone([...recipients, ...subscribers]);
+            }
         } else {
             recipients = await resolveRecipientsByGroup(group, { channel: 'sms' });
         }
