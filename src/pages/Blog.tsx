@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import api from '@/utils/api';
+import { toast } from 'sonner';
 import { resolvePublicAssetUrl } from '@/lib/resolveAssetUrl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,6 +56,7 @@ const Blog = () => {
     phone: '',
     organization: ''
   });
+  const [isRegistering, setIsRegistering] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -206,11 +208,29 @@ const Blog = () => {
     }
   };
 
-  const handleRegistrationSubmit = (e: React.FormEvent) => {
+  const handleRegistrationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Registration submitted:', registrationForm);
-    setShowRegistration(false);
-    setRegistrationForm({ name: '', email: '', phone: '', organization: '' });
+    if (!selectedWebinar) return;
+
+    setIsRegistering(true);
+    try {
+      const res = await api.post('/webinar/register', {
+        webinarId: selectedWebinar.id,
+        webinarTitle: selectedWebinar.title,
+        name: registrationForm.name,
+        email: registrationForm.email,
+        phone: registrationForm.phone,
+        organization: registrationForm.organization,
+      });
+      toast.success(res.data?.message || 'Registration successful!');
+      setShowRegistration(false);
+      setRegistrationForm({ name: '', email: '', phone: '', organization: '' });
+      setSelectedWebinar(null);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Registration failed. Please try again.');
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -799,8 +819,12 @@ const Blog = () => {
               />
             </div>
             <DialogFooter>
-              <Button type="submit" className="w-full bg-gradient-to-r from-[#7ede56] to-[#66cc44] hover:from-[#66cc44] hover:to-[#7ede56] text-white">
-                Register for Event
+              <Button
+                type="submit"
+                disabled={isRegistering}
+                className="w-full bg-gradient-to-r from-[#7ede56] to-[#66cc44] hover:from-[#66cc44] hover:to-[#7ede56] text-white"
+              >
+                {isRegistering ? 'Registering…' : 'Register for Event'}
               </Button>
             </DialogFooter>
           </form>

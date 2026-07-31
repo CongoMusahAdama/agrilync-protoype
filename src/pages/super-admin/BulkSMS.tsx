@@ -45,51 +45,24 @@ interface SMSCampaign {
 
 type RecipientGroup = 'all' | 'farmers' | 'agents' | 'investors' | 'growers' | 'webinar';
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
+const DEFAULT_GROUP_COUNTS: Record<RecipientGroup, number> = {
+    all: 0,
+    farmers: 0,
+    agents: 0,
+    investors: 0,
+    growers: 0,
+    webinar: 0,
+};
 
-const MOCK_CAMPAIGNS: SMSCampaign[] = [
-    {
-        id: 'c1',
-        title: 'AgriLync Webinar – Smart Farm Planning',
-        message: 'Dear {name}, your spot for the AgriLync Smart Farm Planning Webinar is confirmed! Join us on Saturday 5th Aug at 3PM GMT via Zoom. Reply STOP to unsubscribe.',
-        recipients: 142,
-        sent: 138,
-        failed: 4,
-        status: 'partial',
-        createdAt: '2026-07-28T14:00:00Z',
-        group: 'Webinar Registrants',
-    },
-    {
-        id: 'c2',
-        title: 'Crop Season Alert – All Farmers',
-        message: 'Hello {name}! The rainy season is here. Log into AgriLync to update your farm records and access the new crop advisory. Stay ahead!',
-        recipients: 310,
-        sent: 310,
-        failed: 0,
-        status: 'sent',
-        createdAt: '2026-07-20T09:30:00Z',
-        group: 'All Farmers',
-    },
-    {
-        id: 'c3',
-        title: 'Agent Performance Review',
-        message: 'Hi {name}, your monthly performance report is ready. Login to your AgriLync agent dashboard to review your targets and achievements for July.',
-        recipients: 28,
-        sent: 28,
-        failed: 0,
-        status: 'sent',
-        createdAt: '2026-07-15T11:00:00Z',
-        group: 'All Agents',
-    },
-];
+const MOCK_CAMPAIGNS: SMSCampaign[] = [];
 
-const GROUP_OPTIONS: { id: RecipientGroup; label: string; count: number; color: string }[] = [
-    { id: 'all',       label: 'All Platform Users',   count: 486, color: '#7ede56' },
-    { id: 'farmers',   label: 'Registered Farmers',   count: 310, color: '#3b82f6' },
-    { id: 'agents',    label: 'Field Agents',          count: 28,  color: '#f59e0b' },
-    { id: 'investors', label: 'Investors',             count: 64,  color: '#a855f7' },
-    { id: 'growers',   label: 'Lync Growers',         count: 72,  color: '#06b6d4' },
-    { id: 'webinar',   label: 'Webinar Registrants',  count: 142, color: '#ef4444' },
+const GROUP_META: { id: RecipientGroup; label: string; color: string }[] = [
+    { id: 'all',       label: 'All Platform Users',   color: '#7ede56' },
+    { id: 'farmers',   label: 'Registered Farmers',   color: '#3b82f6' },
+    { id: 'agents',    label: 'Field Agents',          color: '#f59e0b' },
+    { id: 'investors', label: 'Investors',             color: '#a855f7' },
+    { id: 'growers',   label: 'Lync Growers',         color: '#06b6d4' },
+    { id: 'webinar',   label: 'Webinar Registrants',  color: '#ef4444' },
 ];
 
 const MAX_SMS_CHARS = 160;
@@ -126,9 +99,26 @@ const BulkSMS: React.FC = () => {
     const [loadingRecipients, setLoadingRecipients]   = useState(false);
     const [showRecipients, setShowRecipients]         = useState(false);
     const [campaigns, setCampaigns]                   = useState<SMSCampaign[]>(MOCK_CAMPAIGNS);
+    const [groupCounts, setGroupCounts]               = useState<Record<RecipientGroup, number>>(DEFAULT_GROUP_COUNTS);
     const [activeTab, setActiveTab]                   = useState<'compose' | 'history'>('compose');
     const [previewCampaign, setPreviewCampaign]       = useState<SMSCampaign | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    useEffect(() => {
+        const loadDashboardData = async () => {
+            try {
+                const [countsRes, campaignsRes] = await Promise.all([
+                    api.get('/sms/group-counts'),
+                    api.get('/sms/campaigns'),
+                ]);
+                if (countsRes.data) setGroupCounts({ ...DEFAULT_GROUP_COUNTS, ...countsRes.data });
+                if (Array.isArray(campaignsRes.data)) setCampaigns(campaignsRes.data);
+            } catch {
+                // Keep defaults when API is unavailable
+            }
+        };
+        loadDashboardData();
+    }, []);
 
     useEffect(() => {
         if (!showRecipients) return;
@@ -139,14 +129,8 @@ const BulkSMS: React.FC = () => {
     const fetchRecipients = async (group: RecipientGroup) => {
         setLoadingRecipients(true);
         try {
-            let endpoint = '/farmers';
-            if (group === 'agents')    endpoint = '/agents';
-            if (group === 'investors') endpoint = '/investors';
-            if (group === 'growers')   endpoint = '/farmers?accountType=grower';
-            if (group === 'webinar')   endpoint = '/webinar/registrants';
-
-            const res = await api.get(endpoint);
-            const raw: any[] = Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.farmers || res.data?.agents || []);
+            const res = await api.get('/sms/recipients', { params: { group } });
+            const raw: any[] = Array.isArray(res.data) ? res.data : (res.data?.data || []);
 
             const typeMap: Record<RecipientGroup, Recipient['type']> = {
                 all: 'farmer', farmers: 'farmer', agents: 'agent',
@@ -155,32 +139,23 @@ const BulkSMS: React.FC = () => {
 
             setRecipients(
                 raw.slice(0, 200).map((u: any) => ({
-                    id:       u._id || u.id || String(Math.random()),
-                    name:     u.fullName || u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown',
+                    id:       u.id || u._id || String(Math.random()),
+                    name:     u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown',
                     phone:    u.phone || u.phoneNumber || u.contact || '—',
                     type:     typeMap[group],
                     selected: true,
                 }))
             );
         } catch {
-            const count = GROUP_OPTIONS.find(g => g.id === group)?.count || 10;
-            const typeMap: Record<RecipientGroup, Recipient['type']> = {
-                all: 'farmer', farmers: 'farmer', agents: 'agent',
-                investors: 'investor', growers: 'grower', webinar: 'webinar',
-            };
-            setRecipients(
-                Array.from({ length: Math.min(count, 20) }, (_, i) => ({
-                    id:       `mock-${i}`,
-                    name:     `User ${String(i + 1).padStart(3, '0')}`,
-                    phone:    `+233${String(200000000 + i * 7)}`,
-                    type:     typeMap[group],
-                    selected: true,
-                }))
-            );
+            setRecipients([]);
         } finally {
             setLoadingRecipients(false);
         }
     };
+
+    const selectedCount = showRecipients
+        ? recipients.filter(r => r.selected).length
+        : groupCounts[selectedGroup] || 0;
 
     const toggleRecipient = (id: string) =>
         setRecipients(prev => prev.map(r => r.id === id ? { ...r, selected: !r.selected } : r));
@@ -189,10 +164,6 @@ const BulkSMS: React.FC = () => {
         const allSelected = recipients.every(r => r.selected);
         setRecipients(prev => prev.map(r => ({ ...r, selected: !allSelected })));
     };
-
-    const selectedCount = showRecipients
-        ? recipients.filter(r => r.selected).length
-        : GROUP_OPTIONS.find(g => g.id === selectedGroup)?.count || 0;
 
     const filteredRecipients = recipients.filter(r =>
         r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -223,21 +194,25 @@ const BulkSMS: React.FC = () => {
         setSendResult(null);
 
         try {
-            await api.post('/sms/bulk', {
-                title: campaignTitle, message, group: selectedGroup,
+            const res = await api.post('/sms/bulk', {
+                title: campaignTitle,
+                message,
+                group: selectedGroup,
                 phones: [...phones, ...customList],
             });
-            const groupLabel = GROUP_OPTIONS.find(g => g.id === selectedGroup)?.label || selectedGroup;
-            setCampaigns(prev => [{
-                id: `c${Date.now()}`, title: campaignTitle, message,
-                recipients: selectedCount + customList.length,
-                sent: selectedCount + customList.length, failed: 0,
-                status: 'sent', createdAt: new Date().toISOString(), group: groupLabel,
-            }, ...prev]);
-            setSendResult({ success: true, message: `Campaign sent to ${selectedCount + customList.length} recipients!` });
+            const campaign = res.data?.campaign;
+            if (campaign) {
+                setCampaigns(prev => [campaign, ...prev]);
+            }
+            setSendResult({
+                success: true,
+                message: res.data?.message || `Campaign sent to ${selectedCount + customList.length} recipient(s)!`,
+            });
             setCampaignTitle(''); setMessage(''); setCustomNumbers('');
+            const countsRes = await api.get('/sms/group-counts');
+            if (countsRes.data) setGroupCounts({ ...DEFAULT_GROUP_COUNTS, ...countsRes.data });
         } catch (err: any) {
-            const groupLabel = GROUP_OPTIONS.find(g => g.id === selectedGroup)?.label || selectedGroup;
+            const groupLabel = GROUP_META.find(g => g.id === selectedGroup)?.label || selectedGroup;
             setCampaigns(prev => [{
                 id: `c${Date.now()}`, title: campaignTitle, message,
                 recipients: selectedCount, sent: 0, failed: selectedCount,
@@ -272,13 +247,13 @@ const BulkSMS: React.FC = () => {
                         </div>
                         <h1 className={`text-2xl font-black uppercase tracking-tight ${headCls}`}>Bulk SMS</h1>
                     </div>
-                    <p className={`text-sm ml-[52px] ${mutedCls}`}>Send targeted SMS campaigns to users via ArmsMS</p>
+                    <p className={`text-sm ml-[52px] ${mutedCls}`}>Send targeted SMS campaigns via mNotify</p>
                 </div>
                 <div className="flex gap-3 flex-wrap">
                     {[
                         { icon: Send,      label: 'Campaigns',  value: String(campaigns.length) },
-                        { icon: Users,     label: 'Total Users', value: '486' },
-                        { icon: BarChart3, label: 'Delivery',    value: '97%' },
+                        { icon: Users,     label: 'SMS Reach', value: String(groupCounts.all ?? 0) },
+                        { icon: BarChart3, label: 'Channel',    value: 'mNotify' },
                     ].map(({ icon: Icon, label, value }) => (
                         <div key={label} className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl border ${card}`}>
                             <Icon className="h-4 w-4 text-[#7ede56]" />
@@ -443,7 +418,7 @@ const BulkSMS: React.FC = () => {
                         <div className={`rounded-[1.5rem] border p-6 space-y-4 ${card}`}>
                             <h3 className={`text-[11px] font-black uppercase tracking-widest ${labelCls}`}>Target Group</h3>
                             <div className="space-y-2">
-                                {GROUP_OPTIONS.map(group => (
+                                {GROUP_META.map(group => (
                                     <button
                                         key={group.id}
                                         onClick={() => {
@@ -463,7 +438,7 @@ const BulkSMS: React.FC = () => {
                                         <span className={`text-[11px] font-black px-2 py-0.5 rounded-lg ${
                                             selectedGroup === group.id ? 'bg-[#065f46] text-white' : mutedCls
                                         }`}>
-                                            {group.count}
+                                            {groupCounts[group.id] ?? 0}
                                         </span>
                                     </button>
                                 ))}

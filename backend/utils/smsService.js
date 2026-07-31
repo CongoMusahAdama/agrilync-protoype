@@ -80,9 +80,15 @@ exports.sendBulkSMS = async (recipients, template, options = {}) => {
 
     const results = await Promise.allSettled(
         recipients.map(async (r) => {
-            const body = String(template)
-                .replace(/{farmer_name}/g, r.name || 'Grower')
-                .replace(/{agent_name}/g, agentName);
+            const body = options.usePrebuiltBody && r.body
+                ? r.body
+                : String(template)
+                    .replace(/{name}/g, r.name || 'Friend')
+                    .replace(/{farmer_name}/g, r.name || 'Grower')
+                    .replace(/{agent_name}/g, agentName)
+                    .replace(/{date}/g, r.date || options.date || 'soon')
+                    .replace(/{link}/g, r.link || options.link || '')
+                    .replace(/{event}/g, r.event || options.event || 'AgriLync Webinar');
             return exports.sendSMS(r.phone, body);
         })
     );

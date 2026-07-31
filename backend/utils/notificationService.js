@@ -236,5 +236,14 @@ exports.sendBulkEmail = async (recipients, template) => {
     }
 
     const succeeded = results.filter(r => r.status === 'fulfilled' && r.value?.success).length;
-    return { success: succeeded > 0, total: recipients.length, succeeded, failed: recipients.length - succeeded };
+    const simulated = results.some(
+        (r) => r.status === 'fulfilled' && r.value?.simulated
+    );
+    return {
+        success: succeeded > 0,
+        total: recipients.length,
+        succeeded,
+        failed: recipients.length - succeeded,
+        simulated,
+    };
 };

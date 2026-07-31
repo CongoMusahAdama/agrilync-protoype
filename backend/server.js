@@ -240,6 +240,10 @@ try {
     console.log('✓ Consultation routes registered');
     app.use('/api/training-deliveries', require('./routes/trainingDeliveryRoutes'));
     console.log('✓ Training Delivery routes registered');
+    app.use('/api/webinar', require('./routes/webinarRoutes'));
+    console.log('✓ Webinar routes registered');
+    app.use('/api/sms', require('./routes/smsRoutes'));
+    console.log('✓ SMS routes registered');
     console.log('✓ All routes registered successfully');
 } catch (error) {
     console.error('✗ Error registering routes:', error);
