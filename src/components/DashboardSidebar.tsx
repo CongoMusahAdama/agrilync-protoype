@@ -25,6 +25,7 @@ import {
     Wheat,
     HelpCircle,
     Receipt,
+    MessageSquare,
 } from 'lucide-react';
 import SidebarProfileCard from './SidebarProfileCard';
 import { growerNavIconClass, growerNavItemClass, GROWER_NAV_SECTION_LABEL } from '@/constants/growerTheme';
@@ -146,6 +147,12 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             section: 'Finance',
             items: [
                 { id: 'expense-vouchers', label: 'Expense Vouchers', icon: Receipt },
+            ],
+        },
+        {
+            section: 'Messaging',
+            items: [
+                { id: 'bulk-sms', label: 'Bulk SMS', icon: MessageSquare },
             ],
         },
         {

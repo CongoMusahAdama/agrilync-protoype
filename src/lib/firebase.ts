@@ -38,18 +38,6 @@ if (isConfigured && typeof window !== 'undefined') {
     console.warn('[AgriLync] Firebase init failed — push notifications disabled.', e);
     messaging = null;
   }
-} else if (!isConfigured) {
-  console.info(
-    '[AgriLync] Firebase is not configured. Push notifications are disabled.\n' +
-    'To enable, add your Firebase credentials to the .env file:\n' +
-    '  VITE_FIREBASE_API_KEY=...\n' +
-    '  VITE_FIREBASE_AUTH_DOMAIN=...\n' +
-    '  VITE_FIREBASE_PROJECT_ID=...\n' +
-    '  VITE_FIREBASE_STORAGE_BUCKET=...\n' +
-    '  VITE_FIREBASE_MESSAGING_SENDER_ID=...\n' +
-    '  VITE_FIREBASE_APP_ID=...\n' +
-    '  VITE_FIREBASE_VAPID_KEY=...'
-  );
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────
