@@ -111,6 +111,22 @@ export const WEBINARS: WebinarItem[] = [
     recordingLink: 'https://youtu.be/nU737QbfctQ',
     registrationChannel: 'whatsapp',
   },
+  {
+    id: 7,
+    title: 'AI and the Future of Agriculture: From Prediction to Action',
+    date: '2026-08-01',
+    time: '7:00 PM – 8:00 PM',
+    location: 'Virtual (Online)',
+    spots: 200,
+    registered: 0,
+    image: '/lovable-uploads/webinar-ai-agriculture-aug2026.jpg',
+    description:
+      'The Farmer Talk Series by AgriLync Nexus — a live panel on how AI is moving agriculture from prediction to real farm action. Panelists: Papa Kofi Boahen, Erica Adjoa Appiah, and Congo Musah Adama. Moderated by Cynthia Awewura Abavare. Free entry, limited seats.',
+    speaker: 'Papa Kofi Boahen, Erica Adjoa Appiah & Congo Musah Adama',
+    status: 'upcoming',
+    registrationLink: 'https://luma.com/llzyrz4i',
+    registrationChannel: 'external',
+  },
 ];
 
 export const upcomingWebinars = WEBINARS.filter(w => w.status === 'upcoming');
