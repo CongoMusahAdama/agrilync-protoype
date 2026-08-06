@@ -38,7 +38,10 @@ export const HeroSection: React.FC = () => {
 
           {/* Subheadline */}
           <p className="text-sm sm:text-base md:text-lg text-white/80 mb-8 md:mb-12 leading-relaxed max-w-xl font-sans animate-fade-in-up delay-200">
-            <span className="text-[#7ede56] font-bold">Verified farmers</span>. <span className="text-yellow-400 font-bold">Smart alerts</span>. <span className="text-[#7ede56] font-bold">Trusted finance</span>.
+            <span className="text-[#7ede56] font-bold tracking-[0.15em]">CONNECT</span>{' '}
+            <span className="text-[#FFD700] font-bold tracking-[0.15em]">IMPROVE</span>{' '}
+            <span className="text-white/70 font-bold tracking-[0.15em]">&</span>{' '}
+            <span className="text-white font-bold tracking-[0.15em]">GROW</span>
           </p>
 
           {/* CTA Buttons */}

@@ -1,25 +1,46 @@
-
-import React, { useState, useEffect, useRef } from 'react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import { useScrollReveal } from '../hooks/useScrollReveal';
-import { Users, TrendingUp, Award, Shield, Target, Heart, Lightbulb, Handshake, Eye, Building2, ArrowUp, Rocket, Smartphone, MapPin, Search, Globe, GraduationCap, Sprout, Check, Flag } from 'lucide-react';
-import { Button } from '../components/ui/button'; // Added Button import
-import CountUp from '../components/CountUp';
-import { WhereWeWorkSection } from '../components/home/WhereWeWorkSection';
+import React, { useState, useEffect, useRef } from "react";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import { useScrollReveal } from "../hooks/useScrollReveal";
+import {
+  Users,
+  TrendingUp,
+  Award,
+  Shield,
+  Target,
+  Heart,
+  Lightbulb,
+  Handshake,
+  Eye,
+  Building2,
+  ArrowRight,
+  ArrowUp,
+  Rocket,
+  Smartphone,
+  MapPin,
+  Search,
+  Globe,
+  GraduationCap,
+  Sprout,
+  Check,
+  Flag,
+} from "lucide-react";
+import { Button } from "../components/ui/button"; // Added Button import
+import CountUp from "../components/CountUp";
+import { WhereWeWorkSection } from "../components/home/WhereWeWorkSection";
 
 // Brand colors
-const BRAND_MAGENTA = '#7ede56';
-const BRAND_GREEN = '#7ede56';
-const BRAND_TEAL = '#002F37';
-const BRAND_WHITE = '#FFFFFF';
+const BRAND_MAGENTA = "#7ede56";
+const BRAND_GREEN = "#7ede56";
+const BRAND_TEAL = "#002F37";
+const BRAND_WHITE = "#FFFFFF";
 
 // Hero images for carousel - using all "who we are" images
 const heroImages = [
-  '/lovable-uploads/who.jpg',
-  '/lovable-uploads/' + encodeURIComponent('who we are 2.jpg'),
-  '/lovable-uploads/' + encodeURIComponent('who we are 4.jpg'),
-  '/lovable-uploads/whoweare2.jpg',
+  "/lovable-uploads/who.jpg",
+  "/lovable-uploads/" + encodeURIComponent("who we are 2.jpg"),
+  "/lovable-uploads/" + encodeURIComponent("who we are 4.jpg"),
+  "/lovable-uploads/whoweare2.jpg",
 ];
 
 const About = () => {
@@ -70,11 +91,11 @@ const About = () => {
     };
 
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener("resize", checkMobile);
+    window.addEventListener("scroll", handleScroll);
     return () => {
-      window.removeEventListener('resize', checkMobile);
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("resize", checkMobile);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -82,7 +103,7 @@ const About = () => {
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: "smooth",
     });
   };
 
@@ -100,18 +121,19 @@ const About = () => {
               key={index}
               src={image}
               alt={`Who We Are Hero Background ${index + 1}`}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'
-                }`}
-              loading={index === 0 ? 'eager' : 'lazy'}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+                index === currentSlide ? "opacity-100" : "opacity-0"
+              }`}
+              loading={index === 0 ? "eager" : "lazy"}
               style={{
-                objectPosition: index === 0 ? 'center center' : 'center 25%',
-                objectFit: 'cover',
-                width: '100%',
-                height: '100%'
+                objectPosition: index === 0 ? "center center" : "center 25%",
+                objectFit: "cover",
+                width: "100%",
+                height: "100%",
               }}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
+                target.style.display = "none";
               }}
             />
           ))}
@@ -126,10 +148,11 @@ const About = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`h-2 sm:h-2.5 rounded-full transition-all duration-300 ${index === currentSlide
-                ? 'bg-white w-6 sm:w-8'
-                : 'bg-white/50 hover:bg-white/75 w-2 sm:w-2.5'
-                }`}
+              className={`h-2 sm:h-2.5 rounded-full transition-all duration-300 ${
+                index === currentSlide
+                  ? "bg-white w-6 sm:w-8"
+                  : "bg-white/50 hover:bg-white/75 w-2 sm:w-2.5"
+              }`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
@@ -137,7 +160,14 @@ const About = () => {
 
         <div className="relative z-20 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-end h-full pb-8 sm:pb-12 md:pb-16">
           <div className="animate-fade-in-up w-full max-w-4xl mx-auto">
-            <h1 ref={heroHeadingRef} className={"text-lg sm:text-xl md:text-3xl lg:text-4xl font-extrabold text-white mb-3 sm:mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight px-2 " + (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0")} style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+            <h1
+              ref={heroHeadingRef}
+              className={
+                "text-lg sm:text-xl md:text-3xl lg:text-4xl font-extrabold text-white mb-3 sm:mb-4 drop-shadow-2xl transition-all duration-700 ease-in-out leading-tight px-2 " +
+                (heroHeadingVisible ? " animate-fade-in-up" : " opacity-0")
+              }
+              style={{ textShadow: "2px 2px 4px rgba(0,0,0,0.8)" }}
+            >
               Who We Are
             </h1>
           </div>
@@ -150,7 +180,14 @@ const About = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-start">
             {/* Left Column - Title */}
             <div className="animate-fade-in-right transition-all duration-700 ease-in-out">
-              <h2 ref={whoWeAreRef} className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (whoWeAreVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
+              <h2
+                ref={whoWeAreRef}
+                className={
+                  "text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " +
+                  (whoWeAreVisible ? " animate-fade-in-up" : " opacity-0")
+                }
+                style={{ color: BRAND_TEAL }}
+              >
                 What We Do
               </h2>
               <div className="w-16 h-0.5 bg-[#7ede56] mb-4 sm:mb-6"></div>
@@ -159,19 +196,37 @@ const About = () => {
             {/* Right Column - Content */}
             <div className="space-y-6 animate-fade-in-left transition-all duration-700 ease-in-out">
               <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-4">
-                Agrilync Nexus is a Ghana-based AgriFinTech and advisory platform that connects smallholder farmers with farm investors and partner organizations through a structured, transparent finance-first model supported by training, AI-powered advisory, and an agent network.
+                Agrilync Nexus is a Ghana-based AgriFinTech and advisory
+                platform that connects smallholder farmers with farm investors
+                and partner organizations through a structured, transparent
+                finance-first model supported by training, AI-powered advisory,
+                and an agent network.
               </p>
               <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-4">
-                We operate a B2B2C model, working with partner organizations and investor entities who in turn serve and fund smallholder farmers. Our first rollout targets smallholder farmers across selected regions in Ghana including Northern, Upper East, Ahafo, and some other regions. We want to give investors the evidence they need to invest with confidence, so we focus on capacity building, making these farmers investment-ready with the confidence investors will also need to invest.
+                We operate a B2B2C model, working with partner organizations and
+                investor entities who in turn serve and fund smallholder
+                farmers. Our first rollout targets smallholder farmers across
+                selected regions in Ghana including Northern, Upper East, Ahafo,
+                and some other regions. We want to give investors the evidence
+                they need to invest with confidence, so we focus on capacity
+                building, making these farmers investment-ready with the
+                confidence investors will also need to invest.
               </p>
               <p className="text-gray-500 text-xs italic mb-4 p-4 border-l-4 border-[#7ede56]/20 bg-[#7ede56]/10">
-                "Agrilync Nexus is a technology-enabled agricultural platform that connects farmers, agricultural experts, and independent investors. We do not operate as a fund manager, financial institution, or farm operator. Agrilync Nexus does not custody user funds or guarantee investment returns."
+                "Agrilync Nexus is a technology-enabled agricultural platform
+                that connects farmers, agricultural experts, and independent
+                investors. We do not operate as a fund manager, financial
+                institution, or farm operator. Agrilync Nexus does not custody
+                user funds or guarantee investment returns."
               </p>
 
               {/* Impact Figures */}
               <div className="grid grid-cols-2 md:grid-cols-2 gap-8 pt-4 border-t border-gray-100">
                 <div className="text-left transition-all duration-700 ease-in-out">
-                  <div className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
+                  <div
+                    className="text-4xl sm:text-5xl font-extrabold mb-2"
+                    style={{ color: BRAND_TEAL }}
+                  >
                     <CountUp end={95} suffix="%" />
                   </div>
                   <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
@@ -179,7 +234,10 @@ const About = () => {
                   </p>
                 </div>
                 <div className="text-left transition-all duration-700 ease-in-out">
-                  <div className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
+                  <div
+                    className="text-4xl sm:text-5xl font-extrabold mb-2"
+                    style={{ color: BRAND_TEAL }}
+                  >
                     <CountUp end={10} />
                   </div>
                   <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
@@ -187,7 +245,10 @@ const About = () => {
                   </p>
                 </div>
                 <div className="text-left transition-all duration-700 ease-in-out">
-                  <div className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
+                  <div
+                    className="text-4xl sm:text-5xl font-extrabold mb-2"
+                    style={{ color: BRAND_TEAL }}
+                  >
                     <CountUp end={50} suffix="+" />
                   </div>
                   <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
@@ -195,7 +256,10 @@ const About = () => {
                   </p>
                 </div>
                 <div className="text-left transition-all duration-700 ease-in-out">
-                  <div className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: BRAND_TEAL }}>
+                  <div
+                    className="text-4xl sm:text-5xl font-extrabold mb-2"
+                    style={{ color: BRAND_TEAL }}
+                  >
                     <CountUp end={28} />
                   </div>
                   <p className="text-gray-600 text-xs sm:text-sm leading-snug font-medium">
@@ -212,53 +276,101 @@ const About = () => {
       <WhereWeWorkSection />
 
       {/* Vision & Mission Section */}
-      <section id="vision-mission" className="py-10 sm:py-16 md:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Vision Section */}
-            <div className="p-8 sm:p-12 text-center rounded-2xl" style={{ backgroundColor: BRAND_TEAL }}>
-              <div className="flex justify-center mb-6">
-                <Eye className="w-12 h-12 text-white" />
+      <section id="vision-mission" className="py-10 sm:py-16 md:py-20 bg-[#f3f4f6]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            {/* Vision — green notched card */}
+            <article className="relative flex flex-col h-full min-h-[300px] sm:min-h-[340px]">
+              <div className="flex-1 bg-[#7ede56] rounded-t-[2rem] px-7 sm:px-9 pt-8 sm:pt-10 pb-6 flex flex-col relative overflow-hidden">
+                <div className="absolute -right-10 top-1/2 -translate-y-1/2 w-40 h-40 rounded-full bg-[#6cd147]/50 pointer-events-none" aria-hidden="true" />
+                <Eye className="w-8 h-8 sm:w-9 sm:h-9 text-[#002f37] mb-5 relative z-10 stroke-[1.5]" />
+                <h3 className="text-2xl sm:text-3xl font-bold text-[#002f37] mb-3 font-montserrat relative z-10">
+                  Vision
+                </h3>
+                <p className="text-[#002f37]/80 text-sm sm:text-base leading-relaxed relative z-10 max-w-md">
+                  To become Africa’s leading smallholder farm investment and
+                  training platform, trusted by farmers, partners, and investors
+                  for transparent, data-driven agricultural finance.
+                </p>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 uppercase tracking-wider">
-                Vision
-              </h3>
-              <p className="text-white text-sm sm:text-base leading-relaxed mb-6">
-                To become Africa’s leading smallholder farm investment and training platform, trusted by farmers, partners, and investors for transparent, data-driven agricultural finance.
-              </p>
-              <a href="#" className="inline-flex items-center text-white hover:underline transition-colors duration-300">
-                Our Solutions ?
-              </a>
-            </div>
+              <div className="flex items-stretch">
+                <div className="bg-[#f3f4f6] pt-3 pr-3 shrink-0">
+                  <a
+                    href="#core-values"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#e8f8dc] text-[#002f37] text-sm font-semibold border border-[#002f37]/10 hover:bg-white transition-colors shadow-sm"
+                  >
+                    Learn More
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+                <div className="flex-1 bg-[#7ede56] rounded-br-[2rem] min-h-[3.25rem] relative">
+                  <div className="absolute left-0 top-0 w-5 h-5 bg-[#f3f4f6]">
+                    <div className="absolute inset-0 bg-[#7ede56] rounded-tl-[1.25rem]" />
+                  </div>
+                </div>
+              </div>
+            </article>
 
-            {/* Mission Section */}
-            <div className="p-8 sm:p-12 text-center bg-white border border-gray-200 rounded-2xl">
-              <div className="flex justify-center mb-6">
-                <Building2 className="w-12 h-12" style={{ color: BRAND_TEAL }} />
+            {/* Mission — dark notched card */}
+            <article className="relative flex flex-col h-full min-h-[300px] sm:min-h-[340px]">
+              <div className="flex-1 bg-[#002f37] rounded-t-[2rem] px-7 sm:px-9 pt-8 sm:pt-10 pb-6 flex flex-col relative overflow-hidden">
+                <div className="absolute -right-10 top-1/2 -translate-y-1/2 w-40 h-40 rounded-full bg-white/5 pointer-events-none" aria-hidden="true" />
+                <Building2 className="w-8 h-8 sm:w-9 sm:h-9 text-[#7ede56] mb-5 relative z-10 stroke-[1.5]" />
+                <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3 font-montserrat relative z-10">
+                  Mission
+                </h3>
+                <p className="text-white/75 text-sm sm:text-base leading-relaxed relative z-10 max-w-md">
+                  To unlock capital and knowledge for smallholder farmers by
+                  connecting them to investors and partners through a transparent,
+                  agent-supported, AI-driven platform.
+                </p>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-bold mb-4 uppercase tracking-wider" style={{ color: BRAND_TEAL }}>
-                Mission
-              </h3>
-              <p className="text-gray-700 text-sm sm:text-base leading-relaxed mb-6">
-                To unlock capital and knowledge for smallholder farmers by connecting them to investors and partners through a transparent, agent-supported, AI-driven platform.
-              </p>
-              <a href="#" className="inline-flex items-center hover:underline transition-colors duration-300" style={{ color: BRAND_TEAL }}>
-                Discover More ?
-              </a>
-            </div>
+              <div className="flex items-stretch">
+                <div className="bg-[#f3f4f6] pt-3 pr-3 shrink-0">
+                  <a
+                    href="#who-we-serve"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#002f37] text-[#7ede56] text-sm font-semibold border border-[#7ede56]/30 hover:bg-[#003c47] transition-colors shadow-sm"
+                  >
+                    Learn More
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+                <div className="flex-1 bg-[#002f37] rounded-br-[2rem] min-h-[3.25rem] relative">
+                  <div className="absolute left-0 top-0 w-5 h-5 bg-[#f3f4f6]">
+                    <div className="absolute inset-0 bg-[#002f37] rounded-tl-[1.25rem]" />
+                  </div>
+                </div>
+              </div>
+            </article>
           </div>
         </div>
       </section>
 
       {/* Core Values Section */}
-      <section id="core-values" className="py-8 sm:py-10 md:py-12" style={{ backgroundColor: BRAND_TEAL }}>
+      <section
+        id="core-values"
+        className="py-8 sm:py-10 md:py-12"
+        style={{ backgroundColor: BRAND_TEAL }}
+      >
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="text-center mb-6 sm:mb-8 animate-fade-in-up transition-all duration-700 ease-in-out">
             <div className="flex items-center justify-center mb-3">
-              <div className="w-2 h-2" style={{ backgroundColor: BRAND_GREEN }}></div>
-              <span className="text-gray-300 text-xs uppercase tracking-wider ml-3">OUR FOUNDATION</span>
+              <div
+                className="w-2 h-2"
+                style={{ backgroundColor: BRAND_GREEN }}
+              ></div>
+              <span className="text-gray-300 text-xs uppercase tracking-wider ml-3">
+                OUR FOUNDATION
+              </span>
             </div>
-            <h2 ref={valuesRef} className={"text-xl sm:text-2xl md:text-3xl font-bold mb-2 transition-all duration-700 ease-in-out " + (valuesVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: 'white' }}>
+            <h2
+              ref={valuesRef}
+              className={
+                "text-xl sm:text-2xl md:text-3xl font-bold mb-2 transition-all duration-700 ease-in-out " +
+                (valuesVisible ? " animate-fade-in-up" : " opacity-0")
+              }
+              style={{ color: "white" }}
+            >
               Core Values
             </h2>
             <div className="w-16 h-0.5 bg-[#7ede56]/40 mb-3 mx-auto"></div>
@@ -266,10 +378,24 @@ const About = () => {
 
           <div className="flex flex-wrap justify-center gap-8 sm:gap-12 md:gap-16">
             {/* Trust */}
-            <div ref={value5Ref} className={"transition-all duration-700 ease-in-out transform " + (value5Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '0ms' }}>
+            <div
+              ref={value5Ref}
+              className={
+                "transition-all duration-700 ease-in-out transform " +
+                (value5Visible
+                  ? " animate-fade-in-up opacity-100"
+                  : " opacity-0")
+              }
+              style={{ animationDelay: "0ms" }}
+            >
               <div className="flex flex-col items-center text-center">
-                <Shield className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
-                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Trust</h3>
+                <Shield
+                  className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110"
+                  style={{ color: BRAND_GREEN }}
+                />
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">
+                  Trust
+                </h3>
                 <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
                   Verified farmers, transparent reporting, and clear agreements.
                 </p>
@@ -277,32 +403,76 @@ const About = () => {
             </div>
 
             {/* Inclusion */}
-            <div ref={value1Ref} className={"transition-all duration-700 ease-in-out transform " + (value1Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '100ms' }}>
+            <div
+              ref={value1Ref}
+              className={
+                "transition-all duration-700 ease-in-out transform " +
+                (value1Visible
+                  ? " animate-fade-in-up opacity-100"
+                  : " opacity-0")
+              }
+              style={{ animationDelay: "100ms" }}
+            >
               <div className="flex flex-col items-center text-center">
-                <Heart className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
-                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Inclusion</h3>
+                <Heart
+                  className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110"
+                  style={{ color: BRAND_GREEN }}
+                />
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">
+                  Inclusion
+                </h3>
                 <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
-                  Serving smallholder farmers, including those without smartphones, through agents.
+                  Serving smallholder farmers, including those without
+                  smartphones, through agents.
                 </p>
               </div>
             </div>
 
             {/* Impact */}
-            <div ref={value4Ref} className={"transition-all duration-700 ease-in-out transform " + (value4Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '200ms' }}>
+            <div
+              ref={value4Ref}
+              className={
+                "transition-all duration-700 ease-in-out transform " +
+                (value4Visible
+                  ? " animate-fade-in-up opacity-100"
+                  : " opacity-0")
+              }
+              style={{ animationDelay: "200ms" }}
+            >
               <div className="flex flex-col items-center text-center">
-                <TrendingUp className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
-                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Impact</h3>
+                <TrendingUp
+                  className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110"
+                  style={{ color: BRAND_GREEN }}
+                />
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">
+                  Impact
+                </h3>
                 <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
-                  Improving farmer incomes and de-risking agricultural investment.
+                  Improving farmer incomes and de-risking agricultural
+                  investment.
                 </p>
               </div>
             </div>
 
             {/* Innovation */}
-            <div ref={value3Ref} className={"transition-all duration-700 ease-in-out transform " + (value3Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '300ms' }}>
+            <div
+              ref={value3Ref}
+              className={
+                "transition-all duration-700 ease-in-out transform " +
+                (value3Visible
+                  ? " animate-fade-in-up opacity-100"
+                  : " opacity-0")
+              }
+              style={{ animationDelay: "300ms" }}
+            >
               <div className="flex flex-col items-center text-center">
-                <Lightbulb className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
-                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Innovation</h3>
+                <Lightbulb
+                  className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110"
+                  style={{ color: BRAND_GREEN }}
+                />
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">
+                  Innovation
+                </h3>
                 <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
                   Using AI, digital tools, and creative finance structures.
                 </p>
@@ -310,10 +480,24 @@ const About = () => {
             </div>
 
             {/* Growth */}
-            <div ref={value2Ref} className={"transition-all duration-700 ease-in-out transform " + (value2Visible ? " animate-fade-in-up opacity-100" : " opacity-0")} style={{ animationDelay: '400ms' }}>
+            <div
+              ref={value2Ref}
+              className={
+                "transition-all duration-700 ease-in-out transform " +
+                (value2Visible
+                  ? " animate-fade-in-up opacity-100"
+                  : " opacity-0")
+              }
+              style={{ animationDelay: "400ms" }}
+            >
               <div className="flex flex-col items-center text-center">
-                <Target className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110" style={{ color: BRAND_GREEN }} />
-                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">Growth</h3>
+                <Target
+                  className="w-12 h-12 sm:w-16 sm:h-16 mb-3 transition-transform hover:scale-110"
+                  style={{ color: BRAND_GREEN }}
+                />
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-white">
+                  Growth
+                </h3>
                 <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-[140px]">
                   Helping farmers and partners grow sustainably together.
                 </p>
@@ -330,10 +514,22 @@ const About = () => {
             {/* Left Column - Title */}
             <div className="animate-fade-in-right transition-all duration-700 ease-in-out">
               <div className="flex items-center mb-4">
-                <div className="w-2 h-2" style={{ backgroundColor: BRAND_TEAL }}></div>
-                <span className="text-gray-500 text-sm uppercase tracking-wider ml-3">WHO WE SERVE</span>
+                <div
+                  className="w-2 h-2"
+                  style={{ backgroundColor: BRAND_TEAL }}
+                ></div>
+                <span className="text-gray-500 text-sm uppercase tracking-wider ml-3">
+                  WHO WE SERVE
+                </span>
               </div>
-              <h2 ref={whoWeServeRef} className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (whoWeServeVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
+              <h2
+                ref={whoWeServeRef}
+                className={
+                  "text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " +
+                  (whoWeServeVisible ? " animate-fade-in-up" : " opacity-0")
+                }
+                style={{ color: BRAND_TEAL }}
+              >
                 Who We Serve
               </h2>
               <div className="w-16 h-0.5 bg-[#7ede56] mb-4 sm:mb-6"></div>
@@ -343,65 +539,115 @@ const About = () => {
             <div className="space-y-6 animate-fade-in-left transition-all duration-700 ease-in-out">
               {/* Lync Growers */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
+                <div
+                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_TEAL }}
+                >
                   <Users className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Lync Growers</h3>
+                  <h3
+                    className="text-lg font-bold mb-2"
+                    style={{ color: BRAND_TEAL }}
+                  >
+                    Lync Growers
+                  </h3>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    Verified smallholder farmers in Ghana who are matched with investors and partners for shared-profit agricultural projects.
+                    Verified smallholder farmers in Ghana who are matched with
+                    investors and partners for shared-profit agricultural
+                    projects.
                   </p>
                 </div>
               </div>
 
               {/* Individual Farmers */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
+                <div
+                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_TEAL }}
+                >
                   <Users className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Individual Farmers</h3>
+                  <h3
+                    className="text-lg font-bold mb-2"
+                    style={{ color: BRAND_TEAL }}
+                  >
+                    Individual Farmers
+                  </h3>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    Farmers who interact with our AI advisory agent or book expert consultations for smart crop and livestock advice, without investor matching.
+                    Farmers who interact with our AI advisory agent or book
+                    expert consultations for smart crop and livestock advice,
+                    without investor matching.
                   </p>
                 </div>
               </div>
 
               {/* Lync Investors */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
+                <div
+                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_TEAL }}
+                >
                   <Award className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Lync Investors</h3>
+                  <h3
+                    className="text-lg font-bold mb-2"
+                    style={{ color: BRAND_TEAL }}
+                  >
+                    Lync Investors
+                  </h3>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    Impact investors and financial institutions looking to deploy capital into structured, verified smallholder agricultural projects with transparent data.
+                    Impact investors and financial institutions looking to
+                    deploy capital into structured, verified smallholder
+                    agricultural projects with transparent data.
                   </p>
                 </div>
               </div>
 
               {/* Agricultural & Development Partners */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
+                <div
+                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_TEAL }}
+                >
                   <Building2 className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Agricultural & Development Partners</h3>
+                  <h3
+                    className="text-lg font-bold mb-2"
+                    style={{ color: BRAND_TEAL }}
+                  >
+                    Agricultural & Development Partners
+                  </h3>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    NGOs, cooperatives, and producer groups that need a structured finance and training platform to support the farmers they work with.
+                    NGOs, cooperatives, and producer groups that need a
+                    structured finance and training platform to support the
+                    farmers they work with.
                   </p>
                 </div>
               </div>
 
               {/* Lync Agents */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
+                <div
+                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_TEAL }}
+                >
                   <Shield className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold mb-2" style={{ color: BRAND_TEAL }}>Lync Agents</h3>
+                  <h3
+                    className="text-lg font-bold mb-2"
+                    style={{ color: BRAND_TEAL }}
+                  >
+                    Lync Agents
+                  </h3>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    Local youth and extension-type workers who onboard Lync Growers, collect baseline data, and monitor farm progress to ensure accountability.
+                    Local youth and extension-type workers who onboard Lync
+                    Growers, collect baseline data, and monitor farm progress to
+                    ensure accountability.
                   </p>
                 </div>
               </div>
@@ -411,14 +657,30 @@ const About = () => {
       </section>
 
       {/* How We Do It Section - Simplified 4-Step Process */}
-      <section id="process" className="py-16 sm:py-24 md:py-32" style={{ backgroundColor: BRAND_TEAL }}>
+      <section
+        id="process"
+        className="py-16 sm:py-24 md:py-32"
+        style={{ backgroundColor: BRAND_TEAL }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 sm:mb-20">
             <div className="flex items-center justify-center mb-4">
-              <div className="w-2 h-2" style={{ backgroundColor: BRAND_GREEN }}></div>
-              <span className="text-gray-300 text-sm uppercase tracking-[0.2em] ml-3">How We Do It</span>
+              <div
+                className="w-2 h-2"
+                style={{ backgroundColor: BRAND_GREEN }}
+              ></div>
+              <span className="text-gray-300 text-sm uppercase tracking-[0.2em] ml-3">
+                How We Do It
+              </span>
             </div>
-            <h2 ref={howWeDoItRef} className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 transition-all duration-700 ease-in-out " + (howWeDoItVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: 'white' }}>
+            <h2
+              ref={howWeDoItRef}
+              className={
+                "text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 transition-all duration-700 ease-in-out " +
+                (howWeDoItVisible ? " animate-fade-in-up" : " opacity-0")
+              }
+              style={{ color: "white" }}
+            >
               Our Simplified Process
             </h2>
             <div className="w-16 h-0.5 bg-[#7ede56]/40 mb-4 sm:mb-6 mx-auto"></div>
@@ -430,33 +692,33 @@ const About = () => {
                 step: "01",
                 title: "Connect",
                 desc: "Connecting farmers to investors on a shared-profit basis for sustainable growth.",
-                color: "green-400"
+                color: "green-400",
               },
               {
                 step: "02",
                 title: "Train",
                 desc: "Providing essential pre-investment training to ensure farming success.",
-                color: "#7ede56"
+                color: "#7ede56",
               },
               {
                 step: "03",
                 title: "Monitor",
                 desc: "Extension agents oversee all activities ensuring full accountability.",
-                color: "blue-400"
+                color: "blue-400",
               },
               {
                 step: "04",
                 title: "Support",
                 desc: "Real-time AI advisory and strategic guidance throughout the season.",
-                color: "orange-400"
-              }
+                color: "orange-400",
+              },
             ].map((item, index) => (
               <div key={index} className="text-center group">
-                <div 
-                  className="text-6xl sm:text-7xl md:text-8xl font-bold text-white group-hover:text-[#7ede56] transition-all duration-500 mb-6" 
-                  style={{ 
-                    fontFamily: 'Montserrat, sans-serif',
-                    WebkitTextStroke: '1px rgba(255,255,255,0.1)'
+                <div
+                  className="text-6xl sm:text-7xl md:text-8xl font-bold text-white group-hover:text-[#7ede56] transition-all duration-500 mb-6"
+                  style={{
+                    fontFamily: "Montserrat, sans-serif",
+                    WebkitTextStroke: "1px rgba(255,255,255,0.1)",
                   }}
                 >
                   {item.step}
@@ -479,27 +741,51 @@ const About = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="flex items-center mb-4">
-                <div className="w-2 h-2" style={{ backgroundColor: BRAND_MAGENTA }}></div>
-                <span className="text-gray-500 text-sm uppercase tracking-wider ml-3">ACCOUNTABILITY</span>
+                <div
+                  className="w-2 h-2"
+                  style={{ backgroundColor: BRAND_MAGENTA }}
+                ></div>
+                <span className="text-gray-500 text-sm uppercase tracking-wider ml-3">
+                  ACCOUNTABILITY
+                </span>
               </div>
-              <h2 ref={monitoringRef} className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-3 text-[#002f37] transition-all duration-700 ease-in-out " + (monitoringVisible ? " animate-fade-in-up" : " opacity-0")}>
+              <h2
+                ref={monitoringRef}
+                className={
+                  "text-3xl sm:text-4xl md:text-5xl font-bold mb-3 text-[#002f37] transition-all duration-700 ease-in-out " +
+                  (monitoringVisible ? " animate-fade-in-up" : " opacity-0")
+                }
+              >
                 Field Monitoring & Transparency
               </h2>
               <div className="w-16 h-0.5 bg-[#7ede56] mb-6"></div>
               <p className="text-gray-700 text-lg leading-relaxed mb-6">
-                AgriLync Nexus uses independent field verification agents to monitor farm project progress and improve transparency between farmers and investors.
+                AgriLync Nexus uses independent field verification agents to
+                monitor farm project progress and improve transparency between
+                farmers and investors.
               </p>
               <p className="text-gray-600 leading-relaxed mb-8">
-                These agents collect data, photos, and progress updates. They do not manage farm operations, handle funds, or make agricultural decisions. This ensures that all stakeholders have access to accurate, real-time information about the project's status.
+                These agents collect data, photos, and progress updates. They do
+                not manage farm operations, handle funds, or make agricultural
+                decisions. This ensures that all stakeholders have access to
+                accurate, real-time information about the project's status.
               </p>
               <div className="grid grid-cols-2 gap-6">
                 <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-                  <h4 className="font-bold text-[#002f37] mb-2">Real-time Data</h4>
-                  <p className="text-sm text-gray-500">Live updates from the field directly to your dashboard.</p>
+                  <h4 className="font-bold text-[#002f37] mb-2">
+                    Real-time Data
+                  </h4>
+                  <p className="text-sm text-gray-500">
+                    Live updates from the field directly to your dashboard.
+                  </p>
                 </div>
                 <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-                  <h4 className="font-bold text-[#002f37] mb-2">Verified Updates</h4>
-                  <p className="text-sm text-gray-500">Independent verification of all project milestones.</p>
+                  <h4 className="font-bold text-[#002f37] mb-2">
+                    Verified Updates
+                  </h4>
+                  <p className="text-sm text-gray-500">
+                    Independent verification of all project milestones.
+                  </p>
                 </div>
               </div>
             </div>
@@ -514,28 +800,50 @@ const About = () => {
               <div className="absolute -bottom-4 -right-2 md:-bottom-6 md:-right-6 p-4 md:p-6 bg-white rounded-2xl shadow-xl max-w-[180px] md:max-w-xs hidden sm:block">
                 <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
                   <div className="w-2 h-2 md:w-3 md:h-3 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="font-bold text-xs md:text-sm">Active Monitoring</span>
+                  <span className="font-bold text-xs md:text-sm">
+                    Active Monitoring
+                  </span>
                 </div>
-                <p className="text-[10px] md:text-xs text-gray-500">Field agent verified 2 hours ago</p>
+                <p className="text-[10px] md:text-xs text-gray-500">
+                  Field agent verified 2 hours ago
+                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-
       {/* Why Choose Us Section */}
       <section id="why-choose-us" className="py-10 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-start">
             {/* Left Column - Title */}
-            <div ref={whyChooseUsRef} className={"animate-fade-in-right transition-all duration-700 ease-in-out " + (whyChooseUsVisible ? " animate-fade-in-up" : " opacity-0")}>
+            <div
+              ref={whyChooseUsRef}
+              className={
+                "animate-fade-in-right transition-all duration-700 ease-in-out " +
+                (whyChooseUsVisible ? " animate-fade-in-up" : " opacity-0")
+              }
+            >
               <div className="flex items-center mb-4">
-                <div className="w-2 h-2" style={{ backgroundColor: BRAND_TEAL }}></div>
-                <span className="text-gray-500 text-sm uppercase tracking-wider ml-3">WHO WE ARE</span>
+                <div
+                  className="w-2 h-2"
+                  style={{ backgroundColor: BRAND_TEAL }}
+                ></div>
+                <span className="text-gray-500 text-sm uppercase tracking-wider ml-3">
+                  WHO WE ARE
+                </span>
               </div>
-              <h2 className={"text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " + (whyChooseUsVisible ? " animate-fade-in-up" : " opacity-0")} style={{ color: BRAND_TEAL }}>
-                why<br />Choose us
+              <h2
+                className={
+                  "text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 transition-all duration-700 ease-in-out " +
+                  (whyChooseUsVisible ? " animate-fade-in-up" : " opacity-0")
+                }
+                style={{ color: BRAND_TEAL }}
+              >
+                why
+                <br />
+                Choose us
               </h2>
               <div className="w-16 h-0.5 bg-[#7ede56] mb-4 sm:mb-6"></div>
             </div>
@@ -544,60 +852,94 @@ const About = () => {
             <div className="space-y-8 animate-fade-in-left transition-all duration-700 ease-in-out">
               {/* Reason 1 */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
+                <div
+                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_TEAL }}
+                >
                   <Users className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    We are consummate professionals and specialists in agricultural technology, with a proven track record in AI-driven farming solutions. Our expertise in connecting farmers with investors and providing digital tools backs up our reputation. We take care of the technical details, so farmers can focus on what they do best.
+                    We are consummate professionals and specialists in
+                    agricultural technology, with a proven track record in
+                    AI-driven farming solutions. Our expertise in connecting
+                    farmers with investors and providing digital tools backs up
+                    our reputation. We take care of the technical details, so
+                    farmers can focus on what they do best.
                   </p>
                 </div>
               </div>
 
               {/* Reason 2 */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
+                <div
+                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_TEAL }}
+                >
                   <Target className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    When it comes to agricultural technology and farmer support, we recognize that you have a choice. Our goal is to be your platform of choice - through the right technology, with dedication, integrity, enthusiasm and time-tested processes that have helped over 200 farmers across Ghana.
+                    When it comes to agricultural technology and farmer support,
+                    we recognize that you have a choice. Our goal is to be your
+                    platform of choice - through the right technology, with
+                    dedication, integrity, enthusiasm and time-tested processes
+                    that have helped over 200 farmers across Ghana.
                   </p>
                 </div>
               </div>
 
               {/* Reason 3 */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
+                <div
+                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_TEAL }}
+                >
                   <Lightbulb className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    We have over the years through innovation, creativity, commitment and sheer hard work pioneered the era of AI-powered agricultural consultation and digital farming solutions with a strategic approach to support farmers' growth strategies across Africa.
+                    We have over the years through innovation, creativity,
+                    commitment and sheer hard work pioneered the era of
+                    AI-powered agricultural consultation and digital farming
+                    solutions with a strategic approach to support farmers'
+                    growth strategies across Africa.
                   </p>
                 </div>
               </div>
 
               {/* Reason 4 */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
+                <div
+                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_TEAL }}
+                >
                   <TrendingUp className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    We have grown and expanded our service offering to include comprehensive agricultural technology solutions since our founding. This makes us a one-stop platform for all farming digital needs, from AI consultation to investment matching.
+                    We have grown and expanded our service offering to include
+                    comprehensive agricultural technology solutions since our
+                    founding. This makes us a one-stop platform for all farming
+                    digital needs, from AI consultation to investment matching.
                   </p>
                 </div>
               </div>
 
               {/* Reason 5 */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: BRAND_TEAL }}>
+                <div
+                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_TEAL }}
+                >
                   <Award className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    We love what we do, working with us puts you in good company. A passionate team with experience in both agriculture and technology, working with some of the most innovative farming communities and investors across Ghana.
+                    We love what we do, working with us puts you in good
+                    company. A passionate team with experience in both
+                    agriculture and technology, working with some of the most
+                    innovative farming communities and investors across Ghana.
                   </p>
                 </div>
               </div>
@@ -606,30 +948,40 @@ const About = () => {
         </div>
       </section>
 
-
-
       {/* Enhanced Mobile App Development Section */}
-      <section ref={mobileAppRef} className={"py-16 sm:py-24 relative overflow-hidden transition-all duration-1000 ease-in-out " + (mobileAppVisible ? " animate-fade-in-up" : " opacity-0")} style={{ backgroundColor: BRAND_TEAL }}>
+      <section
+        ref={mobileAppRef}
+        className={
+          "py-16 sm:py-24 relative overflow-hidden transition-all duration-1000 ease-in-out " +
+          (mobileAppVisible ? " animate-fade-in-up" : " opacity-0")
+        }
+        style={{ backgroundColor: BRAND_TEAL }}
+      >
         {/* Decorative Background Elements */}
         <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-96 h-96 bg-[#7ede56] rounded-full mix-blend-multiply filter blur-[128px] opacity-20 hidden md:block" />
         <div className="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-96 h-96 bg-white rounded-full mix-blend-overlay filter blur-[128px] opacity-10 hidden md:block" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-
             {/* Left Content Area */}
             <div className="text-left space-y-6 lg:space-y-8">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm">
                 <Smartphone className="w-4 h-4 text-[#7ede56]" />
-                <span className="text-white text-xs font-bold tracking-wider uppercase">Coming Soon</span>
+                <span className="text-white text-xs font-bold tracking-wider uppercase">
+                  Coming Soon
+                </span>
               </div>
 
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight font-sora">
-                AgriLync Nexus in <span className="text-[#7ede56]">Your Pocket.</span>
+                AgriLync Nexus in{" "}
+                <span className="text-[#7ede56]">Your Pocket.</span>
               </h2>
 
               <p className="text-gray-300 text-base sm:text-lg leading-relaxed max-w-xl">
-                Our mobile app is currently under development, crafted to bring AI-powered agricultural solutions straight to farmers' smartphones. Experience the future of African agriculture through accessible, mobile-first technology.
+                Our mobile app is currently under development, crafted to bring
+                AI-powered agricultural solutions straight to farmers'
+                smartphones. Experience the future of African agriculture
+                through accessible, mobile-first technology.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
@@ -638,8 +990,12 @@ const About = () => {
                     <Rocket className="w-5 h-5 text-[#7ede56]" />
                   </div>
                   <div>
-                    <h4 className="text-white font-bold mb-1">Instant Access</h4>
-                    <p className="text-gray-400 text-sm">Farm insights and AI consultation on the go.</p>
+                    <h4 className="text-white font-bold mb-1">
+                      Instant Access
+                    </h4>
+                    <p className="text-gray-400 text-sm">
+                      Farm insights and AI consultation on the go.
+                    </p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -647,8 +1003,12 @@ const About = () => {
                     <MapPin className="w-5 h-5 text-[#7ede56]" />
                   </div>
                   <div>
-                    <h4 className="text-white font-bold mb-1">Offline Support</h4>
-                    <p className="text-gray-400 text-sm">Critical features work in low-connectivity areas.</p>
+                    <h4 className="text-white font-bold mb-1">
+                      Offline Support
+                    </h4>
+                    <p className="text-gray-400 text-sm">
+                      Critical features work in low-connectivity areas.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -657,15 +1017,29 @@ const About = () => {
                 <div className="px-6 py-3 rounded-xl bg-white/5 border border-white/20 flex items-center gap-3 backdrop-blur-sm shadow-xl">
                   <Globe className="w-6 h-6 text-gray-300" />
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Available Soon on</span>
-                    <span className="text-white font-bold text-sm">App Store</span>
+                    <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                      Available Soon on
+                    </span>
+                    <span className="text-white font-bold text-sm">
+                      App Store
+                    </span>
                   </div>
                 </div>
                 <div className="px-6 py-3 rounded-xl bg-white/5 border border-white/20 flex items-center gap-3 backdrop-blur-sm shadow-xl">
-                  <svg className="w-6 h-6 text-gray-300" viewBox="0 0 24 24" fill="currentColor"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.5,12.92 20.16,13.19L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" /></svg>
+                  <svg
+                    className="w-6 h-6 text-gray-300"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.5,12.92 20.16,13.19L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" />
+                  </svg>
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Available Soon on</span>
-                    <span className="text-white font-bold text-sm">Google Play</span>
+                    <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                      Available Soon on
+                    </span>
+                    <span className="text-white font-bold text-sm">
+                      Google Play
+                    </span>
                   </div>
                 </div>
               </div>
@@ -673,23 +1047,33 @@ const About = () => {
 
             {/* Right Display Area - 3D Mockup Arrangement */}
             <div className="relative h-[400px] sm:h-[500px] lg:h-[600px] w-full mt-12 lg:mt-0 flex justify-center items-center perspective-[2000px]">
-
               {/* Back Left Mockup */}
               <div className="absolute left-[5%] md:left-[10%] transform -rotate-y-12 -rotate-12 translate-z-[-100px] scale-[0.85] md:scale-95 opacity-60 hover:opacity-100 hover:scale-100 hover:z-30 transition-all duration-500 rounded-[2.5rem] border-[6px] border-gray-800 shadow-2xl overflow-hidden w-[180px] sm:w-[220px] md:w-[260px] bg-black">
-                <img src="/lovable-uploads/app-menu.png" alt="Agent dashboard navigation menu" className="w-full h-auto object-cover" />
+                <img
+                  src="/lovable-uploads/app-menu.png"
+                  alt="Agent dashboard navigation menu"
+                  className="w-full h-auto object-cover"
+                />
               </div>
 
               {/* Front Center Mockup */}
               <div className="absolute z-20 transform hover:-translate-y-4 hover:scale-105 transition-all duration-500 rounded-[2.5rem] border-[8px] border-gray-900 shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden w-[220px] sm:w-[260px] md:w-[300px] bg-white ring-4 ring-[#7ede56]/30">
-                <img src="/lovable-uploads/app-dashboard.png" alt="Agent dashboard home screen" className="w-full h-auto object-cover" />
+                <img
+                  src="/lovable-uploads/app-dashboard.png"
+                  alt="Agent dashboard home screen"
+                  className="w-full h-auto object-cover"
+                />
               </div>
 
               {/* Back Right Mockup */}
               <div className="absolute right-[5%] md:right-[10%] transform rotate-y-12 rotate-12 translate-z-[-100px] scale-[0.85] md:scale-95 opacity-60 hover:opacity-100 hover:scale-100 hover:z-30 transition-all duration-500 rounded-[2.5rem] border-[6px] border-gray-800 shadow-2xl overflow-hidden w-[180px] sm:w-[220px] md:w-[260px] bg-black">
-                <img src="/lovable-uploads/app-grower-directory.png" alt="Agent grower directory" className="w-full h-auto object-cover" />
+                <img
+                  src="/lovable-uploads/app-grower-directory.png"
+                  alt="Agent grower directory"
+                  className="w-full h-auto object-cover"
+                />
               </div>
             </div>
-
           </div>
         </div>
       </section>

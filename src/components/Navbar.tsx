@@ -134,27 +134,27 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
     >
       {/* Top Info Bar - Only on Homepage */}
       {isHomePage && (
-        <div className={`hidden md:block w-full py-2 px-10 ${isTransparent ? 'bg-white/10 backdrop-blur-sm' : 'bg-white'}`}>
-          <div className="flex justify-between items-center text-xs font-medium">
+        <div className={`hidden md:block w-full py-1.5 px-10 ${isTransparent ? 'bg-white/10 backdrop-blur-sm' : 'bg-white'}`}>
+          <div className="flex justify-between items-center text-[11px] font-medium">
             <div className="flex items-center space-x-6">
               <div className="flex items-center gap-2">
-                <Mail className="h-3.5 w-3.5 text-[#7ede56]" />
+                <Mail className="h-3 w-3 text-[#7ede56]" />
                 <span className={isTransparent ? 'text-white' : 'text-[#002f37]'}>Need Free Consultation?</span>
                 <button className="text-[#FFD700] hover:underline">Book Schedule Now</button>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <a href="https://www.facebook.com/share/16SkoNJAsW/" target="_blank" rel="noopener noreferrer" className={`hover:text-[#7ede56] transition-colors ${isTransparent ? 'text-white' : 'text-[#002f37]'}`}>
-                <Facebook className="h-3.5 w-3.5" />
+                <Facebook className="h-3 w-3" />
               </a>
               <a href="https://x.com/agri_lync" target="_blank" rel="noopener noreferrer" className={`hover:text-[#7ede56] transition-colors ${isTransparent ? 'text-white' : 'text-[#002f37]'}`}>
-                <Twitter className="h-3.5 w-3.5" />
+                <Twitter className="h-3 w-3" />
               </a>
               <a href="https://www.linkedin.com/company/agrilync/" target="_blank" rel="noopener noreferrer" className={`hover:text-[#7ede56] transition-colors ${isTransparent ? 'text-white' : 'text-[#002f37]'}`}>
-                <Linkedin className="h-3.5 w-3.5" />
+                <Linkedin className="h-3 w-3" />
               </a>
               <a href="https://instagram.com/agri_lync" target="_blank" rel="noopener noreferrer" className={`hover:text-[#7ede56] transition-colors ${isTransparent ? 'text-white' : 'text-[#002f37]'}`}>
-                <Instagram className="h-3.5 w-3.5" />
+                <Instagram className="h-3 w-3" />
               </a>
             </div>
           </div>
@@ -164,18 +164,18 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
       {/* Main Navbar */}
       <div className={`w-full ${navBgClass} transition-all duration-300`}>
         <div className="w-full">
-          <div className="flex justify-between items-center h-24 md:h-28">
+          <div className="flex justify-between items-center h-14 md:h-16">
             <Link to="/" className="flex items-center pl-4 sm:px-6 lg:pl-10" onClick={() => setIsMenuOpen(false)}>
               <img
                 src="/Frame 74.png"
                 alt="Agrilync Nexus Logo"
-                className="h-24 sm:h-28 md:h-32 w-auto object-contain transition-all duration-300 transform scale-[1.3] md:scale-[1.5] origin-left"
+                className="h-12 sm:h-14 md:h-16 w-auto object-contain transition-all duration-300 transform scale-[1.15] md:scale-[1.25] origin-left"
               />
             </Link>
 
             {/* Desktop Navigation - Right-aligned */}
             <div className="hidden md:flex items-center px-4 justify-end flex-grow pr-10">
-              <div className="flex items-center space-x-8">
+              <div className="flex items-center space-x-6">
                 {navLinks.map((link) => (
                   <div
                     key={link.label}
@@ -185,7 +185,7 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
                   >
                     <Link
                       to={link.path}
-                      className={`${textClass} transition-colors text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 py-8`}
+                      className={`${textClass} transition-colors text-xs font-bold uppercase tracking-wider flex items-center gap-1 py-4`}
                     >
                       {link.label}
                       {link.dropdown && <ChevronDown className="h-3 w-3 transition-transform duration-300 group-hover:rotate-180" />}
@@ -216,12 +216,12 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
             </div>
 
             {/* Auth Buttons */}
-            <div className="hidden md:flex items-center space-x-6 pr-4 sm:pr-6 lg:pr-10">
+            <div className="hidden md:flex items-center space-x-4 pr-4 sm:pr-6 lg:pr-10">
               <Link to="/login" className={`${textClass} transition-colors text-xs font-bold uppercase tracking-wider hover:text-[#7ede56]`}>
                 Sign In
               </Link>
               <Link to="/signup">
-                <Button className="bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] border-none px-6 rounded-md transition-all duration-300 shadow-sm text-xs font-bold uppercase tracking-wider">
+                <Button className="bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] border-none h-8 px-4 rounded-md transition-all duration-300 shadow-sm text-xs font-bold uppercase tracking-wider">
                   Get Started
                 </Button>
               </Link>
