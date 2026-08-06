@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DarkModeProvider } from "./contexts/DarkModeContext";
+import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { OfflineProvider } from "./contexts/OfflineContext";
 import Index from "./pages/Index";
@@ -111,6 +112,7 @@ const queryClient = new QueryClient({
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <DarkModeProvider>
+      <LanguageProvider>
       <AuthProvider>
         <OfflineProvider>
         <TooltipProvider>
@@ -229,6 +231,7 @@ const App = () => (
         </TooltipProvider>
         </OfflineProvider>
       </AuthProvider>
+      </LanguageProvider>
     </DarkModeProvider>
   </QueryClientProvider>
 );

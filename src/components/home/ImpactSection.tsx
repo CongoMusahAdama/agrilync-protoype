@@ -3,6 +3,7 @@ import { Leaf } from "lucide-react";
 import { motion } from "framer-motion";
 import CountUp from "@/components/CountUp";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface HeroImage {
   src: string;
@@ -17,148 +18,95 @@ interface ImpactSectionProps {
   currentHeroImage: number;
 }
 
+/** White SDG icon glyphs — simplified to match official UN icon silhouettes */
+const sdgIconClass = "w-[55%] max-w-[7rem] h-auto text-white";
+
 const SDG_GOALS = [
   {
     number: "1",
-    title: "NO POVERTY",
+    titleKey: "impact.sdg1",
     color: "#E5243B",
     icon: (
-      <svg
-        viewBox="0 0 120 80"
-        className="w-[72%] max-w-[9rem] h-auto"
-        aria-hidden="true"
-      >
-        <g fill="currentColor">
-          <circle cx="28" cy="22" r="7" />
-          <path d="M16 48c0-8 5.5-14 12-14s12 6 12 14v4H16v-4z" />
-          <circle cx="52" cy="18" r="6" />
-          <path d="M42 44c0-7 4.5-12 10-12s10 5 10 12v4H42v-4z" />
-          <circle cx="74" cy="24" r="5.5" />
-          <path d="M64 48c0-6.5 4-11 10-11s10 4.5 10 11v4H64v-4z" />
-          <circle cx="94" cy="20" r="6.5" />
-          <path d="M83 48c0-7.5 5-13 11-13s11 5.5 11 13v4H83v-4z" />
-          <circle cx="40" cy="52" r="4.5" />
-          <path d="M33 70c0-5 3-8.5 7-8.5s7 3.5 7 8.5v2H33v-2z" />
-          <circle cx="66" cy="54" r="4" />
-          <path d="M59 70c0-4.5 3-8 7-8s7 3.5 7 8v2H59v-2z" />
-        </g>
+      <svg viewBox="0 0 96 72" className={sdgIconClass} aria-hidden="true" fill="currentColor">
+        {/* Adult left */}
+        <circle cx="22" cy="16" r="7" />
+        <path d="M10 52c0-9 5.5-16 12-16s12 7 12 16v4H10v-4z" />
+        {/* Adult right */}
+        <circle cx="74" cy="16" r="7" />
+        <path d="M62 52c0-9 5.5-16 12-16s12 7 12 16v4H62v-4z" />
+        {/* Adult center */}
+        <circle cx="48" cy="14" r="7.5" />
+        <path d="M35 50c0-9.5 6-17 13-17s13 7.5 13 17v5H35v-5z" />
+        {/* Child */}
+        <circle cx="48" cy="42" r="5" />
+        <path d="M40 66c0-5.5 3.5-10 8-10s8 4.5 8 10v2H40v-2z" />
       </svg>
     ),
   },
   {
     number: "2",
-    title: "ZERO HUNGER",
+    titleKey: "impact.sdg2",
     color: "#DDA63A",
     icon: (
-      <svg
-        viewBox="0 0 100 90"
-        className="w-[58%] max-w-[7.5rem] h-auto"
-        aria-hidden="true"
-      >
-        <g
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M28 42c0-10 8-18 22-18s22 8 22 18" />
-          <path d="M38 34c0-7 5-12 12-12s12 5 12 12" />
-          <path d="M48 28c0-5 3-9 7-9" />
-          <path
-            d="M18 52h64c0 18-14 30-32 30S18 70 18 52z"
-            fill="currentColor"
-            stroke="none"
-          />
-          <ellipse
-            cx="50"
-            cy="52"
-            rx="32"
-            ry="6"
-            fill="currentColor"
-            stroke="none"
-          />
-        </g>
+      <svg viewBox="0 0 96 80" className={sdgIconClass} aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round">
+        {/* Steam */}
+        <path d="M34 28c0-6 4-10 8-10" />
+        <path d="M48 22c0-7 4-12 8-12" />
+        <path d="M62 28c0-6 3-10 6-10" />
+        {/* Bowl */}
+        <path d="M16 40h64c0 20-14 34-32 34S16 60 16 40z" fill="currentColor" stroke="none" />
+        <ellipse cx="48" cy="40" rx="32" ry="7" fill="currentColor" stroke="none" />
       </svg>
     ),
   },
   {
     number: "5",
-    title: "GENDER EQUALITY",
+    titleKey: "impact.sdg5",
     color: "#FF3A21",
     icon: (
-      <svg
-        viewBox="0 0 100 100"
-        className="w-[62%] max-w-[7.5rem] h-auto"
-        aria-hidden="true"
-      >
-        <g
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="5.5"
-          strokeLinecap="round"
-        >
-          <circle cx="50" cy="42" r="22" />
-          <path d="M35 27 L22 14 M22 14 h14 M22 14 v14" />
-          <path d="M50 64 v22 M40 76 h20" />
-          <path d="M42 42 h16" strokeWidth="6" />
-          <path d="M50 34 v16" strokeWidth="6" />
-        </g>
+      <svg viewBox="0 0 96 96" className={sdgIconClass} aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
+        {/* Combined gender equality symbol */}
+        <circle cx="48" cy="36" r="18" />
+        {/* Female cross */}
+        <path d="M48 54v28M36 68h24" />
+        {/* Male arrow */}
+        <path d="M35 23L20 8M20 8h16M20 8v16" />
+        {/* Equals mark inside circle */}
+        <path d="M40 32h16M40 40h16" strokeWidth="5" />
       </svg>
     ),
   },
   {
     number: "13",
-    title: "CLIMATE ACTION",
+    titleKey: "impact.sdg13",
     color: "#3F7E44",
     icon: (
-      <svg
-        viewBox="0 0 120 80"
-        className="w-[78%] max-w-[9.5rem] h-auto"
-        aria-hidden="true"
-      >
-        <g fill="currentColor">
-          <path
-            d="M8 40c18-28 36-34 52-34s34 6 52 34c-18 28-36 34-52 34S26 68 8 40z"
-            opacity="0.95"
-          />
-          <ellipse cx="60" cy="40" rx="22" ry="22" fill="#3F7E44" />
-          <path
-            d="M48 28c6-2 12-2 18 0-2 4-2 8 0 12-6 2-12 2-18 0 2-4 2-8 0-12z"
-            fill="currentColor"
-            opacity="0.35"
-          />
-          <path
-            d="M42 40c0-8 6-16 18-18-2 6 0 12 4 16-8 2-16 4-22 2z"
-            fill="currentColor"
-            opacity="0.25"
-          />
-          <path
-            d="M60 28c8 2 14 8 16 16-6 0-12 2-16 6-2-8-4-16 0-22z"
-            fill="currentColor"
-            opacity="0.2"
-          />
-        </g>
+      <svg viewBox="0 0 110 72" className={sdgIconClass} aria-hidden="true">
+        {/* White eye with circular iris hole (card color shows through) */}
+        <path
+          fill="currentColor"
+          fillRule="evenodd"
+          d="M8 36c16-22 32-28 47-28s31 6 47 28c-16 22-32 28-47 28S24 58 8 36zm47-16a16 16 0 1 0 .01 0z"
+        />
+        {/* Earth detail rings/continents inside the iris */}
+        <circle cx="55" cy="36" r="11" fill="none" stroke="currentColor" strokeWidth="2.5" />
+        <path fill="currentColor" d="M47 30c3.5-1 7-.8 10.5.8-1 2.2-.8 4.8.4 7-3.5 1-7.2 1-10.8 0 .9-2.4.8-5.2-.1-7.8z" />
+        <path fill="currentColor" d="M57 39c3 .6 5.5 2.8 6.5 5.8-2.6.6-5 1.6-7.2 3.2-.8-3-1.6-6.2.7-9z" />
       </svg>
     ),
   },
   {
     number: "17",
-    title: "PARTNERSHIPS FOR THE GOALS",
+    titleKey: "impact.sdg17",
     color: "#19486A",
     icon: (
-      <svg
-        viewBox="0 0 100 100"
-        className="w-[68%] max-w-[8rem] h-auto"
-        aria-hidden="true"
-      >
-        <g fill="none" stroke="currentColor" strokeWidth="5.5">
-          <circle cx="50" cy="28" r="14" />
-          <circle cx="28" cy="44" r="14" />
-          <circle cx="72" cy="44" r="14" />
-          <circle cx="36" cy="70" r="14" />
-          <circle cx="64" cy="70" r="14" />
-        </g>
+      <svg viewBox="0 0 96 96" className={sdgIconClass} aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="5.5">
+        {/* Interlocking partnership circles */}
+        <circle cx="48" cy="26" r="15" />
+        <circle cx="28" cy="40" r="15" />
+        <circle cx="68" cy="40" r="15" />
+        <circle cx="34" cy="64" r="15" />
+        <circle cx="62" cy="64" r="15" />
       </svg>
     ),
   },
@@ -168,6 +116,7 @@ export const ImpactSection: React.FC<ImpactSectionProps> = ({
   heroImages,
   currentHeroImage,
 }) => {
+  const { t } = useLanguage();
   const [whoWeAreRef, whoWeAreVisible] = useScrollReveal();
 
   return (
@@ -181,34 +130,31 @@ export const ImpactSection: React.FC<ImpactSectionProps> = ({
               className={`transition-all duration-700 ease-out ${whoWeAreVisible ? "animate-fade-in-right opacity-100" : "opacity-0 -translate-x-12"}`}
             >
               <h2 className="text-4xl md:text-6xl font-bold font-montserrat leading-[0.9] text-[#002f37] mb-6 md:mb-0">
-                The <span className="italic text-[#7ede56]">Impact</span>
+                {t('impact.titleThe')}<span className="italic text-[#7ede56]">{t('impact.titleImpact')}</span>
               </h2>
             </div>
             <div
               className={`max-w-xl transition-all duration-700 delay-200 ease-out ${whoWeAreVisible ? "animate-fade-in-left opacity-100" : "opacity-0 translate-x-12"}`}
             >
               <p className="text-gray-600 font-montserrat text-base md:text-lg leading-relaxed mb-6">
-                Sarah spent{" "}
+                {t('impact.p1a')}{" "}
                 <strong className="text-[#002f37]">
-                  months growing her vegetables
+                  {t('impact.p1b')}
                 </strong>
-                . But once they're picked, the real race begins. Without a way
-                to connect with the right{" "}
-                <strong className="text-[#002f37]">investors and buyers</strong>
-                , even her best harvest can go to waste before it reaches the
-                market.
+                {t('impact.p1c')}{" "}
+                <strong className="text-[#002f37]">{t('impact.p1d')}</strong>
+                {t('impact.p1e')}
               </p>
               <p className="text-gray-600 font-montserrat text-base md:text-lg leading-relaxed">
-                It's the same for{" "}
+                {t('impact.p2a')}{" "}
                 <strong className="text-[#002f37]">
-                  farmers like Emmanuel
+                  {t('impact.p2b')}
                 </strong>
-                . His hard work is valuable in cattle rearing, but without{" "}
+                {t('impact.p2c')}{" "}
                 <strong className="text-[#002f37]">
-                  timely health data and field support
+                  {t('impact.p2d')}
                 </strong>
-                , his livestock's health or growth potential could be
-                compromised.
+                {t('impact.p2e')}
               </p>
             </div>
           </div>
@@ -250,7 +196,7 @@ export const ImpactSection: React.FC<ImpactSectionProps> = ({
                     />
                     <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
                     <div className={`absolute bottom-10 left-10 md:bottom-16 md:left-16 transition-all duration-700 delay-500 drop-shadow-md ${isActive ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-                      <h3 className="text-xl md:text-2xl font-semibold font-montserrat text-white mb-2">Meet {img.name}, {img.age}</h3>
+                      <h3 className="text-xl md:text-2xl font-semibold font-montserrat text-white mb-2">{t('impact.meet', { name: img.name, age: img.age })}</h3>
                       <p className="text-sm md:text-base font-montserrat text-[#7ede56] font-medium tracking-wide">{img.location}</p>
                     </div>
                   </div>
@@ -271,12 +217,12 @@ export const ImpactSection: React.FC<ImpactSectionProps> = ({
           {/* Impact stats — clean number strip */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-white/10 rounded-2xl overflow-hidden">
             {[
-              { end: 500, suffix: '+', label: 'Pilot Farmers', desc: 'Across 7 regions in Ghana', duration: 2200, delay: 2000 },
-              { end: 15, suffix: '%+', label: 'Income Growth', desc: 'Average annual increase', duration: 1800, delay: 2400 },
-              { end: 95, suffix: '%', label: 'Engagement', desc: 'WhatsApp community active', duration: 2000, delay: 2200 },
-              { end: 10, suffix: '', label: 'Webinars', desc: 'Training sessions delivered', duration: 1600, delay: 2600 },
-              { end: 50, suffix: '+', label: 'Waitlist', desc: 'Organic platform signups', duration: 1900, delay: 2000 },
-              { end: 28, suffix: '', label: 'Consultations', desc: 'One-on-one expert sessions', duration: 2100, delay: 2800 },
+              { end: 500, suffix: '+', label: t('impact.stat.farmers'), desc: t('impact.stat.farmersDesc'), duration: 2200, delay: 2000 },
+              { end: 15, suffix: '%+', label: t('impact.stat.income'), desc: t('impact.stat.incomeDesc'), duration: 1800, delay: 2400 },
+              { end: 95, suffix: '%', label: t('impact.stat.engagement'), desc: t('impact.stat.engagementDesc'), duration: 2000, delay: 2200 },
+              { end: 10, suffix: '', label: t('impact.stat.webinars'), desc: t('impact.stat.webinarsDesc'), duration: 1600, delay: 2600 },
+              { end: 50, suffix: '+', label: t('impact.stat.waitlist'), desc: t('impact.stat.waitlistDesc'), duration: 1900, delay: 2000 },
+              { end: 28, suffix: '', label: t('impact.stat.consultations'), desc: t('impact.stat.consultationsDesc'), duration: 2100, delay: 2800 },
             ].map(({ end, suffix, label, desc, duration, delay }, i) => (
               <div
                 key={i}
@@ -318,11 +264,10 @@ export const ImpactSection: React.FC<ImpactSectionProps> = ({
             id="sdg-heading"
             className="text-2xl md:text-3xl font-bold font-montserrat text-[#002f37] tracking-tight"
           >
-            Our SDG Commitments
+            {t('impact.sdgTitle')}
           </h2>
           <p className="mt-3 text-sm md:text-base font-montserrat text-gray-500 max-w-xl mx-auto">
-            Aligning AgriLync Nexus with the UN Sustainable Development Goals
-            that matter most to smallholder farmers.
+            {t('impact.sdgBlurb')}
           </p>
         </motion.div>
 
@@ -368,7 +313,7 @@ export const ImpactSection: React.FC<ImpactSectionProps> = ({
                       {goal.number}
                     </span>
                     <h3 className="text-[10px] sm:text-xs md:text-sm font-bold font-montserrat uppercase leading-tight pt-1 text-white">
-                      {goal.title}
+                      {t(goal.titleKey)}
                     </h3>
                   </header>
                   <div className="flex-1 flex items-center justify-center text-white mt-2">

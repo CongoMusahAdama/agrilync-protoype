@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { WelcomeVideoModal } from '@/components/home/WelcomeVideoModal';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import {
   Download,
@@ -239,6 +240,7 @@ const Resources: React.FC = () => {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       <Navbar />
+      <WelcomeVideoModal />
 
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section className="relative pt-24 pb-4 md:pt-28 md:pb-5 bg-[#002F37] overflow-hidden">

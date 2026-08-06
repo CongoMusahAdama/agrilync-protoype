@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Phone, Mail, Facebook, Twitter, Linkedin, Instagram, ChevronDown } from 'lucide-react';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface NavbarProps {
   variant?: 'transparent' | 'solid' | 'light' | 'transparent-full';
@@ -15,6 +17,7 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
   const [isHovered, setIsHovered] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,61 +48,61 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
 
   // Navigation Data
   const navLinks = [
-    { label: 'Home', path: '/' },
+    { label: t('nav.home'), path: '/' },
     {
-      label: 'Who We Are',
+      label: t('nav.whoWeAre'),
       path: '/who-we-are',
       dropdown: [
-        { label: 'Who We Are', path: '/who-we-are#who-we-are' },
-        { label: 'Vision & Mission', path: '/who-we-are#vision-mission' },
-        { label: 'Core Values', path: '/who-we-are#core-values' },
-        { label: 'Who We Serve', path: '/who-we-are#who-we-serve' },
-        { label: 'Our Process', path: '/who-we-are#process' },
-        { label: 'Why Choose Us', path: '/who-we-are#why-choose-us' },
-        { label: 'Mobile App', path: '/who-we-are#mobile-app' },
+        { label: t('nav.whoWeAre'), path: '/who-we-are#who-we-are' },
+        { label: t('nav.visionMission'), path: '/who-we-are#vision-mission' },
+        { label: t('nav.coreValues'), path: '/who-we-are#core-values' },
+        { label: t('nav.whoWeServe'), path: '/who-we-are#who-we-serve' },
+        { label: t('nav.ourProcess'), path: '/who-we-are#process' },
+        { label: t('nav.whyChooseUs'), path: '/who-we-are#why-choose-us' },
+        { label: t('nav.mobileApp'), path: '/who-we-are#mobile-app' },
       ]
     },
     {
-      label: 'Team',
+      label: t('nav.team'),
       path: '/team',
       dropdown: [
-        { label: 'Leadership', path: '/team#leadership' },
-        { label: 'Founding Team', path: '/team#founding-team' },
-        { label: 'Product & Design', path: '/team#product-design' },
-        { label: 'Strategy & Marketing', path: '/team#marketing' },
-        { label: 'Operations', path: '/team#operations' },
+        { label: t('nav.leadership'), path: '/team#leadership' },
+        { label: t('nav.foundingTeam'), path: '/team#founding-team' },
+        { label: t('nav.productDesign'), path: '/team#product-design' },
+        { label: t('nav.strategyMarketing'), path: '/team#marketing' },
+        { label: t('nav.operations'), path: '/team#operations' },
       ]
     },
-    { label: 'Portfolio', path: '/portfolio' },
+    { label: t('nav.portfolio'), path: '/portfolio' },
     {
-      label: 'Blog',
+      label: t('nav.blog'),
       path: '/blog',
       dropdown: [
-        { label: 'Latest News', path: '/blog#latest' },
-        { label: 'Success Stories', path: '/blog#success-stories' },
-        { label: 'Industry Insights', path: '/blog#insights' },
-        { label: 'Events & Webinars', path: '/blog#events' },
+        { label: t('nav.latestNews'), path: '/blog#latest' },
+        { label: t('nav.successStories'), path: '/blog#success-stories' },
+        { label: t('nav.industryInsights'), path: '/blog#insights' },
+        { label: t('nav.eventsWebinars'), path: '/blog#events' },
       ]
     },
     {
-      label: 'Resources',
+      label: t('nav.resources'),
       path: '/resources',
       dropdown: [
-        { label: 'Tools & Calculators', path: '/resources#resource-grid' },
-        { label: 'Guides & eBooks', path: '/resources#resource-grid' },
-        { label: 'Templates', path: '/resources#resource-grid' },
-        { label: 'Video Recordings', path: '/resources#resource-grid' },
-        { label: 'Market Reports', path: '/resources#resource-grid' },
+        { label: t('nav.toolsCalculators'), path: '/resources#resource-grid' },
+        { label: t('nav.guidesEbooks'), path: '/resources#resource-grid' },
+        { label: t('nav.templates'), path: '/resources#resource-grid' },
+        { label: t('nav.videoRecordings'), path: '/resources#resource-grid' },
+        { label: t('nav.marketReports'), path: '/resources#resource-grid' },
       ]
     },
     {
-      label: 'Contact',
+      label: t('nav.contact'),
       path: '/contact',
       dropdown: [
-        { label: 'Send a Message', path: '/contact#message' },
-        { label: 'Contact Info', path: '/contact#info' },
-        { label: 'Book Consultation', path: '/contact#book-session' },
-        { label: 'Community', path: '/contact#community' },
+        { label: t('nav.sendMessage'), path: '/contact#message' },
+        { label: t('nav.contactInfo'), path: '/contact#info' },
+        { label: t('nav.bookConsultation'), path: '/contact#book-session' },
+        { label: t('nav.community'), path: '/contact#community' },
       ]
     },
   ];
@@ -139,8 +142,8 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
             <div className="flex items-center space-x-6">
               <div className="flex items-center gap-2">
                 <Mail className="h-3 w-3 text-[#7ede56]" />
-                <span className={isTransparent ? 'text-white' : 'text-[#002f37]'}>Need Free Consultation?</span>
-                <button className="text-[#FFD700] hover:underline">Book Schedule Now</button>
+                <span className={isTransparent ? 'text-white' : 'text-[#002f37]'}>{t('nav.needConsultation')}</span>
+                <button className="text-[#FFD700] hover:underline">{t('nav.bookSchedule')}</button>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -164,12 +167,12 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
       {/* Main Navbar */}
       <div className={`w-full ${navBgClass} transition-all duration-300`}>
         <div className="w-full">
-          <div className="flex justify-between items-center h-14 md:h-16">
-            <Link to="/" className="flex items-center pl-4 sm:px-6 lg:pl-10" onClick={() => setIsMenuOpen(false)}>
+          <div className="flex justify-between items-center h-20 md:h-[5.5rem]">
+            <Link to="/" className="flex items-center pl-3 sm:px-6 lg:pl-10 overflow-visible" onClick={() => setIsMenuOpen(false)}>
               <img
                 src="/Frame 74.png"
                 alt="Agrilync Nexus Logo"
-                className="h-12 sm:h-14 md:h-16 w-auto object-contain transition-all duration-300 transform scale-[1.15] md:scale-[1.25] origin-left"
+                className="h-[4.5rem] sm:h-20 md:h-[5.25rem] w-auto object-contain transition-all duration-300 transform scale-[1.65] sm:scale-[1.5] md:scale-[1.55] origin-left"
               />
             </Link>
 
@@ -215,24 +218,26 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
               </div>
             </div>
 
-            {/* Auth Buttons */}
-            <div className="hidden md:flex items-center space-x-4 pr-4 sm:pr-6 lg:pr-10">
+            {/* Auth Buttons + language */}
+            <div className="hidden md:flex items-center space-x-3 pr-4 sm:pr-6 lg:pr-10">
+              <LanguageSwitcher light={isTransparent || isTealPage} />
               <Link to="/login" className={`${textClass} transition-colors text-xs font-bold uppercase tracking-wider hover:text-[#7ede56]`}>
-                Sign In
+                {t('nav.signIn')}
               </Link>
               <Link to="/signup">
                 <Button className="bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] border-none h-8 px-4 rounded-md transition-all duration-300 shadow-sm text-xs font-bold uppercase tracking-wider">
-                  Get Started
+                  {t('nav.getStarted')}
                 </Button>
               </Link>
             </div>
 
-            {/* Mobile menu button */}
-            <div className="md:hidden flex items-center pr-4">
+            {/* Mobile menu button + language */}
+            <div className="md:hidden flex items-center gap-2 pr-4">
+              <LanguageSwitcher light={isTransparent || isTealPage} />
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className={`${(isTransparent || isTealPage) ? 'text-white bg-black/30' : 'text-[#002f37] bg-white shadow-sm'} p-2 rounded transition-all duration-300 focus:outline-none`}
-                aria-label="Toggle menu"
+                aria-label={t('nav.toggleMenu')}
               >
                 {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
@@ -287,10 +292,10 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'solid', disableHover = false
 
               <div className="pt-6 px-4 space-y-3 pb-6">
                 <Link to="/login" className="block w-full text-center py-3 text-sm font-bold uppercase tracking-wider text-[#002f37] border border-[#002f37] rounded-lg hover:bg-gray-50">
-                  Sign In
+                  {t('nav.signIn')}
                 </Link>
                 <Link to="/signup" className="block w-full text-center py-3 text-sm font-bold uppercase tracking-wider bg-[#7ede56] text-[#002f37] rounded-lg hover:bg-[#6cd147]">
-                  Get Started
+                  {t('nav.getStarted')}
                 </Link>
               </div>
             </div>

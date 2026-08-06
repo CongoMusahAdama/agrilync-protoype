@@ -5,6 +5,7 @@ import { ArrowUp, ArrowRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // ── Section Components ─────────────────────────────────────────────────────────
 import { HeroSection } from "@/components/home/HeroSection";
@@ -12,6 +13,7 @@ import { ImpactSection } from "@/components/home/ImpactSection";
 // PartnersSection temporarily hidden
 // import { PartnersSection } from '@/components/home/PartnersSection';
 import { InvestmentPackagesSection } from '@/components/home/InvestmentPackagesSection';
+import { SupportFloatingWidget } from '@/components/home/SupportFloatingWidget';
 import { SuccessStoriesSection } from "@/components/home/SuccessStoriesSection";
 import { TeamSection } from "@/components/home/TeamSection";
 import { FAQSection } from "@/components/home/FAQSection";
@@ -44,6 +46,7 @@ const heroImages = [
 
 const Index = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [currentHeroImage, setCurrentHeroImage] = useState(0);
   const [showSplash, setShowSplash] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -132,9 +135,9 @@ const Index = () => {
               className={`transition-all duration-700 ease-out ${innovationVisible ? "animate-fade-in-right opacity-100" : "opacity-0 -translate-x-12"}`}
             >
               <h2 className="text-5xl md:text-7xl font-montserrat tracking-tight leading-[0.85] mb-8 md:mb-0">
-                <span className="text-[#002f37] font-bold">Our</span> <br />
+                <span className="text-[#002f37] font-bold">{t('home.our')}</span> <br />
                 <span className="text-[#002f37] font-montserrat italic">
-                  Innovation
+                  {t('home.innovation')}
                 </span>
               </h2>
             </div>
@@ -142,14 +145,10 @@ const Index = () => {
               className={`space-y-8 max-w-xl transition-all duration-700 delay-200 ease-out ${innovationVisible ? "animate-fade-in-left opacity-100" : "opacity-0 translate-x-12"}`}
             >
               <p className="text-gray-800 font-sans text-lg md:text-xl leading-relaxed">
-                Agrilync Nexus provides a finance-first, training-led platform
-                that connects smallholder farmers and investors/partners,
-                supported by AI advisory and local agent operations.
+                {t('home.innovationP1')}
               </p>
               <p className="text-gray-800 font-sans text-lg md:text-xl leading-relaxed">
-                By empowering farmers, investors, and field agents with reliable
-                information and capital, we turn agricultural gaps into stable
-                income and de-risked investments.
+                {t('home.innovationP2')}
               </p>
             </div>
           </div>
@@ -173,22 +172,18 @@ const Index = () => {
                   style={{ backgroundColor: "#7ede56" }}
                 ></div>
                 <span className="text-gray-300 text-sm uppercase tracking-[0.2em] ml-4">
-                  THE CHALLENGE
+                  {t('home.challengeLabel')}
                 </span>
               </div>
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold font-montserrat leading-tight text-white">
-                The Challenge
+                {t('home.challengeTitle')}
               </h2>
             </div>
             <div
               className={`max-w-xl transition-all duration-700 delay-200 ease-out ${farmersCryingVisible ? "animate-fade-in-left opacity-100" : "opacity-0 translate-x-12"}`}
             >
               <p className="text-gray-300 leading-relaxed text-lg md:text-xl">
-                Farmers are not crying without reason. They need timely access
-                to the right information to boost productivity, ready markets
-                immediately after harvest to reduce post-harvest losses, and
-                most importantly, flexible financing and investor partnerships
-                to scale and improve yield.
+                {t('home.challengeBody')}
               </p>
             </div>
           </div>
@@ -208,19 +203,18 @@ const Index = () => {
           >
             <div className="max-w-3xl">
               <span className="text-[#002f37]/60 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] mb-6 block">
-                Our Expertise
+                {t('home.expertise')}
               </span>
               <h2 className="text-4xl md:text-7xl font-bold text-[#002f37] font-montserrat italic leading-[1.1]">
-                Everything you need to <br className="hidden md:block" />
+                {t('home.expertiseTitle')} <br className="hidden md:block" />
                 <span className="text-[#7ede56] font-montserrat not-italic">
-                  succeed with us
+                  {t('home.expertiseHighlight')}
                 </span>
               </h2>
             </div>
             <div className="hidden lg:block max-w-[280px]">
               <p className="text-[#002f37]/70 text-base leading-relaxed border-l-2 border-[#7ede56] pl-8 py-3">
-                We combine deep-rooted farming tradition with the world's most
-                advanced intelligence to empower the hands that feed the nation.
+                {t('home.expertiseSide')}
               </p>
             </div>
           </div>
@@ -239,16 +233,14 @@ const Index = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-[#002f37] via-transparent to-transparent z-10"></div>
               <div className="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20">
                 <div className="mb-4 inline-block px-4 py-1 bg-[#7ede56] text-[#002f37] text-[10px] font-bold uppercase tracking-widest">
-                  Core Product
+                  {t('home.coreProduct')}
                 </div>
                 <h3 className="text-3xl md:text-4xl font-bold text-white mb-6 font-montserrat italic">
-                  FarmPartner Initiative
+                  {t('home.farmPartner')}
                 </h3>
                 <div className="max-h-0 overflow-hidden group-hover:max-h-40 transition-all duration-700 ease-in-out">
                   <p className="text-white/80 text-base md:text-lg max-w-lg mb-8">
-                    Structured farm investment products where investors and
-                    partner organizations fund verified Lync Growers while
-                    receiving continuous visibility.
+                    {t('home.farmPartnerDesc')}
                   </p>
                 </div>
                 <button
@@ -259,7 +251,7 @@ const Index = () => {
                   }
                   className="flex items-center text-[#7ede56] font-bold text-xs uppercase tracking-[0.2em] group/btn"
                 >
-                  Learn More{" "}
+                  {t('home.learnMore')}{" "}
                   <ArrowRight className="ml-3 w-4 h-4 transition-transform group-hover/btn:translate-x-2" />
                 </button>
               </div>
@@ -279,17 +271,15 @@ const Index = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#002f37] to-transparent z-10"></div>
                 <div className="absolute bottom-0 left-0 w-full p-8 z-20">
                   <h3 className="text-2xl font-bold text-white mb-4 font-montserrat italic">
-                    AI Advisory Agent
+                    {t('home.aiAdvisory')}
                   </h3>
                   <div className="max-h-0 overflow-hidden group-hover:max-h-32 transition-all duration-700">
                     <p className="text-white/70 text-sm mb-6">
-                      AI-powered crop and livestock advisory aligned with each
-                      farm project's plan, guidance on best practices, and risk
-                      mitigation.
+                      {t('home.aiAdvisoryDesc')}
                     </p>
                   </div>
                   <button className="text-white/60 hover:text-[#7ede56] font-bold text-[10px] uppercase tracking-[0.2em] transition-colors">
-                    Get Advisory
+                    {t('home.getAdvisory')}
                   </button>
                 </div>
               </div>
@@ -306,20 +296,18 @@ const Index = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#002f37] to-transparent z-10"></div>
                 <div className="absolute bottom-0 left-0 w-full p-8 z-20">
                   <h3 className="text-2xl font-bold text-white mb-4 font-montserrat italic">
-                    Lync Agents
+                    {t('home.lyncAgents')}
                   </h3>
                   <div className="max-h-0 overflow-hidden group-hover:max-h-32 transition-all duration-700">
                     <p className="text-white/70 text-sm mb-6">
-                      Lync Agents onboard farmers, collect baseline data, and
-                      provide regular visits to ensure ground truth and
-                      accountability for Lync Growers and investors.
+                      {t('home.lyncAgentsDesc')}
                     </p>
                   </div>
                   <button
                     className="text-white/60 hover:text-[#7ede56] font-bold text-[10px] uppercase tracking-[0.2em] transition-colors"
                     onClick={() => navigate("/signup")}
                   >
-                    Become a Lync Agent
+                    {t('home.becomeAgent')}
                   </button>
                 </div>
               </div>
@@ -343,7 +331,9 @@ const Index = () => {
       {/* ── 11. FAQ ── */}
       <FAQSection />
 
-      {/* Scroll to Top */}
+      <SupportFloatingWidget />
+
+      {/* Scroll to Top — sits above the support widget */}
       {showScrollTop && (
         <Button
           onClick={scrollToTop}

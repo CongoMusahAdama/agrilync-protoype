@@ -3,16 +3,18 @@ import { Link } from 'react-router-dom';
 import { Shield, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-
-const highlights = [
-  'Informed consent before any photo, video, or story is shared',
-  'Extra precautions to protect children during farm and community activities',
-  'Equal respect and dignity for every farmer, agent, and partner',
-  'Confidential reporting, no impact on your access to our services',
-];
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const SafeguardingSection: React.FC = () => {
+  const { t } = useLanguage();
   const [sectionRef, sectionVisible] = useScrollReveal();
+
+  const highlights = [
+    t('safe.h1'),
+    t('safe.h2'),
+    t('safe.h3'),
+    t('safe.h4'),
+  ];
 
   return (
     <section className="py-20 md:py-28 bg-[#FDFCFB]">
@@ -24,20 +26,20 @@ export const SafeguardingSection: React.FC = () => {
           <div>
             <div className="inline-flex items-center gap-2 text-[#7ede56] text-xs font-bold uppercase tracking-[0.2em] mb-4">
               <Shield className="w-4 h-4" />
-              Safeguarding
+              {t('safe.label')}
             </div>
             <h2 className="text-3xl md:text-5xl font-bold text-[#002f37] font-montserrat leading-tight mb-6">
-              Safety, dignity, and wellbeing, always
+              {t('safe.title')}
             </h2>
             <p className="text-gray-600 text-base md:text-lg leading-relaxed mb-8 max-w-xl">
-              Agrilync Nexus is committed to protecting every farmer, family, and community we work with, from farm visits to the stories we share.
+              {t('safe.blurb')}
             </p>
             <Button
               asChild
               className="rounded-full bg-[#002f37] hover:bg-[#002f37]/90 text-white px-8 py-6 text-sm font-semibold"
             >
               <Link to="/safeguarding-policy">
-                Read our Safeguarding Policy
+                {t('safe.cta')}
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Link>
             </Button>
@@ -53,7 +55,7 @@ export const SafeguardingSection: React.FC = () => {
               ))}
             </ul>
             <p className="mt-8 pt-6 border-t border-gray-100 text-sm text-gray-500 leading-relaxed">
-              To report a concern:{' '}
+              {t('safe.report')}{' '}
               <a href="mailto:agrilync@gmail.com" className="text-[#002f37] font-medium hover:text-[#7ede56] transition-colors">
                 agrilync@gmail.com
               </a>

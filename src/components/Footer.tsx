@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Leaf, Mail, MessageCircle, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Send } from 'lucide-react';
+import { Mail, MessageCircle, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -11,8 +11,10 @@ import {
   WHATSAPP_COMMUNITY_URL,
   formatGhanaPhone,
 } from '@/lib/communityLinks';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Footer = () => {
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -22,21 +24,28 @@ const Footer = () => {
     if (!email) return;
 
     setIsSubmitting(true);
-    // Simulate newsletter subscription
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsSubmitting(false);
     setIsSubmitted(true);
     setEmail('');
 
-    // Reset success message after 3 seconds
     setTimeout(() => setIsSubmitted(false), 3000);
   };
+
+  const trustItems = [
+    t('footer.trust1'),
+    t('footer.trust2'),
+    t('footer.trust3'),
+    t('footer.trust4'),
+    t('footer.trust5'),
+    t('footer.trust6'),
+    t('footer.trust7'),
+  ];
 
   return (
     <footer className="bg-gray-900 text-white mt-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-6 gap-8">
-          {/* Logo and Brand */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center mb-6">
               <img
@@ -46,10 +55,10 @@ const Footer = () => {
               />
             </div>
             <p className="text-gray-400 text-sm mb-4 max-w-md">
-              Agrilync Nexus is a finance-first, training-led AgriFinTech platform transforming African agriculture through transparent finance, AI advisory, and local agent networks.
+              {t('footer.blurb')}
             </p>
             <p className="text-gray-500 text-[10px] leading-relaxed mb-6 border-t border-gray-800 pt-4">
-              Agrilync Nexus is a technology-enabled agricultural platform that connects farmers, agricultural experts, and independent investors. We do not operate as a fund manager, financial institution, or farm operator. Agrilync Nexus does not custody user funds or guarantee investment returns.
+              {t('footer.disclaimer')}
             </p>
             <div className="flex space-x-4">
               <a href="https://www.facebook.com/share/16SkoNJAsW/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 transition-colors">
@@ -67,14 +76,13 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Contact Information */}
           <div className="col-span-1">
-            <h3 className="font-semibold text-lg mb-4 text-white">Contact Support</h3>
+            <h3 className="font-semibold text-lg mb-4 text-white">{t('footer.contactSupport')}</h3>
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4 text-green-400" />
                 <a href={CONTACT_EMAIL ? `mailto:${CONTACT_EMAIL}` : '#'} className="text-gray-400 hover:text-green-400 text-xs transition-colors">
-                  {CONTACT_EMAIL || 'Contact us'}
+                  {CONTACT_EMAIL || t('footer.contactUs')}
                 </a>
               </div>
               <div className="flex items-center space-x-3">
@@ -95,77 +103,52 @@ const Footer = () => {
               <div className="flex items-center space-x-3">
                 <MapPin className="h-4 w-4 text-green-400" />
                 <span className="text-gray-400 text-xs">
-                  Accra, Ghana
+                  {t('footer.location')}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Trust & Compliance */}
           <div className="col-span-1">
-            <h3 className="font-semibold text-lg mb-4 text-white">Trust & Compliance</h3>
+            <h3 className="font-semibold text-lg mb-4 text-white">{t('footer.trustTitle')}</h3>
             <ul className="space-y-2 text-xs text-gray-400">
-              <li className="flex items-center gap-2">
-                <div className="w-1 h-1 bg-green-400 rounded-full" />
-                Registered business entity
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1 h-1 bg-green-400 rounded-full" />
-                Secure payment processing
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1 h-1 bg-green-400 rounded-full" />
-                Data protection compliant
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1 h-1 bg-green-400 rounded-full" />
-                Encrypted platform security
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1 h-1 bg-green-400 rounded-full" />
-                Transparent reporting
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1 h-1 bg-green-400 rounded-full" />
-                Independent verification
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1 h-1 bg-green-400 rounded-full" />
-                Safeguarding policy in place
-              </li>
+              {trustItems.map((item) => (
+                <li key={item} className="flex items-center gap-2">
+                  <div className="w-1 h-1 bg-green-400 rounded-full" />
+                  {item}
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Quick Links */}
           <div className="col-span-1">
-            <h3 className="font-semibold text-lg mb-4 text-white">Legal Links</h3>
+            <h3 className="font-semibold text-lg mb-4 text-white">{t('footer.legalTitle')}</h3>
             <div className="space-y-3">
-              <Link to="/safeguarding-policy" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Safeguarding Policy</Link>
-              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Terms of Service</Link>
-              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Privacy Policy</Link>
-              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Risk Disclosure</Link>
-              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Refund Policy</Link>
+              <Link to="/safeguarding-policy" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.safeguarding')}</Link>
+              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.terms')}</Link>
+              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.privacy')}</Link>
+              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.risk')}</Link>
+              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.refund')}</Link>
               {WHATSAPP_COMMUNITY_URL && (
-                <a href={WHATSAPP_COMMUNITY_URL} target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">Community</a>
+                <a href={WHATSAPP_COMMUNITY_URL} target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.community')}</a>
               )}
             </div>
           </div>
 
-          {/* Newsletter Subscription */}
           <div className="col-span-1">
-            <h3 className="font-semibold text-lg mb-4 text-white">Subscribe</h3>
+            <h3 className="font-semibold text-lg mb-4 text-white">{t('footer.subscribe')}</h3>
             <p className="text-gray-400 text-[10px] mb-4">
-              Stay updated with agricultural insights and news.
+              {t('footer.subscribeBlurb')}
             </p>
             {isSubmitted ? (
               <div className="bg-green-600 text-white p-3 rounded-lg text-xs">
-                Successfully subscribed!
+                {t('footer.subscribed')}
               </div>
             ) : (
               <form onSubmit={handleNewsletterSubmit} className="space-y-3">
                 <Input
                   type="email"
-                  placeholder="Your email"
+                  placeholder={t('footer.emailPlaceholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-green-400 h-8 text-xs"
@@ -176,21 +159,20 @@ const Footer = () => {
                   disabled={isSubmitting}
                   className="w-full bg-green-600 hover:bg-green-700 text-white text-xs h-8"
                 >
-                  {isSubmitting ? 'Subscribing...' : 'Subscribe'}
+                  {isSubmitting ? t('footer.subscribing') : t('footer.subscribeBtn')}
                 </Button>
               </form>
             )}
           </div>
         </div>
 
-        {/* Bottom Section */}
         <div className="border-t border-gray-800 mt-8 pt-6 flex flex-col md:flex-row items-center justify-between">
-          <p className="text-gray-500 text-[10px] mb-2 md:mb-0">© 2026 Agrilync Nexus. All rights reserved.</p>
+          <p className="text-gray-500 text-[10px] mb-2 md:mb-0">{t('footer.rights')}</p>
           <div className="flex items-center space-x-2">
             <MessageCircle className="h-4 w-4 text-green-400" />
             {WHATSAPP_COMMUNITY_URL && (
               <a href={WHATSAPP_COMMUNITY_URL} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 text-[10px] transition-colors">
-                Join our WhatsApp Community
+                {t('footer.joinWhatsapp')}
               </a>
             )}
           </div>

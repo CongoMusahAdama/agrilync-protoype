@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { leadership, coFounders, TeamMember } from '@/data/teamData';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const leaders = [leadership, ...coFounders];
 
@@ -10,6 +11,7 @@ const shortRole = (member: TeamMember) =>
   member.isCEO ? member.role : member.role.split('(')[0].trim();
 
 export const TeamSection: React.FC = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [ref, visible] = useScrollReveal();
 
@@ -24,10 +26,10 @@ export const TeamSection: React.FC = () => {
         >
           <div>
             <span className="text-[#7ede56] text-xs font-bold uppercase tracking-[0.2em]">
-              Leadership
+              {t('team.label')}
             </span>
             <h2 className="text-2xl md:text-3xl font-bold font-montserrat text-[#002f37] mt-2 leading-tight">
-              Meet the people behind <span className="italic">AgriLync</span>
+              {t('team.title')} <span className="italic">AgriLync</span>
             </h2>
           </div>
           <button
@@ -35,7 +37,7 @@ export const TeamSection: React.FC = () => {
             onClick={() => navigate('/team')}
             className="inline-flex items-center gap-2 text-sm font-bold text-[#002f37] hover:text-[#7ede56] transition-colors shrink-0"
           >
-            View full team <ArrowRight className="w-4 h-4" />
+            {t('team.viewFull')} <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 

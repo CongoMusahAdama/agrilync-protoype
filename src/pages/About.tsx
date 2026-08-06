@@ -26,6 +26,7 @@ import {
   Flag,
 } from "lucide-react";
 import { Button } from "../components/ui/button"; // Added Button import
+import { motion } from "framer-motion";
 import CountUp from "../components/CountUp";
 import { WhereWeWorkSection } from "../components/home/WhereWeWorkSection";
 
@@ -278,9 +279,31 @@ const About = () => {
       {/* Vision & Mission Section */}
       <section id="vision-mission" className="py-10 sm:py-16 md:py-20 bg-[#f3f4f6]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={{
+              hidden: {},
+              show: {
+                transition: { staggerChildren: 0.18, delayChildren: 0.08 },
+              },
+            }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8"
+          >
             {/* Vision — green notched card */}
-            <article className="relative flex flex-col h-full min-h-[300px] sm:min-h-[340px]">
+            <motion.article
+              variants={{
+                hidden: { opacity: 0, y: 48, x: -24 },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  x: 0,
+                  transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+                },
+              }}
+              className="relative flex flex-col h-full min-h-[300px] sm:min-h-[340px]"
+            >
               <div className="flex-1 bg-[#7ede56] rounded-t-[2rem] px-7 sm:px-9 pt-8 sm:pt-10 pb-6 flex flex-col relative overflow-hidden">
                 <div className="absolute -right-10 top-1/2 -translate-y-1/2 w-40 h-40 rounded-full bg-[#6cd147]/50 pointer-events-none" aria-hidden="true" />
                 <Eye className="w-8 h-8 sm:w-9 sm:h-9 text-[#002f37] mb-5 relative z-10 stroke-[1.5]" />
@@ -309,10 +332,21 @@ const About = () => {
                   </div>
                 </div>
               </div>
-            </article>
+            </motion.article>
 
             {/* Mission — dark notched card */}
-            <article className="relative flex flex-col h-full min-h-[300px] sm:min-h-[340px]">
+            <motion.article
+              variants={{
+                hidden: { opacity: 0, y: 48, x: 24 },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  x: 0,
+                  transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+                },
+              }}
+              className="relative flex flex-col h-full min-h-[300px] sm:min-h-[340px]"
+            >
               <div className="flex-1 bg-[#002f37] rounded-t-[2rem] px-7 sm:px-9 pt-8 sm:pt-10 pb-6 flex flex-col relative overflow-hidden">
                 <div className="absolute -right-10 top-1/2 -translate-y-1/2 w-40 h-40 rounded-full bg-white/5 pointer-events-none" aria-hidden="true" />
                 <Building2 className="w-8 h-8 sm:w-9 sm:h-9 text-[#7ede56] mb-5 relative z-10 stroke-[1.5]" />
@@ -341,8 +375,8 @@ const About = () => {
                   </div>
                 </div>
               </div>
-            </article>
-          </div>
+            </motion.article>
+          </motion.div>
         </div>
       </section>
 
