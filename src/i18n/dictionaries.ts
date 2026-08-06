@@ -90,7 +90,7 @@ const en: Dict = {
   // Support widget
   'support.title': 'AgriLync Nexus Support',
   'support.intro':
-    "Hello! Welcome to AgriLync Nexus, your finance-first agri platform. I'm here to help. Please note, AgriLync Nexus does not guarantee investment returns into any farm project.",
+    "Hello! Welcome to AgriLync Nexus, your finance-first agri platform. I'm here to help.",
   'support.chat': 'Chat with us',
   'support.aria': 'Contact AgriLync Nexus support',
   'support.dismiss': 'Dismiss message',
@@ -333,7 +333,7 @@ const fr: Dict = {
 
   'support.title': 'Support AgriLync Nexus',
   'support.intro':
-    'Bonjour! Bienvenue sur AgriLync Nexus, votre plateforme agricole axée sur la finance. Je suis là pour vous aider. Veuillez noter qu’AgriLync Nexus ne garantit pas de rendements sur les projets agricoles.',
+    'Bonjour! Bienvenue sur AgriLync Nexus, votre plateforme agricole axée sur la finance. Je suis là pour vous aider.',
   'support.chat': 'Discuter avec nous',
   'support.aria': 'Contacter le support AgriLync Nexus',
   'support.dismiss': 'Fermer le message',
