@@ -25,6 +25,7 @@ export const getDashboardNavRoute = (userType: string, itemId: string): string |
         'field-audit': '/dashboard/super-admin/audit',
         'farm-oversight': '/dashboard/super-admin/oversight',
         escalations: '/dashboard/super-admin/escalations',
+        'partnership-inquiries': '/dashboard/super-admin/partnership-inquiries',
         performance: '/dashboard/super-admin/performance',
         'reports-analytics': '/dashboard/super-admin/analytics',
         'system-logs': '/dashboard/super-admin/logs',

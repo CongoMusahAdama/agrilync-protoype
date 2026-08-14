@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Mail, MessageCircle, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import {
   CONTACT_EMAIL,
   CONTACT_PHONE_SECONDARY,
@@ -42,6 +43,89 @@ const Footer = () => {
     t('footer.trust7'),
   ];
 
+  const contactContent = (
+    <div className="space-y-3">
+      <div className="flex items-center space-x-3">
+        <Mail className="h-4 w-4 text-green-400 shrink-0" />
+        <a href={CONTACT_EMAIL ? `mailto:${CONTACT_EMAIL}` : '#'} className="text-gray-400 hover:text-green-400 text-xs transition-colors">
+          {CONTACT_EMAIL || t('footer.contactUs')}
+        </a>
+      </div>
+      <div className="flex items-center space-x-3">
+        <Phone className="h-4 w-4 text-green-400 shrink-0" />
+        <div className="flex flex-col">
+          {CONTACT_WHATSAPP && (
+            <a href={`tel:+${CONTACT_WHATSAPP}`} className="text-gray-400 hover:text-green-400 text-xs transition-colors">
+              {formatGhanaPhone(CONTACT_WHATSAPP)}
+            </a>
+          )}
+          {CONTACT_PHONE_SECONDARY && (
+            <a href={`tel:+${CONTACT_PHONE_SECONDARY}`} className="text-gray-400 hover:text-green-400 text-xs transition-colors">
+              {formatGhanaPhone(CONTACT_PHONE_SECONDARY)}
+            </a>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center space-x-3">
+        <MapPin className="h-4 w-4 text-green-400 shrink-0" />
+        <span className="text-gray-400 text-xs">{t('footer.location')}</span>
+      </div>
+    </div>
+  );
+
+  const trustContent = (
+    <ul className="space-y-2 text-xs text-gray-400">
+      {trustItems.map((item) => (
+        <li key={item} className="flex items-center gap-2">
+          <div className="w-1 h-1 bg-green-400 rounded-full shrink-0" />
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+
+  const legalContent = (
+    <div className="space-y-3">
+      <Link to="/safeguarding-policy" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.safeguarding')}</Link>
+      <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.terms')}</Link>
+      <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.privacy')}</Link>
+      <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.risk')}</Link>
+      <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.refund')}</Link>
+      {WHATSAPP_COMMUNITY_URL && (
+        <a href={WHATSAPP_COMMUNITY_URL} target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.community')}</a>
+      )}
+    </div>
+  );
+
+  const subscribeContent = (
+    <>
+      <p className="text-gray-400 text-[10px] mb-4">{t('footer.subscribeBlurb')}</p>
+      {isSubmitted ? (
+        <div className="bg-green-600 text-white p-3 rounded-lg text-xs">
+          {t('footer.subscribed')}
+        </div>
+      ) : (
+        <form onSubmit={handleNewsletterSubmit} className="space-y-3">
+          <Input
+            type="email"
+            placeholder={t('footer.emailPlaceholder')}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-green-400 h-8 text-xs"
+            required
+          />
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-green-600 hover:bg-green-700 text-white text-xs h-8"
+          >
+            {isSubmitting ? t('footer.subscribing') : t('footer.subscribeBtn')}
+          </Button>
+        </form>
+      )}
+    </>
+  );
+
   return (
     <footer className="bg-gray-900 text-white mt-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -76,93 +160,55 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="col-span-1">
+          {/* Desktop — four separate columns */}
+          <div className="hidden md:block col-span-1">
             <h3 className="font-semibold text-lg mb-4 text-white">{t('footer.contactSupport')}</h3>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <Mail className="h-4 w-4 text-green-400" />
-                <a href={CONTACT_EMAIL ? `mailto:${CONTACT_EMAIL}` : '#'} className="text-gray-400 hover:text-green-400 text-xs transition-colors">
-                  {CONTACT_EMAIL || t('footer.contactUs')}
-                </a>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Phone className="h-4 w-4 text-green-400" />
-                <div className="flex flex-col">
-                  {CONTACT_WHATSAPP && (
-                    <a href={`tel:+${CONTACT_WHATSAPP}`} className="text-gray-400 hover:text-green-400 text-xs transition-colors">
-                      {formatGhanaPhone(CONTACT_WHATSAPP)}
-                    </a>
-                  )}
-                  {CONTACT_PHONE_SECONDARY && (
-                    <a href={`tel:+${CONTACT_PHONE_SECONDARY}`} className="text-gray-400 hover:text-green-400 text-xs transition-colors">
-                      {formatGhanaPhone(CONTACT_PHONE_SECONDARY)}
-                    </a>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <MapPin className="h-4 w-4 text-green-400" />
-                <span className="text-gray-400 text-xs">
-                  {t('footer.location')}
-                </span>
-              </div>
-            </div>
+            {contactContent}
           </div>
 
-          <div className="col-span-1">
+          <div className="hidden md:block col-span-1">
             <h3 className="font-semibold text-lg mb-4 text-white">{t('footer.trustTitle')}</h3>
-            <ul className="space-y-2 text-xs text-gray-400">
-              {trustItems.map((item) => (
-                <li key={item} className="flex items-center gap-2">
-                  <div className="w-1 h-1 bg-green-400 rounded-full" />
-                  {item}
-                </li>
-              ))}
-            </ul>
+            {trustContent}
           </div>
 
-          <div className="col-span-1">
+          <div className="hidden md:block col-span-1">
             <h3 className="font-semibold text-lg mb-4 text-white">{t('footer.legalTitle')}</h3>
-            <div className="space-y-3">
-              <Link to="/safeguarding-policy" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.safeguarding')}</Link>
-              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.terms')}</Link>
-              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.privacy')}</Link>
-              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.risk')}</Link>
-              <Link to="/about" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.refund')}</Link>
-              {WHATSAPP_COMMUNITY_URL && (
-                <a href={WHATSAPP_COMMUNITY_URL} target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-green-400 text-xs transition-colors">{t('footer.community')}</a>
-              )}
-            </div>
+            {legalContent}
           </div>
 
-          <div className="col-span-1">
+          <div className="hidden md:block col-span-1">
             <h3 className="font-semibold text-lg mb-4 text-white">{t('footer.subscribe')}</h3>
-            <p className="text-gray-400 text-[10px] mb-4">
-              {t('footer.subscribeBlurb')}
-            </p>
-            {isSubmitted ? (
-              <div className="bg-green-600 text-white p-3 rounded-lg text-xs">
-                {t('footer.subscribed')}
-              </div>
-            ) : (
-              <form onSubmit={handleNewsletterSubmit} className="space-y-3">
-                <Input
-                  type="email"
-                  placeholder={t('footer.emailPlaceholder')}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-green-400 h-8 text-xs"
-                  required
-                />
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white text-xs h-8"
-                >
-                  {isSubmitting ? t('footer.subscribing') : t('footer.subscribeBtn')}
-                </Button>
-              </form>
-            )}
+            {subscribeContent}
+          </div>
+
+          {/* Mobile — collapsible accordion so the footer isn't a huge scroll */}
+          <div className="md:hidden col-span-1 -mt-2">
+            <Accordion type="single" collapsible>
+              <AccordionItem value="contact" className="border-gray-800">
+                <AccordionTrigger className="text-white font-semibold text-base hover:no-underline">
+                  {t('footer.contactSupport')}
+                </AccordionTrigger>
+                <AccordionContent>{contactContent}</AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="trust" className="border-gray-800">
+                <AccordionTrigger className="text-white font-semibold text-base hover:no-underline">
+                  {t('footer.trustTitle')}
+                </AccordionTrigger>
+                <AccordionContent>{trustContent}</AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="legal" className="border-gray-800">
+                <AccordionTrigger className="text-white font-semibold text-base hover:no-underline">
+                  {t('footer.legalTitle')}
+                </AccordionTrigger>
+                <AccordionContent>{legalContent}</AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="subscribe" className="border-gray-800">
+                <AccordionTrigger className="text-white font-semibold text-base hover:no-underline">
+                  {t('footer.subscribe')}
+                </AccordionTrigger>
+                <AccordionContent>{subscribeContent}</AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         </div>
 

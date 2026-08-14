@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { whatsappMeUrl } from '@/lib/communityLinks';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -166,22 +167,24 @@ export const HeroSection: React.FC = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-start justify-start gap-3 md:gap-6 animate-fade-in-up delay-400">
-            <a
-              href={whatsappMeUrl()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 w-full sm:w-auto"
-            >
-              <Button className="bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] px-6 py-4 md:px-10 md:py-7 text-sm md:text-lg font-bold font-montserrat rounded-full shadow-[0_15px_30px_-10px_rgba(126,222,86,0.4)] transition-all duration-300 transform hover:scale-105 active:scale-95">
+            <Link to="/signup-farmer" className="shrink-0 w-full sm:w-auto">
+              <Button className="bg-[#7ede56] hover:bg-[#6cd147] text-[#002f37] border-2 border-[#7ede56] px-6 py-4 md:px-10 md:py-7 text-sm md:text-lg font-bold font-montserrat rounded-full shadow-[0_15px_30px_-10px_rgba(126,222,86,0.4)] transition-all duration-300 transform hover:scale-105 active:scale-95">
                 {t('hero.getInTouch')}
               </Button>
-            </a>
-
-            <Link to="/signup" className="shrink-0">
-              <Button variant="outline" className="border-2 border-white/30 text-white hover:bg-white hover:text-[#002f37] bg-white/5 backdrop-blur-md px-6 py-4 md:px-10 md:py-7 text-sm md:text-lg font-bold font-montserrat rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95">
-                {t('hero.getStarted')}
-              </Button>
             </Link>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link to="/partnership" className="shrink-0 w-full sm:w-auto">
+                  <Button variant="outline" className="border-2 border-white text-[#002f37] bg-white hover:bg-white hover:text-[#002f37] backdrop-blur-md px-6 py-4 md:px-10 md:py-7 text-sm md:text-lg font-bold font-montserrat rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95">
+                    {t('hero.getStarted')}
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('hero.getStartedTooltip')}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </div>

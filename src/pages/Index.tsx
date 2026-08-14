@@ -15,7 +15,8 @@ import { ImpactSection } from "@/components/home/ImpactSection";
 import { InvestmentPackagesSection } from '@/components/home/InvestmentPackagesSection';
 import { SupportFloatingWidget } from '@/components/home/SupportFloatingWidget';
 import { SuccessStoriesSection } from "@/components/home/SuccessStoriesSection";
-import { TeamSection } from "@/components/home/TeamSection";
+// TeamSection (Leadership) temporarily hidden from homepage
+// import { TeamSection } from "@/components/home/TeamSection";
 import { FAQSection } from "@/components/home/FAQSection";
 import { SafeguardingSection } from "@/components/home/SafeguardingSection";
 
@@ -322,8 +323,8 @@ const Index = () => {
       {/* ── 8. SUCCESS STORIES ── */}
       <SuccessStoriesSection />
 
-      {/* ── 9. TEAM ── */}
-      <TeamSection />
+      {/* ── 9. TEAM (Leadership) — temporarily hidden ── */}
+      {/* <TeamSection /> */}
 
       {/* ── 10. SAFEGUARDING ── */}
       <SafeguardingSection />

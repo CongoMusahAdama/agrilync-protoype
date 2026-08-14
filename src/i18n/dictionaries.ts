@@ -52,8 +52,9 @@ const en: Dict = {
   'hero.improve': 'IMPROVE',
   'hero.and': '&',
   'hero.grow': 'GROW',
-  'hero.getInTouch': 'Get in Touch',
-  'hero.getStarted': 'Get Started',
+  'hero.getInTouch': 'Lync Grower',
+  'hero.getStarted': 'Partner with Us',
+  'hero.getStartedTooltip': 'For institutions, partners & investors',
 
   // Footer
   'footer.blurb':
@@ -296,8 +297,9 @@ const fr: Dict = {
   'hero.improve': 'AMÉLIORER',
   'hero.and': '&',
   'hero.grow': 'CROÎTRE',
-  'hero.getInTouch': 'Nous contacter',
-  'hero.getStarted': 'Commencer',
+  'hero.getInTouch': 'Lync Grower',
+  'hero.getStarted': 'Collaborez avec nous',
+  'hero.getStartedTooltip': 'Pour les institutions, partenaires et investisseurs',
 
   'footer.blurb':
     'Agrilync Nexus est une plateforme AgriFinTech axée sur la finance et la formation, qui transforme l’agriculture africaine grâce à une finance transparente, des conseils IA et des réseaux d’agents locaux.',

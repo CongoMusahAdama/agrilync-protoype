@@ -242,6 +242,8 @@ try {
     console.log('✓ Training Delivery routes registered');
     app.use('/api/webinar', require('./routes/webinarRoutes'));
     console.log('✓ Webinar routes registered');
+    app.use('/api/partnership', require('./routes/partnershipRoutes'));
+    console.log('✓ Partnership routes registered');
     app.use('/api/sms', require('./routes/smsRoutes'));
     console.log('✓ SMS routes registered');
     console.log('✓ All routes registered successfully');

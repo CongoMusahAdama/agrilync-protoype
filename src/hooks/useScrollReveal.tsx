@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 
-export function useScrollReveal(options = { threshold: 0.2 }) {
+type ScrollRevealOptions = IntersectionObserverInit & {
+  /** Re-trigger every time the element enters/leaves the viewport, instead of only once. */
+  once?: boolean;
+};
+
+export function useScrollReveal(options: ScrollRevealOptions = { threshold: 0.2 }) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const { once = true, ...observerOptions } = options;
 
   useEffect(() => {
     const node = ref.current;
@@ -11,10 +17,12 @@ export function useScrollReveal(options = { threshold: 0.2 }) {
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          observer.unobserve(node);
+          if (once) observer.unobserve(node);
+        } else if (!once) {
+          setIsVisible(false);
         }
       },
-      options
+      observerOptions
     );
     observer.observe(node);
     return () => observer.disconnect();

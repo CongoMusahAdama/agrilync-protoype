@@ -26,6 +26,7 @@ const SuperAdminDashboard = () => {
         if (path.includes('/audit')) return 'field-audit';
         if (path.includes('/oversight') || path.includes('/farms')) return 'farm-oversight';
         if (path.includes('/performance')) return 'performance';
+        if (path.includes('/partnership-inquiries')) return 'partnership-inquiries';
         if (path.includes('/partnerships')) return 'partnerships-summary';
         if (path.includes('/escalations')) return 'escalations';
         if (path.includes('/analytics') || path.includes('/reports')) return 'reports-analytics';
@@ -45,6 +46,7 @@ const SuperAdminDashboard = () => {
         'farm-oversight': 'Farm Oversight',
         performance: 'Performance',
         'partnerships-summary': 'Partnerships',
+        'partnership-inquiries': 'Partnership Inquiries',
         escalations: 'Escalations',
         'reports-analytics': 'Reports',
         'system-logs': 'System Logs',

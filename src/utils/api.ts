@@ -29,6 +29,7 @@ const isPublicRoute = (url?: string) => {
     if (/^\/portfolio\/?$/.test(path)) return true;
     if (/^\/farmers\/public\//.test(path)) return true;
     if (/^\/webinar\/register\/?$/.test(path)) return true;
+    if (/^\/partnership\/submit\/?$/.test(path)) return true;
     return false;
 };
 

@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Phone, X } from 'lucide-react';
 import { whatsappMeUrl } from '@/lib/communityLinks';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+const BUBBLE_AUTO_CLOSE_MS = 8000;
+
 export const SupportFloatingWidget: React.FC = () => {
   const { t } = useLanguage();
   const [bubbleOpen, setBubbleOpen] = useState(true);
+
+  useEffect(() => {
+    if (!bubbleOpen) return;
+    const timer = window.setTimeout(() => setBubbleOpen(false), BUBBLE_AUTO_CLOSE_MS);
+    return () => window.clearTimeout(timer);
+  }, [bubbleOpen]);
 
   const openSupport = () => {
     const url = whatsappMeUrl(t('support.whatsappPrefill'));

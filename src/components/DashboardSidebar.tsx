@@ -26,6 +26,7 @@ import {
     HelpCircle,
     Receipt,
     MessageSquare,
+    Handshake,
 } from 'lucide-react';
 import SidebarProfileCard from './SidebarProfileCard';
 import { growerNavIconClass, growerNavItemClass, GROWER_NAV_SECTION_LABEL } from '@/constants/growerTheme';
@@ -141,6 +142,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             section: 'Alerts & Escalations',
             items: [
                 { id: 'escalations', label: 'Escalations & Alerts', icon: AlertTriangle },
+                { id: 'partnership-inquiries', label: 'Partnership Inquiries', icon: Handshake },
             ]
         },
         {

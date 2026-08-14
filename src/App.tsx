@@ -15,6 +15,7 @@ import BlogPost from "./pages/BlogPost";
 import BlogAdminLogin from "./pages/BlogAdminLogin";
 import BlogAdminDashboard from "./pages/BlogAdminDashboard";
 import Contact from "./pages/Contact";
+import Partnership from "./pages/Partnership";
 import SafeguardingPolicy from "./pages/SafeguardingPolicy";
 import Gallery from "./pages/Gallery";
 import Resources from "./pages/Resources";
@@ -70,6 +71,7 @@ import Escalations from "@/pages/super-admin/Escalations";
 import SystemLogs from "@/pages/super-admin/SystemLogs";
 import FarmFarmerOversight from "@/pages/super-admin/FarmFarmerOversight";
 import PartnershipsSummary from "@/pages/super-admin/PartnershipsSummary";
+import PartnershipInquiries from "@/pages/super-admin/PartnershipInquiries";
 import ReportsAnalytics from "@/pages/super-admin/ReportsAnalytics";
 import SettingsRoles from "@/pages/super-admin/SettingsRoles";
 import ExpenseVouchers from "@/pages/super-admin/ExpenseVouchers";
@@ -133,6 +135,7 @@ const App = () => (
               <Route path="/team" element={<Team />} />
               <Route path="/team/:memberId" element={<TeamMemberProfile />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/partnership" element={<Partnership />} />
               <Route path="/safeguarding-policy" element={<SafeguardingPolicy />} />
               <Route path="/safeguarding_policy" element={<Navigate to="/safeguarding-policy" replace />} />
               <Route path="/join/whatsapp" element={<WhatsAppCommunityRedirect />} />
@@ -212,6 +215,7 @@ const App = () => (
                 <Route path="farms" element={<FarmFarmerOversight />} />
                 <Route path="oversight" element={<FarmFarmerOversight />} />
                 <Route path="partnerships" element={<PartnershipsSummary />} />
+                <Route path="partnership-inquiries" element={<PartnershipInquiries />} />
                 <Route path="escalations" element={<Escalations />} />
                 <Route path="analytics" element={<ReportsAnalytics />} />
                 <Route path="reports" element={<ReportsAnalytics />} />
