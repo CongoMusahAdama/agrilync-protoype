@@ -111,6 +111,23 @@ He focuses on maintaining design consistency and high standards across all user 
         borderColor: 'border-[#a855f7]'
     },
     {
+        id: 'cecil-odonkor',
+        name: 'Cecil Odonkor',
+        role: 'UI/UX Designer & Frontend Support',
+        image: '/lovable-uploads/cecilodonkoh.jpg',
+        initials: 'CO',
+        description: 'Interface design, frontend development, responsive design, and user-friendly interaction.',
+        longBio: `Cecil bridges the gap between design and development as a UI/UX Designer and Frontend Support. He ensures that the beautiful designs created are faithfully implemented in code.
+
+With a strong eye for detail and proficiency in modern frontend technologies, Cecil contributes to building responsive and accessible interfaces. He works closely with the development team to ensure that the user interface is robust, performant, and true to the design vision.`,
+        socials: {
+            linkedin: 'https://www.linkedin.com/in/cecil-odonkor-559650266?trk=contact-info',
+            twitter: 'https://x.com/terminator7845?s=21'
+        },
+        expertise: ['Frontend Development', 'Responsive Web Design', 'User Interface Engineering', 'React Development', 'Web Accessibility'],
+        borderColor: 'border-[#14b8a6]'
+    },
+    {
         id: 'kwaku-essah',
         name: 'Kwaku Essah',
         role: 'Backend Developer & AI Support',
