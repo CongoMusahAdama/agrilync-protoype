@@ -194,7 +194,7 @@ const Team = () => {
               transition={{ duration: 0.6 }}
               className="text-2xl font-bold text-[#002F37] mb-2"
             >
-              Product & Design Team
+              Product, Design & Engineering Team
             </motion.h2>
             <div className="w-16 h-1 bg-gradient-to-r from-[#921573] to-[#7ede56] rounded-full"></div>
           </div>

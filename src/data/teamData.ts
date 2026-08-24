@@ -21,7 +21,7 @@ export interface TeamMember {
 
 export const leadership: TeamMember = {
     id: 'congo-musah-adama',
-    name: 'Congo Musah Adama',
+    name: 'Congo Musah Adams',
     role: 'CEO and Founder',
     image: '/lovable-uploads/f.jpg',
     initials: 'CA',
@@ -109,23 +109,6 @@ He focuses on maintaining design consistency and high standards across all user 
         },
         expertise: ['UI/UX Design', 'Visual Prototyping', 'Design Systems', 'User Interface Design', 'Interactive Design'],
         borderColor: 'border-[#a855f7]'
-    },
-    {
-        id: 'cecil-odonkor',
-        name: 'Cecil Odonkor',
-        role: 'UI/UX Designer & Frontend Support',
-        image: '/lovable-uploads/cecilodonkoh.jpg',
-        initials: 'CO',
-        description: 'Interface design, frontend development, responsive design, and user-friendly interaction.',
-        longBio: `Cecil bridges the gap between design and development as a UI/UX Designer and Frontend Support. He ensures that the beautiful designs created are faithfully implemented in code.
-
-With a strong eye for detail and proficiency in modern frontend technologies, Cecil contributes to building responsive and accessible interfaces. He works closely with the development team to ensure that the user interface is robust, performant, and true to the design vision.`,
-        socials: {
-            linkedin: 'https://www.linkedin.com/in/cecil-odonkor-559650266?trk=contact-info',
-            twitter: 'https://x.com/terminator7845?s=21'
-        },
-        expertise: ['Frontend Development', 'Responsive Web Design', 'User Interface Engineering', 'React Development', 'Web Accessibility'],
-        borderColor: 'border-[#14b8a6]'
     },
     {
         id: 'kwaku-essah',
@@ -237,6 +220,19 @@ His role involves conducting field research and gathering critical agricultural 
         },
         expertise: ['Agricultural Research', 'Field Data Collection', 'Community Operations', 'Agronomy', 'Sustainable Farming'],
         borderColor: 'border-[#06b6d4]'
+    },
+    {
+        id: 'cynthia-abavare',
+        name: 'Cynthia Abavare',
+        role: 'Climate Advocate & Agronomist',
+        image: '/lovable-uploads/cy.jpg',
+        initials: 'CA',
+        description: 'Climate advocacy, agronomic best practices, sustainable farming guidance, and environmental resilience.',
+        longBio: `Cynthia champions climate-smart agriculture at AgriLync, bringing agronomic expertise and environmental advocacy to every stage of our farmer-facing programmes.
+
+She works closely with farming communities to promote sustainable practices and climate resilience, ensuring that AgriLync's solutions remain environmentally responsible and rooted in sound agronomic science.`,
+        expertise: ['Climate Advocacy', 'Agronomy', 'Sustainable Farming', 'Environmental Resilience', 'Community Education'],
+        borderColor: 'border-[#10b981]'
     }
 ];
 
