@@ -20,14 +20,14 @@ export interface TeamMember {
 }
 
 export const leadership: TeamMember = {
-    id: 'vincent-browne-adams',
-    name: 'Vincent Browne Adams',
+    id: 'congo-musah-adama',
+    name: 'Congo Musah Adams',
     role: 'CEO and Founder',
     image: '/lovable-uploads/f.jpg',
     initials: 'CA',
     isCEO: true,
     description: 'Technical leadership, backend architecture, AI integration, strategic vision, and cross-department coordination.',
-    longBio: `Vincent is the driving force behind AgriLync’s vision and execution, leading operations across all cross-platform and departmental functions. As a software engineer and agricultural change agent, he ensures our technology is deeply aligned with real field needs, while also providing hands-on consultation and guidance to farmers.
+    longBio: `Congo is the driving force behind AgriLync’s vision and execution, leading operations across all cross-platform and departmental functions. As a software engineer and agricultural change agent, he ensures our technology is deeply aligned with real field needs, while also providing hands-on consultation and guidance to farmers.
 
 Beyond product development, he actively manages our farming communities and coordinates overall departmental activities, bridging technology, operations, and grassroots engagement to build solutions that truly work for farmers. His leadership, clarity of purpose, and commitment to impact continue to shape AgriLync’s growth journey.`,
     socials: {
