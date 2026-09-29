@@ -110,6 +110,7 @@ He focuses on maintaining design consistency and high standards across all user 
         expertise: ['UI/UX Design', 'Visual Prototyping', 'Design Systems', 'User Interface Design', 'Interactive Design'],
         borderColor: 'border-[#a855f7]'
     },
+/*
     {
         id: 'cecil-odonkor',
         name: 'Cecil Odonkor',
@@ -127,6 +128,7 @@ With a strong eye for detail and proficiency in modern frontend technologies, Ce
         expertise: ['Frontend Development', 'Responsive Web Design', 'User Interface Engineering', 'React Development', 'Web Accessibility'],
         borderColor: 'border-[#14b8a6]'
     },
+*/
     {
         id: 'kwaku-essah',
         name: 'Kwaku Essah',
@@ -149,6 +151,7 @@ His work focuses on creating secure, efficient APIs and integrating AI models th
 ];
 
 export const marketingTeam: TeamMember[] = [
+/*
     {
         id: 'kwagbedzi-dela',
         name: 'Kwagbedzi Dela',
@@ -166,6 +169,7 @@ His strategic approach helps position AgriLync as a leader in the agritech space
         expertise: ['Strategic Marketing', 'Brand Management', 'Market Research', 'Partnership Development', 'Digital Strategy'],
         borderColor: 'border-[#f43f5e]'
     },
+*/
     {
         id: 'adzah-isabella',
         name: 'Adzah Isabella',
@@ -203,6 +207,7 @@ He is responsible for media content and visibility strategies that enhance the c
 ];
 
 export const operationsTeam: TeamMember[] = [
+/*
     {
         id: 'wontumi-gabriel-oti',
         name: 'Wontumi Gabriel Oti',
@@ -220,6 +225,7 @@ He manages field agents, oversees farmer onboarding processes, and coordinates r
         expertise: ['Operations Management', 'Field Logistics', 'Community Engagement', 'Agricultural Extension', 'Project Planning'],
         borderColor: 'border-[#6366f1]'
     },
+*/
     {
         id: 'simmons-justice',
         name: 'Simmons Justice',

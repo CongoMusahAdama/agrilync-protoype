@@ -45,7 +45,7 @@ const en: Dict = {
   'lang.french': 'FRENCH',
 
   // Hero
-  'hero.headlineBefore': 'Building the infrastructure that makes',
+  'hero.headlineBefore': 'Building the trusted infrastructure that makes',
   'hero.headlineHighlight': 'smallholder agriculture',
   'hero.headlineInvestable': 'investable',
   'hero.connect': 'CONNECT',

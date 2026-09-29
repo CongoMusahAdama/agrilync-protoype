@@ -47,7 +47,7 @@ export const TeamSection: React.FC = () => {
               key={member.id}
               type="button"
               onClick={() => navigate(`/team/${member.id}`)}
-              className={`group relative aspect-[3/4] rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7ede56] ${
+              className={`group relative aspect-square rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7ede56] ${
                 visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
               style={{ transitionDelay: visible ? `${i * 80}ms` : '0ms' }}
