@@ -13,7 +13,6 @@ import { ImpactSection } from "@/components/home/ImpactSection";
 // PartnersSection temporarily hidden
 // import { PartnersSection } from '@/components/home/PartnersSection';
 import { InvestmentPackagesSection } from '@/components/home/InvestmentPackagesSection';
-import { SupportFloatingWidget } from '@/components/home/SupportFloatingWidget';
 import { SuccessStoriesSection } from "@/components/home/SuccessStoriesSection";
 // TeamSection (Leadership) temporarily hidden from homepage
 // import { TeamSection } from "@/components/home/TeamSection";
@@ -332,9 +331,7 @@ const Index = () => {
       {/* ── 11. FAQ ── */}
       <FAQSection />
 
-      <SupportFloatingWidget />
-
-      {/* Scroll to Top — sits above the support widget */}
+      {/* Scroll to Top */}
       {showScrollTop && (
         <Button
           onClick={scrollToTop}
