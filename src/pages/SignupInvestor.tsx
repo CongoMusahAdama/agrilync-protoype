@@ -91,7 +91,7 @@ const SignupInvestor = () => {
                         <TrendingUp className="h-10 w-10 text-blue-600" />
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900">Lync Investor Registration</h1>
-                            <p className="text-gray-600">Start investing in sustainable agriculture</p>
+                            <p className="text-gray-600">Start supporting sustainable agriculture</p>
                         </div>
                     </div>
                 </div>
@@ -99,7 +99,7 @@ const SignupInvestor = () => {
                 <Card className="shadow-xl">
                     <CardHeader className="bg-gradient-to-r from-blue-50 to-white">
                         <CardTitle className="text-2xl">Create Your Account</CardTitle>
-                        <CardDescription>Join our investment platform</CardDescription>
+                        <CardDescription>Join our farm partnership platform</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6">
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -189,7 +189,7 @@ const SignupInvestor = () => {
                                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4 flex gap-3">
                                     <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
                                     <p className="text-sm text-amber-800 leading-relaxed">
-                                        <strong>Investor Risk Notice:</strong> Agriculture involves natural and market risks. Returns are not guaranteed. AgriLync does not provide financial advice. Users are responsible for their participation decisions.
+                                        <strong>Participant Risk Notice:</strong> Agriculture involves natural and market risks. Outcomes are not guaranteed. AgriLync does not provide financial advice. Users are responsible for their participation decisions.
                                     </p>
                                 </div>
 

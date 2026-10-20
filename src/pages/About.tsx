@@ -205,11 +205,10 @@ const About = () => {
               </p>
 
               <p className="text-gray-500 text-xs italic mb-4 p-4 border-l-4 border-[#7ede56]/20 bg-[#7ede56]/10">
-                "Agrilync Nexus is a technology-enabled agricultural platform
-                that connects farmers, agricultural experts, and independent
-                investors. We do not operate as a fund manager, financial
-                institution, or farm operator. Agrilync Nexus does not custody
-                user funds or guarantee investment returns."
+                "Agrilync Nexus is a technology and verification platform.
+                It is not a bank, lender, or fund manager. Funds are held
+                and moved by licensed partners. Any estimates are
+                illustrative and are not a guarantee."
               </p>
 
               {/* Impact Figures */}

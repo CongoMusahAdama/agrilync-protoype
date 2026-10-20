@@ -1017,7 +1017,7 @@ const Settings: React.FC<EndUserPageProps> = ({ skipLayout = false }) => {
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           {[
                             { id: 'part-profit', label: 'Profit Sharing', desc: 'Share final harvest' },
-                            { id: 'part-buyback', label: 'Buy-back', desc: 'Guaranteed purchase' },
+                            { id: 'part-buyback', label: 'Buy-back', desc: 'Pre-agreed purchase' },
                             { id: 'part-finance', label: 'Financing', desc: 'Credit for inputs' }
                           ].map((model) => (
                             <div key={model.id} className={`flex flex-col gap-2 p-4 rounded-2xl border transition-all duration-300 ${darkMode ? 'bg-[#003c47]/30 border-gray-700 hover:bg-[#003c47]/50' : 'bg-gray-50/50 border-gray-200 hover:bg-gray-50'}`}>

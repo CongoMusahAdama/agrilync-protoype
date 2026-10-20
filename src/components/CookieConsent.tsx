@@ -17,7 +17,7 @@ const CookieConsent = () => {
     const dismiss = (choice: "accepted" | "declined") => {
         localStorage.setItem(COOKIE_KEY, choice);
         setAnimateOut(true);
-        setTimeout(() => setVisible(false), 380);
+        setTimeout(() => setVisible(false), 420);
     };
 
     if (!visible) return null;
@@ -26,128 +26,205 @@ const CookieConsent = () => {
         <>
             <style>{`
         @keyframes ck-slideUp {
-          from { transform: translateY(100%); }
-          to   { transform: translateY(0); }
+          from { opacity: 0; transform: translateY(24px) scale(0.98); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes ck-slideDown {
-          from { transform: translateY(0); }
-          to   { transform: translateY(100%); }
+          from { opacity: 1; transform: translateY(0) scale(1); }
+          to   { opacity: 0; transform: translateY(24px) scale(0.96); }
         }
 
-        .ck-bar {
-          font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
-          animation: ck-slideUp 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        .ck-card {
+          font-family: 'Inter', 'Montserrat', system-ui, -apple-system, sans-serif;
+          animation: ck-slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
-        .ck-bar.ck-out {
-          animation: ck-slideDown 0.32s ease-in forwards;
+        .ck-card.ck-out {
+          animation: ck-slideDown 0.38s ease-in forwards;
         }
 
         .ck-accept {
-          background: #16a34a;
+          background: linear-gradient(135deg, #16a34a, #15803d);
           color: #fff;
           border: none;
           cursor: pointer;
           font-family: inherit;
-          font-size: 13.5px;
+          font-size: 13px;
           font-weight: 600;
-          padding: 10px 24px;
-          border-radius: 7px;
-          transition: background 0.18s, box-shadow 0.18s;
+          padding: 11px 28px;
+          border-radius: 10px;
+          transition: all 0.22s ease;
           white-space: nowrap;
+          letter-spacing: 0.01em;
         }
         .ck-accept:hover {
-          background: #15803d;
-          box-shadow: 0 4px 18px rgba(22,163,74,0.38);
+          background: linear-gradient(135deg, #15803d, #166534);
+          box-shadow: 0 6px 24px rgba(22,163,74,0.35);
+          transform: translateY(-1px);
+        }
+        .ck-accept:active {
+          transform: translateY(0);
         }
 
         .ck-decline {
           background: transparent;
-          color: #cbd5e1;
-          border: 1.5px solid rgba(255,255,255,0.18);
+          color: #94a3b8;
+          border: 1.5px solid rgba(148,163,184,0.2);
           cursor: pointer;
           font-family: inherit;
-          font-size: 13.5px;
+          font-size: 13px;
           font-weight: 500;
-          padding: 10px 22px;
-          border-radius: 7px;
-          transition: border-color 0.18s, color 0.18s;
+          padding: 11px 24px;
+          border-radius: 10px;
+          transition: all 0.2s ease;
           white-space: nowrap;
         }
         .ck-decline:hover {
-          border-color: rgba(255,255,255,0.4);
-          color: #fff;
+          border-color: rgba(148,163,184,0.4);
+          color: #e2e8f0;
+          background: rgba(255,255,255,0.04);
         }
 
         .ck-link {
           color: #86efac;
-          text-decoration: underline;
-          text-underline-offset: 2px;
-          transition: color 0.15s;
+          text-decoration: none;
+          font-weight: 500;
+          border-bottom: 1px solid rgba(134,239,172,0.3);
+          transition: all 0.18s;
         }
-        .ck-link:hover { color: #bbf7d0; }
+        .ck-link:hover {
+          color: #bbf7d0;
+          border-bottom-color: rgba(187,247,208,0.5);
+        }
 
-        @media (max-width: 700px) {
-          .ck-inner { flex-direction: column; gap: 16px !important; }
-          .ck-actions { width: 100%; justify-content: flex-end; }
+        @media (max-width: 640px) {
+          .ck-card-inner { flex-direction: column !important; }
+          .ck-actions { width: 100%; }
+          .ck-actions button { flex: 1; }
         }
       `}</style>
 
+            {/* Subtle backdrop overlay */}
             <div
-                className={`ck-bar${animateOut ? " ck-out" : ""}`}
+                style={{
+                    position: "fixed",
+                    inset: 0,
+                    zIndex: 99998,
+                    background: "rgba(0,0,0,0.15)",
+                    backdropFilter: "blur(2px)",
+                    transition: "opacity 0.3s",
+                    opacity: animateOut ? 0 : 1,
+                    pointerEvents: "none",
+                }}
+            />
+
+            <div
+                className={`ck-card${animateOut ? " ck-out" : ""}`}
                 role="dialog"
                 aria-label="Cookie consent"
                 style={{
                     position: "fixed",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
+                    bottom: "20px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
                     zIndex: 99999,
-                    background: "#0d1117",
-                    borderTop: "1px solid rgba(255,255,255,0.1)",
-                    boxShadow: "0 -4px 40px rgba(0,0,0,0.5)",
-                    padding: "22px 40px",
+                    width: "calc(100% - 32px)",
+                    maxWidth: "640px",
                 }}
             >
                 <div
-                    className="ck-inner"
                     style={{
-                        maxWidth: "1280px",
-                        margin: "0 auto",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "32px",
+                        background: "linear-gradient(145deg, #111827 0%, #0d1117 100%)",
+                        borderRadius: "20px",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        boxShadow: "0 8px 60px rgba(0,0,0,0.5), 0 2px 12px rgba(0,0,0,0.3)",
+                        padding: "28px 28px 24px",
+                        overflow: "hidden",
+                        position: "relative",
                     }}
                 >
-                    {/* Text */}
-                    <p style={{
-                        margin: 0,
-                        flex: 1,
-                        fontSize: "13.5px",
-                        lineHeight: "1.75",
-                        color: "#94a3b8",
-                    }}>
-                        We use cookies to improve your experience on{" "}
-                        <strong style={{ color: "#f1f5f9", fontWeight: 600 }}>Agrilync</strong>.
-                        Some cookies are necessary for the site to function properly. Others help
-                        us understand how you use our platform so we can improve it. By clicking{" "}
-                        <strong style={{ color: "#f1f5f9" }}>Accept All</strong>, you consent to
-                        our use of cookies.{" "}
+                    {/* Subtle gradient accent line */}
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            left: "10%",
+                            right: "10%",
+                            height: "2px",
+                            background: "linear-gradient(90deg, transparent, #16a34a, #7ede56, #16a34a, transparent)",
+                            borderRadius: "999px",
+                            opacity: 0.6,
+                        }}
+                    />
+
+                    {/* Cookie icon + Title */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
+                        <div
+                            style={{
+                                width: "40px",
+                                height: "40px",
+                                borderRadius: "12px",
+                                background: "linear-gradient(135deg, rgba(22,163,74,0.15), rgba(126,222,86,0.1))",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: "20px",
+                                flexShrink: 0,
+                            }}
+                        >
+                            🍪
+                        </div>
+                        <div>
+                            <h3
+                                style={{
+                                    margin: 0,
+                                    fontSize: "15px",
+                                    fontWeight: 700,
+                                    color: "#f1f5f9",
+                                    letterSpacing: "-0.01em",
+                                }}
+                            >
+                                We value your privacy
+                            </h3>
+                            <p style={{ margin: 0, fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+                                agrilync.com
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Body text */}
+                    <p
+                        style={{
+                            margin: "0 0 20px 0",
+                            fontSize: "13px",
+                            lineHeight: "1.7",
+                            color: "#94a3b8",
+                        }}
+                    >
+                        We use essential cookies to keep{" "}
+                        <strong style={{ color: "#e2e8f0", fontWeight: 600 }}>Agrilync Nexus</strong>{" "}
+                        running smoothly, and optional analytics cookies to understand how you use our
+                        platform so we can improve it. You can change your preferences anytime.{" "}
                         <a href="/privacy-policy" className="ck-link">
-                            Cookie Policy
+                            Learn more
                         </a>
                     </p>
 
-                    {/* Buttons */}
+                    {/* Actions */}
                     <div
                         className="ck-actions"
-                        style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                            justifyContent: "flex-end",
+                        }}
                     >
                         <button
                             id="cookie-decline-btn"
                             className="ck-decline"
                             onClick={() => dismiss("declined")}
                         >
-                            Decline All
+                            Essential Only
                         </button>
                         <button
                             id="cookie-accept-btn"

@@ -127,7 +127,7 @@ const Partnership = () => {
       icon: Handshake,
       title: 'Institutional Partnerships',
       description:
-        'Financial institutions, insurance companies, and development partners looking to co-invest or collaborate.',
+        'Financial institutions, insurance companies, and development partners looking to co-fund or collaborate.',
       contactLabel: PARTNERSHIP_EMAIL,
       contactHref: `mailto:${PARTNERSHIP_EMAIL}`,
     },
@@ -143,7 +143,7 @@ const Partnership = () => {
       icon: TrendingUp,
       title: 'Investor Relations',
       description:
-        'Fund performance, ESG reporting, and investment opportunities for individual and institutional investors.',
+        'Partnership performance, ESG reporting, and collaboration opportunities for individual and institutional partners.',
       contactLabel: PARTNERSHIP_EMAIL,
       contactHref: `mailto:${PARTNERSHIP_EMAIL}`,
     },
@@ -440,6 +440,17 @@ const Partnership = () => {
               </form>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Platform Disclaimer */}
+      <section className="bg-[#002F37]/5 border-t border-[#002F37]/10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
+          <p className="text-[11px] sm:text-xs text-gray-500 leading-relaxed max-w-3xl mx-auto">
+            <strong className="text-gray-600">Platform Disclaimer:</strong>{' '}
+            Agrilync Nexus is a technology and verification platform. It is not a bank, lender, or fund manager.
+            Funds are held and moved by licensed partners. Any estimates are illustrative and are not a guarantee.
+          </p>
         </div>
       </section>
 

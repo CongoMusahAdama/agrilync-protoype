@@ -876,7 +876,7 @@ const AgentPerformance: React.FC = () => {
             </div>
             <h3 className="text-xl font-black text-[#002f37] mb-3">Your Field Work Builds Future Investment</h3>
             <p className="text-sm font-medium text-gray-500 leading-relaxed italic">
-              "Accurate KPI reporting today directly impacts the credit scores and funding opportunities for your farmers. 
+              "Accurate KPI reporting today directly impacts the readiness ratings and funding opportunities for your farmers. 
               The transparency you provide ensures our community grows stronger every season."
             </p>
           </div>

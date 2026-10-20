@@ -141,9 +141,15 @@ const Footer = () => {
             <p className="text-gray-400 text-sm mb-4 max-w-md">
               {t('footer.blurb')}
             </p>
-            <p className="text-gray-500 text-[10px] leading-relaxed mb-6 border-t border-gray-800 pt-4">
-              {t('footer.disclaimer')}
-            </p>
+            <div className="mt-4 mb-6 p-4 rounded-xl border border-gray-700/50 bg-gray-800/40">
+              <p className="text-gray-400 text-[10px] leading-relaxed flex items-start gap-2">
+                <span className="text-green-400/70 text-sm mt-0.5 shrink-0">⚖</span>
+                <span>
+                  <strong className="text-gray-300 font-semibold">Disclaimer:</strong>{' '}
+                  {t('footer.disclaimer')}
+                </span>
+              </p>
+            </div>
             <div className="flex space-x-4">
               <a href="https://www.facebook.com/share/16SkoNJAsW/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 transition-colors">
                 <Facebook className="h-5 w-5" />

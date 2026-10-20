@@ -60,7 +60,7 @@ const en: Dict = {
   'footer.blurb':
     'Agrilync Nexus is a finance-first, training-led AgriFinTech platform transforming African agriculture through transparent finance, AI advisory, and local agent networks.',
   'footer.disclaimer':
-    'Agrilync Nexus is a technology-enabled agricultural platform that connects farmers, agricultural experts, and independent investors. We do not operate as a fund manager, financial institution, or farm operator. Agrilync Nexus does not custody user funds or guarantee investment returns.',
+    'Agrilync Nexus is a technology and verification platform. It is not a bank, lender, or fund manager. Funds are held and moved by licensed partners. Any estimates are illustrative and are not a guarantee.',
   'footer.contactSupport': 'Contact Support',
   'footer.contactUs': 'Contact us',
   'footer.location': 'Accra, Ghana',
@@ -103,7 +103,7 @@ const en: Dict = {
   'home.innovationP1':
     'Agrilync Nexus provides a finance-first, training-led platform that connects smallholder farmers and investors/partners, supported by AI advisory and local agent operations.',
   'home.innovationP2':
-    'By empowering farmers, investors, and field agents with reliable information and capital, we turn agricultural gaps into stable income and de-risked investments.',
+    'By empowering farmers, partners, and field agents with reliable information and capital, we turn agricultural gaps into stable income and reduced-risk partnerships.',
   'home.challengeLabel': 'THE CHALLENGE',
   'home.challengeTitle': 'The Challenge',
   'home.challengeBody':
@@ -116,7 +116,7 @@ const en: Dict = {
   'home.coreProduct': 'Core Product',
   'home.farmPartner': 'FarmPartner Initiative',
   'home.farmPartnerDesc':
-    'Structured farm investment products where investors and partner organizations fund verified Lync Growers while receiving continuous visibility.',
+    'Structured farm partnership programmes where partners and organisations support verified Lync Growers while receiving continuous visibility.',
   'home.learnMore': 'Learn More',
   'home.aiAdvisory': 'AI Advisory Agent',
   'home.aiAdvisoryDesc':
@@ -215,24 +215,24 @@ const en: Dict = {
   'faq.blurb':
     'Discover how AgriLync Nexus is bridging the gap in agricultural finance, offering effective, secure solutions for everyone involved.',
   'faq.contactCta': 'Still have questions? Contact us',
-  'faq.q1': 'How does AgriLync Nexus ensure the safety of my investment?',
+  'faq.q1': 'How does Agrilync Nexus protect my participation?',
   'faq.a1':
     'We employ a rigorous vetting process for all farmers and implement strict monitoring protocols. Additionally, we work with insurance partners to provide coverage for crops against unforeseen weather events and pests.',
   'faq.q2': 'How accurate is the AI crop consultation?',
   'faq.a2':
     'Our AI model is trained on a vast database of plant pathology and continuously updated by agricultural experts. It currently boasts a 95% accuracy rate in early disease detection, though we always recommend verifying with our human experts for critical issues.',
-  'faq.q3': 'Can I choose which specific farm to invest in?',
+  'faq.q3': 'Can I choose which specific farm to support?',
   'faq.a3':
-    'Yes! Our platform provides detailed profiles for each farm, including their crop history, risk assessment, and projected yield. You can browse and select the partnerships that align with your financial goals and values.',
+    'Yes! Our platform provides detailed profiles for each farm, including their crop history, risk assessment, and estimated harvest outlook. You can browse and select the partnerships that align with your goals and values.',
   'faq.q4': 'Is AgriLync Nexus available to small-scale farmers?',
   'faq.a4':
     'Absolutely. Our core mission is to empower smallholder farmers. The platform is designed to be accessible even on basic smartphones, and we have local agents to assist farmers with limited digital literacy.',
-  'faq.q5': 'What is the minimum amount required to start investing?',
+  'faq.q5': 'What is the minimum amount to support a farm?',
   'faq.a5':
-    'We believe in democratizing agricultural investment. You can start supporting a farm with as little as GHS 500. We offer various tiers to suit different investment capacities.',
+    'We believe in democratising access to farm partnerships. You can start supporting a farm with as little as GHS 500. We offer various tiers to suit different partnership levels.',
   'faq.q6': 'Do you support livestock farming as well?',
   'faq.a6':
-    'Yes! We support livestock sectors including poultry and small ruminants. Our health monitoring protocols are adapted to ensure animal welfare and secure returns for investors.',
+    'Yes! We support livestock sectors including poultry and small ruminants. Our health monitoring protocols are adapted to ensure animal welfare and provide transparent reporting to partners.',
 
   // Safeguarding
   'safe.label': 'Safeguarding',
@@ -304,7 +304,7 @@ const fr: Dict = {
   'footer.blurb':
     'Agrilync Nexus est une plateforme AgriFinTech axée sur la finance et la formation, qui transforme l’agriculture africaine grâce à une finance transparente, des conseils IA et des réseaux d’agents locaux.',
   'footer.disclaimer':
-    'Agrilync Nexus est une plateforme agricole technologique qui connecte agriculteurs, experts agricoles et investisseurs indépendants. Nous n’agissons pas en tant que gestionnaire de fonds, institution financière ou exploitant agricole. Agrilync Nexus ne conserve pas les fonds des utilisateurs et ne garantit pas de rendements.',
+    'Agrilync Nexus est une plateforme de technologie et de vérification. Ce n’est ni une banque, ni un prêteur, ni un gestionnaire de fonds. Les fonds sont détenus et transférés par des partenaires agréés. Toute estimation est indicative et ne constitue pas une garantie.',
   'footer.contactSupport': 'Support contact',
   'footer.contactUs': 'Nous contacter',
   'footer.location': 'Accra, Ghana',
@@ -346,7 +346,7 @@ const fr: Dict = {
   'home.innovationP1':
     'Agrilync Nexus propose une plateforme axée sur la finance et la formation qui connecte les petits agriculteurs et les investisseurs/partenaires, avec le soutien de conseils IA et d’agents locaux.',
   'home.innovationP2':
-    'En donnant aux agriculteurs, investisseurs et agents de terrain des informations fiables et du capital, nous transformons les lacunes agricoles en revenus stables et en investissements moins risqués.',
+    'En donnant aux agriculteurs, partenaires et agents de terrain des informations fiables et du capital, nous transformons les lacunes agricoles en revenus stables et en partenariats à risque réduit.',
   'home.challengeLabel': 'LE DÉFI',
   'home.challengeTitle': 'Le Défi',
   'home.challengeBody':
@@ -359,7 +359,7 @@ const fr: Dict = {
   'home.coreProduct': 'Produit phare',
   'home.farmPartner': 'Initiative FarmPartner',
   'home.farmPartnerDesc':
-    'Produits d’investissement agricole structurés où investisseurs et organisations partenaires financent des Lync Growers vérifiés tout en bénéficiant d’une visibilité continue.',
+    'Programmes de partenariats agricoles structurés où partenaires et organisations soutiennent des Lync Growers vérifiés tout en bénéficiant d’une visibilité continue.',
   'home.learnMore': 'En savoir plus',
   'home.aiAdvisory': 'Agent de conseil IA',
   'home.aiAdvisoryDesc':
@@ -454,24 +454,24 @@ const fr: Dict = {
   'faq.blurb':
     'Découvrez comment AgriLync Nexus comble le fossé du financement agricole, avec des solutions efficaces et sécurisées pour tous.',
   'faq.contactCta': 'Encore des questions? Contactez-nous',
-  'faq.q1': 'Comment AgriLync Nexus assure-t-il la sécurité de mon investissement?',
+  'faq.q1': 'Comment Agrilync Nexus protège-t-il ma participation?',
   'faq.a1':
     'Nous appliquons un processus rigoureux de vérification des agriculteurs et des protocoles de suivi stricts. Nous travaillons aussi avec des partenaires d’assurance pour couvrir les cultures contre les aléas climatiques et les ravageurs.',
   'faq.q2': 'Quelle est la précision du conseil IA sur les cultures?',
   'faq.a2':
     'Notre modèle IA est formé sur une vaste base de pathologie végétale et mis à jour en continu par des experts agricoles. Il affiche actuellement 95% de précision en détection précoce des maladies; nous recommandons toujours de vérifier avec nos experts humains pour les enjeux critiques.',
-  'faq.q3': 'Puis-je choisir la ferme dans laquelle investir?',
+  'faq.q3': 'Puis-je choisir la ferme que je souhaite soutenir?',
   'faq.a3':
-    'Oui! Notre plateforme propose des profils détaillés pour chaque ferme, y compris l’historique des cultures, l’évaluation des risques et le rendement projeté. Vous pouvez parcourir et choisir les partenariats alignés sur vos objectifs.',
+    'Oui! Notre plateforme propose des profils détaillés pour chaque ferme, y compris l’historique des cultures, l’évaluation des risques et les perspectives de récolte estimées. Vous pouvez parcourir et choisir les partenariats alignés sur vos objectifs.',
   'faq.q4': 'AgriLync Nexus est-il accessible aux petits agriculteurs?',
   'faq.a4':
     'Absolument. Notre mission centrale est d’autonomiser les petits agriculteurs. La plateforme est conçue pour fonctionner même sur des smartphones basiques, et des agents locaux aident ceux qui ont une littératie numérique limitée.',
-  'faq.q5': 'Quel est le montant minimum pour commencer à investir?',
+  'faq.q5': 'Quel est le montant minimum pour soutenir une ferme?',
   'faq.a5':
-    'Nous croyons à la démocratisation de l’investissement agricole. Vous pouvez soutenir une ferme à partir de 500 GHS. Nous proposons différents niveaux selon les capacités d’investissement.',
+    'Nous croyons à la démocratisation de l’accès aux partenariats agricoles. Vous pouvez soutenir une ferme à partir de 500 GHS. Nous proposons différents niveaux selon les capacités.',
   'faq.q6': 'Soutenez-vous aussi l’élevage?',
   'faq.a6':
-    'Oui! Nous soutenons l’élevage, notamment la volaille et les petits ruminants. Nos protocoles de suivi sanitaire sont adaptés pour le bien-être animal et la sécurité des investisseurs.',
+    'Oui! Nous soutenons l’élevage, notamment la volaille et les petits ruminants. Nos protocoles de suivi sanitaire sont adaptés pour le bien-être animal et la transparence des rapports aux partenaires.',
 
   'safe.label': 'Protection',
   'safe.title': 'Sécurité, dignité et bien-être, toujours',
